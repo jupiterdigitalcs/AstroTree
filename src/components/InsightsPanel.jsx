@@ -159,8 +159,7 @@ export default function InsightsPanel({ nodes, edges }) {
         <h3 className="insight-heading">Coming in future updates ✨</h3>
         <p className="insight-note">🌙 <strong>Moon Sign</strong> — add birth time for emotional depth</p>
         <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>
-        <p className="insight-note">🔮 <strong>Full Chart Overlays</strong> — planetary alignments across generations</p>
-        <p className="insight-note">📅 <strong>Birthday Reminders</strong> — connect to your Jupiter Digital calendar</p>
+        <p className="insight-note">🔮 <strong>Deeper Insights</strong> — themes across generations</p>
       </div>
     </div>
   )

@@ -278,11 +278,11 @@ export default function App() {
         {/* ── Footer / social links ────────────────────────────────────── */}
         <footer className="sidebar-footer">
           <div className="social-links">
-            <a href="https://instagram.com/jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" title="Instagram"><IgIcon /><span>Instagram</span></a>
+            <a href="https://instagram.com/jupreturns" className="social-link" target="_blank" rel="noopener noreferrer" title="Instagram"><IgIcon /><span>@jupreturn</span></a>
             <a href="https://www.tiktok.com/@jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" title="TikTok"><TikTokIcon /><span>TikTok</span></a>
-            <a href="https://x.com/jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" title="X (Twitter)"><XIcon /><span>X</span></a>
+            <a href="https://x.com/jupiter_dig" className="social-link" target="_blank" rel="noopener noreferrer" title="X (Twitter)"><XIcon /><span></span></a>
             <a href="https://etsy.com/shop/jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" title="Etsy"><EtsyIcon /><span>Etsy</span></a>
-            <a href="mailto:hello@jupiterdigital.com" className="social-link" title="Email"><MailIcon /><span>Email</span></a>
+            <a href="mailto:hello@jupiterdigital.com" className="social-link" title="Email"><MailIcon /><span>jupreturns@gmail.com</span></a>
           </div>
         </footer>
       </aside>
