@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
+import { toPng } from 'html-to-image'
 import {
   ReactFlow,
   Background,
@@ -12,25 +13,23 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
-import AddMemberForm   from './components/AddMemberForm.jsx'
-import BulkAddForm     from './components/BulkAddForm.jsx'
+import AddMembersForm  from './components/AddMembersForm.jsx'
 import AstroNode       from './components/AstroNode.jsx'
 import EditMemberPanel from './components/EditMemberPanel.jsx'
 import ChartsPanel     from './components/ChartsPanel.jsx'
 import InsightsPanel   from './components/InsightsPanel.jsx'
-import { getSunSign, getElement } from './utils/astrology.js'
-import { applyDagreLayout }       from './utils/layout.js'
+import { getSunSign, getElement, ELEMENT_COLORS } from './utils/astrology.js'
+import { applyDagreLayout }                        from './utils/layout.js'
 
 const NODE_TYPES = { astro: AstroNode }
 
 const EDGE_STYLE   = { stroke: '#c9a84c', strokeWidth: 1.5 }
-const SPOUSE_STYLE = { stroke: '#e879a8', strokeWidth: 1.5, strokeDasharray: '5,4' }
+const SPOUSE_STYLE = { stroke: '#d4a0bc', strokeWidth: 1.5, strokeDasharray: '6,4' }
 
 function makeEdge(source, target, relationType = 'parent-child') {
   const isSpouse = relationType === 'spouse'
   return {
-    id: `e-${source}-${target}`,
-    source, target,
+    id: `e-${source}-${target}`, source, target,
     data:     { relationType },
     animated: !isSpouse,
     style:    isSpouse ? SPOUSE_STYLE : EDGE_STYLE,
@@ -44,12 +43,12 @@ function buildNodeData(member) {
   return { name: member.name, birthdate: member.birthdate, sign, symbol, element, elementColor: color }
 }
 
-// ── Social link icons ─────────────────────────────────────────────────────────
-function IgIcon()     { return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> }
-function MailIcon()   { return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> }
-function EtsyIcon()   { return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> }
-function XIcon()      { return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg> }
-function TikTokIcon() { return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/></svg> }
+// ── Social icons ──────────────────────────────────────────────────────────────
+function IgIcon()     { return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> }
+function MailIcon()   { return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> }
+function EtsyIcon()   { return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> }
+function XIcon()      { return <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg> }
+function TikTokIcon() { return <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/></svg> }
 
 // ── Auto-fitView after layout ─────────────────────────────────────────────────
 function FitViewOnLayout({ layoutTick }) {
@@ -62,24 +61,74 @@ function FitViewOnLayout({ layoutTick }) {
   return null
 }
 
+// ── Insights teaser + expandable section ──────────────────────────────────────
+function InsightsSection({ nodes, edges }) {
+  const [open, setOpen] = useState(false)
+
+  // Quick summary stats for the teaser
+  const elementCounts = useMemo(() => {
+    const c = { Fire: 0, Earth: 0, Air: 0, Water: 0 }
+    nodes.forEach(n => { if (c[n.data.element] !== undefined) c[n.data.element]++ })
+    return c
+  }, [nodes])
+
+  const dominant = useMemo(() =>
+    ['Fire','Earth','Air','Water'].reduce((a, b) => elementCounts[a] >= elementCounts[b] ? a : b),
+    [elementCounts]
+  )
+
+  const sharedSign = useMemo(() => {
+    const counts = {}
+    nodes.forEach(n => { counts[n.data.sign] = (counts[n.data.sign] || 0) + 1 })
+    const top = Object.entries(counts).find(([, c]) => c > 1)
+    return top ? top[0] : null
+  }, [nodes])
+
+  return (
+    <div className="insights-section">
+      <button
+        type="button"
+        className={`insights-toggle ${open ? 'open' : ''}`}
+        onClick={() => setOpen(o => !o)}
+      >
+        <span className="insights-toggle-label">
+          <span className="insights-star">✦</span> Family Insights
+        </span>
+        <span className="insights-toggle-caret">{open ? '▲' : '▼'}</span>
+      </button>
+
+      {!open && (
+        <div className="insights-teaser">
+          <span style={{ color: ELEMENT_COLORS[dominant] }}>
+            {dominant} energy dominates
+          </span>
+          {sharedSign && <span>· {sharedSign} runs in the family</span>}
+        </div>
+      )}
+
+      {open && <InsightsPanel nodes={nodes} edges={edges} />}
+    </div>
+  )
+}
+
 export default function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const [counter,        setCounter]        = useState(1)
-  const [selectedNodeId, setSelectedNodeId] = useState(null)
-  const [mode,           setMode]           = useState('add') // 'add' | 'bulk' | 'charts' | 'insights'
+  const [editingNodeId,  setEditingNodeId]  = useState(null)
+  const [chartsOpen,     setChartsOpen]     = useState(false)
   const [layoutTick,     setLayoutTick]     = useState(0)
   const [sidebarOpen,    setSidebarOpen]    = useState(true)
+  const [exporting,      setExporting]      = useState(false)
 
-  // ── Auto-layout on edge changes OR node count changes ────────────────────
+  // ── Layout on edge / node count changes ──────────────────────────────────
   useEffect(() => {
     if (nodes.length === 0) return
     setNodes(prev => applyDagreLayout(prev, edges))
     setLayoutTick(t => t + 1)
   }, [edges, nodes.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Spouse edges: route straight across using side handles ───────────────
-  // Derive display edges so spouse lines go left→right between side handles
+  // ── Spouse edges: route straight across using side handles ────────────────
   const edgesForDisplay = useMemo(() =>
     edges.map(edge => {
       if (edge.data?.relationType !== 'spouse') return edge
@@ -88,8 +137,7 @@ export default function App() {
       if (!src || !tgt) return edge
       const srcLeft = src.position.x <= tgt.position.x
       return {
-        ...edge,
-        type:         'straight',
+        ...edge, type: 'straight',
         sourceHandle: srcLeft ? 'right' : 'left',
         targetHandle: srcLeft ? 'left'  : 'right',
       }
@@ -97,34 +145,26 @@ export default function App() {
     [edges, nodes]
   )
 
-  // ── Add single ───────────────────────────────────────────────────────────
-  function handleAdd(member) {
-    const id   = `node-${counter}`
-    const node = { id, type: 'astro', position: { x: 0, y: 0 }, data: buildNodeData(member) }
-    const newEdges = [
-      ...(member.parentIds ?? []).map(p => makeEdge(p,  id)),
-      ...(member.childIds  ?? []).map(c => makeEdge(id, c)),
-      ...(member.spouseIds ?? []).map(s => makeEdge(id, s, 'spouse')),
-    ]
-    setNodes(prev => [...prev, node])
-    setEdges(prev => [...prev, ...newEdges])
-    setCounter(c => c + 1)
-  }
-
-  // ── Bulk add ─────────────────────────────────────────────────────────────
-  function handleBulkAdd(members) {
-    const newNodes = members.map((m, i) => ({
-      id:       `node-${counter + i}`,
-      type:     'astro',
-      position: { x: 0, y: 0 },
-      data:     buildNodeData(m),
+  // ── Add (atomic, supports multiple members) ───────────────────────────────
+  function handleAdd({ members, relationships = {} }) {
+    const { parentIds = [], childIds = [], spouseIds = [] } = relationships
+    const startIdx  = counter
+    const primaryId = `node-${startIdx}`
+    const newNodes  = members.map((m, i) => ({
+      id: `node-${startIdx + i}`, type: 'astro',
+      position: { x: 0, y: 0 }, data: buildNodeData(m),
     }))
+    const newEdges = [
+      ...parentIds.map(p => makeEdge(p,         primaryId)),
+      ...childIds .map(c => makeEdge(primaryId, c)),
+      ...spouseIds.map(s => makeEdge(primaryId, s, 'spouse')),
+    ]
     setNodes(prev => [...prev, ...newNodes])
+    setEdges(prev => [...prev, ...newEdges])
     setCounter(c => c + members.length)
-    setMode('add')
   }
 
-  // ── Update ────────────────────────────────────────────────────────────────
+  // ── Update / delete ───────────────────────────────────────────────────────
   const handleUpdate = useCallback((id, patch) => {
     setNodes(prev => prev.map(n => {
       if (n.id !== id) return n
@@ -136,10 +176,16 @@ export default function App() {
       }
       return { ...n, data: updated }
     }))
-    setSelectedNodeId(null)
+    setEditingNodeId(null)
   }, [setNodes])
 
-  // ── Add / remove edges ────────────────────────────────────────────────────
+  const handleDelete = useCallback((id) => {
+    setNodes(prev => prev.filter(n => n.id !== id))
+    setEdges(prev => prev.filter(e => e.source !== id && e.target !== id))
+    setEditingNodeId(null)
+  }, [setNodes, setEdges])
+
+  // ── Edge management ───────────────────────────────────────────────────────
   const handleAddEdge = useCallback((source, target, relationType = 'parent-child') => {
     setEdges(prev => {
       if (source === target) return prev
@@ -157,15 +203,9 @@ export default function App() {
     setEdges(prev => prev.filter(e => e.id !== edgeId))
   }, [setEdges])
 
-  // ── Delete node ───────────────────────────────────────────────────────────
-  const handleDelete = useCallback((id) => {
-    setNodes(prev => prev.filter(n => n.id !== id))
-    setEdges(prev => prev.filter(e => e.source !== id && e.target !== id))
-    setSelectedNodeId(null)
-  }, [setNodes, setEdges])
-
   const onNodeClick = useCallback((_e, node) => {
-    setSelectedNodeId(id => id === node.id ? null : node.id)
+    setEditingNodeId(id => id === node.id ? null : node.id)
+    setChartsOpen(false)
     setSidebarOpen(true)
   }, [])
 
@@ -174,24 +214,130 @@ export default function App() {
     [setEdges],
   )
 
-  // ── Charts: load / new ───────────────────────────────────────────────────
+  // ── Charts ────────────────────────────────────────────────────────────────
   const handleLoadChart = useCallback((chart) => {
-    setNodes(chart.nodes)
-    setEdges(chart.edges)
-    setCounter(chart.counter)
-    setSelectedNodeId(null)
-    setMode('add')
+    setNodes(chart.nodes); setEdges(chart.edges); setCounter(chart.counter)
+    setEditingNodeId(null); setChartsOpen(false)
   }, [setNodes, setEdges])
 
   const handleNewChart = useCallback(() => {
-    setNodes([])
-    setEdges([])
-    setCounter(1)
-    setSelectedNodeId(null)
-    setMode('add')
+    setNodes([]); setEdges([]); setCounter(1)
+    setEditingNodeId(null); setChartsOpen(false)
   }, [setNodes, setEdges])
 
-  const selectedNode = selectedNodeId ? nodes.find(n => n.id === selectedNodeId) : null
+  const handleRelayout = useCallback(() => {
+    setNodes(prev => applyDagreLayout(prev, edges))
+    setLayoutTick(t => t + 1)
+  }, [edges, setNodes])
+
+  // ── Export: tree image + insights HTML ───────────────────────────────────
+  const handleExport = useCallback(async () => {
+    const el = document.querySelector('.react-flow')
+    if (!el || exporting) return
+    setExporting(true)
+    try {
+      const dataUrl = await toPng(el, { backgroundColor: '#09071a', pixelRatio: 2 })
+
+      // Build insights HTML
+      const ELEMENTS = ['Fire','Earth','Air','Water']
+      const elCounts = Object.fromEntries(ELEMENTS.map(e => [e, 0]))
+      nodes.forEach(n => { if (elCounts[n.data.element] !== undefined) elCounts[n.data.element]++ })
+      const total    = nodes.length
+      const dominant = ELEMENTS.reduce((a, b) => elCounts[a] >= elCounts[b] ? a : b)
+      const ELEMENT_ENERGY = { Fire:'passionate & driven', Earth:'grounded & practical', Air:'curious & communicative', Water:'intuitive & emotional' }
+      const elColors = { Fire:'#ff6b35', Earth:'#7ec845', Air:'#5bc8f5', Water:'#9b5de5' }
+
+      const signCounts = {}
+      nodes.forEach(n => { signCounts[n.data.sign] = (signCounts[n.data.sign] || 0) + 1 })
+      const sharedSigns = Object.entries(signCounts).filter(([, c]) => c > 1)
+
+      const spouseEdges = edges.filter(e => e.data?.relationType === 'spouse')
+      function compatible(a, b) { return a===b || (a==='Fire'&&b==='Air') || (a==='Air'&&b==='Fire') || (a==='Earth'&&b==='Water') || (a==='Water'&&b==='Earth') }
+      const couples = spouseEdges.map(e => {
+        const s = nodes.find(n => n.id === e.source), t = nodes.find(n => n.id === e.target)
+        return s && t ? { s, t, ok: compatible(s.data.element, t.data.element) } : null
+      }).filter(Boolean)
+
+      const elBars = ELEMENTS.map(el => {
+        const pct = total > 0 ? Math.round(elCounts[el] / total * 100) : 0
+        return `<div style="display:grid;grid-template-columns:3.5rem 1fr 1.5rem;gap:8px;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:${elColors[el]}">${el}</span>
+          <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${elColors[el]};border-radius:3px"></div>
+          </div>
+          <span style="font-size:11px;color:${elColors[el]};text-align:right">${elCounts[el]}</span>
+        </div>`
+      }).join('')
+
+      const insightsHtml = `
+        <div style="padding:28px 32px;font-family:'Cinzel',serif;color:#ede6ff;background:#09071a">
+          <div style="font-size:11px;letter-spacing:0.3em;color:#c9a84c;text-transform:uppercase;margin-bottom:6px">Jupiter Digital</div>
+          <h2 style="font-size:22px;color:#e6c76e;letter-spacing:0.15em;margin-bottom:4px">AstroTree — Family Insights</h2>
+          <p style="font-size:12px;color:#8878aa;letter-spacing:0.08em;margin-bottom:24px">Family Celestial Chart · ${new Date().toLocaleDateString()}</p>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:16px">
+              <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#c9a84c;margin-bottom:12px">Elemental Makeup</div>
+              ${elBars}
+              <p style="font-size:12px;color:#b8aad4;margin-top:8px">
+                Your family is <strong style="color:${elColors[dominant]}">${ELEMENT_ENERGY[dominant]}</strong>.
+              </p>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px">
+              ${sharedSigns.length > 0 ? `
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:16px">
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#c9a84c;margin-bottom:10px">Shared Signs</div>
+                ${sharedSigns.map(([sign]) => {
+                  const members = nodes.filter(n => n.data.sign === sign)
+                  return `<p style="font-size:12px;color:#ede6ff;margin-bottom:4px">
+                    ${members[0].data.symbol} <strong>${sign}</strong> — ${members.map(m => m.data.name).join(', ')}
+                  </p>`
+                }).join('')}
+              </div>` : ''}
+
+              ${couples.length > 0 ? `
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:16px">
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#c9a84c;margin-bottom:10px">Partner Compatibility</div>
+                ${couples.map(({ s, t, ok }) =>
+                  `<p style="font-size:12px;color:#ede6ff;margin-bottom:6px">
+                    ${s.data.symbol} ${s.data.name} &amp; ${t.data.symbol} ${t.data.name}<br/>
+                    <span style="color:${ok ? '#7ec845' : '#c9a84c'};font-size:11px">${ok ? '✓ Harmonious elements' : '◇ Complementary energies'}</span>
+                  </p>`
+                ).join('')}
+              </div>` : ''}
+            </div>
+
+          </div>
+        </div>`
+
+      const win = window.open('', '_blank')
+      if (!win) { alert('Please allow popups to export.'); return }
+      win.document.write(`<!DOCTYPE html><html><head>
+        <title>AstroTree — Jupiter Digital</title>
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
+        <style>
+          *{margin:0;padding:0;box-sizing:border-box}
+          body{background:#09071a;color:#ede6ff;font-family:'Cinzel',serif}
+          .tree-img{width:100%;display:block;page-break-after:always}
+          @media print{*{-webkit-print-color-adjust:exact!important;color-adjust:exact!important}}
+        </style>
+      </head><body>
+        <img class="tree-img" src="${dataUrl}"/>
+        ${insightsHtml}
+        <script>setTimeout(()=>window.print(),800)</script>
+      </body></html>`)
+      win.document.close()
+    } catch (err) {
+      console.error('Export error:', err)
+    } finally {
+      setExporting(false)
+    }
+  }, [exporting, nodes, edges])
+
+  const editingNode = editingNodeId ? nodes.find(n => n.id === editingNodeId) : null
+  const hasInsights = edges.filter(e => e.data?.relationType !== 'spouse').length > 0
 
   return (
     <div className="app">
@@ -206,11 +352,11 @@ export default function App() {
         ))}
       </div>
 
+      {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <aside className={`sidebar${sidebarOpen ? ' open' : ''}`}>
-        {/* ── Drag handle (mobile) ─────────────────────────────────────── */}
-        <div className="sidebar-drag-handle" onClick={() => setSidebarOpen(o => !o)} aria-label="Toggle panel" />
+        <div className="sidebar-drag-handle" onClick={() => setSidebarOpen(false)} />
 
-        {/* ── Brand header ────────────────────────────────────────────── */}
+        {/* Brand */}
         <div className="brand-header">
           <div className="brand-logo">🪐</div>
           <div className="brand-text">
@@ -222,114 +368,165 @@ export default function App() {
 
         {/* ── Scrollable content ──────────────────────────────────────── */}
         <div className="sidebar-content">
-          {!selectedNode && (
-            <div className="mode-tabs">
-              {[['add','Add One'],['bulk','Bulk'],['charts','Charts'],['insights','Insights']].map(([k, label]) => (
-                <button key={k} type="button"
-                  className={`mode-tab ${mode === k ? 'active' : ''}`}
-                  onClick={() => setMode(k)}
-                >{label}</button>
-              ))}
-            </div>
-          )}
 
-          {selectedNode ? (
-            <EditMemberPanel
-              key={selectedNode.id}
-              node={selectedNode}
-              allNodes={nodes}
-              edges={edges}
-              onUpdate={handleUpdate}
-              onDelete={handleDelete}
-              onAddEdge={handleAddEdge}
-              onRemoveEdge={handleRemoveEdge}
-              onCancel={() => setSelectedNodeId(null)}
-            />
-          ) : mode === 'bulk' ? (
-            <BulkAddForm onBulkAdd={handleBulkAdd} onCancel={() => setMode('add')} />
-          ) : mode === 'charts' ? (
-            <ChartsPanel
-              nodes={nodes} edges={edges} counter={counter}
-              onLoad={handleLoadChart} onNew={handleNewChart}
-            />
-          ) : mode === 'insights' ? (
-            <InsightsPanel nodes={nodes} edges={edges} />
+          {/* ── Editing a member ────────────────────────────────────────── */}
+          {editingNode ? (
+            <>
+              <button
+                type="button"
+                className="back-btn"
+                onClick={() => setEditingNodeId(null)}
+              >← Back to Family</button>
+              <EditMemberPanel
+                key={editingNode.id}
+                node={editingNode}
+                allNodes={nodes}
+                edges={edges}
+                onUpdate={handleUpdate}
+                onDelete={handleDelete}
+                onAddEdge={handleAddEdge}
+                onRemoveEdge={handleRemoveEdge}
+                onCancel={() => setEditingNodeId(null)}
+              />
+            </>
+
+          /* ── Saved charts ─────────────────────────────────────────────── */
+          ) : chartsOpen ? (
+            <>
+              <button
+                type="button"
+                className="back-btn"
+                onClick={() => setChartsOpen(false)}
+              >← Back to Family</button>
+              <ChartsPanel
+                nodes={nodes} edges={edges} counter={counter}
+                onLoad={handleLoadChart} onNew={handleNewChart}
+              />
+            </>
+
+          /* ── Main panel ───────────────────────────────────────────────── */
           ) : (
-            <AddMemberForm onAdd={handleAdd} existingNodes={nodes} />
-          )}
-
-          {nodes.length > 0 && !selectedNode && mode === 'add' && (
-            <div className="member-list">
-              <h3>Members</h3>
-              {nodes.map(n => (
-                <div key={n.id} className="member-pill"
-                  style={{ borderColor: `${n.data.elementColor}66`, cursor: 'pointer' }}
-                  onClick={() => { setSelectedNodeId(n.id); setSidebarOpen(true) }}
-                >
-                  <span>{n.data.symbol}</span>
-                  <span>{n.data.name}</span>
-                  <span className="pill-sign" style={{ color: n.data.elementColor }}>{n.data.sign}</span>
+            <>
+              {/* Empty-state hint */}
+              {nodes.length === 0 && (
+                <div className="start-hint">
+                  <p>Welcome — fill in a name and birthday below to build your family's celestial chart.</p>
                 </div>
-              ))}
-            </div>
+              )}
+
+              {/* Add form — always visible */}
+              <AddMembersForm onAdd={handleAdd} existingNodes={nodes} />
+
+              {/* Member list */}
+              {nodes.length > 0 && (
+                <div className="member-list">
+                  <div className="member-list-header">
+                    <h3>Your Family · {nodes.length}</h3>
+                    <span className="member-list-hint">tap to edit</span>
+                  </div>
+                  {nodes.map(n => (
+                    <div key={n.id} className="member-pill"
+                      style={{ borderColor: `${n.data.elementColor}44`, cursor: 'pointer' }}
+                      onClick={() => { setEditingNodeId(n.id); setSidebarOpen(true) }}
+                    >
+                      <span>{n.data.symbol}</span>
+                      <span>{n.data.name}</span>
+                      <span className="pill-sign" style={{ color: n.data.elementColor }}>{n.data.sign}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Insights — appears once relationships exist */}
+              {hasInsights && (
+                <InsightsSection nodes={nodes} edges={edges} />
+              )}
+            </>
           )}
         </div>
 
-        {/* ── Footer / social links ────────────────────────────────────── */}
+        {/* ── Footer ──────────────────────────────────────────────────── */}
         <footer className="sidebar-footer">
+          <div className="footer-actions">
+            <button
+              type="button"
+              className="footer-action-btn"
+              onClick={() => { setChartsOpen(o => !o); setEditingNodeId(null) }}
+            >
+              {chartsOpen ? '← My Family' : '📚 Saved Charts'}
+            </button>
+            <button
+              type="button"
+              className="footer-action-btn footer-action-btn--gold"
+              onClick={handleExport}
+              disabled={exporting || nodes.length === 0}
+            >
+              {exporting ? '…' : '⬇ Export PDF'}
+            </button>
+          </div>
           <div className="social-links">
             <a href="https://instagram.com/jupreturns" className="social-link" target="_blank" rel="noopener noreferrer" title="Instagram"><IgIcon /><span>@jupreturn</span></a>
             <a href="https://www.tiktok.com/@jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" title="TikTok"><TikTokIcon /><span>TikTok</span></a>
-            <a href="https://x.com/jupiter_dig" className="social-link" target="_blank" rel="noopener noreferrer" title="X (Twitter)"><XIcon /><span></span></a>
+            <a href="https://x.com/jupiter_dig" className="social-link" target="_blank" rel="noopener noreferrer" title="X"><XIcon /><span>X</span></a>
             <a href="https://etsy.com/shop/jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" title="Etsy"><EtsyIcon /><span>Etsy</span></a>
-            <a href="mailto:hello@jupiterdigital.com" className="social-link" title="Email"><MailIcon /><span>jupreturns@gmail.com</span></a>
+            <a href="mailto:jupreturns@gmail.com" className="social-link" title="Email"><MailIcon /><span>Email</span></a>
           </div>
         </footer>
       </aside>
 
-      {/* Mobile toggle button */}
+      {/* Mobile toggle */}
       <button
         type="button"
         className="sidebar-toggle-btn"
         onClick={() => setSidebarOpen(o => !o)}
-        aria-label={sidebarOpen ? 'Close panel' : 'Open panel'}
       >
-        {sidebarOpen ? '✕ Close' : '🪐 Menu'}
+        {sidebarOpen ? '✕ Close' : '🪐 My Family'}
       </button>
 
+      {/* ── Canvas ──────────────────────────────────────────────────────── */}
       <main className="canvas">
         {nodes.length === 0 && (
-          <div className="empty-state">
-            <div className="empty-symbol">🪐</div>
-            <p>Add your first family member to begin charting the stars.</p>
+          <div className="welcome-screen">
+            <div className="welcome-content">
+              <div className="welcome-jd-badge">Jupiter Digital</div>
+              <div className="welcome-logo">🪐</div>
+              <h2 className="welcome-title">AstroTree</h2>
+              <p className="welcome-tagline">
+                Discover the celestial patterns<br />woven through your family
+              </p>
+              <div className="welcome-steps">
+                <div className="welcome-step"><span className="welcome-step-icon">✦</span><span>Add family members with their birthdates</span></div>
+                <div className="welcome-step"><span className="welcome-step-icon">✦</span><span>Connect parents, children &amp; partners</span></div>
+                <div className="welcome-step"><span className="welcome-step-icon">✦</span><span>Reveal your family's cosmic blueprint</span></div>
+              </div>
+              <button type="button" className="welcome-cta"
+                onClick={() => { setSidebarOpen(true) }}>
+                Begin Charting →
+              </button>
+              <p className="welcome-mobile-hint">Tap <strong>🪐 My Family</strong> below to start</p>
+            </div>
           </div>
         )}
+
         <ReactFlow
-          nodes={nodes}
-          edges={edgesForDisplay}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
+          nodes={nodes} edges={edgesForDisplay}
+          onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
+          onConnect={onConnect} onNodeClick={onNodeClick}
           nodeTypes={NODE_TYPES}
-          fitView
-          fitViewOptions={{ padding: 0.3 }}
-          minZoom={0.3}
-          colorMode="dark"
+          fitView fitViewOptions={{ padding: 0.3 }}
+          minZoom={0.3} colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >
           <FitViewOnLayout layoutTick={layoutTick} />
-          <Background color="#1e2a4a" gap={32} size={1} />
-          <Controls style={{ background: '#0d1b3e', border: '1px solid #c9a84c33' }} />
-          <MiniMap
-            nodeColor={n => n.data?.elementColor ?? '#c9a84c'}
-            maskColor="rgba(5, 10, 30, 0.7)"
-            style={{ background: '#0d1b3e', border: '1px solid #c9a84c33' }}
-          />
+          <Background color="#1a1040" gap={36} size={1} />
+          <Controls style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
+          <MiniMap nodeColor={n => n.data?.elementColor ?? '#c9a84c'}
+            maskColor="rgba(9,7,26,0.75)"
+            style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
           <Panel position="top-right">
-            <button type="button" className="relayout-btn"
-              onClick={() => { setNodes(prev => applyDagreLayout(prev, edges)); setLayoutTick(t => t + 1) }}
-            >⟳ Re-layout</button>
+            <button type="button" className="relayout-btn" onClick={handleRelayout}>
+              ⟳ Re-layout
+            </button>
           </Panel>
         </ReactFlow>
       </main>
