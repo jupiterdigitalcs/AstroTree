@@ -18,7 +18,7 @@ import AstroNode       from './components/AstroNode.jsx'
 import EditMemberPanel from './components/EditMemberPanel.jsx'
 import ChartsPanel     from './components/ChartsPanel.jsx'
 import InsightsPanel   from './components/InsightsPanel.jsx'
-import { getSunSign, getElement, ELEMENT_COLORS } from './utils/astrology.js'
+import { getSunSign, getElement } from './utils/astrology.js'
 import { applyDagreLayout }                        from './utils/layout.js'
 
 const NODE_TYPES = { astro: AstroNode }
@@ -61,55 +61,6 @@ function FitViewOnLayout({ layoutTick }) {
   return null
 }
 
-// ── Insights teaser + expandable section ──────────────────────────────────────
-function InsightsSection({ nodes, edges }) {
-  const [open, setOpen] = useState(false)
-
-  // Quick summary stats for the teaser
-  const elementCounts = useMemo(() => {
-    const c = { Fire: 0, Earth: 0, Air: 0, Water: 0 }
-    nodes.forEach(n => { if (c[n.data.element] !== undefined) c[n.data.element]++ })
-    return c
-  }, [nodes])
-
-  const dominant = useMemo(() =>
-    ['Fire','Earth','Air','Water'].reduce((a, b) => elementCounts[a] >= elementCounts[b] ? a : b),
-    [elementCounts]
-  )
-
-  const sharedSign = useMemo(() => {
-    const counts = {}
-    nodes.forEach(n => { counts[n.data.sign] = (counts[n.data.sign] || 0) + 1 })
-    const top = Object.entries(counts).find(([, c]) => c > 1)
-    return top ? top[0] : null
-  }, [nodes])
-
-  return (
-    <div className="insights-section">
-      <button
-        type="button"
-        className={`insights-toggle ${open ? 'open' : ''}`}
-        onClick={() => setOpen(o => !o)}
-      >
-        <span className="insights-toggle-label">
-          <span className="insights-star">✦</span> Family Insights
-        </span>
-        <span className="insights-toggle-caret">{open ? '▲' : '▼'}</span>
-      </button>
-
-      {!open && (
-        <div className="insights-teaser">
-          <span style={{ color: ELEMENT_COLORS[dominant] }}>
-            {dominant} energy dominates
-          </span>
-          {sharedSign && <span>· {sharedSign} runs in the family</span>}
-        </div>
-      )}
-
-      {open && <InsightsPanel nodes={nodes} edges={edges} />}
-    </div>
-  )
-}
 
 export default function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState([])
@@ -117,6 +68,7 @@ export default function App() {
   const [counter,        setCounter]        = useState(1)
   const [editingNodeId,  setEditingNodeId]  = useState(null)
   const [chartsOpen,     setChartsOpen]     = useState(false)
+  const [insightsOpen,   setInsightsOpen]   = useState(false)
   const [layoutTick,     setLayoutTick]     = useState(0)
   const [sidebarOpen,    setSidebarOpen]    = useState(true)
   const [exporting,      setExporting]      = useState(false)
@@ -217,12 +169,12 @@ export default function App() {
   // ── Charts ────────────────────────────────────────────────────────────────
   const handleLoadChart = useCallback((chart) => {
     setNodes(chart.nodes); setEdges(chart.edges); setCounter(chart.counter)
-    setEditingNodeId(null); setChartsOpen(false)
+    setEditingNodeId(null); setChartsOpen(false); setInsightsOpen(false)
   }, [setNodes, setEdges])
 
   const handleNewChart = useCallback(() => {
     setNodes([]); setEdges([]); setCounter(1)
-    setEditingNodeId(null); setChartsOpen(false)
+    setEditingNodeId(null); setChartsOpen(false); setInsightsOpen(false)
   }, [setNodes, setEdges])
 
   const handleRelayout = useCallback(() => {
@@ -337,7 +289,6 @@ export default function App() {
   }, [exporting, nodes, edges])
 
   const editingNode = editingNodeId ? nodes.find(n => n.id === editingNodeId) : null
-  const hasInsights = edges.filter(e => e.data?.relationType !== 'spouse').length > 0
 
   return (
     <div className="app">
@@ -390,6 +341,17 @@ export default function App() {
               />
             </>
 
+          /* ── Family Insights ──────────────────────────────────────────── */
+          ) : insightsOpen ? (
+            <>
+              <button
+                type="button"
+                className="back-btn"
+                onClick={() => setInsightsOpen(false)}
+              >← Back to Family</button>
+              <InsightsPanel nodes={nodes} edges={edges} />
+            </>
+
           /* ── Saved charts ─────────────────────────────────────────────── */
           ) : chartsOpen ? (
             <>
@@ -431,15 +393,15 @@ export default function App() {
                     >
                       <span>{n.data.symbol}</span>
                       <span>{n.data.name}</span>
-                      <span className="pill-sign" style={{ color: n.data.elementColor }}>{n.data.sign}</span>
+                      <span className="pill-sign" style={{ color: n.data.elementColor }}>
+                        {n.data.sign}
+                        {n.data.birthdate && (
+                          <span className="pill-year"> · {n.data.birthdate.slice(0, 4)}</span>
+                        )}
+                      </span>
                     </div>
                   ))}
                 </div>
-              )}
-
-              {/* Insights — appears once relationships exist */}
-              {hasInsights && (
-                <InsightsSection nodes={nodes} edges={edges} />
               )}
             </>
           )}
@@ -450,8 +412,18 @@ export default function App() {
           <div className="footer-actions">
             <button
               type="button"
+              className="footer-action-btn footer-action-btn--insights"
+              onClick={() => { setInsightsOpen(o => !o); setEditingNodeId(null); setChartsOpen(false) }}
+              disabled={nodes.length === 0}
+            >
+              {insightsOpen ? '← My Family' : '✦ Family Insights'}
+            </button>
+          </div>
+          <div className="footer-actions footer-actions--secondary">
+            <button
+              type="button"
               className="footer-action-btn"
-              onClick={() => { setChartsOpen(o => !o); setEditingNodeId(null) }}
+              onClick={() => { setChartsOpen(o => !o); setEditingNodeId(null); setInsightsOpen(false) }}
             >
               {chartsOpen ? '← My Family' : '📚 Saved Charts'}
             </button>

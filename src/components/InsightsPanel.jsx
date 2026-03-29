@@ -9,12 +9,25 @@ const ELEMENT_ENERGY = {
   Water: 'intuitive and emotional',
 }
 
+const OPPOSITE_SIGNS = {
+  Aries: 'Libra',       Libra:       'Aries',
+  Taurus: 'Scorpio',    Scorpio:     'Taurus',
+  Gemini: 'Sagittarius',Sagittarius: 'Gemini',
+  Cancer: 'Capricorn',  Capricorn:   'Cancer',
+  Leo:    'Aquarius',   Aquarius:    'Leo',
+  Virgo:  'Pisces',     Pisces:      'Virgo',
+}
+
 function areCompatible(a, b) {
   if (a === b) return true
   return (
     (a === 'Fire'  && b === 'Air'  ) || (a === 'Air'   && b === 'Fire' ) ||
     (a === 'Earth' && b === 'Water') || (a === 'Water'  && b === 'Earth')
   )
+}
+
+function pairKey(a, b) {
+  return [a.id, b.id].sort().join('|')
 }
 
 export default function InsightsPanel({ nodes, edges }) {
@@ -29,7 +42,7 @@ export default function InsightsPanel({ nodes, edges }) {
           <p className="insight-note">🔥 <strong>Elemental makeup</strong> — which elements dominate your family</p>
           <p className="insight-note">♊ <strong>Shared signs</strong> — who carries the same cosmic energy</p>
           <p className="insight-note">💞 <strong>Partner harmony</strong> — elemental compatibility for couples</p>
-          <p className="insight-note">🌿 <strong>Sign inheritance</strong> — signs that pass through generations</p>
+          <p className="insight-note">🔁 <strong>Sign &amp; element threads</strong> — cosmic patterns across generations</p>
         </div>
 
         <div className="insight-card insight-coming-soon">
@@ -69,16 +82,112 @@ export default function InsightsPanel({ nodes, edges }) {
     })
     .filter(Boolean)
 
-  // ── Sign inheritance (parent & child share same sign) ─────────────────────
+  // ── Build child→parents map (shared by both thread features) ─────────────
   const parentChildEdges = edges.filter(e => e.data?.relationType === 'parent-child')
-  const signMatches = parentChildEdges
-    .map(e => {
-      const parent = nodes.find(n => n.id === e.source)
-      const child  = nodes.find(n => n.id === e.target)
-      if (!parent || !child || parent.data.sign !== child.data.sign) return null
-      return { parent, child }
+  const parentMap = {}
+  parentChildEdges.forEach(e => {
+    if (!parentMap[e.target]) parentMap[e.target] = []
+    parentMap[e.target].push(e.source)
+  })
+
+  // Walk ancestors collecting the longest consecutive chain matching a key
+  function getLongestChain(nodeId, keyFn, keyValue, visited = new Set()) {
+    if (visited.has(nodeId)) return []
+    visited.add(nodeId)
+    const node = nodes.find(n => n.id === nodeId)
+    if (!node || keyFn(node) !== keyValue) return []
+    const parents = (parentMap[nodeId] || []).flatMap(
+      pid => getLongestChain(pid, keyFn, keyValue, visited)
+    )
+    return parents.length > 0 ? [...parents, node] : [node]
+  }
+
+  // ── Sign threads (multi-generation same sun sign) ─────────────────────────
+  const signThreads = {}
+  nodes.forEach(n => {
+    const sign = n.data.sign
+    if (signThreads[sign]) return
+    const chain = getLongestChain(n.id, x => x.data.sign, sign, new Set())
+    if (chain.length >= 2) signThreads[sign] = chain
+  })
+
+  // ── Elemental family threads (multi-generation same element) ──────────────
+  const elementThreads = {}
+  ELEMENTS.forEach(el => {
+    let longest = []
+    nodes.forEach(n => {
+      if (n.data.element !== el) return
+      const chain = getLongestChain(n.id, x => x.data.element, el, new Set())
+      if (chain.length >= 2 && chain.length > longest.length) longest = chain
     })
-    .filter(Boolean)
+    if (longest.length >= 2) elementThreads[el] = longest
+  })
+
+  // ── Notable bonds: score every pair, surface the top 5 ───────────────────
+  // Build sibling pairs (share a parent)
+  const childrenByParent = {}
+  parentChildEdges.forEach(e => {
+    if (!childrenByParent[e.source]) childrenByParent[e.source] = []
+    childrenByParent[e.source].push(e.target)
+  })
+  const siblingKeys = new Set()
+  Object.values(childrenByParent).forEach(children => {
+    for (let i = 0; i < children.length; i++)
+      for (let j = i + 1; j < children.length; j++)
+        siblingKeys.add([children[i], children[j]].sort().join('|'))
+  })
+
+  // Build cousin pairs (parents are siblings)
+  const cousinKeys = new Set()
+  ;[...siblingKeys].forEach(sibKey => {
+    const [pA, pB] = sibKey.split('|')
+    ;(childrenByParent[pA] || []).forEach(ca =>
+      (childrenByParent[pB] || []).forEach(cb => {
+        const k = [ca, cb].sort().join('|')
+        if (!siblingKeys.has(k)) cousinKeys.add(k)
+      })
+    )
+  })
+
+  // Pairs already shown in other cards (parent-child, spouse) — skip them
+  const shownKeys = new Set()
+  parentChildEdges.forEach(e => shownKeys.add([e.source, e.target].sort().join('|')))
+  spouseEdges.forEach(e => shownKeys.add([e.source, e.target].sort().join('|')))
+
+  const notableBonds = []
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j]
+      const key = pairKey(a, b)
+      if (shownKeys.has(key)) continue
+
+      const sameSign   = a.data.sign === b.data.sign
+      const isOpposite = OPPOSITE_SIGNS[a.data.sign] === b.data.sign
+      const compatElem = areCompatible(a.data.element, b.data.element)
+      const isSibling  = siblingKeys.has(key)
+      const isCousin   = cousinKeys.has(key)
+
+      let score = 0
+      let note  = ''
+
+      if (sameSign) {
+        score = 10
+        note  = `Both ${a.data.symbol} ${a.data.sign} — cosmic twins`
+      } else if (isOpposite) {
+        score = 8
+        note  = `${a.data.symbol} ${a.data.sign} & ${b.data.symbol} ${b.data.sign} — mirror signs`
+      } else if (compatElem && (isSibling || isCousin)) {
+        score = 5
+        note  = `${a.data.element} & ${b.data.element} — natural flow`
+      }
+
+      if (score === 0) continue
+      const rel = isSibling ? 'siblings' : isCousin ? 'cousins' : ''
+      notableBonds.push({ a, b, score, note, rel })
+    }
+  }
+  notableBonds.sort((x, y) => y.score - x.score)
+  const topBonds = notableBonds.slice(0, 5)
 
   return (
     <div className="insights-panel">
@@ -141,16 +250,57 @@ export default function InsightsPanel({ nodes, edges }) {
         </div>
       )}
 
-      {/* ── Sign inheritance ────────────────────────────────────────────── */}
-      {signMatches.length > 0 && (
+      {/* ── Sign threads ────────────────────────────────────────────────── */}
+      {Object.keys(signThreads).length > 0 && (
         <div className="insight-card">
-          <h3 className="insight-heading">Sun Sign Inheritance</h3>
-          {signMatches.map(({ parent, child }, i) => (
-            <p key={i} className="insight-note">
-              {parent.data.symbol} {parent.data.name} passed their{' '}
-              <strong>{parent.data.sign}</strong> energy to {child.data.name}
+          <h3 className="insight-heading">Sign Threads</h3>
+          {Object.entries(signThreads).map(([sign, chain]) => {
+            const symbol = chain[0].data.symbol
+            return (
+              <p key={sign} className="insight-note">
+                <strong>{symbol} {sign}</strong> runs through{' '}
+                {chain.length === 2 ? '2 generations' : `${chain.length} generations`}:{' '}
+                {chain.map(n => n.data.name).join(' → ')}
+              </p>
+            )
+          })}
+        </div>
+      )}
+
+      {/* ── Elemental threads ───────────────────────────────────────────── */}
+      {Object.keys(elementThreads).length > 0 && (
+        <div className="insight-card">
+          <h3 className="insight-heading">Elemental Family Threads</h3>
+          {Object.entries(elementThreads).map(([el, chain]) => (
+            <p key={el} className="insight-note">
+              <span style={{ color: ELEMENT_COLORS[el] }}>
+                {el === 'Fire' ? '🔥' : el === 'Earth' ? '🌿' : el === 'Air' ? '💨' : '💧'}{' '}
+                <strong>{el}</strong>
+              </span>
+              {' '}flows through {chain.length} generations:{' '}
+              <strong>{chain.map(n => n.data.name).join(' → ')}</strong>
             </p>
           ))}
+        </div>
+      )}
+
+      {/* ── Notable bonds ───────────────────────────────────────────────── */}
+      {topBonds.length > 0 && (
+        <div className="insight-card">
+          <h3 className="insight-heading">Notable Bonds</h3>
+          {topBonds.map(({ a, b, note, rel }) => {
+            const color = note.includes('twins') ? 'var(--gold)'
+              : note.includes('mirror') ? 'var(--rose)' : '#7ec845'
+            return (
+              <div key={pairKey(a, b)} className="insight-couple">
+                <p className="insight-note">
+                  <strong>{a.data.name}</strong> &amp; <strong>{b.data.name}</strong>
+                  {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> — {rel}</span>}
+                </p>
+                <p className="insight-compat" style={{ color }}>{note}</p>
+              </div>
+            )
+          })}
         </div>
       )}
 

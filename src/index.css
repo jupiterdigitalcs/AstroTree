@@ -559,6 +559,11 @@ body {
   letter-spacing: 0.04em;
 }
 
+.pill-year {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
 /* ──────────────────────────────── Canvas ────────────────────────────────── */
 .canvas {
   flex: 1;
@@ -1130,6 +1135,28 @@ body {
   background: rgba(201,168,76,0.1);
   border-color: var(--gold);
   color: var(--gold-light);
+}
+
+.footer-action-btn--insights {
+  background: linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(140,80,200,0.1) 100%);
+  border-color: var(--gold);
+  color: var(--gold-light);
+  font-family: 'Cinzel', serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  padding: 0.6rem 0.4rem;
+  box-shadow: 0 0 14px rgba(201,168,76,0.12);
+}
+
+.footer-action-btn--insights:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(201,168,76,0.2) 0%, rgba(140,80,200,0.15) 100%);
+  border-color: var(--gold-light);
+  color: #fff;
+  box-shadow: 0 0 22px rgba(201,168,76,0.22);
+}
+
+.footer-actions--secondary {
+  margin-top: 0.3rem;
 }
 
 .footer-action-btn:disabled { opacity: 0.35; cursor: default; }
