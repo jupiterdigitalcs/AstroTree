@@ -9,9 +9,23 @@ export function applyDagreLayout(nodes, edges) {
   g.setGraph({ rankdir: 'TB', ranksep: 100, nodesep: 60 })
 
   nodes.forEach(node => g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT }))
-  edges.forEach(edge => {
-    // Spouse edges are peer relationships — exclude from hierarchy
-    if (edge.data?.relationType !== 'spouse') g.setEdge(edge.source, edge.target)
+
+  // Group parent→child edges by source and sort each group by child birthdate
+  // so siblings render oldest-to-youngest left-to-right in dagre
+  const parentChildEdges = edges.filter(e => e.data?.relationType !== 'spouse')
+  const byParent = {}
+  parentChildEdges.forEach(e => {
+    if (!byParent[e.source]) byParent[e.source] = []
+    byParent[e.source].push(e)
+  })
+  Object.values(byParent).forEach(group => {
+    group
+      .sort((a, b) => {
+        const na = nodes.find(n => n.id === a.target)
+        const nb = nodes.find(n => n.id === b.target)
+        return (na?.data?.birthdate ?? '') < (nb?.data?.birthdate ?? '') ? -1 : 1
+      })
+      .forEach(e => g.setEdge(e.source, e.target))
   })
 
   dagre.layout(g)

@@ -62,6 +62,19 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden; /* footer sticks to bottom */
+  transition: transform 0.3s ease;
+}
+
+/* Drag pill shown on mobile */
+.sidebar-drag-handle {
+  display: none;
+  width: 36px;
+  height: 4px;
+  background: var(--gold-dim);
+  border-radius: 2px;
+  margin: 0.5rem auto 0;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 /* ── Brand header ─────────────────────────────────────────────────────────── */
@@ -159,22 +172,24 @@ body {
 
 .social-links {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.2rem;
 }
 
 .social-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.25rem;
   color: var(--text-muted);
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-  padding: 0.3rem 0.5rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.03em;
+  padding: 0.25rem 0.4rem;
   border-radius: 5px;
   text-decoration: none;
   transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
 }
 
 .social-link:hover {
@@ -828,4 +843,157 @@ body {
 .relayout-btn:hover {
   background: rgba(201,168,76,0.12);
   border-color: var(--gold);
+}
+
+/* ──────────────────────────── Insights panel ────────────────────────────── */
+.insights-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.insight-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--gold-dim);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.insight-heading {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  margin-bottom: 0.1rem;
+}
+
+.insight-note {
+  font-size: 0.82rem;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.insight-note strong { color: var(--text); }
+
+.insight-couple {
+  border-top: 1px solid var(--navy-light);
+  padding-top: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.insight-couple:first-of-type { border-top: none; padding-top: 0; }
+
+.insight-compat {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.element-bar-row {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr 1.2rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.element-bar-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.element-bar-track {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.element-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+
+.element-bar-count {
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+.insight-coming-soon {
+  border-color: rgba(201,168,76,0.2);
+  background: rgba(201,168,76,0.03);
+}
+
+/* ─────────────────────── Mobile sidebar toggle btn ─────────────────────── */
+.sidebar-toggle-btn {
+  display: none;
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: var(--navy-mid);
+  border: 1px solid var(--gold-dim);
+  border-radius: 20px;
+  color: var(--gold);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  padding: 0.55rem 1.2rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.sidebar-toggle-btn:hover { background: var(--navy-light); }
+
+/* ─────────────────────────── Responsive layout ──────────────────────────── */
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 78vh;
+    border-right: none;
+    border-top: 1px solid var(--gold-dim);
+    border-radius: 16px 16px 0 0;
+    transform: translateY(100%);
+    z-index: 100;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.6);
+  }
+
+  .sidebar.open {
+    transform: translateY(0);
+  }
+
+  .sidebar-drag-handle { display: block; }
+
+  .canvas {
+    width: 100%;
+    height: 100vh;
+  }
+
+  .sidebar-toggle-btn { display: block; }
+
+  /* Shrink mode tabs to 4 compact items */
+  .mode-tab { font-size: 0.7rem; padding: 0.4rem 0; }
+
+  /* Astro nodes a touch smaller on mobile */
+  .astro-node { min-width: 130px; padding: 0.75rem 0.85rem; }
+  .node-symbol { font-size: 1.6rem; }
+  .node-name   { font-size: 0.88rem; }
 }
