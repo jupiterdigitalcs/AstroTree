@@ -4,9 +4,11 @@ import {
   Background,
   Controls,
   MiniMap,
+  Panel,
   addEdge,
   useNodesState,
   useEdgesState,
+  useReactFlow,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
@@ -14,6 +16,7 @@ import AddMemberForm   from './components/AddMemberForm.jsx'
 import BulkAddForm     from './components/BulkAddForm.jsx'
 import AstroNode       from './components/AstroNode.jsx'
 import EditMemberPanel from './components/EditMemberPanel.jsx'
+import ChartsPanel     from './components/ChartsPanel.jsx'
 import { getSunSign, getElement } from './utils/astrology.js'
 import { applyDagreLayout }       from './utils/layout.js'
 
@@ -41,21 +44,36 @@ function buildNodeData(member) {
 }
 
 // ── Social link icons ─────────────────────────────────────────────────────────
-function IgIcon()    { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> }
-function MailIcon()  { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> }
-function EtsyIcon()  { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> }
+function IgIcon()      { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> }
+function MailIcon()    { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> }
+function EtsyIcon()    { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> }
+function XIcon()       { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg> }
+function TikTokIcon()  { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/></svg> }
+
+// ── Auto-fitView after layout ─────────────────────────────────────────────────
+function FitViewOnLayout({ layoutTick }) {
+  const { fitView } = useReactFlow()
+  useEffect(() => {
+    if (layoutTick === 0) return
+    const t = setTimeout(() => fitView({ padding: 0.3, duration: 400 }), 60)
+    return () => clearTimeout(t)
+  }, [layoutTick, fitView])
+  return null
+}
 
 export default function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const [counter,        setCounter]        = useState(1)
   const [selectedNodeId, setSelectedNodeId] = useState(null)
-  const [mode,           setMode]           = useState('add') // 'add' | 'bulk'
+  const [mode,           setMode]           = useState('add') // 'add' | 'bulk' | 'charts'
+  const [layoutTick,     setLayoutTick]     = useState(0)
 
   // ── Auto-layout on edge changes OR node count changes (bulk add) ──────────
   useEffect(() => {
     if (nodes.length === 0) return
     setNodes(prev => applyDagreLayout(prev, edges))
+    setLayoutTick(t => t + 1)
   }, [edges, nodes.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Add single ───────────────────────────────────────────────────────────
@@ -136,6 +154,23 @@ export default function App() {
     [setEdges],
   )
 
+  // ── Charts: load / new ───────────────────────────────────────────────────
+  const handleLoadChart = useCallback((chart) => {
+    setNodes(chart.nodes)
+    setEdges(chart.edges)
+    setCounter(chart.counter)
+    setSelectedNodeId(null)
+    setMode('add')
+  }, [setNodes, setEdges])
+
+  const handleNewChart = useCallback(() => {
+    setNodes([])
+    setEdges([])
+    setCounter(1)
+    setSelectedNodeId(null)
+    setMode('add')
+  }, [setNodes, setEdges])
+
   const selectedNode = selectedNodeId ? nodes.find(n => n.id === selectedNodeId) : null
 
   return (
@@ -155,7 +190,6 @@ export default function App() {
         {/* ── Brand header ────────────────────────────────────────────── */}
         <div className="brand-header">
           <div className="brand-logo">
-            {/* Replace with <img src="/logo.png" alt="Jupiter Digital" /> for your actual logo */}
             🪐
           </div>
           <div className="brand-text">
@@ -180,6 +214,11 @@ export default function App() {
                 className={`mode-tab ${mode === 'bulk' ? 'active' : ''}`}
                 onClick={() => setMode('bulk')}
               >Bulk Add</button>
+              <button
+                type="button"
+                className={`mode-tab ${mode === 'charts' ? 'active' : ''}`}
+                onClick={() => setMode('charts')}
+              >My Charts</button>
             </div>
           )}
 
@@ -198,6 +237,14 @@ export default function App() {
             />
           ) : mode === 'bulk' ? (
             <BulkAddForm onBulkAdd={handleBulkAdd} onCancel={() => setMode('add')} />
+          ) : mode === 'charts' ? (
+            <ChartsPanel
+              nodes={nodes}
+              edges={edges}
+              counter={counter}
+              onLoad={handleLoadChart}
+              onNew={handleNewChart}
+            />
           ) : (
             <AddMemberForm onAdd={handleAdd} existingNodes={nodes} />
           )}
@@ -225,10 +272,17 @@ export default function App() {
         {/* ── Footer / social links ────────────────────────────────────── */}
         <footer className="sidebar-footer">
           <div className="social-links">
-            {/* TODO: replace href values with your actual links */}
             <a href="https://instagram.com/jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
               <IgIcon />
               <span>Instagram</span>
+            </a>
+            <a href="https://www.tiktok.com/@jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+              <TikTokIcon />
+              <span>TikTok</span>
+            </a>
+            <a href="https://x.com/jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
+              <XIcon />
+              <span>X</span>
             </a>
             <a href="https://etsy.com/shop/jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" aria-label="Etsy">
               <EtsyIcon />
@@ -263,6 +317,7 @@ export default function App() {
           colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >
+          <FitViewOnLayout layoutTick={layoutTick} />
           <Background color="#1e2a4a" gap={32} size={1} />
           <Controls style={{ background: '#0d1b3e', border: '1px solid #c9a84c33' }} />
           <MiniMap
@@ -270,6 +325,16 @@ export default function App() {
             maskColor="rgba(5, 10, 30, 0.7)"
             style={{ background: '#0d1b3e', border: '1px solid #c9a84c33' }}
           />
+          <Panel position="top-right">
+            <button
+              type="button"
+              className="relayout-btn"
+              onClick={() => {
+                setNodes(prev => applyDagreLayout(prev, edges))
+                setLayoutTick(t => t + 1)
+              }}
+            >⟳ Re-layout</button>
+          </Panel>
         </ReactFlow>
       </main>
     </div>
