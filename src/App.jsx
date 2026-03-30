@@ -17,6 +17,7 @@ import AstroNode       from './components/AstroNode.jsx'
 import EditMemberPanel from './components/EditMemberPanel.jsx'
 import ChartsPanel     from './components/ChartsPanel.jsx'
 import InsightsPanel   from './components/InsightsPanel.jsx'
+import AboutPanel      from './components/AboutPanel.jsx'
 import { getSunSign, getElement } from './utils/astrology.js'
 import { applyDagreLayout }      from './utils/layout.js'
 import { saveDraft, loadDraft }  from './utils/storage.js'
@@ -43,12 +44,6 @@ function buildNodeData(member) {
   return { name: member.name, birthdate: member.birthdate, sign, symbol, element, elementColor: color }
 }
 
-// ── Social icons ──────────────────────────────────────────────────────────────
-function IgIcon()     { return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> }
-function MailIcon()   { return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> }
-function EtsyIcon()   { return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> }
-function XIcon()      { return <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg> }
-function TikTokIcon() { return <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/></svg> }
 
 // ── Auto-fitView after layout ─────────────────────────────────────────────────
 function FitViewOnLayout({ layoutTick }) {
@@ -67,8 +62,9 @@ export default function App() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const [counter,           setCounter]           = useState(1)
   const [editingNodeId,     setEditingNodeId]     = useState(null)
-  // 'tree' | 'add' | 'insights' | 'charts'
+  // 'tree' | 'add' | 'insights' | 'charts' | 'about'
   const [activeTab,         setActiveTab]         = useState('add')
+  const [showAddMore,       setShowAddMore]       = useState(false)
   const [showConnectPrompt, setShowConnectPrompt] = useState(false)
   const [layoutTick,        setLayoutTick]        = useState(0)
   const [exporting,         setExporting]         = useState(false)
@@ -141,10 +137,9 @@ export default function App() {
     setNodes(prev => [...prev, ...newNodes])
     setEdges(prev => [...prev, ...newEdges])
     setCounter(c => c + members.length)
-    // Always switch to the tree so users see their new members
     setActiveTab('tree')
     setEditingNodeId(null)
-    // Show connect prompt on first add so users know the next step
+    setShowAddMore(false)
     if (wasEmpty) setShowConnectPrompt(true)
   }
 
@@ -237,11 +232,22 @@ export default function App() {
     }
 
     setExporting(true)
+    // Show brand watermark on mobile + scale it up for the exported image
+    const brand = el.querySelector('.canvas-brand')
+    if (isMobile && brand) brand.style.display = 'flex'
+    el.classList.add('exporting')
     try {
       const dataUrl = await toPng(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
-        filter: node => !node.classList?.contains('react-flow__background'),
+        filter: node => {
+          const c = node.classList
+          if (!c) return true
+          if (c.contains('react-flow__background')) return false
+          if (c.contains('react-flow__controls'))   return false
+          if (c.contains('canvas-panel-btns'))      return false
+          return true
+        },
       })
 
       // Mobile: use native share sheet (saves to Photos, AirDrop, etc.)
@@ -298,7 +304,7 @@ export default function App() {
         <div style="padding:28px 32px;font-family:'Cinzel',serif;color:#ede6ff;background:#09071a">
           <div style="font-size:11px;letter-spacing:0.3em;color:#c9a84c;text-transform:uppercase;margin-bottom:6px">Jupiter Digital</div>
           <h2 style="font-size:22px;color:#e6c76e;letter-spacing:0.15em;margin-bottom:4px">AstroTree — Family Insights</h2>
-          <p style="font-size:12px;color:#8878aa;letter-spacing:0.08em;margin-bottom:24px">Family Celestial Chart · ${new Date().toLocaleDateString()}</p>
+          <p style="font-size:12px;color:#8878aa;letter-spacing:0.08em;margin-bottom:24px">Family Celestial Tree · ${new Date().toLocaleDateString()}</p>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
 
@@ -356,6 +362,8 @@ export default function App() {
       if (win) win.close()
       setExportError('Export failed — please try again.')
     } finally {
+      el.classList.remove('exporting')
+      if (isMobile && brand) brand.style.display = ''
       setExporting(false)
     }
   }, [exporting, nodes, edges])
@@ -412,7 +420,7 @@ export default function App() {
           <div className="brand-text">
             <p className="brand-name">Jupiter Digital</p>
             <h1 className="brand-app">AstroTree</h1>
-            <p className="brand-sub">Family Celestial Chart</p>
+            <p className="brand-sub">Family Celestial Tree</p>
           </div>
         </div>
 
@@ -421,7 +429,7 @@ export default function App() {
           <button
             className={`sidebar-tab${activeTab === 'add' && !editingNode ? ' active' : ''}`}
             onClick={() => goTab('add')}
-          >＋ Add</button>
+          >★ Family</button>
           <button
             className={`sidebar-tab${activeTab === 'insights' && !editingNode ? ' active' : ''}`}
             onClick={() => goTab('insights')}
@@ -430,7 +438,11 @@ export default function App() {
           <button
             className={`sidebar-tab${activeTab === 'charts' && !editingNode ? ' active' : ''}`}
             onClick={() => goTab('charts')}
-          >📚 Charts</button>
+          >🗂️ Saved</button>
+          <button
+            className={`sidebar-tab${activeTab === 'about' && !editingNode ? ' active' : ''}`}
+            onClick={() => goTab('about')}
+          >🪐 About</button>
         </div>
 
         {/* ── Scrollable content ──────────────────────────────────────── */}
@@ -468,39 +480,57 @@ export default function App() {
               onLoad={handleLoadChart} onNew={handleNewChart}
             />
 
-          /* ── Add tab ────────────────────────────────────────────────── */
+          /* ── About ──────────────────────────────────────────────────── */
+          ) : activeTab === 'about' ? (
+            <AboutPanel />
+
+          /* ── Family tab ─────────────────────────────────────────────── */
           ) : (
             <>
-              {nodes.length === 0 && (
-                <div className="start-hint">
-                  <p>Add family members below — enter a name and birthday to reveal their sun sign.</p>
-                </div>
-              )}
-
-              <AddMembersForm onAdd={handleAdd} />
-
-              {nodes.length > 0 && (
-                <div className="member-list">
-                  <div className="member-list-header">
-                    <h3>Your Family · {nodes.length}</h3>
-                    <span className="member-list-hint">tap to connect &amp; edit</span>
+              {nodes.length === 0 ? (
+                <>
+                  <div className="start-hint">
+                    <p>Add family members below — enter a name and birthday to reveal their sun sign.</p>
                   </div>
-                  {nodes.map(n => (
-                    <div key={n.id} className="member-pill"
-                      style={{ borderColor: `${n.data.elementColor}44`, cursor: 'pointer' }}
-                      onClick={() => setEditingNodeId(n.id)}
-                    >
-                      <span>{n.data.symbol}</span>
-                      <span>{n.data.name}</span>
-                      <span className="pill-sign" style={{ color: n.data.elementColor }}>
-                        {n.data.sign}
-                        {n.data.birthdate && (
-                          <span className="pill-year"> · {n.data.birthdate.slice(0, 4)}</span>
-                        )}
-                      </span>
+                  <AddMembersForm onAdd={handleAdd} />
+                </>
+              ) : (
+                <>
+                  {/* Member list */}
+                  <div className="member-list">
+                    <div className="member-list-header">
+                      <h3>Your Family · {nodes.length}</h3>
+                      <span className="member-list-hint">tap a name to connect</span>
                     </div>
-                  ))}
-                </div>
+                    {nodes.map(n => (
+                      <div key={n.id} className="member-pill"
+                        style={{ borderColor: `${n.data.elementColor}44`, cursor: 'pointer' }}
+                        onClick={() => setEditingNodeId(n.id)}
+                      >
+                        <span>{n.data.symbol}</span>
+                        <span>{n.data.name}</span>
+                        <span className="pill-sign" style={{ color: n.data.elementColor }}>
+                          {n.data.sign}
+                          {n.data.birthdate && (
+                            <span className="pill-year"> · {n.data.birthdate.slice(0, 4)}</span>
+                          )}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Collapsible add more */}
+                  <div className="add-more-section">
+                    <button
+                      type="button"
+                      className="add-more-toggle"
+                      onClick={() => setShowAddMore(o => !o)}
+                    >
+                      {showAddMore ? '▲ Hide' : '＋ Add more people'}
+                    </button>
+                    {showAddMore && <AddMembersForm onAdd={handleAdd} />}
+                  </div>
+                </>
               )}
             </>
           )}
@@ -508,6 +538,17 @@ export default function App() {
 
         {/* ── Footer ──────────────────────────────────────────────────── */}
         <footer className="sidebar-footer">
+          {nodes.length > 0 && activeTab !== 'charts' && !editingNode && (
+            <div className="footer-actions">
+              <button
+                type="button"
+                className="footer-action-btn"
+                onClick={() => goTab('charts')}
+              >
+                🗂️ Save Tree
+              </button>
+            </div>
+          )}
           <div className="footer-actions footer-actions--secondary">
             {activeTab === 'insights' && !editingNode ? (
               <button
@@ -525,20 +566,18 @@ export default function App() {
                 onClick={handleExport}
                 disabled={exporting || nodes.length === 0}
               >
-                {exporting ? 'Generating…' : window.innerWidth <= 768 ? '📤 Share / Save Chart' : '🖨 Print or Save PDF'}
+                {exporting ? 'Generating…' : window.innerWidth <= 768 ? '📤 Share / Save Tree' : '🖨 Print or Save PDF'}
               </button>
             )}
           </div>
           {exportError && (
             <p className="export-error">{exportError}</p>
           )}
-          <div className="social-links">
-            <a href="https://instagram.com/jupreturn" className="social-link" target="_blank" rel="noopener noreferrer" title="Instagram"><IgIcon /><span>@jupreturn</span></a>
-            <a href="https://www.tiktok.com/@jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" title="TikTok"><TikTokIcon /><span></span></a>
-            <a href="https://x.com/jupiter_dig" className="social-link" target="_blank" rel="noopener noreferrer" title="X"><XIcon /><span></span></a>
-            <a href="https://etsy.com/shop/jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" title="Etsy"><EtsyIcon /><span>Jupiter Digital</span></a>
-            <a className="social-link" title="Email"><MailIcon /><span>jupreturns@gmail.com</span></a>
-          </div>
+          <p className="footer-brand-credit">
+            🪐 <strong>Jupiter Digital</strong>
+            {' · '}
+            <button type="button" className="footer-about-link" onClick={() => goTab('about')}>About</button>
+          </p>
         </footer>
       </aside>
 
@@ -548,8 +587,8 @@ export default function App() {
           className={`bottom-tab${activeTab === 'add' && !editingNodeId ? ' active' : ''}`}
           onClick={() => goTab('add')}
         >
-          <span className="bottom-tab-icon">＋</span>
-          <span className="bottom-tab-label">Add</span>
+          <span className="bottom-tab-icon">★</span>
+          <span className="bottom-tab-label">Family</span>
         </button>
         <button
           className={`bottom-tab${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
@@ -571,7 +610,14 @@ export default function App() {
           onClick={() => goTab('charts')}
         >
           <span className="bottom-tab-icon">📚</span>
-          <span className="bottom-tab-label">Charts</span>
+          <span className="bottom-tab-label">Saved</span>
+        </button>
+        <button
+          className={`bottom-tab${activeTab === 'about' && !editingNodeId ? ' active' : ''}`}
+          onClick={() => goTab('about')}
+        >
+          <span className="bottom-tab-icon">🪐</span>
+          <span className="bottom-tab-label">About</span>
         </button>
       </nav>
 
@@ -593,7 +639,7 @@ export default function App() {
               </div>
               <button type="button" className="welcome-cta"
                 onClick={() => goTab('add')}>
-                Begin Charting →
+                Begin Your Tree →
               </button>
               <p className="welcome-mobile-hint">Tap <strong>＋ Add</strong> below to start</p>
             </div>
@@ -603,13 +649,13 @@ export default function App() {
         {/* ── Connect prompt — shown after first add ───────────────────── */}
         {showConnectPrompt && edges.length === 0 && nodes.length > 0 && (
           <div className="connect-prompt">
-            <span>✦ Tap any card on the tree to connect your family as parents, children, or partners</span>
+            <span className="connect-prompt-icon">🔗</span>
+            <span>Tap any card on the tree to connect your family members as parents, children, or partners</span>
             <button
               type="button"
               className="connect-prompt-close"
               onClick={() => setShowConnectPrompt(false)}
-              aria-label="Dismiss"
-            >✕</button>
+            >Got it</button>
           </div>
         )}
 
@@ -638,9 +684,20 @@ export default function App() {
                   ✦ Insights
                 </button>
               )}
-              <button type="button" className="relayout-btn" onClick={handleRelayout}>
-                ⟳ Re-layout
-              </button>
+              {nodes.length > 0 && (
+                <button
+                  type="button"
+                  className="relayout-btn relayout-btn--save"
+                  onClick={() => goTab('charts')}
+                >
+                  🗂️ Save
+                </button>
+              )}
+              {nodes.length > 0 && (
+                <button type="button" className="relayout-btn" onClick={handleRelayout}>
+                  ⟳ Re-layout
+                </button>
+              )}
             </div>
           </Panel>
 

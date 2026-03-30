@@ -5,7 +5,9 @@
       "WebFetch(domain:www.etsy.com)",
       "WebFetch(domain:www.instagram.com)",
       "Bash(npx vite:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(npm pkg:*)"
     ]
   }
 }

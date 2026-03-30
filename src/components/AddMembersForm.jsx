@@ -41,15 +41,20 @@ export default function AddMembersForm({ onAdd }) {
     setError('')
   }
 
-  const validCount = rows.filter(r => r.name.trim() && r.birthdate).length
+  const validCount   = rows.filter(r => r.name.trim() && r.birthdate).length
+  const namedNoDate  = rows.filter(r => r.name.trim() && !r.birthdate).length
 
   return (
     <form className="add-form" onSubmit={handleSubmit}>
       <h2 className="form-title">Add Family Members</h2>
 
       <div className="member-rows">
-        {rows.map((row, idx) => (
-          <div key={row.id} className="member-row multi">
+        {rows.map((row, idx) => {
+          const hasName = row.name.trim().length > 0
+          const hasDate = row.birthdate.length > 0
+          const rowReady = hasName && hasDate
+          return (
+          <div key={row.id} className={`member-row multi${rowReady ? ' row-ready' : ''}`}>
             <span className="row-num">{idx + 1}</span>
 
             <input
@@ -75,7 +80,8 @@ export default function AddMembersForm({ onAdd }) {
               aria-label="Remove"
             >×</button>
           </div>
-        ))}
+          )
+        })}
       </div>
 
 
@@ -83,6 +89,11 @@ export default function AddMembersForm({ onAdd }) {
         + Add another person
       </button>
 
+      {namedNoDate > 0 && (
+        <p className="form-warning">
+          ⚠ {namedNoDate} {namedNoDate === 1 ? 'person needs' : 'people need'} a birthday date to be added
+        </p>
+      )}
       {error && <p className="form-error">{error}</p>}
 
       <button type="submit" className="add-btn" disabled={!validCount}>

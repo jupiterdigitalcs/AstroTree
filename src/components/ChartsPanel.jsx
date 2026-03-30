@@ -27,13 +27,13 @@ export default function ChartsPanel({ nodes, edges, counter, onLoad, onNew }) {
 
   return (
     <div className="charts-panel">
-      <h2 className="form-title">✦ My Charts</h2>
+      <h2 className="form-title">✦ My Trees</h2>
 
       <form className="chart-save-form" onSubmit={handleSave}>
         <input
           type="text"
           className="chart-title-input"
-          placeholder="Chart title…"
+          placeholder="Tree name…"
           value={title}
           onChange={e => setTitle(e.target.value)}
         />
@@ -48,7 +48,7 @@ export default function ChartsPanel({ nodes, edges, counter, onLoad, onNew }) {
         <p className="bulk-hint">Add members to the tree first, then save.</p>
       )}
 
-      <button type="button" className="add-row-btn" onClick={onNew}>+ New Chart</button>
+      <button type="button" className="add-row-btn" onClick={onNew}>+ New Tree</button>
 
       {charts.length > 0 ? (
         <div className="charts-list">
@@ -68,7 +68,7 @@ export default function ChartsPanel({ nodes, edges, counter, onLoad, onNew }) {
           ))}
         </div>
       ) : (
-        <p className="bulk-hint">No saved charts yet.</p>
+        <p className="bulk-hint">No saved trees yet.</p>
       )}
     </div>
   )

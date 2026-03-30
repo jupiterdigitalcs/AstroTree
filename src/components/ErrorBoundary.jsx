@@ -24,7 +24,7 @@ export class ErrorBoundary extends Component {
             Something went wrong
           </h2>
           <p style={{ color: '#8878aa', fontSize: '0.875rem', marginBottom: '1.5rem', maxWidth: '28rem' }}>
-            An unexpected error occurred. Your saved charts are safe in localStorage.
+            An unexpected error occurred. Your saved trees are safe in localStorage.
           </p>
           <button
             onClick={() => this.setState({ error: null })}
