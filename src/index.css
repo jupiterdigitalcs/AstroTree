@@ -925,6 +925,8 @@ body {
   z-index: 2;
   display: flex;
   align-items: center;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   justify-content: center;
   background: radial-gradient(ellipse at 50% 38%,
     rgba(30,15,60,0.82) 0%,
@@ -1254,7 +1256,7 @@ body {
   .canvas {
     width: 100%;
     height: calc(100dvh - 60px - env(safe-area-inset-bottom));
-    margin-bottom: calc(60px + env(safe-area-inset-bottom));
+    overflow: hidden;
   }
 
   /* Bottom tab bar visible on mobile */

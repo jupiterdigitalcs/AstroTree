@@ -238,7 +238,11 @@ export default function App() {
 
     setExporting(true)
     try {
-      const dataUrl = await toPng(el, { backgroundColor: '#09071a', pixelRatio: isMobile ? 1.5 : 2 })
+      const dataUrl = await toPng(el, {
+        backgroundColor: '#09071a',
+        pixelRatio: 2,
+        filter: node => !node.classList?.contains('react-flow__background'),
+      })
 
       // Mobile: use native share sheet (saves to Photos, AirDrop, etc.)
       if (isMobile) {
@@ -355,6 +359,32 @@ export default function App() {
       setExporting(false)
     }
   }, [exporting, nodes, edges])
+
+  // ── Export insights as image ─────────────────────────────────────────────
+  const handleExportInsights = useCallback(async () => {
+    const el = document.querySelector('.insights-panel')
+    if (!el || exporting) return
+    setExportError(null)
+    setExporting(true)
+    try {
+      const dataUrl = await toPng(el, { backgroundColor: '#09071a', pixelRatio: 2 })
+      const isMobile = window.innerWidth <= 768
+      const blob = await (await fetch(dataUrl)).blob()
+      const file = new File([blob], 'astrotree-insights.png', { type: 'image/png' })
+      if (isMobile && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Family Insights', text: 'Created with AstroTree by Jupiter Digital' })
+      } else {
+        const link = document.createElement('a')
+        link.download = 'astrotree-insights.png'
+        link.href = dataUrl
+        link.click()
+      }
+    } catch {
+      setExportError('Export failed — please try again.')
+    } finally {
+      setExporting(false)
+    }
+  }, [exporting])
 
   const editingNode = editingNodeId ? nodes.find(n => n.id === editingNodeId) : null
 
@@ -479,14 +509,25 @@ export default function App() {
         {/* ── Footer ──────────────────────────────────────────────────── */}
         <footer className="sidebar-footer">
           <div className="footer-actions footer-actions--secondary">
-            <button
-              type="button"
-              className="footer-action-btn footer-action-btn--gold"
-              onClick={handleExport}
-              disabled={exporting || nodes.length === 0}
-            >
-              {exporting ? 'Generating…' : window.innerWidth <= 768 ? '📤 Share / Save Chart' : '🖨 Print or Save PDF'}
-            </button>
+            {activeTab === 'insights' && !editingNode ? (
+              <button
+                type="button"
+                className="footer-action-btn footer-action-btn--gold"
+                onClick={handleExportInsights}
+                disabled={exporting || nodes.length === 0}
+              >
+                {exporting ? 'Generating…' : '📊 Save Insights as Image'}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="footer-action-btn footer-action-btn--gold"
+                onClick={handleExport}
+                disabled={exporting || nodes.length === 0}
+              >
+                {exporting ? 'Generating…' : window.innerWidth <= 768 ? '📤 Share / Save Chart' : '🖨 Print or Save PDF'}
+              </button>
+            )}
           </div>
           {exportError && (
             <p className="export-error">{exportError}</p>
