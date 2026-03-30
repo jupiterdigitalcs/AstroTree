@@ -110,6 +110,15 @@ body {
   filter: drop-shadow(0 0 12px rgba(201,168,76,0.6));
 }
 
+.brand-logo-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 10px rgba(130, 60, 200, 0.5));
+}
+
 .brand-text { display: flex; flex-direction: column; gap: 0; }
 
 .brand-name {

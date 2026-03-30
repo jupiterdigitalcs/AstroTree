@@ -337,7 +337,7 @@ export default function App() {
 
         {/* Brand */}
         <div className="brand-header">
-          <div className="brand-logo">🪐</div>
+          <img src="/jupDigitalLogo.png" alt="Jupiter Digital" className="brand-logo-img" />
           <div className="brand-text">
             <p className="brand-name">Jupiter Digital</p>
             <h1 className="brand-app">AstroTree</h1>
