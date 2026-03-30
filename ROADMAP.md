@@ -7,70 +7,91 @@ A beautiful, interactive web app where users build a family tree enriched with a
 
 ## MVP 1 — Visual Tree ✅ COMPLETE
 Sun-sign-only family tree builder.
-- Add family member (name, birthdate, role)
-- Auto-calculate sun sign from birthdate
-- Visual tree via React Flow with celestial styling
-- Live updates as members are added
+- Add family members in bulk (name + birthdate)
+- Auto-calculate sun sign + element from birthdate
+- Visual tree via React Flow with celestial dark styling
+- Color-coded nodes by element (Fire / Earth / Air / Water)
+- Parent, child, and spouse/partner edge types
 
 ---
 
-## MVP 2 — Elemental Pattern Layer
-Surface the fire/earth/air/water distribution across the family.
-
-**Features:**
-- Sidebar or banner showing elemental breakdown (e.g. "60% Earth")
-- Color-coded nodes by element
-- Simple insight line: "Your family leans Earth — grounded, practical, and persistent"
-
-**Goal:** First real "aha moment" — feels meaningfully astrological, not just a pretty tree.
+## MVP 2 — Elemental Insights ✅ COMPLETE
+Surface the cosmic patterns woven through the family.
+- Family Insights panel: elemental breakdown bars, shared signs, partner compatibility
+- Generational sign threads and elemental threads
+- Notable bonds: twins, mirror signs, sibling/cousin element pairs
+- Save and load named charts to localStorage
+- PDF export (tree image + insights summary)
 
 ---
 
-## MVP 3 — Full Chart Profiles
-Collect birth time and place, integrate a chart calculation API, show full Big Three.
+## MVP 3 — Production & Shareability
+Make the app stable and shareable beyond beta testers.
+
+**Done:**
+- Autosave draft so refresh never loses work
+- Error boundary with recovery screen
+- Vercel deployment config
+- Export popup blocker fix + visible error feedback
+- Favicon (Jupiter-branded), meta tags, OG tags
+- Mobile canvas height fix (100dvh)
+- Consistent MM/DD/YYYY date input throughout
+- Starfield performance fix
+- Dead CSS cleanup
+
+**Remaining:**
+- Shareable read-only link — someone builds a tree, sends a URL, relatives can view but not edit
+- Sample/demo tree on the welcome screen so new visitors understand what they're building
+- Onboarding tooltip or first-use walkthrough
+
+---
+
+## MVP 4 — Moon Sign & Birth Time
+Add depth for users who know more than just birthdate.
 
 **Features:**
-- Expand form to collect birth time + place
-- Integrate Swiss Ephemeris or similar API (e.g. AstrologyAPI.com)
+- Optional birth time field on add/edit form
+- Calculate Moon sign from birthdate + approximate time (falls back gracefully if time unknown)
+- Nodes optionally show Sun + Moon (e.g. "☉ Scorpio · ☽ Pisces")
+- Moon-sign layer in Family Insights — elemental breakdown for Moon signs
+- Flag nodes where Moon sign is uncertain due to missing birth time
+
+**Goal:** Meaningful upgrade for astrology-literate users without breaking the simple flow for casual ones.
+
+---
+
+## MVP 5 — Full Chart Profiles
+Collect birth time and place, show the full Big Three.
+
+**Features:**
+- Birth time + place inputs (city autocomplete)
+- Integrate a chart calculation API (Swiss Ephemeris or AstrologyAPI.com)
 - Each node shows Sun / Moon / Rising
-- Click a node to expand a mini profile card
-- Handle "birth time unknown" gracefully — fall back to Sun + Moon only
+- Expanded profile card on node click
+- Cross-family Rising sign analysis in Insights
 
-**Goal:** Becomes a real astrology product, not just a sun sign toy.
-
----
-
-## MVP 4 — Pattern Recognition
-Automatically surface repeating themes across the tree.
-
-**Features:**
-- Detect and highlight repeated signs or placements (e.g. "3 family members have Scorpio placements")
-- Detect dominant planets across the family
-- Generation-to-generation comparisons (e.g. Saturn patterns)
-- Shareable insight cards
-
-**Goal:** The feature that creates genuine surprise and social sharing.
+**Goal:** Becomes a real astrology product, not just a sun sign tool.
 
 ---
 
-## MVP 5 — Reports & Monetization
-Exportable PDF family report. First paywalled feature.
+## MVP 6 — Reports & Monetization
+First paywalled feature. Bridges to the existing JupiterDigital Etsy customer base.
 
 **Features:**
-- Beautiful PDF export of the full family tree + insights
+- Premium PDF export — beautifully designed family astrology report (beyond the current print view)
 - Stripe integration for one-time purchase per report
-- Optional: save/share tree via unique URL
-- Branding as JupiterDigital product
+- "Gift a report" flow — natural upsell from birthday calendar customers
+- Branding options (add family name, custom title)
 
-**Goal:** Revenue. Bridges to existing Etsy customer base — natural upsell from birthday calendars.
+**Goal:** Revenue. The export already exists — this is about making it premium and charging for it.
 
 ---
 
-## Future / Backlog
-- User accounts and saved trees (requires backend)
-- Invite family members to add their own data
-- Synastry overlays between family members
-- Mobile-optimized view
-- Etsy integration — import customer birth data directly
-- Rising sign inheritance analysis
-- "Family constellation" narrative report written by AI
+## Backlog / Future Ideas
+- User accounts and cloud-saved trees (requires backend — Supabase is the likely path)
+- Invite family members to add their own birth data via link
+- Synastry overlays between any two family members
+- AI-written narrative report: "Your family's cosmic story" (Claude API)
+- Etsy integration — import customer birth data for a family chart
+- Recurring patterns across generations (e.g. Saturn placements, Venus signs)
+- Notifications / birthday reminders for family members
