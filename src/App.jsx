@@ -223,12 +223,23 @@ export default function App() {
     try {
       const dataUrl = await toPng(el, { backgroundColor: '#09071a', pixelRatio: isMobile ? 1.5 : 2 })
 
-      // Mobile: download PNG directly — no popup needed
+      // Mobile: use native share sheet (saves to Photos, AirDrop, etc.)
       if (isMobile) {
-        const link = document.createElement('a')
-        link.download = 'astrotree-family.png'
-        link.href = dataUrl
-        link.click()
+        const blob = await (await fetch(dataUrl)).blob()
+        const file = new File([blob], 'astrotree-family.png', { type: 'image/png' })
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'My Family Astrology Tree',
+            text: 'Created with AstroTree by Jupiter Digital',
+          })
+        } else {
+          // Fallback for browsers without file sharing
+          const link = document.createElement('a')
+          link.download = 'astrotree-family.png'
+          link.href = dataUrl
+          link.click()
+        }
         return
       }
 
@@ -474,7 +485,7 @@ export default function App() {
               onClick={handleExport}
               disabled={exporting || nodes.length === 0}
             >
-              {exporting ? '…' : window.innerWidth <= 768 ? '⬇ Save Image' : '⬇ Export PDF'}
+              {exporting ? 'Generating…' : window.innerWidth <= 768 ? '📤 Share / Save Chart' : '🖨 Print or Save PDF'}
             </button>
           </div>
           {exportError && (
