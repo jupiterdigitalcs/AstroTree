@@ -320,15 +320,15 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* Starfield */}
+      {/* Starfield — memoised so positions don't re-randomise on every render */}
       <div className="stars" aria-hidden="true">
-        {Array.from({ length: 120 }).map((_, i) => (
+        {useMemo(() => Array.from({ length: 120 }).map((_, i) => (
           <span key={i} className="star" style={{
             left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`,
             width: `${Math.random() * 2 + 1}px`, height: `${Math.random() * 2 + 1}px`,
             animationDelay: `${Math.random() * 4}s`, animationDuration: `${Math.random() * 3 + 2}s`,
           }} />
-        ))}
+        )), [])}
       </div>
 
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}

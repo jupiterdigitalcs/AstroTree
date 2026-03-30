@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { DateInput } from './DateInput.jsx'
 
 export default function EditMemberPanel({
   node,
@@ -68,7 +69,7 @@ export default function EditMemberPanel({
 
       <label>
         Birthdate
-        <input type="date" value={birthdate} onChange={e => setBirthdate(e.target.value)} />
+        <DateInput value={birthdate} onChange={setBirthdate} />
       </label>
 
       {error && <p className="form-error">{error}</p>}

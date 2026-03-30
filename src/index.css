@@ -41,7 +41,7 @@ body {
 /* ────────────────────────────── Layout ──────────────────────────────────── */
 .app {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   position: relative;
 }
 
@@ -153,76 +153,6 @@ body {
 .sidebar-content::-webkit-scrollbar { width: 4px; }
 .sidebar-content::-webkit-scrollbar-track { background: transparent; }
 .sidebar-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-/* ── Nav section ──────────────────────────────────────────────────────────── */
-.nav-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.mode-tabs {
-  display: flex;
-  gap: 0.35rem;
-  background: rgba(0,0,0,0.2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 0.25rem;
-}
-
-.mode-tab {
-  flex: 1;
-  background: transparent;
-  border: none;
-  border-radius: 7px;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-family: 'Raleway', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  padding: 0.45rem 0;
-  transition: background 0.18s, color 0.18s;
-}
-
-.mode-tab.active {
-  background: var(--surface-3);
-  color: var(--gold-light);
-  box-shadow: 0 1px 6px rgba(0,0,0,0.4);
-}
-
-.mode-tab:not(.active):hover {
-  background: rgba(255,255,255,0.05);
-  color: var(--text-soft);
-}
-
-/* Insights — separate result-oriented button */
-.insights-tab-btn {
-  width: 100%;
-  background: linear-gradient(135deg, rgba(201,168,76,0.08) 0%, rgba(160,100,180,0.06) 100%);
-  border: 1px solid var(--border-gold);
-  border-radius: 10px;
-  color: var(--gold);
-  cursor: pointer;
-  font-family: 'Cinzel', serif;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  padding: 0.55rem;
-  transition: background 0.18s, border-color 0.18s;
-  text-align: center;
-}
-
-.insights-tab-btn.active {
-  background: linear-gradient(135deg, rgba(201,168,76,0.18) 0%, rgba(160,100,180,0.1) 100%);
-  border-color: var(--gold);
-  color: var(--gold-light);
-}
-
-.insights-tab-btn:not(.active):hover {
-  background: linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(160,100,180,0.08) 100%);
-  border-color: var(--gold-warm);
-}
 
 /* ── Footer ───────────────────────────────────────────────────────────────── */
 .sidebar-footer {
@@ -498,21 +428,6 @@ body {
   font-style: italic;
 }
 
-/* ────────────────────────── Rel pickers ─────────────────────────────────── */
-.rel-pickers {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  padding-top: 0.15rem;
-  border-top: 1px solid var(--border);
-}
-
-.rel-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
 .parent-select-label {
   font-size: 0.67rem;
   text-transform: uppercase;
@@ -521,38 +436,6 @@ body {
   font-family: 'Raleway', sans-serif;
   font-weight: 500;
 }
-
-.rel-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-
-.rel-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  background: rgba(201,168,76,0.1);
-  border: 1px solid var(--gold-dim);
-  border-radius: 20px;
-  font-size: 0.76rem;
-  padding: 0.18rem 0.5rem 0.18rem 0.4rem;
-  color: var(--text-soft);
-}
-
-.rel-pill button {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 0.9rem;
-  line-height: 1;
-  padding: 0;
-  margin-left: 0.1rem;
-  transition: color 0.15s;
-}
-
-.rel-pill button:hover { color: var(--red); }
 
 .connection-add-row {
   display: flex;
@@ -904,13 +787,6 @@ body {
 }
 
 /* ─────────────────────── Canvas panel button group ─────────────────────── */
-.panel-btns {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  align-items: flex-end;
-}
-
 .canvas-panel-btns {
   display: flex;
   flex-direction: column;
@@ -1293,73 +1169,13 @@ body {
 
 .footer-action-btn:disabled { opacity: 0.35; cursor: default; }
 
-/* ─────────────────────────── Insights section ───────────────────────────── */
-.insights-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  border: 1px solid var(--border-gold);
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: rgba(201,168,76,0.025);
-}
-
-.insights-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0.7rem 1rem;
-  transition: background 0.15s;
-}
-
-.insights-toggle:hover { background: rgba(201,168,76,0.05); }
-
-.insights-toggle.open { border-bottom: 1px solid var(--border-gold); }
-
-.insights-toggle-label {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-family: 'Cinzel', serif;
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  color: var(--gold);
-  text-transform: uppercase;
-}
-
-.insights-star {
-  font-size: 0.6rem;
-  color: var(--gold);
-}
-
-.insights-toggle-caret {
-  font-size: 0.6rem;
-  color: var(--text-muted);
-}
-
-.insights-teaser {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem 0.6rem;
-  padding: 0.45rem 1rem 0.65rem;
-  font-size: 0.76rem;
-  color: var(--text-muted);
-  font-family: 'Raleway', sans-serif;
-}
-
 /* ──────────────────────────── Print / PDF export ────────────────────────── */
-.print-header { display: none; }
 
 @media print {
   * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
   .sidebar, .sidebar-toggle-btn { display: none !important; }
-  .canvas { width: 100vw !important; height: 100vh !important; }
-  .react-flow__controls, .react-flow__minimap, .panel-btns { display: none !important; }
+  .canvas { width: 100vw !important; height: 100dvh !important; }
+  .react-flow__controls, .react-flow__minimap { display: none !important; }
 }
 
 /* ─────────────────────── Mobile sidebar toggle btn ─────────────────────── */
@@ -1425,7 +1241,7 @@ body {
     padding-bottom: max(0.55rem, env(safe-area-inset-bottom));
   }
 
-  .canvas { width: 100%; height: 100vh; }
+  .canvas { width: 100%; height: 100dvh; }
   .sidebar-toggle-btn { display: block; }
 
   /* Push toggle button above home indicator on notched devices */
