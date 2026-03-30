@@ -4,7 +4,6 @@ import {
   ReactFlow,
   Background,
   Controls,
-  MiniMap,
   Panel,
   addEdge,
   useNodesState,
@@ -114,6 +113,8 @@ export default function App() {
     setNodes(prev => [...prev, ...newNodes])
     setEdges(prev => [...prev, ...newEdges])
     setCounter(c => c + members.length)
+    // On mobile, close sidebar after adding so the chart is visible
+    if (window.innerWidth <= 768) setSidebarOpen(false)
   }
 
   // ── Update / delete ───────────────────────────────────────────────────────
@@ -377,14 +378,14 @@ export default function App() {
               )}
 
               {/* Add form — always visible */}
-              <AddMembersForm onAdd={handleAdd} existingNodes={nodes} />
+              <AddMembersForm onAdd={handleAdd} />
 
               {/* Member list */}
               {nodes.length > 0 && (
                 <div className="member-list">
                   <div className="member-list-header">
                     <h3>Your Family · {nodes.length}</h3>
-                    <span className="member-list-hint">tap to edit</span>
+                    <span className="member-list-hint">tap to connect &amp; edit</span>
                   </div>
                   {nodes.map(n => (
                     <div key={n.id} className="member-pill"
@@ -492,13 +493,39 @@ export default function App() {
           <FitViewOnLayout layoutTick={layoutTick} />
           <Background color="#1a1040" gap={36} size={1} />
           <Controls style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
-          <MiniMap nodeColor={n => n.data?.elementColor ?? '#c9a84c'}
-            maskColor="rgba(9,7,26,0.75)"
-            style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
+
+          {/* Top-right: Re-layout + Insights shortcut */}
           <Panel position="top-right">
-            <button type="button" className="relayout-btn" onClick={handleRelayout}>
-              ⟳ Re-layout
-            </button>
+            <div className="canvas-panel-btns">
+              {nodes.length > 0 && (
+                <button
+                  type="button"
+                  className="relayout-btn relayout-btn--insights"
+                  onClick={() => {
+                    setInsightsOpen(true)
+                    setChartsOpen(false)
+                    setEditingNodeId(null)
+                    setSidebarOpen(true)
+                  }}
+                >
+                  ✦ Insights
+                </button>
+              )}
+              <button type="button" className="relayout-btn" onClick={handleRelayout}>
+                ⟳ Re-layout
+              </button>
+            </div>
+          </Panel>
+
+          {/* Bottom-right: Jupiter Digital watermark */}
+          <Panel position="bottom-right">
+            <div className="canvas-brand">
+              <span className="canvas-brand-logo">🪐</span>
+              <div className="canvas-brand-text">
+                <span className="canvas-brand-name">Jupiter Digital</span>
+                <span className="canvas-brand-sub">AstroTree</span>
+              </div>
+            </div>
           </Panel>
         </ReactFlow>
       </main>
