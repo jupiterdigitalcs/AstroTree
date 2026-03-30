@@ -18,7 +18,8 @@ import EditMemberPanel from './components/EditMemberPanel.jsx'
 import ChartsPanel     from './components/ChartsPanel.jsx'
 import InsightsPanel   from './components/InsightsPanel.jsx'
 import { getSunSign, getElement } from './utils/astrology.js'
-import { applyDagreLayout }                        from './utils/layout.js'
+import { applyDagreLayout }      from './utils/layout.js'
+import { saveDraft, loadDraft }  from './utils/storage.js'
 
 const NODE_TYPES = { astro: AstroNode }
 
@@ -71,6 +72,23 @@ export default function App() {
   const [layoutTick,     setLayoutTick]     = useState(0)
   const [sidebarOpen,    setSidebarOpen]    = useState(true)
   const [exporting,      setExporting]      = useState(false)
+  const [exportError,    setExportError]    = useState(null)
+
+  // ── Restore draft on first load ───────────────────────────────────────────
+  useEffect(() => {
+    const draft = loadDraft()
+    if (draft?.nodes?.length > 0) {
+      setNodes(draft.nodes)
+      setEdges(draft.edges)
+      setCounter(draft.counter ?? 1)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Autosave draft on every change (debounced 600ms) ─────────────────────
+  useEffect(() => {
+    const t = setTimeout(() => saveDraft(nodes, edges, counter), 600)
+    return () => clearTimeout(t)
+  }, [nodes, edges, counter])
 
   // ── Layout on edge / node count changes ──────────────────────────────────
   useEffect(() => {
@@ -187,6 +205,16 @@ export default function App() {
   const handleExport = useCallback(async () => {
     const el = document.querySelector('.react-flow')
     if (!el || exporting) return
+    setExportError(null)
+
+    // Open the window synchronously (within user gesture) before any await,
+    // so popup blockers don't interfere.
+    const win = window.open('', '_blank')
+    if (!win) {
+      setExportError('Popup blocked — please allow popups for this site and try again.')
+      return
+    }
+
     setExporting(true)
     try {
       const dataUrl = await toPng(el, { backgroundColor: '#09071a', pixelRatio: 2 })
@@ -265,8 +293,6 @@ export default function App() {
           </div>
         </div>`
 
-      const win = window.open('', '_blank')
-      if (!win) { alert('Please allow popups to export.'); return }
       win.document.write(`<!DOCTYPE html><html><head>
         <title>AstroTree — Jupiter Digital</title>
         <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
@@ -283,7 +309,8 @@ export default function App() {
       </body></html>`)
       win.document.close()
     } catch (err) {
-      console.error('Export error:', err)
+      win.close()
+      setExportError('Export failed — please try again.')
     } finally {
       setExporting(false)
     }
@@ -437,6 +464,9 @@ export default function App() {
               {exporting ? '…' : '⬇ Export PDF'}
             </button>
           </div>
+          {exportError && (
+            <p className="export-error">{exportError}</p>
+          )}
           <div className="social-links">
             <a href="https://instagram.com/jupreturns" className="social-link" target="_blank" rel="noopener noreferrer" title="Instagram"><IgIcon /><span>@jupreturn</span></a>
             <a href="https://www.tiktok.com/@jupiterdigital" className="social-link" target="_blank" rel="noopener noreferrer" title="TikTok"><TikTokIcon /><span>TikTok</span></a>

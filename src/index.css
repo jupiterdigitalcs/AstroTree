@@ -1453,3 +1453,11 @@ body {
   .canvas-brand { display: none; }
   .relayout-btn--insights { display: none; }
 }
+
+.export-error {
+  font-size: 0.72rem;
+  color: #e07070;
+  text-align: center;
+  padding: 0 0.5rem 0.25rem;
+  line-height: 1.4;
+}
