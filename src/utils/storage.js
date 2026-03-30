@@ -17,8 +17,8 @@ export function deleteChart(id) {
   localStorage.setItem(KEY, JSON.stringify(loadCharts().filter(c => c.id !== id)))
 }
 
-export function saveDraft(nodes, edges, counter) {
-  try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ nodes, edges, counter })) } catch {}
+export function saveDraft(nodes, edges, counter, savedChartId = null) {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ nodes, edges, counter, savedChartId })) } catch {}
 }
 
 export function loadDraft() {

@@ -20,7 +20,7 @@ import InsightsPanel   from './components/InsightsPanel.jsx'
 import AboutPanel      from './components/AboutPanel.jsx'
 import { getSunSign, getElement } from './utils/astrology.js'
 import { applyDagreLayout }      from './utils/layout.js'
-import { saveDraft, loadDraft }  from './utils/storage.js'
+import { saveDraft, loadDraft, saveChart, loadCharts }  from './utils/storage.js'
 
 const NODE_TYPES = { astro: AstroNode }
 
@@ -45,14 +45,14 @@ function buildNodeData(member) {
 }
 
 
-// ── Auto-fitView after layout ─────────────────────────────────────────────────
-function FitViewOnLayout({ layoutTick }) {
+// ── Fit the view whenever fitTick increments ──────────────────────────────────
+function FitViewOnLayout({ fitTick }) {
   const { fitView } = useReactFlow()
   useEffect(() => {
-    if (layoutTick === 0) return
-    const t = setTimeout(() => fitView({ padding: 0.3, duration: 400 }), 60)
+    if (fitTick === 0) return
+    const t = setTimeout(() => fitView({ padding: 0.25, duration: 400 }), 80)
     return () => clearTimeout(t)
-  }, [layoutTick, fitView])
+  }, [fitTick, fitView])
   return null
 }
 
@@ -66,9 +66,14 @@ export default function App() {
   const [activeTab,         setActiveTab]         = useState('add')
   const [showAddMore,       setShowAddMore]       = useState(false)
   const [showConnectPrompt, setShowConnectPrompt] = useState(false)
-  const [layoutTick,        setLayoutTick]        = useState(0)
+  const [fitTick,           setFitTick]           = useState(0)
   const [exporting,         setExporting]         = useState(false)
   const [exportError,       setExportError]       = useState(null)
+  // Tracks the ID of the last named save; null = never saved
+  const [savedChartId,      setSavedChartId]      = useState(null)
+  const [showSaveDialog,    setShowSaveDialog]    = useState(false)
+  const [saveTitle,         setSaveTitle]         = useState('')
+  const [pendingNewTree,    setPendingNewTree]    = useState(false)
 
   // Mobile panel is open when not on the tree tab, or when editing a node
   const panelOpen = activeTab !== 'tree' || !!editingNodeId
@@ -80,21 +85,33 @@ export default function App() {
       setNodes(draft.nodes)
       setEdges(draft.edges)
       setCounter(draft.counter ?? 1)
+      if (draft.savedChartId) setSavedChartId(draft.savedChartId)
       setActiveTab('tree')
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Autosave draft on every change (debounced 600ms) ─────────────────────
   useEffect(() => {
-    const t = setTimeout(() => saveDraft(nodes, edges, counter), 600)
+    const t = setTimeout(() => saveDraft(nodes, edges, counter, savedChartId), 600)
     return () => clearTimeout(t)
-  }, [nodes, edges, counter])
+  }, [nodes, edges, counter, savedChartId])
+
+  // ── Auto-save to named chart when tree has been saved once ────────────────
+  useEffect(() => {
+    if (!savedChartId || nodes.length === 0) return
+    const t = setTimeout(() => {
+      const existing = loadCharts().find(c => c.id === savedChartId)
+      if (!existing) return // chart was deleted from the Saved tab
+      saveChart({ ...existing, nodes, edges, counter, savedAt: new Date().toISOString() })
+    }, 800)
+    return () => clearTimeout(t)
+  }, [nodes, edges, counter, savedChartId])
 
   // ── Layout on edge / node count changes ──────────────────────────────────
   useEffect(() => {
     if (nodes.length === 0) return
     setNodes(prev => applyDagreLayout(prev, edges))
-    setLayoutTick(t => t + 1)
+    setFitTick(t => t + 1)
   }, [edges, nodes.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Auto-dismiss connect prompt once first edge is added ─────────────────
@@ -194,26 +211,56 @@ export default function App() {
   // ── Charts ────────────────────────────────────────────────────────────────
   const handleLoadChart = useCallback((chart) => {
     setNodes(chart.nodes); setEdges(chart.edges); setCounter(chart.counter)
+    setSavedChartId(chart.id)
     setEditingNodeId(null); setActiveTab('tree')
+    setFitTick(t => t + 1)
   }, [setNodes, setEdges])
 
   const handleNewChart = useCallback(() => {
     setNodes([]); setEdges([]); setCounter(1)
+    setSavedChartId(null)
     setEditingNodeId(null); setActiveTab('add')
   }, [setNodes, setEdges])
 
   const handleRelayout = useCallback(() => {
     setNodes(prev => applyDagreLayout(prev, edges))
-    setLayoutTick(t => t + 1)
+    setFitTick(t => t + 1)
   }, [edges, setNodes])
+
+  // ── Save tree to named chart ──────────────────────────────────────────────
+  function handleSaveChart(e) {
+    e.preventDefault()
+    if (!saveTitle.trim() || nodes.length === 0) return
+    const id = Date.now().toString()
+    saveChart({ id, title: saveTitle.trim(), nodes, edges, counter, savedAt: new Date().toISOString() })
+    setSavedChartId(id)
+    setShowSaveDialog(false)
+    setSaveTitle('')
+    if (pendingNewTree) {
+      setPendingNewTree(false)
+      handleNewChart()
+    }
+  }
+
+  function handleNewTreeClick() {
+    if (nodes.length === 0) return
+    if (!savedChartId) {
+      setPendingNewTree(true)
+      setSaveTitle('')
+      setShowSaveDialog(true)
+    } else {
+      handleNewChart()
+    }
+  }
 
   // ── Navigation helpers ────────────────────────────────────────────────────
   function goTab(tab) {
     setActiveTab(tab)
     setEditingNodeId(null)
+    if (tab === 'tree') setFitTick(t => t + 1)
   }
 
-  // ── Export: tree image + insights HTML ───────────────────────────────────
+  // ── Export: tree image ────────────────────────────────────────────────────
   const handleExport = useCallback(async () => {
     const el = document.querySelector('.react-flow')
     if (!el || exporting) return
@@ -368,36 +415,54 @@ export default function App() {
     }
   }, [exporting, nodes, edges])
 
-  // ── Export insights as image ─────────────────────────────────────────────
-  const handleExportInsights = useCallback(async () => {
-    const el = document.querySelector('.insights-panel')
-    if (!el || exporting) return
-    setExportError(null)
-    setExporting(true)
-    try {
-      const dataUrl = await toPng(el, { backgroundColor: '#09071a', pixelRatio: 2 })
-      const isMobile = window.innerWidth <= 768
-      const blob = await (await fetch(dataUrl)).blob()
-      const file = new File([blob], 'astrotree-insights.png', { type: 'image/png' })
-      if (isMobile && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Family Insights', text: 'Created with AstroTree by Jupiter Digital' })
-      } else {
-        const link = document.createElement('a')
-        link.download = 'astrotree-insights.png'
-        link.href = dataUrl
-        link.click()
-      }
-    } catch {
-      setExportError('Export failed — please try again.')
-    } finally {
-      setExporting(false)
-    }
-  }, [exporting])
-
   const editingNode = editingNodeId ? nodes.find(n => n.id === editingNodeId) : null
 
   return (
     <div className="app">
+      {/* ── Save dialog — fixed overlay, above sidebar ───────────────────── */}
+      {showSaveDialog && (
+        <div className="save-dialog-backdrop" onClick={() => { setShowSaveDialog(false); setPendingNewTree(false) }}>
+          <form
+            className="save-dialog"
+            onSubmit={handleSaveChart}
+            onClick={e => e.stopPropagation()}
+          >
+            <p className="save-dialog-title">
+              {pendingNewTree ? '⚠ Save before starting a new tree?' : '💾 Name this tree'}
+            </p>
+            <input
+              type="text"
+              className="save-dialog-input"
+              placeholder="e.g. Mom's side, 2025…"
+              value={saveTitle}
+              onChange={e => setSaveTitle(e.target.value)}
+              autoFocus
+            />
+            <div className="save-dialog-btns">
+              <button
+                type="button"
+                className="save-dialog-cancel"
+                onClick={() => { setShowSaveDialog(false); setPendingNewTree(false) }}
+              >
+                Cancel
+              </button>
+              {pendingNewTree && (
+                <button
+                  type="button"
+                  className="save-dialog-discard"
+                  onClick={() => { setShowSaveDialog(false); setPendingNewTree(false); handleNewChart() }}
+                >
+                  Discard
+                </button>
+              )}
+              <button type="submit" className="save-dialog-save" disabled={!saveTitle.trim()}>
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       {/* Starfield */}
       <div className="stars" aria-hidden="true">
         {useMemo(() => Array.from({ length: 120 }).map((_, i) => (
@@ -427,7 +492,7 @@ export default function App() {
         {/* ── Desktop tab strip (hidden on mobile) ────────────────────── */}
         <div className="sidebar-tabs">
           <button
-            className={`sidebar-tab${activeTab === 'add' && !editingNode ? ' active' : ''}`}
+            className={`sidebar-tab${(activeTab === 'add' || activeTab === 'tree') && !editingNode ? ' active' : ''}`}
             onClick={() => goTab('add')}
           >★ Family</button>
           <button
@@ -477,6 +542,7 @@ export default function App() {
           ) : activeTab === 'charts' ? (
             <ChartsPanel
               nodes={nodes} edges={edges} counter={counter}
+              savedChartId={savedChartId}
               onLoad={handleLoadChart} onNew={handleNewChart}
             />
 
@@ -501,6 +567,25 @@ export default function App() {
                     <div className="member-list-header">
                       <h3>Your Family · {nodes.length}</h3>
                       <span className="member-list-hint">tap a name to connect</span>
+                    </div>
+                    {/* Save + New Tree actions — shown only in Family tab */}
+                    <div className="family-tree-actions">
+                      {!savedChartId && (
+                        <button
+                          type="button"
+                          className="family-tree-btn family-tree-btn--save"
+                          onClick={() => { setSaveTitle(''); setShowSaveDialog(true) }}
+                        >
+                          💾 Save Tree
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="family-tree-btn"
+                        onClick={handleNewTreeClick}
+                      >
+                        ＋ New Tree
+                      </button>
                     </div>
                     {nodes.map(n => (
                       <div key={n.id} className="member-pill"
@@ -536,40 +621,8 @@ export default function App() {
           )}
         </div>
 
-        {/* ── Footer ──────────────────────────────────────────────────── */}
+        {/* ── Footer — brand credit only ──────────────────────────────── */}
         <footer className="sidebar-footer">
-          {nodes.length > 0 && activeTab !== 'charts' && !editingNode && (
-            <div className="footer-actions">
-              <button
-                type="button"
-                className="footer-action-btn"
-                onClick={() => goTab('charts')}
-              >
-                🗂️ Save Tree
-              </button>
-            </div>
-          )}
-          <div className="footer-actions footer-actions--secondary">
-            {activeTab === 'insights' && !editingNode ? (
-              <button
-                type="button"
-                className="footer-action-btn footer-action-btn--gold"
-                onClick={handleExportInsights}
-                disabled={exporting || nodes.length === 0}
-              >
-                {exporting ? 'Generating…' : '📊 Save Insights as Image'}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="footer-action-btn footer-action-btn--gold"
-                onClick={handleExport}
-                disabled={exporting || nodes.length === 0}
-              >
-                {exporting ? 'Generating…' : window.innerWidth <= 768 ? '📤 Share / Save Tree' : '🖨 Print or Save PDF'}
-              </button>
-            )}
-          </div>
           {exportError && (
             <p className="export-error">{exportError}</p>
           )}
@@ -592,7 +645,7 @@ export default function App() {
         </button>
         <button
           className={`bottom-tab${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
-          onClick={() => { setActiveTab('tree'); setEditingNodeId(null) }}
+          onClick={() => { setActiveTab('tree'); setEditingNodeId(null); setFitTick(t => t + 1) }}
         >
           <span className="bottom-tab-icon">🌳</span>
           <span className="bottom-tab-label">Tree</span>
@@ -664,15 +717,15 @@ export default function App() {
           onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
           onConnect={onConnect} onNodeClick={onNodeClick}
           nodeTypes={NODE_TYPES}
-          fitView fitViewOptions={{ padding: 0.3 }}
+          fitView fitViewOptions={{ padding: 0.25 }}
           minZoom={0.3} colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >
-          <FitViewOnLayout layoutTick={layoutTick} />
+          <FitViewOnLayout fitTick={fitTick} />
           <Background color="#1a1040" gap={36} size={1} />
           <Controls style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
 
-          {/* Top-right: Re-layout + Insights shortcut (desktop) */}
+          {/* Top-right: action buttons */}
           <Panel position="top-right">
             <div className="canvas-panel-btns">
               {nodes.length > 0 && (
@@ -684,13 +737,25 @@ export default function App() {
                   ✦ Insights
                 </button>
               )}
-              {nodes.length > 0 && (
+              {/* Save — only shown before first named save */}
+              {nodes.length > 0 && !savedChartId && (
                 <button
                   type="button"
                   className="relayout-btn relayout-btn--save"
-                  onClick={() => goTab('charts')}
+                  onClick={() => setShowSaveDialog(true)}
                 >
-                  🗂️ Save
+                  💾 Save
+                </button>
+              )}
+              {/* Share / Export */}
+              {nodes.length > 0 && (
+                <button
+                  type="button"
+                  className="relayout-btn relayout-btn--share"
+                  onClick={handleExport}
+                  disabled={exporting}
+                >
+                  {exporting ? '…' : '📤 Share'}
                 </button>
               )}
               {nodes.length > 0 && (

@@ -12,6 +12,12 @@ export default function AddMembersForm({ onAdd }) {
   const [rows,       setRows]       = useState(INITIAL_ROWS)
   const [rowCounter, setRowCounter] = useState(4)
   const [error,      setError]      = useState('')
+  // touched tracks which fields the user has blurred on each row
+  const [touched,    setTouched]    = useState({})
+
+  function markTouched(id, field) {
+    setTouched(prev => ({ ...prev, [id]: { ...prev[id], [field]: true } }))
+  }
 
   function addRow() {
     setRows(prev => [...prev, { id: rowCounter, name: '', birthdate: '' }])
@@ -39,6 +45,7 @@ export default function AddMembersForm({ onAdd }) {
     setRows(INITIAL_ROWS())
     setRowCounter(4)
     setError('')
+    setTouched({})
   }
 
   const validCount   = rows.filter(r => r.name.trim() && r.birthdate).length
@@ -50,25 +57,32 @@ export default function AddMembersForm({ onAdd }) {
 
       <div className="member-rows">
         {rows.map((row, idx) => {
-          const hasName = row.name.trim().length > 0
-          const hasDate = row.birthdate.length > 0
+          const hasName  = row.name.trim().length > 0
+          const hasDate  = row.birthdate.length > 0
           const rowReady = hasName && hasDate
+          const nameTouched = touched[row.id]?.name
+          const dateTouched = touched[row.id]?.birthdate
+          const nameError   = nameTouched && !hasName
+          const dateError   = dateTouched && !hasDate
           return (
           <div key={row.id} className={`member-row multi${rowReady ? ' row-ready' : ''}`}>
             <span className="row-num">{idx + 1}</span>
 
             <input
-              className="row-input"
+              className={`row-input${nameError ? ' field-error' : ''}`}
               type="text"
               placeholder="Name"
               value={row.name}
               onChange={e => updateRow(row.id, 'name', e.target.value)}
+              onBlur={() => markTouched(row.id, 'name')}
             />
 
             <DateInput
               key={row.id}
               value={row.birthdate}
               onChange={val => updateRow(row.id, 'birthdate', val)}
+              onBlur={() => markTouched(row.id, 'birthdate')}
+              hasError={dateError}
             />
 
             <button
