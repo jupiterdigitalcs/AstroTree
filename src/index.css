@@ -1008,7 +1008,8 @@ body {
   font-weight: 400;
 }
 
-.welcome-step-icon {
+.welcome-step-icon,
+.welcome-step-num {
   color: var(--gold);
   font-size: 0.6rem;
   flex-shrink: 0;
@@ -1173,47 +1174,52 @@ body {
 
 @media print {
   * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
-  .sidebar, .sidebar-toggle-btn { display: none !important; }
+  .sidebar, .bottom-tab-bar { display: none !important; }
   .canvas { width: 100vw !important; height: 100dvh !important; }
   .react-flow__controls, .react-flow__minimap { display: none !important; }
 }
 
-/* ─────────────────────── Mobile sidebar toggle btn ─────────────────────── */
-.sidebar-toggle-btn {
-  display: none;
-  position: fixed;
-  bottom: 1.25rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 200;
-  background: rgba(17,13,40,0.92);
-  border: 1px solid var(--border-gold);
-  border-radius: 22px;
-  color: var(--gold);
-  cursor: pointer;
+/* ────────────────────────── Desktop sidebar tabs ────────────────────────── */
+.sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 0.6rem;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.01);
+}
+
+.sidebar-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
   font-family: 'Raleway', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   font-weight: 500;
-  letter-spacing: 0.07em;
-  padding: 0.6rem 1.4rem;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.55), 0 0 20px rgba(201,168,76,0.12);
-  transition: background 0.15s, box-shadow 0.15s;
+  letter-spacing: 0.06em;
+  padding: 0.65rem 0.25rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
   white-space: nowrap;
 }
 
-.sidebar-toggle-btn:hover {
-  background: rgba(26,18,52,0.95);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.6), 0 0 24px rgba(201,168,76,0.2);
-}
+.sidebar-tab:hover:not(:disabled) { color: var(--text-soft); }
+.sidebar-tab.active  { color: var(--gold); border-bottom-color: var(--gold); }
+.sidebar-tab:disabled { opacity: 0.3; cursor: default; }
+
+/* ─────────────────────────── Mobile bottom tab bar ─────────────────────── */
+.bottom-tab-bar { display: none; }
 
 /* ─────────────────────────── Responsive layout ──────────────────────────── */
 @media (max-width: 768px) {
   .app { flex-direction: column; }
 
+  /* Sidebar becomes a bottom sheet that slides up above the tab bar */
   .sidebar {
     position: fixed;
-    bottom: 0;
+    bottom: calc(60px + env(safe-area-inset-bottom));
     left: 0;
     right: 0;
     width: 100%;
@@ -1230,28 +1236,76 @@ body {
 
   .sidebar-drag-handle { display: block; }
 
+  /* Hide desktop tab strip on mobile — navigation is via bottom tab bar */
+  .sidebar-tabs { display: none; }
+
   .sidebar-content {
     padding-left: max(1.15rem, env(safe-area-inset-left));
     padding-right: max(1.15rem, env(safe-area-inset-right));
   }
 
   .sidebar-footer {
-    padding-left:   max(1.15rem, env(safe-area-inset-left));
-    padding-right:  max(1.15rem, env(safe-area-inset-right));
-    padding-bottom: max(0.55rem, env(safe-area-inset-bottom));
+    padding-left:  max(1.15rem, env(safe-area-inset-left));
+    padding-right: max(1.15rem, env(safe-area-inset-right));
+    padding-bottom: 0.55rem;
   }
 
-  .canvas { width: 100%; height: 100dvh; }
-  .sidebar-toggle-btn { display: block; }
-
-  /* Push toggle button above home indicator on notched devices */
-  .sidebar-toggle-btn {
-    bottom: max(1.25rem, calc(env(safe-area-inset-bottom) + 0.6rem));
+  /* Canvas sits above the tab bar */
+  .canvas {
+    width: 100%;
+    height: calc(100dvh - 60px - env(safe-area-inset-bottom));
+    margin-bottom: calc(60px + env(safe-area-inset-bottom));
   }
 
-  /* Push ReactFlow controls above the toggle button */
+  /* Bottom tab bar visible on mobile */
+  .bottom-tab-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(60px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: rgba(11, 8, 26, 0.97);
+    border-top: 1px solid var(--border);
+    z-index: 200;
+    backdrop-filter: blur(12px);
+  }
+
+  .bottom-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: 'Raleway', sans-serif;
+    cursor: pointer;
+    padding: 0.5rem 0.25rem;
+    transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bottom-tab.active  { color: var(--gold); }
+  .bottom-tab:disabled { opacity: 0.3; cursor: default; }
+
+  .bottom-tab-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  .bottom-tab-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* Push ReactFlow controls above the tab bar */
   .react-flow__controls {
-    bottom: max(5rem, calc(env(safe-area-inset-bottom) + 4.5rem)) !important;
+    bottom: max(0.75rem, 0.75rem) !important;
     left: max(0.75rem, env(safe-area-inset-left)) !important;
   }
 
@@ -1277,3 +1331,45 @@ body {
   padding: 0 0.5rem 0.25rem;
   line-height: 1.4;
 }
+
+/* ─────────────────────────── Connect prompt banner ─────────────────────── */
+.connect-prompt {
+  position: absolute;
+  top: 0.9rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: rgba(11, 8, 26, 0.93);
+  border: 1px solid var(--border-gold);
+  border-radius: 22px;
+  padding: 0.55rem 0.75rem 0.55rem 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.55), 0 0 16px rgba(201,168,76,0.1);
+  max-width: calc(100% - 2rem);
+  pointer-events: auto;
+}
+
+.connect-prompt span {
+  font-size: 0.77rem;
+  color: var(--text-soft);
+  line-height: 1.4;
+  font-family: 'Raleway', sans-serif;
+}
+
+.connect-prompt-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.2rem;
+  flex-shrink: 0;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.connect-prompt-close:hover { opacity: 1; }

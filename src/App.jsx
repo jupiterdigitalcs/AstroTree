@@ -65,14 +65,17 @@ function FitViewOnLayout({ layoutTick }) {
 export default function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
-  const [counter,        setCounter]        = useState(1)
-  const [editingNodeId,  setEditingNodeId]  = useState(null)
-  const [chartsOpen,     setChartsOpen]     = useState(false)
-  const [insightsOpen,   setInsightsOpen]   = useState(false)
-  const [layoutTick,     setLayoutTick]     = useState(0)
-  const [sidebarOpen,    setSidebarOpen]    = useState(true)
-  const [exporting,      setExporting]      = useState(false)
-  const [exportError,    setExportError]    = useState(null)
+  const [counter,           setCounter]           = useState(1)
+  const [editingNodeId,     setEditingNodeId]     = useState(null)
+  // 'tree' | 'add' | 'insights' | 'charts'
+  const [activeTab,         setActiveTab]         = useState('add')
+  const [showConnectPrompt, setShowConnectPrompt] = useState(false)
+  const [layoutTick,        setLayoutTick]        = useState(0)
+  const [exporting,         setExporting]         = useState(false)
+  const [exportError,       setExportError]       = useState(null)
+
+  // Mobile panel is open when not on the tree tab, or when editing a node
+  const panelOpen = activeTab !== 'tree' || !!editingNodeId
 
   // ── Restore draft on first load ───────────────────────────────────────────
   useEffect(() => {
@@ -81,6 +84,7 @@ export default function App() {
       setNodes(draft.nodes)
       setEdges(draft.edges)
       setCounter(draft.counter ?? 1)
+      setActiveTab('tree')
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -96,6 +100,11 @@ export default function App() {
     setNodes(prev => applyDagreLayout(prev, edges))
     setLayoutTick(t => t + 1)
   }, [edges, nodes.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Auto-dismiss connect prompt once first edge is added ─────────────────
+  useEffect(() => {
+    if (edges.length > 0 && showConnectPrompt) setShowConnectPrompt(false)
+  }, [edges.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Spouse edges: route straight across using side handles ────────────────
   const edgesForDisplay = useMemo(() =>
@@ -117,6 +126,7 @@ export default function App() {
   // ── Add (atomic, supports multiple members) ───────────────────────────────
   function handleAdd({ members, relationships = {} }) {
     const { parentIds = [], childIds = [], spouseIds = [] } = relationships
+    const wasEmpty  = nodes.length === 0
     const startIdx  = counter
     const primaryId = `node-${startIdx}`
     const newNodes  = members.map((m, i) => ({
@@ -131,8 +141,11 @@ export default function App() {
     setNodes(prev => [...prev, ...newNodes])
     setEdges(prev => [...prev, ...newEdges])
     setCounter(c => c + members.length)
-    // On mobile, close sidebar after adding so the chart is visible
-    if (window.innerWidth <= 768) setSidebarOpen(false)
+    // Always switch to the tree so users see their new members
+    setActiveTab('tree')
+    setEditingNodeId(null)
+    // Show connect prompt on first add so users know the next step
+    if (wasEmpty) setShowConnectPrompt(true)
   }
 
   // ── Update / delete ───────────────────────────────────────────────────────
@@ -176,8 +189,6 @@ export default function App() {
 
   const onNodeClick = useCallback((_e, node) => {
     setEditingNodeId(id => id === node.id ? null : node.id)
-    setChartsOpen(false)
-    setSidebarOpen(true)
   }, [])
 
   const onConnect = useCallback(
@@ -188,18 +199,24 @@ export default function App() {
   // ── Charts ────────────────────────────────────────────────────────────────
   const handleLoadChart = useCallback((chart) => {
     setNodes(chart.nodes); setEdges(chart.edges); setCounter(chart.counter)
-    setEditingNodeId(null); setChartsOpen(false); setInsightsOpen(false)
+    setEditingNodeId(null); setActiveTab('tree')
   }, [setNodes, setEdges])
 
   const handleNewChart = useCallback(() => {
     setNodes([]); setEdges([]); setCounter(1)
-    setEditingNodeId(null); setChartsOpen(false); setInsightsOpen(false)
+    setEditingNodeId(null); setActiveTab('add')
   }, [setNodes, setEdges])
 
   const handleRelayout = useCallback(() => {
     setNodes(prev => applyDagreLayout(prev, edges))
     setLayoutTick(t => t + 1)
   }, [edges, setNodes])
+
+  // ── Navigation helpers ────────────────────────────────────────────────────
+  function goTab(tab) {
+    setActiveTab(tab)
+    setEditingNodeId(null)
+  }
 
   // ── Export: tree image + insights HTML ───────────────────────────────────
   const handleExport = useCallback(async () => {
@@ -234,7 +251,6 @@ export default function App() {
             text: 'Created with AstroTree by Jupiter Digital',
           })
         } else {
-          // Fallback for browsers without file sharing
           const link = document.createElement('a')
           link.download = 'astrotree-family.png'
           link.href = dataUrl
@@ -344,7 +360,7 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* Starfield — memoised so positions don't re-randomise on every render */}
+      {/* Starfield */}
       <div className="stars" aria-hidden="true">
         {useMemo(() => Array.from({ length: 120 }).map((_, i) => (
           <span key={i} className="star" style={{
@@ -355,9 +371,10 @@ export default function App() {
         )), [])}
       </div>
 
-      {/* ── Sidebar ─────────────────────────────────────────────────────── */}
-      <aside className={`sidebar${sidebarOpen ? ' open' : ''}`}>
-        <div className="sidebar-drag-handle" onClick={() => setSidebarOpen(false)} />
+      {/* ── Sidebar / Panel ─────────────────────────────────────────────── */}
+      <aside className={`sidebar${panelOpen ? ' open' : ''}`}>
+        {/* Mobile drag handle — tapping returns to tree */}
+        <div className="sidebar-drag-handle" onClick={() => { setActiveTab('tree'); setEditingNodeId(null) }} />
 
         {/* Brand */}
         <div className="brand-header">
@@ -369,17 +386,34 @@ export default function App() {
           </div>
         </div>
 
+        {/* ── Desktop tab strip (hidden on mobile) ────────────────────── */}
+        <div className="sidebar-tabs">
+          <button
+            className={`sidebar-tab${activeTab === 'add' && !editingNode ? ' active' : ''}`}
+            onClick={() => goTab('add')}
+          >＋ Add</button>
+          <button
+            className={`sidebar-tab${activeTab === 'insights' && !editingNode ? ' active' : ''}`}
+            onClick={() => goTab('insights')}
+            disabled={nodes.length === 0}
+          >✦ Insights</button>
+          <button
+            className={`sidebar-tab${activeTab === 'charts' && !editingNode ? ' active' : ''}`}
+            onClick={() => goTab('charts')}
+          >📚 Charts</button>
+        </div>
+
         {/* ── Scrollable content ──────────────────────────────────────── */}
         <div className="sidebar-content">
 
-          {/* ── Editing a member ────────────────────────────────────────── */}
+          {/* ── Editing a member ──────────────────────────────────────── */}
           {editingNode ? (
             <>
               <button
                 type="button"
                 className="back-btn"
                 onClick={() => setEditingNodeId(null)}
-              >← Back to Family</button>
+              >← Back</button>
               <EditMemberPanel
                 key={editingNode.id}
                 node={editingNode}
@@ -393,45 +427,28 @@ export default function App() {
               />
             </>
 
-          /* ── Family Insights ──────────────────────────────────────────── */
-          ) : insightsOpen ? (
-            <>
-              <button
-                type="button"
-                className="back-btn"
-                onClick={() => setInsightsOpen(false)}
-              >← Back to Family</button>
-              <InsightsPanel nodes={nodes} edges={edges} />
-            </>
+          /* ── Family Insights ────────────────────────────────────────── */
+          ) : activeTab === 'insights' ? (
+            <InsightsPanel nodes={nodes} edges={edges} />
 
-          /* ── Saved charts ─────────────────────────────────────────────── */
-          ) : chartsOpen ? (
-            <>
-              <button
-                type="button"
-                className="back-btn"
-                onClick={() => setChartsOpen(false)}
-              >← Back to Family</button>
-              <ChartsPanel
-                nodes={nodes} edges={edges} counter={counter}
-                onLoad={handleLoadChart} onNew={handleNewChart}
-              />
-            </>
+          /* ── Saved charts ───────────────────────────────────────────── */
+          ) : activeTab === 'charts' ? (
+            <ChartsPanel
+              nodes={nodes} edges={edges} counter={counter}
+              onLoad={handleLoadChart} onNew={handleNewChart}
+            />
 
-          /* ── Main panel ───────────────────────────────────────────────── */
+          /* ── Add tab ────────────────────────────────────────────────── */
           ) : (
             <>
-              {/* Empty-state hint */}
               {nodes.length === 0 && (
                 <div className="start-hint">
-                  <p>Welcome — fill in a name and birthday below to build your family's celestial chart.</p>
+                  <p>Add family members below — enter a name and birthday to reveal their sun sign.</p>
                 </div>
               )}
 
-              {/* Add form — always visible */}
               <AddMembersForm onAdd={handleAdd} />
 
-              {/* Member list */}
               {nodes.length > 0 && (
                 <div className="member-list">
                   <div className="member-list-header">
@@ -441,7 +458,7 @@ export default function App() {
                   {nodes.map(n => (
                     <div key={n.id} className="member-pill"
                       style={{ borderColor: `${n.data.elementColor}44`, cursor: 'pointer' }}
-                      onClick={() => { setEditingNodeId(n.id); setSidebarOpen(true) }}
+                      onClick={() => setEditingNodeId(n.id)}
                     >
                       <span>{n.data.symbol}</span>
                       <span>{n.data.name}</span>
@@ -461,24 +478,7 @@ export default function App() {
 
         {/* ── Footer ──────────────────────────────────────────────────── */}
         <footer className="sidebar-footer">
-          <div className="footer-actions">
-            <button
-              type="button"
-              className="footer-action-btn footer-action-btn--insights"
-              onClick={() => { setInsightsOpen(o => !o); setEditingNodeId(null); setChartsOpen(false) }}
-              disabled={nodes.length === 0}
-            >
-              {insightsOpen ? '← My Family' : '✦ Family Insights'}
-            </button>
-          </div>
           <div className="footer-actions footer-actions--secondary">
-            <button
-              type="button"
-              className="footer-action-btn"
-              onClick={() => { setChartsOpen(o => !o); setEditingNodeId(null); setInsightsOpen(false) }}
-            >
-              {chartsOpen ? '← My Family' : '📚 Saved Charts'}
-            </button>
             <button
               type="button"
               className="footer-action-btn footer-action-btn--gold"
@@ -501,14 +501,38 @@ export default function App() {
         </footer>
       </aside>
 
-      {/* Mobile toggle */}
-      <button
-        type="button"
-        className="sidebar-toggle-btn"
-        onClick={() => setSidebarOpen(o => !o)}
-      >
-        {sidebarOpen ? '✕ Close' : '🪐 My Family'}
-      </button>
+      {/* ── Mobile bottom tab bar ────────────────────────────────────────── */}
+      <nav className="bottom-tab-bar" aria-label="Main navigation">
+        <button
+          className={`bottom-tab${activeTab === 'add' && !editingNodeId ? ' active' : ''}`}
+          onClick={() => goTab('add')}
+        >
+          <span className="bottom-tab-icon">＋</span>
+          <span className="bottom-tab-label">Add</span>
+        </button>
+        <button
+          className={`bottom-tab${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
+          onClick={() => { setActiveTab('tree'); setEditingNodeId(null) }}
+        >
+          <span className="bottom-tab-icon">🌳</span>
+          <span className="bottom-tab-label">Tree</span>
+        </button>
+        <button
+          className={`bottom-tab${activeTab === 'insights' && !editingNodeId ? ' active' : ''}`}
+          onClick={() => goTab('insights')}
+          disabled={nodes.length === 0}
+        >
+          <span className="bottom-tab-icon">✦</span>
+          <span className="bottom-tab-label">Insights</span>
+        </button>
+        <button
+          className={`bottom-tab${activeTab === 'charts' && !editingNodeId ? ' active' : ''}`}
+          onClick={() => goTab('charts')}
+        >
+          <span className="bottom-tab-icon">📚</span>
+          <span className="bottom-tab-label">Charts</span>
+        </button>
+      </nav>
 
       {/* ── Canvas ──────────────────────────────────────────────────────── */}
       <main className="canvas">
@@ -522,16 +546,29 @@ export default function App() {
                 Discover the celestial patterns<br />woven through your family
               </p>
               <div className="welcome-steps">
-                <div className="welcome-step"><span className="welcome-step-icon">✦</span><span>Add family members with their birthdates</span></div>
-                <div className="welcome-step"><span className="welcome-step-icon">✦</span><span>Connect parents, children &amp; partners</span></div>
-                <div className="welcome-step"><span className="welcome-step-icon">✦</span><span>Reveal your family's cosmic blueprint</span></div>
+                <div className="welcome-step"><span className="welcome-step-num">1</span><span>Add family members with their birthdates</span></div>
+                <div className="welcome-step"><span className="welcome-step-num">2</span><span>Connect parents, children &amp; partners</span></div>
+                <div className="welcome-step"><span className="welcome-step-num">3</span><span>Reveal your family's cosmic blueprint</span></div>
               </div>
               <button type="button" className="welcome-cta"
-                onClick={() => { setSidebarOpen(true) }}>
+                onClick={() => goTab('add')}>
                 Begin Charting →
               </button>
-              <p className="welcome-mobile-hint">Tap <strong>🪐 My Family</strong> below to start</p>
+              <p className="welcome-mobile-hint">Tap <strong>＋ Add</strong> below to start</p>
             </div>
+          </div>
+        )}
+
+        {/* ── Connect prompt — shown after first add ───────────────────── */}
+        {showConnectPrompt && edges.length === 0 && nodes.length > 0 && (
+          <div className="connect-prompt">
+            <span>✦ Tap any card on the tree to connect your family as parents, children, or partners</span>
+            <button
+              type="button"
+              className="connect-prompt-close"
+              onClick={() => setShowConnectPrompt(false)}
+              aria-label="Dismiss"
+            >✕</button>
           </div>
         )}
 
@@ -548,19 +585,14 @@ export default function App() {
           <Background color="#1a1040" gap={36} size={1} />
           <Controls style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
 
-          {/* Top-right: Re-layout + Insights shortcut */}
+          {/* Top-right: Re-layout + Insights shortcut (desktop) */}
           <Panel position="top-right">
             <div className="canvas-panel-btns">
               {nodes.length > 0 && (
                 <button
                   type="button"
                   className="relayout-btn relayout-btn--insights"
-                  onClick={() => {
-                    setInsightsOpen(true)
-                    setChartsOpen(false)
-                    setEditingNodeId(null)
-                    setSidebarOpen(true)
-                  }}
+                  onClick={() => goTab('insights')}
                 >
                   ✦ Insights
                 </button>
