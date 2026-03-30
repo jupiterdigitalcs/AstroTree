@@ -207,17 +207,30 @@ export default function App() {
     if (!el || exporting) return
     setExportError(null)
 
-    // Open the window synchronously (within user gesture) before any await,
-    // so popup blockers don't interfere.
-    const win = window.open('', '_blank')
-    if (!win) {
-      setExportError('Popup blocked — please allow popups for this site and try again.')
-      return
+    const isMobile = window.innerWidth <= 768
+
+    // Desktop: open popup synchronously before any await so blockers don't fire
+    let win = null
+    if (!isMobile) {
+      win = window.open('', '_blank')
+      if (!win) {
+        setExportError('Popup blocked — please allow popups for this site and try again.')
+        return
+      }
     }
 
     setExporting(true)
     try {
-      const dataUrl = await toPng(el, { backgroundColor: '#09071a', pixelRatio: 2 })
+      const dataUrl = await toPng(el, { backgroundColor: '#09071a', pixelRatio: isMobile ? 1.5 : 2 })
+
+      // Mobile: download PNG directly — no popup needed
+      if (isMobile) {
+        const link = document.createElement('a')
+        link.download = 'astrotree-family.png'
+        link.href = dataUrl
+        link.click()
+        return
+      }
 
       // Build insights HTML
       const ELEMENTS = ['Fire','Earth','Air','Water']
@@ -309,7 +322,7 @@ export default function App() {
       </body></html>`)
       win.document.close()
     } catch (err) {
-      win.close()
+      if (win) win.close()
       setExportError('Export failed — please try again.')
     } finally {
       setExporting(false)
@@ -461,7 +474,7 @@ export default function App() {
               onClick={handleExport}
               disabled={exporting || nodes.length === 0}
             >
-              {exporting ? '…' : '⬇ Export PDF'}
+              {exporting ? '…' : window.innerWidth <= 768 ? '⬇ Save Image' : '⬇ Export PDF'}
             </button>
           </div>
           {exportError && (
