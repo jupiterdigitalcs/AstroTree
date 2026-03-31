@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import { JupiterIcon } from './JupiterIcon.jsx'
 
 export class ErrorBoundary extends Component {
   constructor(props) {
@@ -19,7 +20,7 @@ export class ErrorBoundary extends Component {
           color: '#ede6ff', fontFamily: 'Cinzel, serif', textAlign: 'center',
           padding: '2rem',
         }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🪐</div>
+          <div style={{ marginBottom: '1rem' }}><JupiterIcon size={48} /></div>
           <h2 style={{ color: '#e6c76e', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
             Something went wrong
           </h2>

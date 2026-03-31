@@ -18,6 +18,7 @@ import EditMemberPanel from './components/EditMemberPanel.jsx'
 import ChartsPanel     from './components/ChartsPanel.jsx'
 import InsightsPanel   from './components/InsightsPanel.jsx'
 import AboutPanel      from './components/AboutPanel.jsx'
+import { JupiterIcon }            from './components/JupiterIcon.jsx'
 import { getSunSign, getElement } from './utils/astrology.js'
 import { applyDagreLayout }      from './utils/layout.js'
 import { saveDraft, loadDraft, saveChart, loadCharts }  from './utils/storage.js'
@@ -363,7 +364,7 @@ export default function App() {
       const url = await toPng(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
-        filter: node => !node.classList?.contains('insight-coming-soon') && !node.classList?.contains('insights-export-btn'),
+        filter: node => !node.classList?.contains('insight-coming-soon') && !node.classList?.contains('insights-export-btn') && !node.classList?.contains('insight-add-more'),
       })
       const isMobile = window.innerWidth <= 768
       if (isMobile && navigator.canShare) {
@@ -467,7 +468,7 @@ export default function App() {
             {editingNodeId ? 'Edit Member'
               : activeTab === 'insights' ? '✦ Insights'
               : activeTab === 'charts'   ? '🗂️ Saved Trees'
-              : activeTab === 'about'    ? '🪐 About'
+              : activeTab === 'about'    ? <><JupiterIcon size={14} /> About</>
               : '★ Family'}
           </span>
           <button
@@ -480,7 +481,7 @@ export default function App() {
 
         {/* Brand */}
         <div className="brand-header">
-          <div className="brand-logo">🪐</div>
+          <div className="brand-logo"><JupiterIcon size={40} /></div>
           <div className="brand-text">
             <p className="brand-name">Jupiter Digital</p>
             <h1 className="brand-app">AstroTree</h1>
@@ -506,7 +507,7 @@ export default function App() {
           <button
             className={`sidebar-tab${activeTab === 'about' && !editingNode ? ' active' : ''}`}
             onClick={() => goTab('about')}
-          >🪐 About</button>
+          ><JupiterIcon size={14} /> About</button>
         </div>
 
         {/* ── Scrollable content ──────────────────────────────────────── */}
@@ -539,6 +540,7 @@ export default function App() {
               nodes={nodes} edges={edges}
               onExport={nodes.length >= 2 ? handleInsightsExport : undefined}
               exporting={exporting}
+              onAddMore={() => goTab('add')}
             />
 
           /* ── Saved charts ───────────────────────────────────────────── */
@@ -560,7 +562,7 @@ export default function App() {
                 <>
                   {hasUsedApp ? (
                     <div className="family-welcome family-welcome--compact">
-                      <div className="family-welcome-logo">🪐</div>
+                      <div className="family-welcome-logo"><JupiterIcon size={48} /></div>
                       <h2 className="family-welcome-title">Start a New Tree</h2>
                       <p className="family-welcome-sub">Add family members below to build another celestial chart.</p>
                       <ol className="family-welcome-steps">
@@ -571,7 +573,7 @@ export default function App() {
                     </div>
                   ) : (
                     <div className="family-welcome">
-                      <div className="family-welcome-logo">🪐</div>
+                      <div className="family-welcome-logo"><JupiterIcon size={48} /></div>
                       <h2 className="family-welcome-title">Welcome to AstroTree</h2>
                       <p className="family-welcome-sub">
                         Build your family's celestial chart — discover the sun signs and cosmic patterns woven across generations.
@@ -654,7 +656,7 @@ export default function App() {
             <p className="export-error">{exportError}</p>
           )}
           <p className="footer-brand-credit">
-            🪐 <strong>Jupiter Digital</strong>
+            <JupiterIcon size={16} /> <strong>Jupiter Digital</strong>
             {' · '}
             <button type="button" className="footer-about-link" onClick={() => goTab('about')}>About</button>
           </p>
@@ -696,7 +698,7 @@ export default function App() {
           className={`bottom-tab${activeTab === 'about' && !editingNodeId ? ' active' : ''}`}
           onClick={() => goTab('about')}
         >
-          <span className="bottom-tab-icon">🪐</span>
+          <span className="bottom-tab-icon"><JupiterIcon size={22} /></span>
           <span className="bottom-tab-label">About</span>
         </button>
       </nav>
@@ -707,7 +709,7 @@ export default function App() {
           <div className="welcome-screen">
             <div className="welcome-content">
               <div className="welcome-jd-badge">Jupiter Digital</div>
-              <div className="welcome-logo">🪐</div>
+              <div className="welcome-logo"><JupiterIcon size={72} /></div>
               <h2 className="welcome-title">AstroTree</h2>
               <p className="welcome-tagline">
                 Discover the celestial patterns<br />woven through your family
@@ -782,7 +784,16 @@ export default function App() {
                   onClick={handleExport}
                   disabled={exporting}
                 >
-                  {exporting ? '…' : '📤 Share'}
+                  {exporting ? '…' : (<>
+                    <span className="export-label-desktop">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}}><path d="M6 1v7M3 6l3 3 3-3M1 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      Download Tree
+                    </span>
+                    <span className="export-label-mobile">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}}><path d="M6 7V1M3 4l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 8v2.5h10V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      Share
+                    </span>
+                  </>)}
                 </button>
               )}
               {nodes.length > 0 && (
@@ -796,7 +807,7 @@ export default function App() {
           {/* Bottom-right: Jupiter Digital watermark */}
           <Panel position="bottom-right">
             <div className="canvas-brand">
-              <span className="canvas-brand-logo">🪐</span>
+              <span className="canvas-brand-logo"><JupiterIcon size={20} /></span>
               <div className="canvas-brand-text">
                 <span className="canvas-brand-name">Jupiter Digital</span>
                 <span className="canvas-brand-sub">AstroTree</span>

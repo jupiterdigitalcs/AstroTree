@@ -30,7 +30,7 @@ function pairKey(a, b) {
   return [a.id, b.id].sort().join('|')
 }
 
-export default function InsightsPanel({ nodes, edges, onExport, exporting }) {
+export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore }) {
   if (nodes.length < 2) {
     return (
       <div className="insights-panel">
@@ -196,11 +196,20 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting }) {
         {onExport && (
           <button
             type="button"
-            className="insights-export-btn"
+            className="relayout-btn relayout-btn--share insights-export-btn"
             onClick={onExport}
             disabled={exporting}
           >
-            {exporting ? '…' : '📤'}
+            {exporting ? '…' : (<>
+              <span className="export-label-desktop">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}}><path d="M6 1v7M3 6l3 3 3-3M1 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Download
+              </span>
+              <span className="export-label-mobile">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}}><path d="M6 7V1M3 4l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 8v2.5h10V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Share
+              </span>
+            </>)}
           </button>
         )}
       </div>
@@ -313,6 +322,18 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting }) {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* ── Add more prompt (shown when only elemental makeup is visible) ── */}
+      {sharedSigns.length === 0 && couples.length === 0 &&
+       Object.keys(signThreads).length === 0 && Object.keys(elementThreads).length === 0 &&
+       topBonds.length === 0 && onAddMore && (
+        <div className="insight-add-more">
+          <p className="insight-add-more-text">Add more family members &amp; connect them to unlock shared signs, compatibility, and generational patterns.</p>
+          <button type="button" className="insight-add-more-btn" onClick={onAddMore}>
+            ＋ Add Family Members
+          </button>
         </div>
       )}
 
