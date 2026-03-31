@@ -885,6 +885,11 @@ body {
   text-transform: uppercase;
 }
 
+/* Cleaner node cards during export — reduce glow for flat PNG */
+.react-flow.exporting .astro-node {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.7) !important;
+}
+
 /* Larger brand watermark in exported image */
 .react-flow.exporting .canvas-brand {
   padding: 0.7rem 1.1rem;
@@ -1020,6 +1025,35 @@ body {
 
 .save-dialog-discard:hover { background: rgba(220,60,60,0.16); }
 
+.save-dialog-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: -0.25rem;
+}
+
+/* ─────────────────── Off-screen insights panel for export ───────────────── */
+.export-insights-root {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 420px;
+  background: #09071a;
+  padding: 1.5rem 1.25rem;
+  z-index: -1;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Compact welcome for returning users */
+.family-welcome--compact {
+  padding: 0.75rem 0.5rem 0.75rem;
+}
+
+.family-welcome--compact .family-welcome-logo { font-size: 1.4rem; margin-bottom: 0.3rem; }
+.family-welcome--compact .family-welcome-title { font-size: 0.88rem; margin-bottom: 0.3rem; }
+.family-welcome--compact .family-welcome-sub { margin-bottom: 0; }
+
 .save-dialog-save {
   background: rgba(201,168,76,0.12);
   border: 1px solid var(--border-gold);
@@ -1084,6 +1118,26 @@ body {
 .element-bar-fill { height: 100%; border-radius: 3px; transition: width 0.45s ease; min-width: 2px; }
 .element-bar-count { font-size: 0.7rem; text-align: right; }
 .insight-coming-soon { border-color: rgba(201,168,76,0.15); background: rgba(201,168,76,0.025); }
+
+.insights-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.insights-header .form-title { margin: 0; }
+.insights-export-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.insights-export-btn:hover { border-color: var(--gold); color: var(--gold); }
 
 /* ─────────────────────────── Welcome screen ─────────────────────────────── */
 .welcome-screen {
@@ -1518,6 +1572,15 @@ body {
     width: 100%;
     height: calc(100dvh - 60px - env(safe-area-inset-bottom));
     overflow: hidden;
+  }
+
+  /* Prevent iOS from zooming in when focusing inputs (requires font-size ≥ 16px) */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  textarea,
+  select {
+    font-size: 16px !important;
   }
 
   /* Bottom tab bar visible on mobile */

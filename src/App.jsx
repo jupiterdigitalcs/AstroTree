@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { toPng } from 'html-to-image'
 import {
   ReactFlow,
@@ -46,8 +46,9 @@ function buildNodeData(member) {
 
 
 // ── Fit the view whenever fitTick increments ──────────────────────────────────
-function FitViewOnLayout({ fitTick }) {
+function FitViewOnLayout({ fitTick, fitViewRef }) {
   const { fitView } = useReactFlow()
+  fitViewRef.current = fitView
   useEffect(() => {
     if (fitTick === 0) return
     const t = setTimeout(() => fitView({ padding: 0.25, duration: 400 }), 80)
@@ -74,6 +75,13 @@ export default function App() {
   const [showSaveDialog,    setShowSaveDialog]    = useState(false)
   const [saveTitle,         setSaveTitle]         = useState('')
   const [pendingNewTree,    setPendingNewTree]    = useState(false)
+  const [showNewTreeConfirm, setShowNewTreeConfirm] = useState(false)
+  // True once the user has ever added members — shows compact welcome on next empty state
+  const [hasUsedApp,        setHasUsedApp]        = useState(() => {
+    try { return localStorage.getItem('astrotree_used') === '1' } catch { return false }
+  })
+
+  const fitViewRef = useRef(null)
 
   // Mobile panel is open when not on the tree tab, or when editing a node
   const panelOpen = activeTab !== 'tree' || !!editingNodeId
@@ -86,7 +94,7 @@ export default function App() {
       setEdges(draft.edges)
       setCounter(draft.counter ?? 1)
       if (draft.savedChartId) setSavedChartId(draft.savedChartId)
-      setActiveTab('tree')
+      setActiveTab('add') // always land on Family tab on refresh
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -136,6 +144,14 @@ export default function App() {
     [edges, nodes]
   )
 
+  function markUsed() {
+    setHasUsedApp(prev => {
+      if (prev) return prev
+      try { localStorage.setItem('astrotree_used', '1') } catch {}
+      return true
+    })
+  }
+
   // ── Add (atomic, supports multiple members) ───────────────────────────────
   function handleAdd({ members, relationships = {} }) {
     const { parentIds = [], childIds = [], spouseIds = [] } = relationships
@@ -158,6 +174,7 @@ export default function App() {
     setEditingNodeId(null)
     setShowAddMore(false)
     if (wasEmpty) setShowConnectPrompt(true)
+    markUsed()
   }
 
   // ── Update / delete ───────────────────────────────────────────────────────
@@ -243,13 +260,14 @@ export default function App() {
   }
 
   function handleNewTreeClick() {
-    if (nodes.length === 0) return
+    if (nodes.length === 0) { handleNewChart(); return }
+    markUsed()
     if (!savedChartId) {
       setPendingNewTree(true)
       setSaveTitle('')
       setShowSaveDialog(true)
     } else {
-      handleNewChart()
+      setShowNewTreeConfirm(true)
     }
   }
 
@@ -260,167 +278,132 @@ export default function App() {
     if (tab === 'tree') setFitTick(t => t + 1)
   }
 
-  // ── Export: tree image ────────────────────────────────────────────────────
+  // ── Combine two PNG data-URLs vertically on a canvas ─────────────────────
+  function combineImagesVertically(url1, url2) {
+    return new Promise(resolve => {
+      const img1 = new Image(), img2 = new Image()
+      let loaded = 0
+      const onLoad = () => {
+        if (++loaded < 2) return
+        const canvas = document.createElement('canvas')
+        canvas.width  = Math.max(img1.width, img2.width)
+        canvas.height = img1.height + img2.height
+        const ctx = canvas.getContext('2d')
+        ctx.fillStyle = '#09071a'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.drawImage(img1, Math.floor((canvas.width - img1.width) / 2), 0)
+        ctx.drawImage(img2, Math.floor((canvas.width - img2.width) / 2), img1.height)
+        resolve(canvas.toDataURL('image/png'))
+      }
+      img1.onload = img2.onload = onLoad
+      img1.src = url1; img2.src = url2
+    })
+  }
+
+  // ── Export: tree + insights image ────────────────────────────────────────
+  // ── Export tree image ─────────────────────────────────────────────────────
   const handleExport = useCallback(async () => {
     const el = document.querySelector('.react-flow')
     if (!el || exporting) return
     setExportError(null)
+    setExporting(true)
 
     const isMobile = window.innerWidth <= 768
+    fitViewRef.current?.({ padding: 0.12, duration: 0 })
+    await new Promise(r => setTimeout(r, 120))
 
-    // Desktop: open popup synchronously before any await so blockers don't fire
-    let win = null
-    if (!isMobile) {
-      win = window.open('', '_blank')
-      if (!win) {
-        setExportError('Popup blocked — please allow popups for this site and try again.')
-        return
-      }
-    }
-
-    setExporting(true)
-    // Show brand watermark on mobile + scale it up for the exported image
     const brand = el.querySelector('.canvas-brand')
-    if (isMobile && brand) brand.style.display = 'flex'
+    if (brand) brand.style.display = 'flex'
     el.classList.add('exporting')
+
     try {
-      const dataUrl = await toPng(el, {
+      const url = await toPng(el, {
         backgroundColor: '#09071a',
-        pixelRatio: 2,
+        pixelRatio: isMobile ? 2.5 : 2,
         filter: node => {
           const c = node.classList
           if (!c) return true
           if (c.contains('react-flow__background')) return false
           if (c.contains('react-flow__controls'))   return false
           if (c.contains('canvas-panel-btns'))      return false
+          if (c.contains('connect-prompt'))         return false
           return true
         },
       })
 
-      // Mobile: use native share sheet (saves to Photos, AirDrop, etc.)
-      if (isMobile) {
-        const blob = await (await fetch(dataUrl)).blob()
-        const file = new File([blob], 'astrotree-family.png', { type: 'image/png' })
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: 'My Family Astrology Tree',
-            text: 'Created with AstroTree by Jupiter Digital',
-          })
-        } else {
-          const link = document.createElement('a')
-          link.download = 'astrotree-family.png'
-          link.href = dataUrl
-          link.click()
+      if (isMobile && navigator.canShare) {
+        const blob = await (await fetch(url)).blob()
+        const file = new File([blob], 'astrotree-tree.png', { type: 'image/png' })
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'My Family Tree', text: 'Created with AstroTree by Jupiter Digital' })
+          return
         }
-        return
       }
-
-      // Build insights HTML
-      const ELEMENTS = ['Fire','Earth','Air','Water']
-      const elCounts = Object.fromEntries(ELEMENTS.map(e => [e, 0]))
-      nodes.forEach(n => { if (elCounts[n.data.element] !== undefined) elCounts[n.data.element]++ })
-      const total    = nodes.length
-      const dominant = ELEMENTS.reduce((a, b) => elCounts[a] >= elCounts[b] ? a : b)
-      const ELEMENT_ENERGY = { Fire:'passionate & driven', Earth:'grounded & practical', Air:'curious & communicative', Water:'intuitive & emotional' }
-      const elColors = { Fire:'#ff6b35', Earth:'#7ec845', Air:'#5bc8f5', Water:'#9b5de5' }
-
-      const signCounts = {}
-      nodes.forEach(n => { signCounts[n.data.sign] = (signCounts[n.data.sign] || 0) + 1 })
-      const sharedSigns = Object.entries(signCounts).filter(([, c]) => c > 1)
-
-      const spouseEdges = edges.filter(e => e.data?.relationType === 'spouse')
-      function compatible(a, b) { return a===b || (a==='Fire'&&b==='Air') || (a==='Air'&&b==='Fire') || (a==='Earth'&&b==='Water') || (a==='Water'&&b==='Earth') }
-      const couples = spouseEdges.map(e => {
-        const s = nodes.find(n => n.id === e.source), t = nodes.find(n => n.id === e.target)
-        return s && t ? { s, t, ok: compatible(s.data.element, t.data.element) } : null
-      }).filter(Boolean)
-
-      const elBars = ELEMENTS.map(el => {
-        const pct = total > 0 ? Math.round(elCounts[el] / total * 100) : 0
-        return `<div style="display:grid;grid-template-columns:3.5rem 1fr 1.5rem;gap:8px;align-items:center;margin-bottom:6px">
-          <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:${elColors[el]}">${el}</span>
-          <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:${elColors[el]};border-radius:3px"></div>
-          </div>
-          <span style="font-size:11px;color:${elColors[el]};text-align:right">${elCounts[el]}</span>
-        </div>`
-      }).join('')
-
-      const insightsHtml = `
-        <div style="padding:28px 32px;font-family:'Cinzel',serif;color:#ede6ff;background:#09071a">
-          <div style="font-size:11px;letter-spacing:0.3em;color:#c9a84c;text-transform:uppercase;margin-bottom:6px">Jupiter Digital</div>
-          <h2 style="font-size:22px;color:#e6c76e;letter-spacing:0.15em;margin-bottom:4px">AstroTree — Family Insights</h2>
-          <p style="font-size:12px;color:#8878aa;letter-spacing:0.08em;margin-bottom:24px">Family Celestial Tree · ${new Date().toLocaleDateString()}</p>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:16px">
-              <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#c9a84c;margin-bottom:12px">Elemental Makeup</div>
-              ${elBars}
-              <p style="font-size:12px;color:#b8aad4;margin-top:8px">
-                Your family is <strong style="color:${elColors[dominant]}">${ELEMENT_ENERGY[dominant]}</strong>.
-              </p>
-            </div>
-
-            <div style="display:flex;flex-direction:column;gap:12px">
-              ${sharedSigns.length > 0 ? `
-              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:16px">
-                <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#c9a84c;margin-bottom:10px">Shared Signs</div>
-                ${sharedSigns.map(([sign]) => {
-                  const members = nodes.filter(n => n.data.sign === sign)
-                  return `<p style="font-size:12px;color:#ede6ff;margin-bottom:4px">
-                    ${members[0].data.symbol} <strong>${sign}</strong> — ${members.map(m => m.data.name).join(', ')}
-                  </p>`
-                }).join('')}
-              </div>` : ''}
-
-              ${couples.length > 0 ? `
-              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:16px">
-                <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#c9a84c;margin-bottom:10px">Partner Compatibility</div>
-                ${couples.map(({ s, t, ok }) =>
-                  `<p style="font-size:12px;color:#ede6ff;margin-bottom:6px">
-                    ${s.data.symbol} ${s.data.name} &amp; ${t.data.symbol} ${t.data.name}<br/>
-                    <span style="color:${ok ? '#7ec845' : '#c9a84c'};font-size:11px">${ok ? '✓ Harmonious elements' : '◇ Complementary energies'}</span>
-                  </p>`
-                ).join('')}
-              </div>` : ''}
-            </div>
-
-          </div>
-        </div>`
-
-      win.document.write(`<!DOCTYPE html><html><head>
-        <title>AstroTree — Jupiter Digital</title>
-        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
-        <style>
-          *{margin:0;padding:0;box-sizing:border-box}
-          body{background:#09071a;color:#ede6ff;font-family:'Cinzel',serif}
-          .tree-img{width:100%;display:block;page-break-after:always}
-          @media print{*{-webkit-print-color-adjust:exact!important;color-adjust:exact!important}}
-        </style>
-      </head><body>
-        <img class="tree-img" src="${dataUrl}"/>
-        ${insightsHtml}
-        <script>setTimeout(()=>window.print(),800)</script>
-      </body></html>`)
-      win.document.close()
+      const link = document.createElement('a')
+      link.download = 'astrotree-tree.png'
+      link.href = url
+      link.click()
     } catch (err) {
-      // AbortError = user dismissed the native share sheet — not an error
       if (err?.name === 'AbortError') return
-      if (win) win.close()
       setExportError('Export failed — please try again.')
     } finally {
       el.classList.remove('exporting')
-      if (isMobile && brand) brand.style.display = ''
+      if (brand) brand.style.display = ''
       setExporting(false)
     }
-  }, [exporting, nodes, edges])
+  }, [exporting])
+
+  // ── Export insights image (captures live .insights-panel from the DOM) ────
+  const handleInsightsExport = useCallback(async () => {
+    const el = document.querySelector('.insights-panel')
+    if (!el || exporting) return
+    setExportError(null)
+    setExporting(true)
+    try {
+      const url = await toPng(el, {
+        backgroundColor: '#09071a',
+        pixelRatio: 2,
+        filter: node => !node.classList?.contains('insight-coming-soon') && !node.classList?.contains('insights-export-btn'),
+      })
+      const isMobile = window.innerWidth <= 768
+      if (isMobile && navigator.canShare) {
+        const blob = await (await fetch(url)).blob()
+        const file = new File([blob], 'astrotree-insights.png', { type: 'image/png' })
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'Family Cosmic Insights', text: 'Created with AstroTree by Jupiter Digital' })
+          return
+        }
+      }
+      const link = document.createElement('a')
+      link.download = 'astrotree-insights.png'
+      link.href = url
+      link.click()
+    } catch (err) {
+      if (err?.name === 'AbortError') return
+      setExportError('Export failed — please try again.')
+    } finally {
+      setExporting(false)
+    }
+  }, [exporting])
 
   const editingNode = editingNodeId ? nodes.find(n => n.id === editingNodeId) : null
 
   return (
     <div className="app">
+      {/* ── New Tree confirm (when tree is already saved) ────────────────── */}
+      {showNewTreeConfirm && (
+        <div className="save-dialog-backdrop" onClick={() => setShowNewTreeConfirm(false)}>
+          <div className="save-dialog" onClick={e => e.stopPropagation()}>
+            <p className="save-dialog-title">Start a new tree?</p>
+            <p className="save-dialog-sub">Your current tree is saved and can be reloaded from Saved Trees.</p>
+            <div className="save-dialog-btns">
+              <button type="button" className="save-dialog-cancel" onClick={() => setShowNewTreeConfirm(false)}>Cancel</button>
+              <button type="button" className="save-dialog-save" onClick={() => { setShowNewTreeConfirm(false); handleNewChart() }}>Start New</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Save dialog — fixed overlay, above sidebar ───────────────────── */}
       {showSaveDialog && (
         <div className="save-dialog-backdrop" onClick={() => { setShowSaveDialog(false); setPendingNewTree(false) }}>
@@ -552,14 +535,18 @@ export default function App() {
 
           /* ── Family Insights ────────────────────────────────────────── */
           ) : activeTab === 'insights' ? (
-            <InsightsPanel nodes={nodes} edges={edges} />
+            <InsightsPanel
+              nodes={nodes} edges={edges}
+              onExport={nodes.length >= 2 ? handleInsightsExport : undefined}
+              exporting={exporting}
+            />
 
           /* ── Saved charts ───────────────────────────────────────────── */
           ) : activeTab === 'charts' ? (
             <ChartsPanel
               nodes={nodes} edges={edges} counter={counter}
               savedChartId={savedChartId}
-              onLoad={handleLoadChart} onNew={handleNewChart}
+              onLoad={handleLoadChart} onNew={handleNewTreeClick}
             />
 
           /* ── About ──────────────────────────────────────────────────── */
@@ -571,19 +558,32 @@ export default function App() {
             <>
               {nodes.length === 0 ? (
                 <>
-                  <div className="family-welcome">
-                    <div className="family-welcome-logo">🪐</div>
-                    <h2 className="family-welcome-title">Welcome to AstroTree</h2>
-                    <p className="family-welcome-sub">
-                      Build your family's celestial chart — discover the sun signs and cosmic patterns woven across generations.
-                    </p>
-                    <ol className="family-welcome-steps">
-                      <li><strong>Add</strong> family members with their birthdate</li>
-                      <li><strong>Connect</strong> them as parents, children &amp; partners</li>
-                      <li><strong>Discover</strong> your family's cosmic blueprint</li>
-                    </ol>
-                    <p className="family-welcome-cta-hint">Start by filling in the form below ↓</p>
-                  </div>
+                  {hasUsedApp ? (
+                    <div className="family-welcome family-welcome--compact">
+                      <div className="family-welcome-logo">🪐</div>
+                      <h2 className="family-welcome-title">Start a New Tree</h2>
+                      <p className="family-welcome-sub">Add family members below to build another celestial chart.</p>
+                      <ol className="family-welcome-steps">
+                        <li><strong>Add</strong> members with their birthdates</li>
+                        <li><strong>Connect</strong> them on the Tree tab</li>
+                        <li><strong>Save</strong> when ready — find it in Saved</li>
+                      </ol>
+                    </div>
+                  ) : (
+                    <div className="family-welcome">
+                      <div className="family-welcome-logo">🪐</div>
+                      <h2 className="family-welcome-title">Welcome to AstroTree</h2>
+                      <p className="family-welcome-sub">
+                        Build your family's celestial chart — discover the sun signs and cosmic patterns woven across generations.
+                      </p>
+                      <ol className="family-welcome-steps">
+                        <li><strong>Add</strong> family members with their birthdate</li>
+                        <li><strong>Connect</strong> them as parents, children &amp; partners</li>
+                        <li><strong>Discover</strong> your family's cosmic blueprint</li>
+                      </ol>
+                      <p className="family-welcome-cta-hint">Start by filling in the form below ↓</p>
+                    </div>
+                  )}
                   <AddMembersForm onAdd={handleAdd} />
                 </>
               ) : (
@@ -748,7 +748,7 @@ export default function App() {
           minZoom={0.3} colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >
-          <FitViewOnLayout fitTick={fitTick} />
+          <FitViewOnLayout fitTick={fitTick} fitViewRef={fitViewRef} />
           <Background color="#1a1040" gap={36} size={1} />
           <Controls style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
 
@@ -805,6 +805,7 @@ export default function App() {
           </Panel>
         </ReactFlow>
       </main>
+
     </div>
   )
 }

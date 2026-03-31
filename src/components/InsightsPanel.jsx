@@ -30,7 +30,7 @@ function pairKey(a, b) {
   return [a.id, b.id].sort().join('|')
 }
 
-export default function InsightsPanel({ nodes, edges }) {
+export default function InsightsPanel({ nodes, edges, onExport, exporting }) {
   if (nodes.length < 2) {
     return (
       <div className="insights-panel">
@@ -191,7 +191,19 @@ export default function InsightsPanel({ nodes, edges }) {
 
   return (
     <div className="insights-panel">
-      <h2 className="form-title">✦ Family Insights</h2>
+      <div className="insights-header">
+        <h2 className="form-title">✦ Family Insights</h2>
+        {onExport && (
+          <button
+            type="button"
+            className="insights-export-btn"
+            onClick={onExport}
+            disabled={exporting}
+          >
+            {exporting ? '…' : '📤'}
+          </button>
+        )}
+      </div>
 
       {/* ── Elemental makeup ───────────────────────────────────────────── */}
       <div className="insight-card">
