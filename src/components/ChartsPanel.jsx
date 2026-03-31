@@ -9,15 +9,18 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew }) {
     setCharts(loadCharts())
   }
 
+  // Active tree on top, then most recent first
+  const sorted = [...charts].sort((a, b) => {
+    if (a.id === savedChartId) return -1
+    if (b.id === savedChartId) return 1
+    return new Date(b.savedAt) - new Date(a.savedAt)
+  })
+
   return (
     <div className="charts-panel">
-      <h2 className="form-title">✦ My Trees</h2>
-
-      <button type="button" className="add-row-btn" onClick={onNew}>+ New Tree</button>
-
-      {charts.length > 0 ? (
+      {sorted.length > 0 ? (
         <div className="charts-list">
-          {charts.map(c => (
+          {sorted.map(c => (
             <div key={c.id} className={`chart-item${c.id === savedChartId ? ' chart-item--active' : ''}`}>
               <div className="chart-item-info">
                 <span className="chart-item-title">
@@ -40,6 +43,11 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew }) {
       ) : (
         <p className="bulk-hint">No saved trees yet. Use 💾 Save on the tree screen.</p>
       )}
+
+      <div className="charts-panel-footer">
+        <h2 className="charts-panel-title">🗂️ My Trees</h2>
+        <button type="button" className="add-row-btn" onClick={onNew}>+ New Tree</button>
+      </div>
     </div>
   )
 }

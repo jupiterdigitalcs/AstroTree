@@ -2,15 +2,11 @@ import { useState } from 'react'
 import { DateInput } from './DateInput.jsx'
 
 
-const INITIAL_ROWS = () => [
-  { id: 1, name: '', birthdate: '' },
-  { id: 2, name: '', birthdate: '' },
-  { id: 3, name: '', birthdate: '' },
-]
+const makeRows = (n) => Array.from({ length: n }, (_, i) => ({ id: i + 1, name: '', birthdate: '' }))
 
-export default function AddMembersForm({ onAdd }) {
-  const [rows,       setRows]       = useState(INITIAL_ROWS)
-  const [rowCounter, setRowCounter] = useState(4)
+export default function AddMembersForm({ onAdd, initialRows = 3 }) {
+  const [rows,       setRows]       = useState(() => makeRows(initialRows))
+  const [rowCounter, setRowCounter] = useState(initialRows + 1)
   const [error,      setError]      = useState('')
   // touched tracks which fields the user has blurred on each row
   const [touched,    setTouched]    = useState({})
@@ -42,8 +38,8 @@ export default function AddMembersForm({ onAdd }) {
       relationships: {},
     })
 
-    setRows(INITIAL_ROWS())
-    setRowCounter(4)
+    setRows(makeRows(initialRows))
+    setRowCounter(initialRows + 1)
     setError('')
     setTouched({})
   }

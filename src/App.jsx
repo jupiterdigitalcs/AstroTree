@@ -406,6 +406,8 @@ export default function App() {
       </body></html>`)
       win.document.close()
     } catch (err) {
+      // AbortError = user dismissed the native share sheet — not an error
+      if (err?.name === 'AbortError') return
       if (win) win.close()
       setExportError('Export failed — please try again.')
     } finally {
@@ -476,8 +478,22 @@ export default function App() {
 
       {/* ── Sidebar / Panel ─────────────────────────────────────────────── */}
       <aside className={`sidebar${panelOpen ? ' open' : ''}`}>
-        {/* Mobile drag handle — tapping returns to tree */}
-        <div className="sidebar-drag-handle" onClick={() => { setActiveTab('tree'); setEditingNodeId(null) }} />
+        {/* Mobile panel header — shows tab name and close button */}
+        <div className="mobile-panel-header">
+          <span className="mobile-panel-title">
+            {editingNodeId ? 'Edit Member'
+              : activeTab === 'insights' ? '✦ Insights'
+              : activeTab === 'charts'   ? '🗂️ Saved Trees'
+              : activeTab === 'about'    ? '🪐 About'
+              : '★ Family'}
+          </span>
+          <button
+            type="button"
+            className="mobile-panel-close"
+            onClick={() => { setActiveTab('tree'); setEditingNodeId(null) }}
+            aria-label="Back to tree"
+          >✕</button>
+        </div>
 
         {/* Brand */}
         <div className="brand-header">
@@ -492,7 +508,7 @@ export default function App() {
         {/* ── Desktop tab strip (hidden on mobile) ────────────────────── */}
         <div className="sidebar-tabs">
           <button
-            className={`sidebar-tab${(activeTab === 'add' || activeTab === 'tree') && !editingNode ? ' active' : ''}`}
+            className={`sidebar-tab${activeTab === 'add' || activeTab === 'tree' ? ' active' : ''}`}
             onClick={() => goTab('add')}
           >★ Family</button>
           <button
@@ -555,8 +571,18 @@ export default function App() {
             <>
               {nodes.length === 0 ? (
                 <>
-                  <div className="start-hint">
-                    <p>Add family members below — enter a name and birthday to reveal their sun sign.</p>
+                  <div className="family-welcome">
+                    <div className="family-welcome-logo">🪐</div>
+                    <h2 className="family-welcome-title">Welcome to AstroTree</h2>
+                    <p className="family-welcome-sub">
+                      Build your family's celestial chart — discover the sun signs and cosmic patterns woven across generations.
+                    </p>
+                    <ol className="family-welcome-steps">
+                      <li><strong>Add</strong> family members with their birthdate</li>
+                      <li><strong>Connect</strong> them as parents, children &amp; partners</li>
+                      <li><strong>Discover</strong> your family's cosmic blueprint</li>
+                    </ol>
+                    <p className="family-welcome-cta-hint">Start by filling in the form below ↓</p>
                   </div>
                   <AddMembersForm onAdd={handleAdd} />
                 </>
@@ -567,25 +593,6 @@ export default function App() {
                     <div className="member-list-header">
                       <h3>Your Family · {nodes.length}</h3>
                       <span className="member-list-hint">tap a name to connect</span>
-                    </div>
-                    {/* Save + New Tree actions — shown only in Family tab */}
-                    <div className="family-tree-actions">
-                      {!savedChartId && (
-                        <button
-                          type="button"
-                          className="family-tree-btn family-tree-btn--save"
-                          onClick={() => { setSaveTitle(''); setShowSaveDialog(true) }}
-                        >
-                          💾 Save Tree
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        className="family-tree-btn"
-                        onClick={handleNewTreeClick}
-                      >
-                        ＋ New Tree
-                      </button>
                     </div>
                     {nodes.map(n => (
                       <div key={n.id} className="member-pill"
@@ -613,7 +620,27 @@ export default function App() {
                     >
                       {showAddMore ? '▲ Hide' : '＋ Add more people'}
                     </button>
-                    {showAddMore && <AddMembersForm onAdd={handleAdd} />}
+                    {showAddMore && <AddMembersForm onAdd={handleAdd} initialRows={1} />}
+                  </div>
+
+                  {/* Divider + New Tree (and Save if unsaved) */}
+                  <div className="family-bottom-actions">
+                    {!savedChartId && (
+                      <button
+                        type="button"
+                        className="family-tree-btn family-tree-btn--save"
+                        onClick={() => { setSaveTitle(''); setShowSaveDialog(true) }}
+                      >
+                        💾 Save Tree
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="family-tree-btn"
+                      onClick={handleNewTreeClick}
+                    >
+                      ＋ New Tree
+                    </button>
                   </div>
                 </>
               )}
@@ -637,7 +664,7 @@ export default function App() {
       {/* ── Mobile bottom tab bar ────────────────────────────────────────── */}
       <nav className="bottom-tab-bar" aria-label="Main navigation">
         <button
-          className={`bottom-tab${activeTab === 'add' && !editingNodeId ? ' active' : ''}`}
+          className={`bottom-tab${activeTab === 'add' || !!editingNodeId ? ' active' : ''}`}
           onClick={() => goTab('add')}
         >
           <span className="bottom-tab-icon">★</span>

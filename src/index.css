@@ -80,16 +80,9 @@ body {
   transition: transform 0.3s ease;
 }
 
-/* Mobile drag pill */
-.sidebar-drag-handle {
+/* Mobile panel header (hidden on desktop) */
+.mobile-panel-header {
   display: none;
-  width: 40px;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  margin: 0.6rem auto 0;
-  cursor: pointer;
-  flex-shrink: 0;
 }
 
 /* ── Brand header ─────────────────────────────────────────────────────────── */
@@ -755,6 +748,23 @@ body {
   padding: 1.1rem 1.05rem;
 }
 
+.charts-panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+}
+
+.charts-panel-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-family: 'Cinzel', serif;
+}
+
 .chart-save-form {
   display: flex;
   gap: 0.4rem;
@@ -1227,19 +1237,77 @@ body {
   background: rgba(255,255,255,0.03);
 }
 
-/* ─────────────────────────── Start hint ─────────────────────────────────── */
-.start-hint {
-  background: linear-gradient(135deg, rgba(201,168,76,0.05) 0%, rgba(160,100,200,0.04) 100%);
-  border: 1px solid var(--border-gold);
-  border-radius: var(--radius);
-  padding: 0.75rem 1rem;
+/* ─────────────────────────── Family tab welcome ────────────────────────── */
+.family-welcome {
+  text-align: center;
+  padding: 1.25rem 0.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.25rem;
 }
 
-.start-hint p {
-  font-size: 0.8rem;
+.family-welcome-logo {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 0 12px rgba(201,168,76,0.4));
+}
+
+.family-welcome-title {
+  font-size: 1rem;
+  font-family: 'Cinzel', serif;
+  color: var(--gold-light);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+
+.family-welcome-sub {
+  font-size: 0.75rem;
   color: var(--text-muted);
-  line-height: 1.55;
-  text-align: center;
+  line-height: 1.6;
+  margin-bottom: 0.9rem;
+}
+
+.family-welcome-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+  counter-reset: step;
+}
+
+.family-welcome-steps li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 0.76rem;
+  color: var(--text-soft);
+  line-height: 1.45;
+  counter-increment: step;
+}
+
+.family-welcome-steps li::before {
+  content: counter(step);
+  min-width: 1.3rem;
+  height: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 50%;
+  font-size: 0.65rem;
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  flex-shrink: 0;
+}
+
+.family-welcome-cta-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  font-style: italic;
 }
 
 /* ─────────────────────────── Member list header ─────────────────────────── */
@@ -1375,25 +1443,61 @@ body {
 @media (max-width: 768px) {
   .app { flex-direction: column; }
 
-  /* Sidebar becomes a bottom sheet that slides up above the tab bar */
+  /* Sidebar becomes a full-height panel above the tab bar */
   .sidebar {
     position: fixed;
-    bottom: calc(60px + env(safe-area-inset-bottom));
+    top: 0;
     left: 0;
     right: 0;
+    bottom: calc(60px + env(safe-area-inset-bottom));
     width: 100%;
-    max-height: 78vh;
+    max-height: none;
     border-right: none;
-    border-top: 1px solid var(--border);
-    border-radius: 18px 18px 0 0;
+    border-top: none;
+    border-radius: 0;
     transform: translateY(100%);
     z-index: 100;
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.7);
+    box-shadow: none;
   }
 
   .sidebar.open { transform: translateY(0); }
 
-  .sidebar-drag-handle { display: block; }
+  /* Mobile panel header — tab name + close button */
+  .mobile-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.7rem 1.15rem 0.6rem;
+    padding-top: max(0.7rem, env(safe-area-inset-top));
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    background: rgba(14,10,32,0.6);
+  }
+
+  .mobile-panel-title {
+    font-size: 0.78rem;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.1em;
+    color: var(--gold-light);
+    text-transform: uppercase;
+  }
+
+  .mobile-panel-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.25rem 0.4rem;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .mobile-panel-close:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+
+  /* Hide brand header on mobile — panel header takes its role */
+  .brand-header { display: none; }
 
   /* Hide desktop tab strip on mobile — navigation is via bottom tab bar */
   .sidebar-tabs { display: none; }
@@ -1585,11 +1689,13 @@ body {
   color: #fff;
 }
 
-/* Family tab — Save + New Tree row */
-.family-tree-actions {
+/* Family tab — Save + New Tree row (below add-more section) */
+.family-bottom-actions {
   display: flex;
   gap: 0.4rem;
-  margin-bottom: 0.5rem;
+  padding-top: 0.65rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border);
 }
 
 .family-tree-btn {
@@ -1624,8 +1730,6 @@ body {
 
 .add-more-section {
   margin-top: 0.5rem;
-  border-top: 1px solid var(--border);
-  padding-top: 0.65rem;
 }
 
 .add-more-toggle {
