@@ -182,17 +182,34 @@ export function getReferrer() {
   return 'direct'
 }
 
+async function fetchGeo() {
+  try {
+    const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3000) })
+    if (!res.ok) return {}
+    const d = await res.json()
+    return {
+      country: d.country_name?.slice(0, 100) ?? null,
+      city:    d.city?.slice(0, 100)         ?? null,
+    }
+  } catch {
+    return {}
+  }
+}
+
 export async function upsertDevice() {
   const sb = getClient()
   if (!sb) return
   try {
     const id = getDeviceId()
     // Try insert first (new device)
+    const geo = await fetchGeo()
     const { error: insertError } = await sb.from('devices').insert({
       id,
       referrer:    getReferrer(),
       timezone:    Intl.DateTimeFormat().resolvedOptions().timeZone ?? null,
       user_agent:  navigator.userAgent.slice(0, 300),
+      country:     geo.country ?? null,
+      city:        geo.city    ?? null,
     })
     if (insertError) {
       // Already exists — just update last_seen

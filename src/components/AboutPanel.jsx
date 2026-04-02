@@ -101,6 +101,7 @@ export default function AboutPanel() {
           <li>Each browser gets a random anonymous ID — not tied to you personally.</li>
           <li>You can delete your trees at any time from Saved Trees.</li>
           <li>Trees shared via link are visible to anyone with that link.</li>
+          <li>Synced trees are visible to the app creator (Jupiter Digital) via an admin panel for support and moderation purposes.</li>
         </ul>
         <p className="about-bio" style={{ marginTop: '0.5rem' }}>
           This is a small independent app. Your data is not sold or used for advertising.

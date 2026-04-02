@@ -28,6 +28,8 @@ function fromRow(row) {
     email:       row.email ?? null,
     timezone:    row.timezone ?? null,
     lastSeen:    row.last_seen ?? null,
+    country:     row.country ?? null,
+    city:        row.city ?? null,
   }
 }
 
@@ -59,6 +61,29 @@ export async function fetchAdminStatsManual() {
   } catch (e) {
     console.error('admin_get_stats exception:', e)
     return null
+  }
+}
+
+export async function fetchDevicesGrouped() {
+  const sb = getClient()
+  if (!sb) return []
+  try {
+    const { data, error } = await sb.rpc('admin_get_devices')
+    if (error) { console.error('admin_get_devices error:', error); return [] }
+    return (data ?? []).map(r => ({
+      deviceId:   r.device_id,
+      email:      r.email ?? null,
+      country:    r.country ?? null,
+      city:       r.city ?? null,
+      timezone:   r.timezone ?? null,
+      lastSeen:   r.last_seen ?? null,
+      referrer:   r.referrer ?? null,
+      treeCount:  Number(r.tree_count),
+      treeTitles: r.tree_titles ?? [],
+    }))
+  } catch (e) {
+    console.error('admin_get_devices exception:', e)
+    return []
   }
 }
 

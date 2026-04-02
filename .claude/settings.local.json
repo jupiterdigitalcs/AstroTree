@@ -11,7 +11,10 @@
       "Bash(npm test:*)",
       "Bash(grep -E \"\\\\.jsx$|\\\\.js$\")",
       "Bash(node:*)",
-      "Bash(ls /Users/csoll/Projects/AstroTree/.env*)"
+      "Bash(ls /Users/csoll/Projects/AstroTree/.env*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)"
     ]
   }
 }
