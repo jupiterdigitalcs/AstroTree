@@ -305,6 +305,25 @@ export default function App() {
     setEditingNodeId(null); setActiveTab('add')
   }, [setNodes, setEdges])
 
+  const handleRenameChart = useCallback((updatedChart) => {
+    // If the active chart was renamed, keep savedChartId pointing to same id (unchanged)
+    // Just sync the rename to cloud
+    syncChart(updatedChart)
+  }, [syncChart]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleDuplicateChart = useCallback((chart) => {
+    const newId    = Date.now().toString()
+    const newChart = {
+      ...chart,
+      id:      newId,
+      title:   `${chart.title} (copy)`,
+      savedAt: new Date().toISOString(),
+    }
+    saveChart(newChart)
+    syncChart(newChart)
+    handleLoadChart(newChart)
+  }, [handleLoadChart]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleRelayout = useCallback(() => {
     setNodes(prev => applyDagreLayout(prev, edges))
     setFitTick(t => t + 1)
@@ -695,6 +714,8 @@ export default function App() {
               savedChartId={savedChartId}
               onLoad={handleLoadChart} onNew={handleNewTreeClick}
               onDeleteCloud={deleteFromCloud}
+              onRename={handleRenameChart}
+              onDuplicate={handleDuplicateChart}
               onAddEmail={isCloudEnabled() ? () => { clearEmailAsked(); setShowEmailCapture(true) } : undefined}
               onGoToAbout={() => {
                 goTab('about')

@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react'
-import { loadCharts, deleteChart, saveChart } from '../utils/storage.js'
+import { loadCharts, deleteChart, saveChart, renameChart } from '../utils/storage.js'
 import { fetchCharts, fetchPublicCharts, isCloudEnabled, restoreChartsByEmail } from '../utils/cloudStorage.js'
 import { getSavedEmail } from './EmailCapture.jsx'
 
-export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout }) {
+export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout, onRename, onDuplicate }) {
   const [charts,          setCharts]          = useState(() => loadCharts())
   const [publicCharts,    setPublicCharts]    = useState([])
   const [restoring,       setRestoring]       = useState(false)
   const [pendingDeleteId, setPendingDeleteId] = useState(null)
   const [showRestore,     setShowRestore]     = useState(false)
   const [restoreEmail,    setRestoreEmail]    = useState('')
-  const [restoreStatus,   setRestoreStatus]   = useState('idle') // idle | loading | success | error | not_found
+  const [restoreStatus,   setRestoreStatus]   = useState('idle')
   const [restoreCount,    setRestoreCount]    = useState(0)
+  const [renamingId,      setRenamingId]      = useState(null)
+  const [renameValue,     setRenameValue]     = useState('')
   const savedEmail = getSavedEmail()
 
   useEffect(() => {
@@ -19,9 +21,7 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
     fetchPublicCharts().then(rows => { if (rows.length) setPublicCharts(rows) })
   }, [])
 
-  function reloadLocal() {
-    setCharts(loadCharts())
-  }
+  function reloadLocal() { setCharts(loadCharts()) }
 
   function handleDelete(id) {
     deleteChart(id)
@@ -30,16 +30,30 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
     reloadLocal()
   }
 
+  function startRename(chart) {
+    setRenamingId(chart.id)
+    setRenameValue(chart.title)
+    setPendingDeleteId(null)
+  }
+
+  function commitRename(id) {
+    if (!renameValue.trim()) { setRenamingId(null); return }
+    const updated = renameChart(id, renameValue.trim())
+    if (updated) onRename?.(updated)
+    reloadLocal()
+    setRenamingId(null)
+  }
+
   async function handleEmailRestore(e) {
     e.preventDefault()
     if (!restoreEmail.trim() || restoring) return
     setRestoreStatus('loading')
+    const { restoreChartsByEmail } = await import('../utils/cloudStorage.js')
     const result = await restoreChartsByEmail(restoreEmail)
     if (!result.ok) {
       setRestoreStatus(result.error?.includes('No account') ? 'not_found' : 'error')
       return
     }
-    // Also pull the newly copied charts into localStorage
     const cloudCharts = await fetchCharts()
     const local = loadCharts()
     const localIds = new Set(local.map(c => c.id))
@@ -49,7 +63,6 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
     reloadLocal()
     setRestoreCount(result.count ?? 0)
     setRestoreStatus('success')
-    // Save email locally so it shows in the indicator
     try { localStorage.setItem('astrotree_user_email', restoreEmail.trim()) } catch {}
   }
 
@@ -93,6 +106,22 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
                     <button type="button" className="connection-add-btn" onClick={() => setPendingDeleteId(null)}>Cancel</button>
                   </div>
                 </div>
+              ) : renamingId === c.id ? (
+                <form
+                  className="chart-item-rename"
+                  onSubmit={e => { e.preventDefault(); commitRename(c.id) }}
+                >
+                  <input
+                    className="chart-rename-input"
+                    value={renameValue}
+                    onChange={e => setRenameValue(e.target.value)}
+                    autoFocus
+                    onBlur={() => commitRename(c.id)}
+                    onKeyDown={e => e.key === 'Escape' && setRenamingId(null)}
+                  />
+                  <button type="submit" className="connection-add-btn">Save</button>
+                  <button type="button" className="connection-remove-btn" onClick={() => setRenamingId(null)}>✕</button>
+                </form>
               ) : (
                 <>
                   <div className="chart-item-info">
@@ -108,6 +137,8 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
                     {c.id !== savedChartId && (
                       <button type="button" className="connection-add-btn" onClick={() => onLoad(c)}>Load</button>
                     )}
+                    <button type="button" className="chart-action-icon" title="Rename" onClick={() => startRename(c)}>✎</button>
+                    <button type="button" className="chart-action-icon" title="Duplicate" onClick={() => onDuplicate?.(c)}>⎘</button>
                     <button type="button" className="connection-remove-btn" onClick={() => setPendingDeleteId(c.id)} aria-label="Delete">×</button>
                   </div>
                 </>
@@ -144,12 +175,8 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
                 autoFocus
                 disabled={restoreStatus === 'loading'}
               />
-              {restoreStatus === 'not_found' && (
-                <p className="restore-error">No account found with that email.</p>
-              )}
-              {restoreStatus === 'error' && (
-                <p className="restore-error">Something went wrong — try again.</p>
-              )}
+              {restoreStatus === 'not_found' && <p className="restore-error">No account found with that email.</p>}
+              {restoreStatus === 'error'     && <p className="restore-error">Something went wrong — try again.</p>}
               <div className="restore-form-btns">
                 <button type="button" className="save-dialog-cancel" onClick={() => { setShowRestore(false); setRestoreStatus('idle') }}>Cancel</button>
                 <button type="submit" className="save-dialog-save" disabled={restoreStatus === 'loading' || !restoreEmail.trim()}>
