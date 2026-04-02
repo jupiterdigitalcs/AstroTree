@@ -788,7 +788,7 @@ export default function App() {
                       <p className="connect-hint-banner">Tap a name below to connect family members on the tree ↓</p>
                     )}
 
-                    {nodes.map(n => (
+                    {[...nodes].sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999')).map(n => (
                       <div key={n.id} className="member-pill"
                         style={{ borderColor: `${n.data.elementColor}44`, cursor: 'pointer' }}
                         onClick={() => setEditingNodeId(n.id)}

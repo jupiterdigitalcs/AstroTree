@@ -38,6 +38,13 @@ function buildRoleBlurb({ modalityMod, elementBlurb, node }) {
   return `${node.data.name} is ${modalityMod} ${elementBlurb}.`
 }
 
+function byAge(a, b) {
+  return (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999')
+}
+function byAgeNode(a, b) {
+  return (a.node.data.birthdate || '9999').localeCompare(b.node.data.birthdate || '9999')
+}
+
 // ── Inner components ──────────────────────────────────────────────────────────
 
 function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, total, missingElements }) {
@@ -364,7 +371,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       allCompatPairs.push({ a, b, relationLabel, score, compatLabel, color })
     }
   }
-  allCompatPairs.sort((x, y) => y.score - x.score || x.a.data.name.localeCompare(y.a.data.name))
+  allCompatPairs.sort((x, y) => y.score - x.score || (x.a.data.birthdate || '9999').localeCompare(y.a.data.birthdate || '9999'))
 
   // ── Member roles (Feature 3) ─────────────────────────────────────────────────
   const distinctEls = new Set(nodes.map(n => n.data.element)).size
@@ -382,7 +389,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       sameSignPeers:    sameSgn.map(n => n.data.name),
       isBridge:         sameEl.length === 0 && distinctEls >= 3,
     }
-  }).sort((a, b) => a.node.data.name.localeCompare(b.node.data.name))
+  }).sort(byAgeNode)
 
   return (
     <div className="insights-panel">
@@ -447,7 +454,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <div className="insight-card">
           <h3 className="insight-heading">Shared Signs</h3>
           {sharedSigns.map(([sign]) => {
-            const members = nodes.filter(n => n.data.sign === sign)
+            const members = nodes.filter(n => n.data.sign === sign).sort(byAge)
             return (
               <p key={sign} className="insight-note">
                 {members[0].data.symbol} <strong>{sign}</strong> —{' '}
