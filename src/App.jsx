@@ -443,7 +443,11 @@ export default function App() {
         const blob = await res.blob()
         const file = new File([blob], treeFilename, { type: 'image/png' })
         if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title: treeFilename })
+          await navigator.share({
+            files: [file],
+            title: chartTitle ? `${chartTitle} · AstroTree` : 'My Family Astrology Tree',
+            text: 'Check out my family astrology tree, made with AstroTree by Jupiter Digital ✦',
+          })
           return
         }
       }
@@ -497,7 +501,11 @@ export default function App() {
         const blob = await res.blob()
         const file = new File([blob], filename, { type: 'image/png' })
         if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title: filename })
+          await navigator.share({
+            files: [file],
+            title: chartTitle ? `${chartTitle} · Astrology Insights` : 'Family Astrology Insights',
+            text: 'Here are my family astrology insights from AstroTree by Jupiter Digital ✦',
+          })
           return
         }
       }
