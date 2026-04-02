@@ -3444,3 +3444,159 @@ body:has(.admin-app) {
 }
 
 .chart-action-icon:hover { color: var(--gold); }
+
+/* ═══════════════════════════════════════════════════════════════
+   TREE VIEW TOGGLE
+   ═══════════════════════════════════════════════════════════════ */
+.tree-view-toggle {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  z-index: 10;
+  display: flex;
+  gap: 0.3rem;
+  background: rgba(9,7,26,0.85);
+  border: 1px solid var(--border-gold);
+  border-radius: 20px;
+  padding: 0.2rem;
+  backdrop-filter: blur(8px);
+}
+
+.tree-view-btn {
+  padding: 0.3rem 0.7rem;
+  border-radius: 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.tree-view-btn:hover { color: var(--text); }
+
+.tree-view-btn--active {
+  background: var(--gold);
+  color: #09071a;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ZODIAC WHEEL
+   ═══════════════════════════════════════════════════════════════ */
+.zodiac-wheel-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: var(--bg-deep);
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.zodiac-wheel-svg {
+  width: min(90vw, 500px);
+  height: min(90vw, 500px);
+  max-width: 500px;
+  max-height: 500px;
+  flex-shrink: 0;
+}
+
+.zodiac-segment {
+  transition: fill 0.15s;
+}
+
+.zodiac-sign-symbol {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.zodiac-sign-name {
+  font-family: 'Raleway', sans-serif;
+  font-size: 8px;
+  letter-spacing: 0.04em;
+}
+
+.zodiac-member-initial {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.zodiac-center-title {
+  font-size: 20px;
+}
+
+.zodiac-center-sub {
+  font-family: 'Raleway', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+/* Tooltip */
+.zodiac-tooltip {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(9,7,26,0.92);
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  padding: 0.5rem 0.85rem;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+.zodiac-tooltip-symbol { font-size: 1.1rem; }
+.zodiac-tooltip-name { font-weight: 600; font-size: 0.88rem; }
+.zodiac-tooltip-sign { color: var(--text-muted); font-size: 0.78rem; }
+
+/* Legend */
+.zodiac-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+  max-width: 500px;
+}
+
+.zodiac-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: 8px;
+  transition: background 0.15s;
+  font-size: 0.8rem;
+}
+
+.zodiac-legend-item:hover,
+.zodiac-legend-item--active {
+  background: rgba(201,168,76,0.1);
+}
+
+.zodiac-legend-initial {
+  width: 1.4rem;
+  height: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid;
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.zodiac-legend-name { font-weight: 600; }
+.zodiac-legend-sign { color: var(--text-muted); font-size: 0.72rem; }

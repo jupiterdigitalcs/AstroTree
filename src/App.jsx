@@ -15,6 +15,7 @@ import '@xyflow/react/dist/style.css'
 import AddMembersForm  from './components/AddMembersForm.jsx'
 import AstroNode       from './components/AstroNode.jsx'
 import EditMemberPanel from './components/EditMemberPanel.jsx'
+import ZodiacWheel     from './components/ZodiacWheel.jsx'
 import ChartsPanel     from './components/ChartsPanel.jsx'
 import InsightsPanel   from './components/InsightsPanel.jsx'
 import AboutPanel      from './components/AboutPanel.jsx'
@@ -98,6 +99,7 @@ export default function App() {
   })
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
+  const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac'
   const [showEmailCapture,  setShowEmailCapture]  = useState(false)
   const [lastSavedAt,       setLastSavedAt]       = useState(null)
   const [treeViewedCount,   setTreeViewedCount]   = useState(0)
@@ -926,6 +928,32 @@ export default function App() {
           </div>
         )}
 
+        {/* View toggle (tree vs zodiac) */}
+        {nodes.length > 0 && (
+          <div className="tree-view-toggle">
+            <button
+              type="button"
+              className={`tree-view-btn${treeView === 'tree' ? ' tree-view-btn--active' : ''}`}
+              onClick={() => setTreeView('tree')}
+            >
+              🌳 Tree
+            </button>
+            <button
+              type="button"
+              className={`tree-view-btn${treeView === 'zodiac' ? ' tree-view-btn--active' : ''}`}
+              onClick={() => setTreeView('zodiac')}
+            >
+              ☉ Zodiac
+            </button>
+          </div>
+        )}
+
+        {treeView === 'zodiac' && nodes.length > 0 ? (
+          <ZodiacWheel
+            nodes={nodes}
+            onSelectNode={(id) => setEditingNodeId(id)}
+          />
+        ) : (
         <ReactFlow
           nodes={nodes} edges={edgesForDisplay}
           onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
@@ -1011,6 +1039,7 @@ export default function App() {
             </div>
           </Panel>
         </ReactFlow>
+        )}
       </main>
 
     </div>
