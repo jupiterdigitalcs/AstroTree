@@ -1,4 +1,8 @@
-import { ELEMENT_COLORS } from '../utils/astrology.js'
+import { useState } from 'react'
+import {
+  ELEMENT_COLORS, SIGN_MODALITY, POLARITY_GROUP,
+  FAMILY_SIGNATURE_DESCRIPTIONS, ELEMENT_ROLE_BLURB, MODALITY_MODIFIER,
+} from '../utils/astrology.js'
 
 const ELEMENTS = ['Fire', 'Earth', 'Air', 'Water']
 
@@ -10,12 +14,12 @@ const ELEMENT_ENERGY = {
 }
 
 const OPPOSITE_SIGNS = {
-  Aries: 'Libra',       Libra:       'Aries',
-  Taurus: 'Scorpio',    Scorpio:     'Taurus',
-  Gemini: 'Sagittarius',Sagittarius: 'Gemini',
-  Cancer: 'Capricorn',  Capricorn:   'Cancer',
-  Leo:    'Aquarius',   Aquarius:    'Leo',
-  Virgo:  'Pisces',     Pisces:      'Virgo',
+  Aries: 'Libra',        Libra:       'Aries',
+  Taurus: 'Scorpio',     Scorpio:     'Taurus',
+  Gemini: 'Sagittarius', Sagittarius: 'Gemini',
+  Cancer: 'Capricorn',   Capricorn:   'Cancer',
+  Leo:    'Aquarius',    Aquarius:    'Leo',
+  Virgo:  'Pisces',      Pisces:      'Virgo',
 }
 
 function areCompatible(a, b) {
@@ -30,13 +34,127 @@ function pairKey(a, b) {
   return [a.id, b.id].sort().join('|')
 }
 
+function buildRoleBlurb({ modalityMod, elementBlurb, node }) {
+  return `${node.data.name} is ${modalityMod} ${elementBlurb}.`
+}
+
+// ── Inner components ──────────────────────────────────────────────────────────
+
+function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, total, missingElements }) {
+  const desc = FAMILY_SIGNATURE_DESCRIPTIONS[dominant]?.[dominantModality]
+  const mascPct = total > 0 ? Math.round(masculine / total * 100) : 50
+  const femPct  = total > 0 ? Math.round(feminine  / total * 100) : 50
+  return (
+    <div className="insight-card insight-signature-card">
+      <h3 className="insight-heading">Family Signature</h3>
+      <div className="signature-hero">
+        <span className="signature-element" style={{ color: ELEMENT_COLORS[dominant] }}>{dominant}</span>
+        {' / '}
+        <span className="signature-modality">{dominantModality}</span>
+      </div>
+      {desc && (
+        <p className="insight-note signature-desc">Your family {desc}.</p>
+      )}
+      <div className="signature-polarity-row">
+        <span className="signature-polarity-label">Active</span>
+        <div className="signature-polarity-track">
+          <div className="signature-polarity-fill signature-polarity-fill--masc" style={{ width: `${mascPct}%` }} />
+          <div className="signature-polarity-fill signature-polarity-fill--fem"  style={{ width: `${femPct}%` }} />
+        </div>
+        <span className="signature-polarity-label signature-polarity-label--right">Receptive</span>
+      </div>
+      <p className="signature-polarity-note">
+        {masculine} active (Fire + Air) · {feminine} receptive (Earth + Water)
+      </p>
+      {missingElements.length > 0 && (
+        <p className="insight-note signature-missing">
+          No {missingElements.join(' or ')} energy — the family may seek this outside the home
+        </p>
+      )}
+    </div>
+  )
+}
+
+function FullCompatPairs({ pairs }) {
+  const [showAll, setShowAll] = useState(false)
+  const displayed = showAll ? pairs : pairs.slice(0, 10)
+  return (
+    <div className="insight-card">
+      <h3 className="insight-heading">Full Compatibility Report</h3>
+      <p className="insight-note compat-pair-count">{pairs.length} pair{pairs.length !== 1 ? 's' : ''} across your family</p>
+      <div className="compat-pair-list">
+        {displayed.map(pair => (
+          <div key={pairKey(pair.a, pair.b)} className="compat-pair-row">
+            <div className="compat-pair-names">
+              <span>{pair.a.data.symbol} <strong>{pair.a.data.name}</strong></span>
+              <span className="compat-pair-amp">&amp;</span>
+              <span>{pair.b.data.symbol} <strong>{pair.b.data.name}</strong></span>
+              <span className="compat-pair-rel">{pair.relationLabel}</span>
+            </div>
+            <p className="insight-compat" style={{ color: pair.color }}>{pair.compatLabel}</p>
+          </div>
+        ))}
+      </div>
+      {pairs.length > 10 && (
+        <button type="button" className="compat-show-more-btn" onClick={() => setShowAll(v => !v)}>
+          {showAll ? 'Show less' : `Show all ${pairs.length} pairs`}
+        </button>
+      )}
+    </div>
+  )
+}
+
+function FamilyRoles({ memberRoles }) {
+  const [expanded, setExpanded] = useState(null)
+  return (
+    <div className="insight-card">
+      <h3 className="insight-heading">Family Roles</h3>
+      <p className="insight-note" style={{ marginBottom: '0.4rem' }}>Each member's cosmic role in the family dynamic</p>
+      {memberRoles.map(role => {
+        const isOpen = expanded === role.node.id
+        return (
+          <div
+            key={role.node.id}
+            className={`family-role-item${isOpen ? ' family-role-item--open' : ''}`}
+            onClick={() => setExpanded(v => v === role.node.id ? null : role.node.id)}
+          >
+            <div className="family-role-header">
+              <span className="family-role-symbol" style={{ color: role.node.data.elementColor }}>{role.node.data.symbol}</span>
+              <span className="family-role-name"><strong>{role.node.data.name}</strong></span>
+              <span className="family-role-sign">{role.node.data.sign}</span>
+              <span className="family-role-chevron">{isOpen ? '▲' : '▼'}</span>
+            </div>
+            {isOpen && (
+              <div className="family-role-body">
+                <p className="insight-note">{buildRoleBlurb(role)}</p>
+                {role.isOnlyElement && (
+                  <p className="insight-note family-role-special">✦ Sole {role.node.data.element} energy in the family</p>
+                )}
+                {!role.isOnlyElement && role.sameElementPeers.length > 0 && (
+                  <p className="insight-note family-role-special">
+                    Fellow {role.node.data.element} spirit alongside {role.sameElementPeers.join(', ')}
+                  </p>
+                )}
+                {role.isBridge && (
+                  <p className="insight-note family-role-special">✦ The Bridge — brings {role.node.data.element} energy no one else carries</p>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
 export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree }) {
   if (nodes.length < 2) {
     return (
       <div className="insights-panel">
         <h2 className="form-title">✦ Family Insights</h2>
         <p className="bulk-hint">Add at least two family members to reveal your celestial patterns.</p>
-
         <div className="insight-card insight-coming-soon">
           <h3 className="insight-heading">What you'll unlock</h3>
           <p className="insight-note">🔥 <strong>Elemental makeup</strong> — which elements dominate your family</p>
@@ -44,7 +162,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           <p className="insight-note">💞 <strong>Partner harmony</strong> — elemental compatibility for couples</p>
           <p className="insight-note">🔁 <strong>Sign &amp; element threads</strong> — cosmic patterns across generations</p>
         </div>
-
         <div className="insight-card insight-coming-soon">
           <h3 className="insight-heading">Coming in future updates ✨</h3>
           <p className="insight-note">🌙 <strong>Moon Sign</strong> — add birth time for emotional depth</p>
@@ -89,7 +206,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     )
   }
 
-  // ── Element breakdown ──────────────────────────────────────────────────────
+  // ── Element breakdown ────────────────────────────────────────────────────────
   const elementCounts = Object.fromEntries(ELEMENTS.map(e => [e, 0]))
   nodes.forEach(n => {
     if (elementCounts[n.data.element] !== undefined) elementCounts[n.data.element]++
@@ -97,14 +214,25 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const total    = nodes.length
   const dominant = ELEMENTS.reduce((a, b) => elementCounts[a] >= elementCounts[b] ? a : b)
 
-  // ── Shared sun signs ───────────────────────────────────────────────────────
+  // ── Modality + polarity (Feature 1) ─────────────────────────────────────────
+  const modalityCounts = { Cardinal: 0, Fixed: 0, Mutable: 0 }
+  nodes.forEach(n => { if (SIGN_MODALITY[n.data.sign]) modalityCounts[SIGN_MODALITY[n.data.sign]]++ })
+  const dominantModality = Object.entries(modalityCounts).reduce((a, b) => b[1] > a[1] ? b : a)[0]
+  let masculine = 0, feminine = 0
+  nodes.forEach(n => {
+    if      (POLARITY_GROUP[n.data.element] === 'Masculine') masculine++
+    else if (POLARITY_GROUP[n.data.element] === 'Feminine')  feminine++
+  })
+  const missingElements = ELEMENTS.filter(el => elementCounts[el] === 0)
+
+  // ── Shared sun signs ─────────────────────────────────────────────────────────
   const signCounts = {}
   nodes.forEach(n => { signCounts[n.data.sign] = (signCounts[n.data.sign] || 0) + 1 })
   const sharedSigns = Object.entries(signCounts)
     .filter(([, c]) => c > 1)
     .sort((a, b) => b[1] - a[1])
 
-  // ── Couple / partner compatibility ────────────────────────────────────────
+  // ── Couple / partner compatibility ──────────────────────────────────────────
   const spouseEdges = edges.filter(e => e.data?.relationType === 'spouse')
   const couples = spouseEdges
     .map(e => {
@@ -115,7 +243,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     })
     .filter(Boolean)
 
-  // ── Build child→parents map (shared by both thread features) ─────────────
+  // ── Build child→parents map ──────────────────────────────────────────────────
   const parentChildEdges = edges.filter(e => e.data?.relationType === 'parent-child')
   const parentMap = {}
   parentChildEdges.forEach(e => {
@@ -123,7 +251,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     parentMap[e.target].push(e.source)
   })
 
-  // Walk ancestors collecting the longest consecutive chain matching a key
   function getLongestChain(nodeId, keyFn, keyValue, visited = new Set()) {
     if (visited.has(nodeId)) return []
     visited.add(nodeId)
@@ -135,7 +262,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     return parents.length > 0 ? [...parents, node] : [node]
   }
 
-  // ── Sign threads (multi-generation same sun sign) ─────────────────────────
+  // ── Sign threads ─────────────────────────────────────────────────────────────
   const signThreads = {}
   nodes.forEach(n => {
     const sign = n.data.sign
@@ -144,7 +271,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     if (chain.length >= 2) signThreads[sign] = chain
   })
 
-  // ── Elemental family threads (multi-generation same element) ──────────────
+  // ── Elemental family threads ─────────────────────────────────────────────────
   const elementThreads = {}
   ELEMENTS.forEach(el => {
     let longest = []
@@ -156,8 +283,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     if (longest.length >= 2) elementThreads[el] = longest
   })
 
-  // ── Notable bonds: score every pair, surface the top 5 ───────────────────
-  // Build sibling pairs (share a parent)
+  // ── Sibling / cousin sets ────────────────────────────────────────────────────
   const childrenByParent = {}
   parentChildEdges.forEach(e => {
     if (!childrenByParent[e.source]) childrenByParent[e.source] = []
@@ -169,8 +295,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       for (let j = i + 1; j < children.length; j++)
         siblingKeys.add([children[i], children[j]].sort().join('|'))
   })
-
-  // Build cousin pairs (parents are siblings)
   const cousinKeys = new Set()
   ;[...siblingKeys].forEach(sibKey => {
     const [pA, pB] = sibKey.split('|')
@@ -182,7 +306,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     )
   })
 
-  // Pairs already shown in other cards (parent-child, spouse) — skip them
+  // ── Notable bonds (existing top-5) ──────────────────────────────────────────
   const shownKeys = new Set()
   parentChildEdges.forEach(e => shownKeys.add([e.source, e.target].sort().join('|')))
   spouseEdges.forEach(e => shownKeys.add([e.source, e.target].sort().join('|')))
@@ -193,27 +317,15 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       const a = nodes[i], b = nodes[j]
       const key = pairKey(a, b)
       if (shownKeys.has(key)) continue
-
       const sameSign   = a.data.sign === b.data.sign
       const isOpposite = OPPOSITE_SIGNS[a.data.sign] === b.data.sign
       const compatElem = areCompatible(a.data.element, b.data.element)
       const isSibling  = siblingKeys.has(key)
       const isCousin   = cousinKeys.has(key)
-
-      let score = 0
-      let note  = ''
-
-      if (sameSign) {
-        score = 10
-        note  = `Both ${a.data.symbol} ${a.data.sign} — cosmic twins`
-      } else if (isOpposite) {
-        score = 8
-        note  = `${a.data.symbol} ${a.data.sign} & ${b.data.symbol} ${b.data.sign} — mirror signs`
-      } else if (compatElem && (isSibling || isCousin)) {
-        score = 5
-        note  = `${a.data.element} & ${b.data.element} — natural flow`
-      }
-
+      let score = 0, note = ''
+      if (sameSign)                              { score = 10; note = `Both ${a.data.symbol} ${a.data.sign} — cosmic twins` }
+      else if (isOpposite)                       { score = 8;  note = `${a.data.symbol} ${a.data.sign} & ${b.data.symbol} ${b.data.sign} — mirror signs` }
+      else if (compatElem && (isSibling || isCousin)) { score = 5; note = `${a.data.element} & ${b.data.element} — natural flow` }
       if (score === 0) continue
       const rel = isSibling ? 'siblings' : isCousin ? 'cousins' : ''
       notableBonds.push({ a, b, score, note, rel })
@@ -221,6 +333,56 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   }
   notableBonds.sort((x, y) => y.score - x.score)
   const topBonds = notableBonds.slice(0, 5)
+
+  // ── All compat pairs (Feature 2) ─────────────────────────────────────────────
+  const spouseEdgeSet      = new Set(spouseEdges.map(e => [e.source, e.target].sort().join('|')))
+  const parentChildEdgeSet = new Set(parentChildEdges.map(e => [e.source, e.target].sort().join('|')))
+
+  const allCompatPairs = []
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j]
+      const key = pairKey(a, b)
+      let relationLabel = 'extended family'
+      if (spouseEdgeSet.has(key))      relationLabel = 'partners'
+      else if (parentChildEdgeSet.has(key)) relationLabel = 'parent & child'
+      else if (siblingKeys.has(key))   relationLabel = 'siblings'
+      else if (cousinKeys.has(key))    relationLabel = 'cousins'
+
+      let score, compatLabel, color
+      if (a.data.sign === b.data.sign) {
+        score = 5; compatLabel = 'Cosmic Twins'; color = 'var(--gold)'
+      } else if (OPPOSITE_SIGNS[a.data.sign] === b.data.sign) {
+        score = 4; compatLabel = 'Mirror Signs'; color = 'var(--rose)'
+      } else if (a.data.element === b.data.element) {
+        score = 3; compatLabel = 'Kindred Spirits'; color = ELEMENT_COLORS[a.data.element]
+      } else if (areCompatible(a.data.element, b.data.element)) {
+        score = 2; compatLabel = 'Natural Flow'; color = '#7ec845'
+      } else {
+        score = 1; compatLabel = 'Unique Dynamic'; color = 'var(--text-muted)'
+      }
+      allCompatPairs.push({ a, b, relationLabel, score, compatLabel, color })
+    }
+  }
+  allCompatPairs.sort((x, y) => y.score - x.score || x.a.data.name.localeCompare(y.a.data.name))
+
+  // ── Member roles (Feature 3) ─────────────────────────────────────────────────
+  const distinctEls = new Set(nodes.map(n => n.data.element)).size
+  const memberRoles = nodes.map(node => {
+    const modality = SIGN_MODALITY[node.data.sign] ?? 'Unknown'
+    const sameEl   = nodes.filter(n => n.id !== node.id && n.data.element === node.data.element)
+    const sameSgn  = nodes.filter(n => n.id !== node.id && n.data.sign    === node.data.sign)
+    return {
+      node, modality,
+      elementBlurb:     ELEMENT_ROLE_BLURB[node.data.element] ?? 'brings a unique presence',
+      modalityMod:      MODALITY_MODIFIER[modality]            ?? 'a unique spirit who',
+      isOnlyElement:    sameEl.length === 0,
+      isOnlySign:       sameSgn.length === 0,
+      sameElementPeers: sameEl.map(n => n.data.name),
+      sameSignPeers:    sameSgn.map(n => n.data.name),
+      isBridge:         sameEl.length === 0 && distinctEls >= 3,
+    }
+  }).sort((a, b) => a.node.data.name.localeCompare(b.node.data.name))
 
   return (
     <div className="insights-panel">
@@ -247,7 +409,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         )}
       </div>
 
-      {/* ── Elemental makeup ───────────────────────────────────────────── */}
+      {/* 1. Elemental Makeup */}
       <div className="insight-card">
         <h3 className="insight-heading">Elemental Makeup</h3>
         {ELEMENTS.map(el => {
@@ -270,7 +432,17 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </p>
       </div>
 
-      {/* ── Shared signs ───────────────────────────────────────────────── */}
+      {/* 2. Family Signature (NEW) */}
+      <FamilySignatureCard
+        dominant={dominant}
+        dominantModality={dominantModality}
+        masculine={masculine}
+        feminine={feminine}
+        total={total}
+        missingElements={missingElements}
+      />
+
+      {/* 3. Shared Signs */}
       {sharedSigns.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">Shared Signs</h3>
@@ -286,7 +458,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* ── Partner compatibility ───────────────────────────────────────── */}
+      {/* 4. Partner Compatibility */}
       {couples.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">Partner Compatibility</h3>
@@ -304,24 +476,21 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* ── Sign threads ────────────────────────────────────────────────── */}
+      {/* 5. Sign Threads */}
       {Object.keys(signThreads).length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">Sign Threads</h3>
-          {Object.entries(signThreads).map(([sign, chain]) => {
-            const symbol = chain[0].data.symbol
-            return (
-              <p key={sign} className="insight-note">
-                <strong>{symbol} {sign}</strong> runs through{' '}
-                {chain.length === 2 ? '2 generations' : `${chain.length} generations`}:{' '}
-                {chain.map(n => n.data.name).join(' → ')}
-              </p>
-            )
-          })}
+          {Object.entries(signThreads).map(([sign, chain]) => (
+            <p key={sign} className="insight-note">
+              <strong>{chain[0].data.symbol} {sign}</strong> runs through{' '}
+              {chain.length === 2 ? '2 generations' : `${chain.length} generations`}:{' '}
+              {chain.map(n => n.data.name).join(' → ')}
+            </p>
+          ))}
         </div>
       )}
 
-      {/* ── Elemental threads ───────────────────────────────────────────── */}
+      {/* 6. Elemental Threads */}
       {Object.keys(elementThreads).length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">Elemental Family Threads</h3>
@@ -338,7 +507,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* ── Notable bonds ───────────────────────────────────────────────── */}
+      {/* 7. Notable Bonds */}
       {topBonds.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">Notable Bonds</h3>
@@ -358,7 +527,17 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* ── Add more prompt (shown when only elemental makeup is visible) ── */}
+      {/* 8. Full Compatibility Report (NEW) */}
+      {allCompatPairs.length > 0 && (
+        <FullCompatPairs pairs={allCompatPairs} />
+      )}
+
+      {/* 9. Family Roles (NEW) */}
+      {memberRoles.length >= 2 && (
+        <FamilyRoles memberRoles={memberRoles} />
+      )}
+
+      {/* 10. Add more prompt */}
       {sharedSigns.length === 0 && couples.length === 0 &&
        Object.keys(signThreads).length === 0 && Object.keys(elementThreads).length === 0 &&
        topBonds.length === 0 && onAddMore && (
@@ -370,7 +549,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* ── Coming soon ─────────────────────────────────────────────────── */}
+      {/* 11. Coming Soon */}
       <div className="insight-card insight-coming-soon">
         <h3 className="insight-heading">Coming in future updates ✨</h3>
         <p className="insight-note">🌙 <strong>Moon Sign</strong> — add birth time for emotional depth</p>
@@ -378,7 +557,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <p className="insight-note">🔮 <strong>Deeper Insights</strong> — themes across generations</p>
       </div>
 
-      {/* ── Brand footer — hidden normally, shown during export ────────── */}
+      {/* 12. Brand footer — hidden normally, shown during export */}
       <div className="insights-brand-footer">
         <span className="insights-brand-name">✦ AstroTree by Jupiter Digital</span>
         <span className="insights-brand-contact">
