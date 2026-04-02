@@ -436,6 +436,17 @@ export default function App() {
       ctx.fillText('jupreturns@gmail.com  ·  @jupreturn', cvs.width - pad, mid)
       const finalUrl = cvs.toDataURL('image/png')
 
+      // On mobile, use native share sheet so user can save to camera roll
+      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+      if (isMobile && navigator.share) {
+        const res = await fetch(finalUrl)
+        const blob = await res.blob()
+        const file = new File([blob], treeFilename, { type: 'image/png' })
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: treeFilename })
+          return
+        }
+      }
       const link = document.createElement('a')
       link.download = treeFilename
       link.href = finalUrl
@@ -479,6 +490,17 @@ export default function App() {
           return true
         },
       })
+      // On mobile, use native share sheet so user can save to camera roll
+      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+      if (isMobile && navigator.share) {
+        const res = await fetch(url)
+        const blob = await res.blob()
+        const file = new File([blob], filename, { type: 'image/png' })
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: filename })
+          return
+        }
+      }
       const link = document.createElement('a')
       link.download = filename
       link.href = url
