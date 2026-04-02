@@ -22,6 +22,11 @@ import { JupiterIcon }            from './components/JupiterIcon.jsx'
 import { getSunSign, getElement } from './utils/astrology.js'
 import { applyDagreLayout }      from './utils/layout.js'
 import { saveDraft, loadDraft, saveChart, loadCharts }  from './utils/storage.js'
+import { useCloudSync } from './hooks/useCloudSync.js'
+import { SyncIndicator } from './components/SyncIndicator.jsx'
+import { ShareButton } from './components/ShareButton.jsx'
+import { fetchChartByToken, isCloudEnabled } from './utils/cloudStorage.js'
+import { EmailCapture, hasBeenAsked } from './components/EmailCapture.jsx'
 
 const NODE_TYPES = { astro: AstroNode }
 
@@ -65,7 +70,9 @@ export default function App() {
   const [counter,           setCounter]           = useState(1)
   const [editingNodeId,     setEditingNodeId]     = useState(null)
   // 'tree' | 'add' | 'insights' | 'charts' | 'about'
-  const [activeTab,         setActiveTab]         = useState('add')
+  const [activeTab,         setActiveTab]         = useState(() => {
+    try { const draft = loadDraft(); return (draft?.nodes?.length > 0) ? 'add' : 'tree' } catch { return 'add' }
+  })
   const [showAddMore,       setShowAddMore]       = useState(false)
   const [showConnectPrompt, setShowConnectPrompt] = useState(false)
   const [fitTick,           setFitTick]           = useState(0)
@@ -81,14 +88,38 @@ export default function App() {
   const [hasUsedApp,        setHasUsedApp]        = useState(() => {
     try { return localStorage.getItem('astrotree_used') === '1' } catch { return false }
   })
+  // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
+  const [viewOnly,          setViewOnly]          = useState(false)
+  const [showEmailCapture,  setShowEmailCapture]  = useState(false)
 
   const fitViewRef = useRef(null)
 
   // Mobile panel is open when not on the tree tab, or when editing a node
   const panelOpen = activeTab !== 'tree' || !!editingNodeId
 
+  const { syncStatus, syncChart, deleteFromCloud } = useCloudSync({
+    onMergeCharts: () => {/* ChartsPanel will re-read localStorage on its own mount */},
+  })
+
+  // ── Handle ?view=<share_token> shared chart link ──────────────────────────
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get('view')
+    if (!token || !isCloudEnabled()) return
+    fetchChartByToken(token).then(chart => {
+      if (!chart) return
+      setNodes(chart.nodes)
+      setEdges(chart.edges)
+      setCounter(chart.counter)
+      // Do NOT set savedChartId — viewer doesn't own this chart
+      setViewOnly(true)
+      setActiveTab('tree')
+      setFitTick(t => t + 1)
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Restore draft on first load ───────────────────────────────────────────
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('view')) return // skip draft if viewing shared link
     const draft = loadDraft()
     if (draft?.nodes?.length > 0) {
       setNodes(draft.nodes)
@@ -111,10 +142,12 @@ export default function App() {
     const t = setTimeout(() => {
       const existing = loadCharts().find(c => c.id === savedChartId)
       if (!existing) return // chart was deleted from the Saved tab
-      saveChart({ ...existing, nodes, edges, counter, savedAt: new Date().toISOString() })
+      const updated = { ...existing, nodes, edges, counter, savedAt: new Date().toISOString() }
+      saveChart(updated)
+      syncChart(updated)
     }, 800)
     return () => clearTimeout(t)
-  }, [nodes, edges, counter, savedChartId])
+  }, [nodes, edges, counter, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Layout on edge / node count changes ──────────────────────────────────
   useEffect(() => {
@@ -250,10 +283,15 @@ export default function App() {
     e.preventDefault()
     if (!saveTitle.trim() || nodes.length === 0) return
     const id = Date.now().toString()
-    saveChart({ id, title: saveTitle.trim(), nodes, edges, counter, savedAt: new Date().toISOString() })
+    const chart = { id, title: saveTitle.trim(), nodes, edges, counter, savedAt: new Date().toISOString() }
+    saveChart(chart)
+    syncChart(chart)
     setSavedChartId(id)
+    setViewOnly(false)
     setShowSaveDialog(false)
     setSaveTitle('')
+    // Show email capture once, only after their first ever named save
+    if (!hasBeenAsked() && isCloudEnabled()) setShowEmailCapture(true)
     if (pendingNewTree) {
       setPendingNewTree(false)
       handleNewChart()
@@ -391,6 +429,11 @@ export default function App() {
 
   return (
     <div className="app">
+      {/* ── Email capture — shown once after first named save ───────────── */}
+      {showEmailCapture && (
+        <EmailCapture onDismiss={() => setShowEmailCapture(false)} />
+      )}
+
       {/* ── New Tree confirm (when tree is already saved) ────────────────── */}
       {showNewTreeConfirm && (
         <div className="save-dialog-backdrop" onClick={() => setShowNewTreeConfirm(false)}>
@@ -549,6 +592,7 @@ export default function App() {
               nodes={nodes} edges={edges} counter={counter}
               savedChartId={savedChartId}
               onLoad={handleLoadChart} onNew={handleNewTreeClick}
+              onDeleteCloud={deleteFromCloud}
             />
 
           /* ── About ──────────────────────────────────────────────────── */
@@ -568,7 +612,7 @@ export default function App() {
                       <ol className="family-welcome-steps">
                         <li><strong>Add</strong> members with their birthdates</li>
                         <li><strong>Connect</strong> them on the Tree tab</li>
-                        <li><strong>Save</strong> when ready — find it in Saved</li>
+                        <li><strong>Explore</strong> your family's cosmic insights</li>
                       </ol>
                     </div>
                   ) : (
@@ -581,7 +625,7 @@ export default function App() {
                       <ol className="family-welcome-steps">
                         <li><strong>Add</strong> family members with their birthdate</li>
                         <li><strong>Connect</strong> them as parents, children &amp; partners</li>
-                        <li><strong>Discover</strong> your family's cosmic blueprint</li>
+                        <li><strong>Explore</strong> your family's cosmic insights</li>
                       </ol>
                       <p className="family-welcome-cta-hint">Start by filling in the form below ↓</p>
                     </div>
@@ -717,7 +761,7 @@ export default function App() {
               <div className="welcome-steps">
                 <div className="welcome-step"><span className="welcome-step-num">1</span><span>Add family members with their birthdates</span></div>
                 <div className="welcome-step"><span className="welcome-step-num">2</span><span>Connect parents, children &amp; partners</span></div>
-                <div className="welcome-step"><span className="welcome-step-num">3</span><span>Reveal your family's cosmic blueprint</span></div>
+                <div className="welcome-step"><span className="welcome-step-num">3</span><span>Explore your family's cosmic insights</span></div>
               </div>
               <button type="button" className="welcome-cta"
                 onClick={() => goTab('add')}>
@@ -754,9 +798,26 @@ export default function App() {
           <Background color="#1a1040" gap={36} size={1} />
           <Controls style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
 
+          {/* View-only banner for shared charts */}
+          {viewOnly && (
+            <Panel position="top-center">
+              <div className="view-only-banner">
+                Viewing a shared tree —{' '}
+                <button
+                  type="button"
+                  className="view-only-save-btn"
+                  onClick={() => { setSaveTitle(''); setShowSaveDialog(true) }}
+                >
+                  Save a copy
+                </button>
+              </div>
+            </Panel>
+          )}
+
           {/* Top-right: action buttons */}
           <Panel position="top-right">
             <div className="canvas-panel-btns">
+              <SyncIndicator status={syncStatus} />
               {nodes.length > 0 && (
                 <button
                   type="button"
@@ -776,6 +837,7 @@ export default function App() {
                   💾 Save
                 </button>
               )}
+              <ShareButton savedChartId={savedChartId} syncStatus={syncStatus} />
               {/* Share / Export */}
               {nodes.length > 0 && (
                 <button

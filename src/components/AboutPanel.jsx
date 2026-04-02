@@ -74,6 +74,25 @@ export default function AboutPanel() {
         <span className="about-shop-arrow">→</span>
       </a>
 
+      {/* ── Your Data ─────────────────────────────────────────────────── */}
+      <div className="about-card">
+        <h3 className="about-heading">Your Data</h3>
+        <p className="about-bio">
+          AstroTree saves your family tree to your browser. If you use cloud sync,
+          your tree data (names, birthdates, and astrological signs) is also stored
+          on our servers so you can access it from other devices.
+        </p>
+        <ul className="about-data-list">
+          <li>No name, email, or account is required.</li>
+          <li>Each browser gets a random anonymous ID — not tied to you personally.</li>
+          <li>You can delete your trees at any time from Saved Trees.</li>
+          <li>Trees shared via link are visible to anyone with that link.</li>
+        </ul>
+        <p className="about-bio" style={{ marginTop: '0.5rem' }}>
+          This is a small independent app. Your data is not sold or used for advertising.
+        </p>
+      </div>
+
       {/* ── App note ──────────────────────────────────────────────────── */}
       <p className="about-app-note">
         AstroTree is a free tool — if it brings you joy,

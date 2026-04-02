@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@dagrejs/dagre": "^1.1.8",
+    "@supabase/supabase-js": "^2.101.1",
     "@xyflow/react": "^12.3.6",
     "html-to-image": "^1.11.11",
     "react": "^18.3.1",
