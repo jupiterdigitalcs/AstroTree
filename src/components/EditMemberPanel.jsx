@@ -15,9 +15,6 @@ export default function EditMemberPanel({
   const [birthdate,     setBirthdate]     = useState(node.data.birthdate)
   const [error,         setError]         = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [addParentId,   setAddParentId]   = useState('')
-  const [addChildId,    setAddChildId]    = useState('')
-  const [addSpouseId,   setAddSpouseId]   = useState('')
 
   // ── Derive connections fresh from props every render ──────────────────────
   const parentEdges = edges.filter(e => e.target === node.id && e.data?.relationType !== 'spouse')
@@ -108,19 +105,41 @@ export default function EditMemberPanel({
           )}
 
           {eligibleNodes.length > 0 && (
-            <>
-              <AddDropdown placeholder="+ Add parent…"          value={addParentId}  onChange={setAddParentId}
-                options={eligibleNodes} onAdd={() => { onAddEdge(addParentId,  node.id);         setAddParentId('') }} />
-              <AddDropdown placeholder="+ Add child…"           value={addChildId}   onChange={setAddChildId}
-                options={eligibleNodes} onAdd={() => { onAddEdge(node.id, addChildId);            setAddChildId('') }} />
-              <AddDropdown placeholder="+ Add spouse/partner…"  value={addSpouseId}  onChange={setAddSpouseId}
-                options={eligibleNodes} onAdd={() => { onAddEdge(node.id, addSpouseId, 'spouse'); setAddSpouseId('') }} />
-            </>
+            <div className="connection-add-row">
+              <select
+                value=""
+                className="connection-add-select"
+                onChange={e => {
+                  if (!e.target.value) return
+                  const [id, rel] = e.target.value.split(':')
+                  if (rel === 'parent') onAddEdge(id, node.id)
+                  else if (rel === 'child') onAddEdge(node.id, id)
+                  else if (rel === 'spouse') onAddEdge(node.id, id, 'spouse')
+                }}
+              >
+                <option value="">＋ Add connection…</option>
+                <optgroup label="Parent of me">
+                  {eligibleNodes.map(n => (
+                    <option key={n.id} value={`${n.id}:parent`}>{n.data.symbol} {n.data.name}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="My child">
+                  {eligibleNodes.map(n => (
+                    <option key={n.id} value={`${n.id}:child`}>{n.data.symbol} {n.data.name}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Spouse / partner">
+                  {eligibleNodes.map(n => (
+                    <option key={n.id} value={`${n.id}:spouse`}>{n.data.symbol} {n.data.name}</option>
+                  ))}
+                </optgroup>
+              </select>
+            </div>
           )}
         </div>
       )}
 
-      <button type="submit" className="add-btn">Update</button>
+      <button type="submit" className="add-btn">Save</button>
       <button type="button" className="cancel-btn" onClick={onCancel}>Cancel</button>
 
       {!confirmDelete ? (
@@ -164,16 +183,3 @@ function ConnGroup({ label, edgeList, getOther, allNodes, onRemove, accentColor 
   )
 }
 
-function AddDropdown({ placeholder, options, value, onChange, onAdd }) {
-  return (
-    <div className="connection-add-row">
-      <select value={value} onChange={e => onChange(e.target.value)} className="connection-add-select">
-        <option value="">{placeholder}</option>
-        {options.map(n => (
-          <option key={n.id} value={n.id}>{n.data.symbol} {n.data.name}</option>
-        ))}
-      </select>
-      <button type="button" className="connection-add-btn" disabled={!value} onClick={onAdd}>Add</button>
-    </div>
-  )
-}

@@ -30,7 +30,7 @@ function pairKey(a, b) {
   return [a.id, b.id].sort().join('|')
 }
 
-export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore }) {
+export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree }) {
   if (nodes.length < 2) {
     return (
       <div className="insights-panel">
@@ -45,6 +45,39 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           <p className="insight-note">🔁 <strong>Sign &amp; element threads</strong> — cosmic patterns across generations</p>
         </div>
 
+        <div className="insight-card insight-coming-soon">
+          <h3 className="insight-heading">Coming in future updates ✨</h3>
+          <p className="insight-note">🌙 <strong>Moon Sign</strong> — add birth time for emotional depth</p>
+          <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>
+          <p className="insight-note">🔮 <strong>Full Chart Overlays</strong> — planetary alignments across generations</p>
+          <p className="insight-note">📅 <strong>Birthday Reminders</strong> — connect to your Jupiter Digital calendar</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (edges.length === 0) {
+    return (
+      <div className="insights-panel">
+        <h2 className="form-title">✦ Family Insights</h2>
+        <div className="insight-card insight-connect-prompt">
+          <h3 className="insight-heading">Connect your family members</h3>
+          <p className="insight-note">Your members are added — now connect them on the tree to unlock relationship insights.</p>
+          <p className="insight-note" style={{ marginTop: '0.5rem' }}>
+            Tap any member card in the <strong>Family</strong> tab, or click a node on the tree, to add connections.
+          </p>
+          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.78rem', opacity: 0.75 }}>
+            <span>💞 Partner harmony — unlocked with spouse connections</span>
+            <span>🔁 Sign threads — unlocked with parent-child connections</span>
+            <span>🌿 Element threads — unlocked with parent-child connections</span>
+            <span>✨ Notable bonds — unlocked with any connections</span>
+          </div>
+          {onGoToTree && (
+            <button type="button" className="add-more-toggle" style={{ marginTop: '1rem' }} onClick={onGoToTree}>
+              → Go to Tree
+            </button>
+          )}
+        </div>
         <div className="insight-card insight-coming-soon">
           <h3 className="insight-heading">Coming in future updates ✨</h3>
           <p className="insight-note">🌙 <strong>Moon Sign</strong> — add birth time for emotional depth</p>
@@ -343,6 +376,14 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <p className="insight-note">🌙 <strong>Moon Sign</strong> — add birth time for emotional depth</p>
         <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>
         <p className="insight-note">🔮 <strong>Deeper Insights</strong> — themes across generations</p>
+      </div>
+
+      {/* ── Brand footer — hidden normally, shown during export ────────── */}
+      <div className="insights-brand-footer">
+        <span className="insights-brand-name">✦ AstroTree by Jupiter Digital</span>
+        <span className="insights-brand-contact">
+          jupreturns@gmail.com · <svg style={{display:'inline',verticalAlign:'middle',marginRight:'2px'}} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>@jupreturn
+        </span>
       </div>
     </div>
   )

@@ -16,6 +16,10 @@ function markAsked() {
   try { localStorage.setItem(ASKED_KEY, '1') } catch {}
 }
 
+export function clearEmailAsked() {
+  try { localStorage.removeItem(ASKED_KEY) } catch {}
+}
+
 function saveEmailLocally(email) {
   try { localStorage.setItem(EMAIL_KEY, email.trim()) } catch {}
 }

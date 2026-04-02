@@ -3,7 +3,7 @@ import { loadCharts, deleteChart, saveChart } from '../utils/storage.js'
 import { fetchCharts, fetchPublicCharts, isCloudEnabled, restoreChartsByEmail } from '../utils/cloudStorage.js'
 import { getSavedEmail } from './EmailCapture.jsx'
 
-export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud }) {
+export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout }) {
   const [charts,          setCharts]          = useState(() => loadCharts())
   const [publicCharts,    setPublicCharts]    = useState([])
   const [restoring,       setRestoring]       = useState(false)
@@ -61,8 +61,13 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
 
   return (
     <div className="charts-panel">
-      {/* Email indicator */}
-      {savedEmail && (
+      <div className="charts-panel-header">
+        <h2 className="charts-panel-title">🗂️ My Trees</h2>
+        <button type="button" className="add-row-btn" onClick={onNew}>+ New Tree</button>
+      </div>
+
+      {/* Email indicator / opt-in */}
+      {savedEmail ? (
         <div className="charts-email-indicator">
           <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style={{flexShrink:0}}>
             <path d="M1 3h10v7H1z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -70,7 +75,11 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
           </svg>
           {savedEmail}
         </div>
-      )}
+      ) : onAddEmail ? (
+        <button type="button" className="charts-add-email-btn" onClick={onAddEmail}>
+          ☁ Back up &amp; sync your trees
+        </button>
+      ) : null}
 
       {sorted.length > 0 ? (
         <div className="charts-list">
@@ -152,10 +161,11 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         </div>
       )}
 
-      <div className="charts-panel-footer">
-        <h2 className="charts-panel-title">🗂️ My Trees</h2>
-        <button type="button" className="add-row-btn" onClick={onNew}>+ New Tree</button>
-      </div>
+      {onGoToAbout && (
+        <button type="button" className="charts-data-link" onClick={onGoToAbout}>
+          Your data &amp; privacy
+        </button>
+      )}
 
       {publicCharts.length > 0 && (
         <div className="featured-charts">

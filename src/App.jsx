@@ -26,9 +26,17 @@ import { useCloudSync } from './hooks/useCloudSync.js'
 import { SyncIndicator } from './components/SyncIndicator.jsx'
 import { ShareButton } from './components/ShareButton.jsx'
 import { fetchChartByToken, isCloudEnabled } from './utils/cloudStorage.js'
-import { EmailCapture, hasBeenAsked } from './components/EmailCapture.jsx'
+import { EmailCapture, hasBeenAsked, clearEmailAsked } from './components/EmailCapture.jsx'
+import { OnboardingProgress, markInsightsSeen } from './components/OnboardingProgress.jsx'
 
 const NODE_TYPES = { astro: AstroNode }
+
+function formatRelativeTime(date) {
+  const secs = Math.floor((Date.now() - date.getTime()) / 1000)
+  if (secs < 60) return 'just now'
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`
+  return `${Math.floor(secs / 3600)}h ago`
+}
 
 const EDGE_STYLE   = { stroke: '#c9a84c', strokeWidth: 1.5 }
 const SPOUSE_STYLE = { stroke: '#d4a0bc', strokeWidth: 1.5, strokeDasharray: '6,4' }
@@ -91,6 +99,8 @@ export default function App() {
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
   const [showEmailCapture,  setShowEmailCapture]  = useState(false)
+  const [lastSavedAt,       setLastSavedAt]       = useState(null)
+  const [treeViewedCount,   setTreeViewedCount]   = useState(0)
 
   const fitViewRef = useRef(null)
 
@@ -145,6 +155,7 @@ export default function App() {
       const updated = { ...existing, nodes, edges, counter, savedAt: new Date().toISOString() }
       saveChart(updated)
       syncChart(updated)
+      setLastSavedAt(new Date())
     }, 800)
     return () => clearTimeout(t)
   }, [nodes, edges, counter, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -192,23 +203,39 @@ export default function App() {
     const wasEmpty  = nodes.length === 0
     const startIdx  = counter
     const primaryId = `node-${startIdx}`
-    const newNodes  = members.map((m, i) => ({
-      id: `node-${startIdx + i}`, type: 'astro',
-      position: { x: 0, y: 0 }, data: buildNodeData(m),
-    }))
-    const newEdges = [
+    const nextNodes = [
+      ...nodes,
+      ...members.map((m, i) => ({
+        id: `node-${startIdx + i}`, type: 'astro',
+        position: { x: 0, y: 0 }, data: buildNodeData(m),
+      })),
+    ]
+    const nextEdges = [
+      ...edges,
       ...parentIds.map(p => makeEdge(p,         primaryId)),
       ...childIds .map(c => makeEdge(primaryId, c)),
       ...spouseIds.map(s => makeEdge(primaryId, s, 'spouse')),
     ]
-    setNodes(prev => [...prev, ...newNodes])
-    setEdges(prev => [...prev, ...newEdges])
-    setCounter(c => c + members.length)
+    const nextCounter = counter + members.length
+    setNodes(nextNodes)
+    setEdges(nextEdges)
+    setCounter(nextCounter)
     setActiveTab('tree')
     setEditingNodeId(null)
     setShowAddMore(false)
     if (wasEmpty) setShowConnectPrompt(true)
     markUsed()
+
+    // Auto-save on first add when no chart exists yet
+    if (wasEmpty && !viewOnly && !savedChartId) {
+      const defaultTitle = `${members[0].name}'s Family`
+      const id = Date.now().toString()
+      const chart = { id, title: defaultTitle, nodes: nextNodes, edges: nextEdges, counter: nextCounter, savedAt: new Date().toISOString() }
+      saveChart(chart)
+      syncChart(chart)
+      setSavedChartId(id)
+      if (!hasBeenAsked() && isCloudEnabled()) setShowEmailCapture(true)
+    }
   }
 
   // ── Update / delete ───────────────────────────────────────────────────────
@@ -242,6 +269,11 @@ export default function App() {
         : prev.some(e =>  e.source === source && e.target === target)
       if (dup) return prev
       if (!isSpouse && prev.some(e => e.source === target && e.target === source)) return prev
+      // Prevent the same pair being both spouse and parent/child
+      const pairConnected = (e) =>
+        (e.source === source && e.target === target) || (e.source === target && e.target === source)
+      if (isSpouse && prev.some(e => e.data?.relationType !== 'spouse' && pairConnected(e))) return prev
+      if (!isSpouse && prev.some(e => e.data?.relationType === 'spouse' && pairConnected(e))) return prev
       return [...prev, makeEdge(source, target, relationType)]
     })
   }, [setEdges])
@@ -287,6 +319,7 @@ export default function App() {
     saveChart(chart)
     syncChart(chart)
     setSavedChartId(id)
+    setLastSavedAt(new Date())
     setViewOnly(false)
     setShowSaveDialog(false)
     setSaveTitle('')
@@ -315,6 +348,7 @@ export default function App() {
     setActiveTab(tab)
     setEditingNodeId(null)
     if (tab === 'tree') setFitTick(t => t + 1)
+    if (tab === 'insights' && edges.length > 0) markInsightsSeen()
   }
 
   // ── Combine two PNG data-URLs vertically on a canvas ─────────────────────
@@ -347,18 +381,20 @@ export default function App() {
     setExportError(null)
     setExporting(true)
 
-    const isMobile = window.innerWidth <= 768
     fitViewRef.current?.({ padding: 0.12, duration: 0 })
     await new Promise(r => setTimeout(r, 120))
 
-    const brand = el.querySelector('.canvas-brand')
-    if (brand) brand.style.display = 'flex'
     el.classList.add('exporting')
 
+    const chartTitle = loadCharts().find(c => c.id === savedChartId)?.title
+    const treeSlug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family-tree'
+    const treeFilename = `${treeSlug}-tree.png`
+
     try {
+      const pr = 2
       const url = await toPng(el, {
         backgroundColor: '#09071a',
-        pixelRatio: isMobile ? 2.5 : 2,
+        pixelRatio: pr,
         filter: node => {
           const c = node.classList
           if (!c) return true
@@ -366,31 +402,52 @@ export default function App() {
           if (c.contains('react-flow__controls'))   return false
           if (c.contains('canvas-panel-btns'))      return false
           if (c.contains('connect-prompt'))         return false
+          if (c.contains('canvas-brand'))           return false
           return true
         },
       })
 
-      if (isMobile && navigator.canShare) {
-        const blob = await (await fetch(url)).blob()
-        const file = new File([blob], 'astrotree-tree.png', { type: 'image/png' })
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'My Family Tree', text: 'Created with AstroTree by Jupiter Digital' })
-          return
-        }
-      }
+      // Composite brand bar below the tree image using canvas API
+      await document.fonts.ready
+      const img = new Image()
+      img.src = url
+      await new Promise(r => { img.onload = r })
+      const barH = 36 * pr
+      const cvs = document.createElement('canvas')
+      cvs.width  = img.width
+      cvs.height = img.height + barH
+      const ctx = cvs.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      ctx.fillStyle = '#09071a'
+      ctx.fillRect(0, img.height, cvs.width, barH)
+      ctx.strokeStyle = 'rgba(201,168,76,0.2)'
+      ctx.lineWidth = 1
+      ctx.beginPath(); ctx.moveTo(0, img.height); ctx.lineTo(cvs.width, img.height); ctx.stroke()
+      const pad = 16 * pr
+      const mid = img.height + barH / 2
+      ctx.textBaseline = 'middle'
+      ctx.fillStyle = '#c9a84c'
+      ctx.font = `600 ${13 * pr}px Cinzel, Georgia, serif`
+      ctx.textAlign = 'left'
+      ctx.fillText('✦ AstroTree · Jupiter Digital', pad, mid)
+      ctx.fillStyle = 'rgba(184,170,212,0.7)'
+      ctx.font = `${10 * pr}px Raleway, Helvetica, sans-serif`
+      ctx.textAlign = 'right'
+      ctx.fillText('jupreturns@gmail.com  ·  @jupreturn', cvs.width - pad, mid)
+      const finalUrl = cvs.toDataURL('image/png')
+
       const link = document.createElement('a')
-      link.download = 'astrotree-tree.png'
-      link.href = url
+      link.download = treeFilename
+      link.href = finalUrl
       link.click()
     } catch (err) {
       if (err?.name === 'AbortError') return
       setExportError('Export failed — please try again.')
     } finally {
       el.classList.remove('exporting')
-      if (brand) brand.style.display = ''
       setExporting(false)
     }
-  }, [exporting])
+  }, [exporting, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Export insights image (captures live .insights-panel from the DOM) ────
   const handleInsightsExport = useCallback(async () => {
@@ -398,32 +455,43 @@ export default function App() {
     if (!el || exporting) return
     setExportError(null)
     setExporting(true)
+
+    const brandEl = el.querySelector('.insights-brand-footer')
+    const prevPadding = el.style.padding
+    el.style.padding = '1.5rem'
+    if (brandEl) brandEl.style.display = 'flex'
+
+    const chartTitle = loadCharts().find(c => c.id === savedChartId)?.title
+    const slug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family'
+    const filename = `${slug}-insights.png`
+
     try {
       const url = await toPng(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
-        filter: node => !node.classList?.contains('insight-coming-soon') && !node.classList?.contains('insights-export-btn') && !node.classList?.contains('insight-add-more'),
+        filter: node => {
+          const c = node.classList
+          if (!c) return true
+          if (c.contains('insight-coming-soon'))    return false
+          if (c.contains('insights-export-btn'))    return false
+          if (c.contains('insight-add-more'))       return false
+          if (c.contains('insight-connect-prompt')) return false
+          return true
+        },
       })
-      const isMobile = window.innerWidth <= 768
-      if (isMobile && navigator.canShare) {
-        const blob = await (await fetch(url)).blob()
-        const file = new File([blob], 'astrotree-insights.png', { type: 'image/png' })
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'Family Cosmic Insights', text: 'Created with AstroTree by Jupiter Digital' })
-          return
-        }
-      }
       const link = document.createElement('a')
-      link.download = 'astrotree-insights.png'
+      link.download = filename
       link.href = url
       link.click()
     } catch (err) {
       if (err?.name === 'AbortError') return
       setExportError('Export failed — please try again.')
     } finally {
+      el.style.padding = prevPadding
+      if (brandEl) brandEl.style.display = ''
       setExporting(false)
     }
-  }, [exporting])
+  }, [exporting, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const editingNode = editingNodeId ? nodes.find(n => n.id === editingNodeId) : null
 
@@ -452,13 +520,16 @@ export default function App() {
       {showSaveDialog && (
         <div className="save-dialog-backdrop" onClick={() => { setShowSaveDialog(false); setPendingNewTree(false) }}>
           <form
-            className="save-dialog"
+            className={`save-dialog${pendingNewTree ? ' save-dialog--warning' : ''}`}
             onSubmit={handleSaveChart}
             onClick={e => e.stopPropagation()}
           >
             <p className="save-dialog-title">
               {pendingNewTree ? '⚠ Save before starting a new tree?' : '💾 Name this tree'}
             </p>
+            {!pendingNewTree && (
+              <p className="save-dialog-sub">Saved trees appear in the Saved tab and sync to your devices.</p>
+            )}
             <input
               type="text"
               className="save-dialog-input"
@@ -478,10 +549,10 @@ export default function App() {
               {pendingNewTree && (
                 <button
                   type="button"
-                  className="save-dialog-discard"
+                  className="save-dialog-discard save-dialog-discard--prominent"
                   onClick={() => { setShowSaveDialog(false); setPendingNewTree(false); handleNewChart() }}
                 >
-                  Discard
+                  Discard & Start New
                 </button>
               )}
               <button type="submit" className="save-dialog-save" disabled={!saveTitle.trim()}>
@@ -541,7 +612,7 @@ export default function App() {
           <button
             className={`sidebar-tab${activeTab === 'insights' && !editingNode ? ' active' : ''}`}
             onClick={() => goTab('insights')}
-            disabled={nodes.length === 0}
+            disabled={nodes.length < 2}
           >✦ Insights</button>
           <button
             className={`sidebar-tab${activeTab === 'charts' && !editingNode ? ' active' : ''}`}
@@ -584,6 +655,7 @@ export default function App() {
               onExport={nodes.length >= 2 ? handleInsightsExport : undefined}
               exporting={exporting}
               onAddMore={() => goTab('add')}
+              onGoToTree={() => goTab('tree')}
             />
 
           /* ── Saved charts ───────────────────────────────────────────── */
@@ -593,6 +665,14 @@ export default function App() {
               savedChartId={savedChartId}
               onLoad={handleLoadChart} onNew={handleNewTreeClick}
               onDeleteCloud={deleteFromCloud}
+              onAddEmail={isCloudEnabled() ? () => { clearEmailAsked(); setShowEmailCapture(true) } : undefined}
+              onGoToAbout={() => {
+                goTab('about')
+                setTimeout(() => {
+                  const el = document.getElementById('about-data')
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }, 120)
+              }}
             />
 
           /* ── About ──────────────────────────────────────────────────── */
@@ -602,44 +682,61 @@ export default function App() {
           /* ── Family tab ─────────────────────────────────────────────── */
           ) : (
             <>
+              <OnboardingProgress
+                nodes={nodes}
+                edges={edges}
+                onGoToTree={() => goTab('tree')}
+                onGoToInsights={() => goTab('insights')}
+              />
               {nodes.length === 0 ? (
                 <>
                   {hasUsedApp ? (
                     <div className="family-welcome family-welcome--compact">
-                      <div className="family-welcome-logo"><JupiterIcon size={48} /></div>
-                      <h2 className="family-welcome-title">Start a New Tree</h2>
+                      <div className="family-welcome-inline">
+                        <JupiterIcon size={26} />
+                        <h2 className="family-welcome-title">Start a New Tree</h2>
+                      </div>
                       <p className="family-welcome-sub">Add family members below to build another celestial chart.</p>
-                      <ol className="family-welcome-steps">
-                        <li><strong>Add</strong> members with their birthdates</li>
-                        <li><strong>Connect</strong> them on the Tree tab</li>
-                        <li><strong>Explore</strong> your family's cosmic insights</li>
-                      </ol>
                     </div>
                   ) : (
                     <div className="family-welcome">
-                      <div className="family-welcome-logo"><JupiterIcon size={48} /></div>
-                      <h2 className="family-welcome-title">Welcome to AstroTree</h2>
+                      <div className="family-welcome-inline">
+                        <JupiterIcon size={30} />
+                        <h2 className="family-welcome-title">Welcome to AstroTree</h2>
+                      </div>
                       <p className="family-welcome-sub">
-                        Build your family's celestial chart — discover the sun signs and cosmic patterns woven across generations.
+                        Build your family's celestial chart and discover the cosmic patterns woven across generations.
                       </p>
-                      <ol className="family-welcome-steps">
-                        <li><strong>Add</strong> family members with their birthdate</li>
-                        <li><strong>Connect</strong> them as parents, children &amp; partners</li>
-                        <li><strong>Explore</strong> your family's cosmic insights</li>
-                      </ol>
-                      <p className="family-welcome-cta-hint">Start by filling in the form below ↓</p>
+                      <p className="family-welcome-cta-hint">Add your first family member below ↓</p>
                     </div>
                   )}
                   <AddMembersForm onAdd={handleAdd} />
                 </>
               ) : (
                 <>
-                  {/* Member list */}
+                  {/* Member list header + add more toggle */}
                   <div className="member-list">
                     <div className="member-list-header">
                       <h3>Your Family · {nodes.length}</h3>
                       <span className="member-list-hint">tap a name to connect</span>
                     </div>
+
+                    {/* Collapsible add more — placed above member pills for easy access */}
+                    <div className="add-more-section">
+                      <button
+                        type="button"
+                        className="add-more-toggle"
+                        onClick={() => setShowAddMore(o => !o)}
+                      >
+                        {showAddMore ? '▲ Hide' : '＋ Add more people'}
+                      </button>
+                      {showAddMore && <AddMembersForm onAdd={handleAdd} initialRows={1} />}
+                    </div>
+
+                    {edges.length === 0 && (
+                      <p className="connect-hint-banner">Tap a name below to connect family members on the tree ↓</p>
+                    )}
+
                     {nodes.map(n => (
                       <div key={n.id} className="member-pill"
                         style={{ borderColor: `${n.data.elementColor}44`, cursor: 'pointer' }}
@@ -657,29 +754,8 @@ export default function App() {
                     ))}
                   </div>
 
-                  {/* Collapsible add more */}
-                  <div className="add-more-section">
-                    <button
-                      type="button"
-                      className="add-more-toggle"
-                      onClick={() => setShowAddMore(o => !o)}
-                    >
-                      {showAddMore ? '▲ Hide' : '＋ Add more people'}
-                    </button>
-                    {showAddMore && <AddMembersForm onAdd={handleAdd} initialRows={1} />}
-                  </div>
-
-                  {/* Divider + New Tree (and Save if unsaved) */}
+                  {/* Divider + New Tree */}
                   <div className="family-bottom-actions">
-                    {!savedChartId && (
-                      <button
-                        type="button"
-                        className="family-tree-btn family-tree-btn--save"
-                        onClick={() => { setSaveTitle(''); setShowSaveDialog(true) }}
-                      >
-                        💾 Save Tree
-                      </button>
-                    )}
                     <button
                       type="button"
                       className="family-tree-btn"
@@ -694,16 +770,24 @@ export default function App() {
           )}
         </div>
 
-        {/* ── Footer — brand credit only ──────────────────────────────── */}
+        {/* ── Footer ──────────────────────────────────────────────────── */}
         <footer className="sidebar-footer">
           {exportError && (
             <p className="export-error">{exportError}</p>
           )}
-          <p className="footer-brand-credit">
-            <JupiterIcon size={16} /> <strong>Jupiter Digital</strong>
-            {' · '}
-            <button type="button" className="footer-about-link" onClick={() => goTab('about')}>About</button>
-          </p>
+          <div className="footer-brand-credit">
+            <span className="footer-brand-left">
+              <JupiterIcon size={16} /> <strong>Jupiter Digital</strong>
+              {' · '}
+              <button type="button" className="footer-about-link" onClick={() => goTab('about')}>About ↗</button>
+            </span>
+            {lastSavedAt && (
+              <span className="footer-saved-inline">
+                <SyncIndicator status={syncStatus === 'idle' ? 'synced' : syncStatus} />
+                {formatRelativeTime(lastSavedAt)}
+              </span>
+            )}
+          </div>
         </footer>
       </aside>
 
@@ -718,15 +802,20 @@ export default function App() {
         </button>
         <button
           className={`bottom-tab${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
-          onClick={() => { setActiveTab('tree'); setEditingNodeId(null); setFitTick(t => t + 1) }}
+          onClick={() => { setActiveTab('tree'); setEditingNodeId(null); setFitTick(t => t + 1); setTreeViewedCount(nodes.length) }}
         >
-          <span className="bottom-tab-icon">🌳</span>
+          <span className="bottom-tab-icon" style={{ position: 'relative', display: 'inline-flex' }}>
+            🌳
+            {nodes.length > treeViewedCount && (
+              <span className="bottom-tab-badge">{nodes.length - treeViewedCount}</span>
+            )}
+          </span>
           <span className="bottom-tab-label">Tree</span>
         </button>
         <button
           className={`bottom-tab${activeTab === 'insights' && !editingNodeId ? ' active' : ''}`}
           onClick={() => goTab('insights')}
-          disabled={nodes.length === 0}
+          disabled={nodes.length < 2}
         >
           <span className="bottom-tab-icon">✦</span>
           <span className="bottom-tab-label">Insights</span>
@@ -758,16 +847,17 @@ export default function App() {
               <p className="welcome-tagline">
                 Discover the celestial patterns<br />woven through your family
               </p>
-              <div className="welcome-steps">
-                <div className="welcome-step"><span className="welcome-step-num">1</span><span>Add family members with their birthdates</span></div>
-                <div className="welcome-step"><span className="welcome-step-num">2</span><span>Connect parents, children &amp; partners</span></div>
-                <div className="welcome-step"><span className="welcome-step-num">3</span><span>Explore your family's cosmic insights</span></div>
-              </div>
               <button type="button" className="welcome-cta"
-                onClick={() => goTab('add')}>
+                onClick={() => {
+                  goTab('add')
+                  setTimeout(() => document.querySelector('.add-form input[type="text"]')?.focus(), 50)
+                }}>
                 Begin Your Tree →
               </button>
-              <p className="welcome-mobile-hint">Tap <strong>＋ Add</strong> below to start</p>
+              <button type="button" className="welcome-cta-mobile"
+                onClick={() => goTab('add')}>
+                ★ Add Family Members
+              </button>
             </div>
           </div>
         )}
@@ -796,7 +886,7 @@ export default function App() {
         >
           <FitViewOnLayout fitTick={fitTick} fitViewRef={fitViewRef} />
           <Background color="#1a1040" gap={36} size={1} />
-          <Controls style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
+          {nodes.length > 0 && <Controls style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />}
 
           {/* View-only banner for shared charts */}
           {viewOnly && (
@@ -825,16 +915,6 @@ export default function App() {
                   onClick={() => goTab('insights')}
                 >
                   ✦ Insights
-                </button>
-              )}
-              {/* Save — only shown before first named save */}
-              {nodes.length > 0 && !savedChartId && (
-                <button
-                  type="button"
-                  className="relayout-btn relayout-btn--save"
-                  onClick={() => setShowSaveDialog(true)}
-                >
-                  💾 Save
                 </button>
               )}
               <ShareButton savedChartId={savedChartId} syncStatus={syncStatus} />
@@ -873,6 +953,9 @@ export default function App() {
               <div className="canvas-brand-text">
                 <span className="canvas-brand-name">Jupiter Digital</span>
                 <span className="canvas-brand-sub">AstroTree</span>
+                <span className="canvas-brand-contact">
+                  jupreturns@gmail.com · <svg style={{display:'inline',verticalAlign:'middle'}} width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> @jupreturn
+                </span>
               </div>
             </div>
           </Panel>
