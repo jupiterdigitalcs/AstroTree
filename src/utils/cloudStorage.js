@@ -67,7 +67,10 @@ export async function uploadChart(chart) {
   const sb = getClient()
   if (!sb) return { ok: false, error: 'Cloud sync not configured' }
   try {
-    const { error } = await sb.from('charts').upsert(toDbRow(chart))
+    const { error } = await sb.from('charts').upsert(toDbRow(chart), {
+      onConflict: 'id',
+      ignoreDuplicates: false,
+    })
     return error ? { ok: false, error: error.message } : { ok: true }
   } catch (e) {
     return { ok: false, error: e.message }

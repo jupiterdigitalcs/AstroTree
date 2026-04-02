@@ -5,14 +5,16 @@ export default function AdminTreeList({ onSelectTree }) {
   const [charts,   setCharts]   = useState([])
   const [search,   setSearch]   = useState('')
   const [email,    setEmail]    = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo,   setDateTo]   = useState('')
   const [page,     setPage]     = useState(0)
   const [loading,  setLoading]  = useState(false)
   const [hasMore,  setHasMore]  = useState(true)
   const debounceRef = useRef(null)
 
-  const load = useCallback(async (s, e, p, append = false) => {
+  const load = useCallback(async (s, e, df, dt, p, append = false) => {
     setLoading(true)
-    const results = await fetchAllCharts({ search: s, email: e, page: p })
+    const results = await fetchAllCharts({ search: s, email: e, dateFrom: df, dateTo: dt, page: p })
     setCharts(prev => append ? [...prev, ...results] : results)
     setHasMore(results.length === 50)
     setLoading(false)
@@ -22,15 +24,21 @@ export default function AdminTreeList({ onSelectTree }) {
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setPage(0)
-      load(search, email, 0)
+      load(search, email, dateFrom, dateTo, 0)
     }, 400)
-  }, [search, email, load])
+  }, [search, email, dateFrom, dateTo, load])
 
   function handleLoadMore() {
     const next = page + 1
     setPage(next)
-    load(search, email, next, true)
+    load(search, email, dateFrom, dateTo, next, true)
   }
+
+  function clearFilters() {
+    setSearch(''); setEmail(''); setDateFrom(''); setDateTo('')
+  }
+
+  const hasFilters = search || email || dateFrom || dateTo
 
   return (
     <div className="admin-tree-list">
@@ -47,6 +55,25 @@ export default function AdminTreeList({ onSelectTree }) {
           value={email}
           onChange={e => setEmail(e.target.value)}
         />
+        <input
+          type="date"
+          className="admin-input admin-input--date"
+          title="Created from"
+          value={dateFrom}
+          onChange={e => setDateFrom(e.target.value)}
+        />
+        <input
+          type="date"
+          className="admin-input admin-input--date"
+          title="Created to"
+          value={dateTo}
+          onChange={e => setDateTo(e.target.value)}
+        />
+        {hasFilters && (
+          <button type="button" className="admin-btn admin-btn--ghost" onClick={clearFilters}>
+            Clear
+          </button>
+        )}
       </div>
 
       {charts.length === 0 && !loading && (
@@ -61,8 +88,9 @@ export default function AdminTreeList({ onSelectTree }) {
                 <th>Title</th>
                 <th>Members</th>
                 <th>Email</th>
-                <th>Referrer</th>
-                <th>Saved</th>
+                <th>Location</th>
+                <th>Created</th>
+                <th>Last Saved</th>
                 <th></th>
               </tr>
             </thead>
@@ -76,7 +104,12 @@ export default function AdminTreeList({ onSelectTree }) {
                   </td>
                   <td>{c.memberCount}</td>
                   <td className="admin-td-email">{c.email || <span className="admin-dim">—</span>}</td>
-                  <td className="admin-dim">{c.referrer || '—'}</td>
+                  <td className="admin-dim" style={{ whiteSpace: 'nowrap' }}>
+                    {[c.city, c.country].filter(Boolean).join(', ') || '—'}
+                  </td>
+                  <td className="admin-dim" style={{ whiteSpace: 'nowrap' }}>
+                    {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}
+                  </td>
                   <td className="admin-dim" style={{ whiteSpace: 'nowrap' }}>
                     {c.savedAt ? new Date(c.savedAt).toLocaleDateString() : '—'}
                   </td>

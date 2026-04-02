@@ -18,6 +18,7 @@ function fromRow(row) {
     nodes:       row.nodes ?? [],
     edges:       row.edges ?? [],
     deviceId:    row.device_id,
+    createdAt:   row.created_at,
     savedAt:     row.saved_at,
     updatedAt:   row.updated_at,
     referrer:    row.referrer,
@@ -33,15 +34,17 @@ function fromRow(row) {
   }
 }
 
-export async function fetchAllCharts({ search = '', email = '', page = 0 } = {}) {
+export async function fetchAllCharts({ search = '', email = '', dateFrom = '', dateTo = '', page = 0 } = {}) {
   const sb = getClient()
   if (!sb) return []
   try {
     const { data, error } = await sb.rpc('admin_get_charts', {
-      p_search: search.trim(),
-      p_email:  email.trim(),
-      p_limit:  50,
-      p_offset: page * 50,
+      p_search:    search.trim(),
+      p_email:     email.trim(),
+      p_date_from: dateFrom ? new Date(dateFrom).toISOString() : null,
+      p_date_to:   dateTo   ? new Date(dateTo + 'T23:59:59').toISOString() : null,
+      p_limit:     50,
+      p_offset:    page * 50,
     })
     if (error) { console.error('admin_get_charts error:', error); return [] }
     return (data ?? []).map(fromRow)

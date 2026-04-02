@@ -3177,3 +3177,8 @@ body:has(.admin-app) {
   font-size: 0.75rem;
   color: var(--text-muted);
 }
+
+.admin-input--date {
+  width: auto;
+  color-scheme: dark;
+}
