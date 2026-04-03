@@ -3701,3 +3701,83 @@ body:has(.admin-app) {
 }
 
 .zodiac-legend-name { font-weight: 600; font-size: 0.78rem; }
+
+/* ─────────────────────── Constellation View ───────────────────────── */
+.constellation-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: var(--bg-deep);
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.constellation-svg {
+  width: min(90vw, 560px);
+  height: min(90vw, 560px);
+  max-width: 560px;
+  max-height: 560px;
+  flex-shrink: 0;
+}
+
+.constellation-edge {
+  transition: opacity 0.15s;
+}
+
+.constellation-node-symbol {
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.constellation-node-name {
+  pointer-events: none;
+}
+
+.constellation-tooltip {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+}
+
+.constellation-tooltip-connections {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+  line-height: 1.4;
+}
+
+.constellation-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 1.2rem;
+  max-width: 500px;
+  width: 100%;
+}
+
+.constellation-legend-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.15rem;
+}
+
+.constellation-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-family: 'Raleway', sans-serif;
+  letter-spacing: 0.03em;
+}
+
+.constellation-legend-divider {
+  height: 1px;
+  background: rgba(201,168,76,0.12);
+  margin: 0.4rem 0;
+}

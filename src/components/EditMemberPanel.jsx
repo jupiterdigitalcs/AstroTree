@@ -17,10 +17,16 @@ export default function EditMemberPanel({
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   // ── Derive connections fresh from props every render ──────────────────────
-  const parentEdges = edges.filter(e => e.target === node.id && e.data?.relationType !== 'spouse')
-  const childEdges  = edges.filter(e => e.source === node.id && e.data?.relationType !== 'spouse')
+  const parentEdges = edges.filter(e => e.target === node.id && e.data?.relationType === 'parent-child')
+  const childEdges  = edges.filter(e => e.source === node.id && e.data?.relationType === 'parent-child')
   const spouseEdges = edges.filter(e =>
     (e.source === node.id || e.target === node.id) && e.data?.relationType === 'spouse'
+  )
+  const friendEdges = edges.filter(e =>
+    (e.source === node.id || e.target === node.id) && e.data?.relationType === 'friend'
+  )
+  const coworkerEdges = edges.filter(e =>
+    (e.source === node.id || e.target === node.id) && e.data?.relationType === 'coworker'
   )
 
   // Any node that already shares ANY edge with this node is ineligible
@@ -53,7 +59,8 @@ export default function EditMemberPanel({
   }
 
   const hasConnections = parentEdges.length > 0 || childEdges.length > 0 ||
-                         spouseEdges.length > 0 || eligibleNodes.length > 0
+                         spouseEdges.length > 0 || friendEdges.length > 0 ||
+                         coworkerEdges.length > 0 || eligibleNodes.length > 0
 
   return (
     <form className="add-form edit-panel" onSubmit={handleUpdate}>
@@ -89,6 +96,16 @@ export default function EditMemberPanel({
               getOther={e => e.source === node.id ? e.target : e.source}
               allNodes={allNodes} onRemove={onRemoveEdge} accentColor="#e879a8" />
           )}
+          {friendEdges.length > 0 && (
+            <ConnGroup label="Friends" edgeList={friendEdges}
+              getOther={e => e.source === node.id ? e.target : e.source}
+              allNodes={allNodes} onRemove={onRemoveEdge} accentColor="#5bc8f5" />
+          )}
+          {coworkerEdges.length > 0 && (
+            <ConnGroup label="Coworkers" edgeList={coworkerEdges}
+              getOther={e => e.source === node.id ? e.target : e.source}
+              allNodes={allNodes} onRemove={onRemoveEdge} accentColor="#a0a0b8" />
+          )}
 
           {/* Partner-children quick-connect */}
           {partnerChildSuggestions.length > 0 && (
@@ -115,6 +132,8 @@ export default function EditMemberPanel({
                   if (rel === 'parent') onAddEdge(id, node.id)
                   else if (rel === 'child') onAddEdge(node.id, id)
                   else if (rel === 'spouse') onAddEdge(node.id, id, 'spouse')
+                  else if (rel === 'friend') onAddEdge(node.id, id, 'friend')
+                  else if (rel === 'coworker') onAddEdge(node.id, id, 'coworker')
                 }}
               >
                 <option value="">＋ Add connection…</option>
@@ -131,6 +150,16 @@ export default function EditMemberPanel({
                 <optgroup label="Spouse / partner">
                   {eligibleNodes.map(n => (
                     <option key={n.id} value={`${n.id}:spouse`}>{n.data.symbol} {n.data.name}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Friend">
+                  {eligibleNodes.map(n => (
+                    <option key={n.id} value={`${n.id}:friend`}>{n.data.symbol} {n.data.name}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Coworker">
+                  {eligibleNodes.map(n => (
+                    <option key={n.id} value={`${n.id}:coworker`}>{n.data.symbol} {n.data.name}</option>
                   ))}
                 </optgroup>
               </select>

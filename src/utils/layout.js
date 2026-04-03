@@ -12,7 +12,7 @@ export function applyDagreLayout(nodes, edges) {
   nodes.forEach(node => g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT }))
 
   // Add parent→child edges sorted by child birthdate (oldest left)
-  const parentChildEdges = edges.filter(e => e.data?.relationType !== 'spouse')
+  const parentChildEdges = edges.filter(e => e.data?.relationType === 'parent-child' || (!e.data?.relationType))
   const byParent = {}
   parentChildEdges.forEach(e => {
     if (!byParent[e.source]) byParent[e.source] = []
@@ -32,6 +32,11 @@ export function applyDagreLayout(nodes, edges) {
   edges
     .filter(e => e.data?.relationType === 'spouse')
     .forEach(e => g.setEdge(e.source, e.target, { weight: 2, minlen: 1 }))
+
+  // Add friend/coworker edges with low weight so they don't force hierarchy
+  edges
+    .filter(e => e.data?.relationType === 'friend' || e.data?.relationType === 'coworker')
+    .forEach(e => g.setEdge(e.source, e.target, { weight: 0, minlen: 1 }))
 
   dagre.layout(g)
 

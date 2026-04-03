@@ -15,7 +15,8 @@ import '@xyflow/react/dist/style.css'
 import AddMembersForm  from './components/AddMembersForm.jsx'
 import AstroNode       from './components/AstroNode.jsx'
 import EditMemberPanel from './components/EditMemberPanel.jsx'
-import ZodiacWheel     from './components/ZodiacWheel.jsx'
+import ZodiacWheel        from './components/ZodiacWheel.jsx'
+import ConstellationView from './components/ConstellationView.jsx'
 import ChartsPanel     from './components/ChartsPanel.jsx'
 import InsightsPanel   from './components/InsightsPanel.jsx'
 import AboutPanel      from './components/AboutPanel.jsx'
@@ -40,16 +41,25 @@ function formatRelativeTime(date) {
   return `${Math.floor(secs / 3600)}h ago`
 }
 
-const EDGE_STYLE   = { stroke: '#c9a84c', strokeWidth: 1.5 }
-const SPOUSE_STYLE = { stroke: '#d4a0bc', strokeWidth: 1.5, strokeDasharray: '6,4' }
+const EDGE_STYLE    = { stroke: '#c9a84c', strokeWidth: 1.5 }
+const SPOUSE_STYLE  = { stroke: '#d4a0bc', strokeWidth: 1.5, strokeDasharray: '6,4' }
+const FRIEND_STYLE  = { stroke: '#5bc8f5', strokeWidth: 1.5, strokeDasharray: '4,4' }
+const COWORKER_STYLE = { stroke: '#a0a0b8', strokeWidth: 1.5, strokeDasharray: '4,4' }
+
+const EDGE_STYLES = {
+  'parent-child': EDGE_STYLE,
+  'spouse':       SPOUSE_STYLE,
+  'friend':       FRIEND_STYLE,
+  'coworker':     COWORKER_STYLE,
+}
 
 function makeEdge(source, target, relationType = 'parent-child') {
-  const isSpouse = relationType === 'spouse'
+  const isFamily = relationType === 'parent-child'
   return {
     id: `e-${source}-${target}`, source, target,
     data:     { relationType },
-    animated: !isSpouse,
-    style:    isSpouse ? SPOUSE_STYLE : EDGE_STYLE,
+    animated: isFamily,
+    style:    EDGE_STYLES[relationType] || EDGE_STYLE,
     type:     'smoothstep',
   }
 }
@@ -100,7 +110,7 @@ export default function App() {
   })
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
-  const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac'
+  const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation'
   const [showEmailCapture,  setShowEmailCapture]  = useState(false)
   const [lastSavedAt,       setLastSavedAt]       = useState(null)
   const [treeViewedCount,   setTreeViewedCount]   = useState(0)
@@ -273,14 +283,14 @@ export default function App() {
         (e.source === target && e.target === source)
       )
       if (alreadyConnected) return prev
-      // Prevent parent-child cycles (A→B→…→A)
-      if (relationType !== 'spouse') {
+      // Prevent parent-child cycles (A→B→…→A) — only applies to parent-child edges
+      if (relationType === 'parent-child') {
         const children = new Set([target])
         let changed = true
         while (changed) {
           changed = false
           for (const e of prev) {
-            if (e.data?.relationType === 'spouse') continue
+            if (e.data?.relationType !== 'parent-child') continue
             if (children.has(e.source) && !children.has(e.target)) {
               children.add(e.target)
               changed = true
@@ -575,6 +585,85 @@ export default function App() {
             files: [file],
             title: chartTitle ? `${chartTitle} · Zodiac Wheel` : 'Family Zodiac Wheel',
             text: 'Check out my family zodiac wheel from AstroTree by Jupiter Digital ✦',
+          })
+          return
+        }
+      }
+      const link = document.createElement('a')
+      link.download = filename
+      link.href = finalUrl
+      link.click()
+    } catch (err) {
+      if (err?.name === 'AbortError') return
+      setExportError('Export failed — please try again.')
+    } finally {
+      setExporting(false)
+    }
+  }, [exporting, savedChartId])
+
+  // ── Export constellation image ────────────────────────────────────────────
+  const handleConstellationExport = useCallback(async () => {
+    const el = document.querySelector('.constellation-wrap')
+    if (!el || exporting) return
+    setExportError(null)
+    setExporting(true)
+
+    const chartTitle = loadCharts().find(c => c.id === savedChartId)?.title
+    const slug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family'
+    const filename = `${slug}-constellation.png`
+
+    try {
+      const url = await toPng(el, {
+        backgroundColor: '#09071a',
+        pixelRatio: 2,
+        filter: node => {
+          const c = node.classList
+          if (!c) return true
+          if (c.contains('constellation-tooltip')) return false
+          return true
+        },
+      })
+
+      // Composite brand bar below
+      await document.fonts.ready
+      const img = new Image()
+      img.src = url
+      await new Promise(r => { img.onload = r })
+      const pr = 2
+      const barH = 36 * pr
+      const cvs = document.createElement('canvas')
+      cvs.width  = img.width
+      cvs.height = img.height + barH
+      const ctx = cvs.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      ctx.fillStyle = '#09071a'
+      ctx.fillRect(0, img.height, cvs.width, barH)
+      ctx.strokeStyle = 'rgba(201,168,76,0.2)'
+      ctx.lineWidth = 1
+      ctx.beginPath(); ctx.moveTo(0, img.height); ctx.lineTo(cvs.width, img.height); ctx.stroke()
+      const pad = 16 * pr
+      const mid = img.height + barH / 2
+      ctx.textBaseline = 'middle'
+      ctx.fillStyle = '#c9a84c'
+      ctx.font = `600 ${13 * pr}px Cinzel, Georgia, serif`
+      ctx.textAlign = 'left'
+      ctx.fillText('✦ AstroTree · Jupiter Digital', pad, mid)
+      ctx.fillStyle = 'rgba(184,170,212,0.7)'
+      ctx.font = `${10 * pr}px Raleway, Helvetica, sans-serif`
+      ctx.textAlign = 'right'
+      ctx.fillText('jupreturns@gmail.com  ·  @jupreturn', cvs.width - pad, mid)
+      const finalUrl = cvs.toDataURL('image/png')
+
+      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+      if (isMobile && navigator.share) {
+        const res = await fetch(finalUrl)
+        const blob = await res.blob()
+        const file = new File([blob], filename, { type: 'image/png' })
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: chartTitle ? `${chartTitle} · Constellation` : 'Family Constellation',
+            text: 'Check out my constellation map from AstroTree by Jupiter Digital ✦',
           })
           return
         }
@@ -1037,7 +1126,7 @@ export default function App() {
           </div>
         )}
 
-        {/* View toggle (tree vs zodiac) */}
+        {/* View toggle (tree vs zodiac vs constellation) */}
         {nodes.length > 0 && (
           <div className="tree-view-toggle">
             <button
@@ -1053,6 +1142,13 @@ export default function App() {
               onClick={() => setTreeView('zodiac')}
             >
               ☉ Zodiac
+            </button>
+            <button
+              type="button"
+              className={`tree-view-btn${treeView === 'constellation' ? ' tree-view-btn--active' : ''}`}
+              onClick={() => setTreeView('constellation')}
+            >
+              ✦ Constellation
             </button>
           </div>
         )}
@@ -1072,13 +1168,13 @@ export default function App() {
             <button
               type="button"
               className="relayout-btn relayout-btn--share"
-              onClick={treeView === 'zodiac' ? handleZodiacExport : handleExport}
+              onClick={treeView === 'zodiac' ? handleZodiacExport : treeView === 'constellation' ? handleConstellationExport : handleExport}
               disabled={exporting}
             >
               {exporting ? '…' : (<>
                 <span className="export-label-desktop">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}}><path d="M6 1v7M3 6l3 3 3-3M1 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  {treeView === 'zodiac' ? 'Download Zodiac' : 'Download Tree'}
+                  {treeView === 'zodiac' ? 'Download Zodiac' : treeView === 'constellation' ? 'Download Constellation' : 'Download Tree'}
                 </span>
                 <span className="export-label-mobile">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}}><path d="M6 7V1M3 4l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 8v2.5h10V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -1088,6 +1184,11 @@ export default function App() {
             </button>
             {treeView === 'tree' && (
               <button type="button" className="relayout-btn" onClick={handleRelayout}>
+                ⟳ Re-layout
+              </button>
+            )}
+            {treeView === 'constellation' && (
+              <button type="button" className="relayout-btn" onClick={() => setTreeView('constellation')}>
                 ⟳ Re-layout
               </button>
             )}
@@ -1125,6 +1226,12 @@ export default function App() {
         {treeView === 'zodiac' && nodes.length > 0 ? (
           <ZodiacWheel
             nodes={nodes}
+            onSelectNode={(id) => setEditingNodeId(id)}
+          />
+        ) : treeView === 'constellation' && nodes.length > 0 ? (
+          <ConstellationView
+            nodes={nodes}
+            edges={edges}
             onSelectNode={(id) => setEditingNodeId(id)}
           />
         ) : (
