@@ -2574,13 +2574,14 @@ body {
   cursor: pointer;
   font-family: 'Raleway', sans-serif;
   font-size: 0.72rem;
-  padding: 0;
-  transition: color 0.15s;
+  padding: 0.1rem 0.3rem;
+  transition: color 0.15s, background 0.15s;
   letter-spacing: 0.04em;
-  text-decoration: underline;
+  text-decoration: none;
+  border-radius: 4px;
   text-underline-offset: 2px;
 }
-.footer-about-link:hover { color: var(--gold); }
+.footer-about-link:hover { color: var(--gold); background: rgba(201,168,76,0.08); }
 
 
 /* ── Onboarding stepper ─────────────────────────────────────────────────── */

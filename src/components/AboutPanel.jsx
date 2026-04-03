@@ -101,6 +101,16 @@ export default function AboutPanel() {
         <span className="about-shop-arrow">→</span>
       </a>
 
+      {/* ── Events ─────────────────────────────────────────────────────── */}
+      <a href="https://jupiterdigitalevents.com" className="about-shop-card" target="_blank" rel="noopener noreferrer">
+        <span className="about-shop-icon">✦</span>
+        <span className="about-shop-text">
+          <span className="about-shop-name">Jupiter Digital Events</span>
+          <span className="about-shop-sub">Book a reading, workshop, or astrology event</span>
+        </span>
+        <span className="about-shop-arrow">→</span>
+      </a>
+
       {/* ── Your Data ─────────────────────────────────────────────────── */}
       <div className="about-card" id="about-data">
         <h3 className="about-heading">Your Data</h3>

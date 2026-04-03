@@ -1033,7 +1033,9 @@ export default function App() {
             <span className="footer-brand-left">
               <JupiterIcon size={16} /> <strong>Jupiter Digital</strong>
               {' · '}
-              <button type="button" className="footer-about-link" onClick={() => goTab('about')}>About ↗</button>
+              <button type="button" className="footer-about-link" onClick={() => goTab('about')}>About</button>
+              {' · '}
+              <a href="https://jupiterdigitalevents.com" className="footer-about-link" target="_blank" rel="noopener noreferrer">Events</a>
             </span>
             {lastSavedAt && (
               <span className="footer-saved-inline">
