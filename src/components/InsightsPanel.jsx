@@ -569,7 +569,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {/* 12. Brand footer — hidden normally, shown during export */}
       <div className="insights-brand-footer">
-        <span className="insights-brand-name">✦ AstroTree by Jupiter Digital</span>
+        <span className="insights-brand-name">✦ AstroDig by Jupiter Digital</span>
         <span className="insights-brand-contact">
           jupreturns@gmail.com · <svg style={{display:'inline',verticalAlign:'middle',marginRight:'2px'}} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>@jupreturn
         </span>

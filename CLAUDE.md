@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 ## Project Overview
-Family Astrology Tree — a web app that lets users build a visual family tree enriched with astrological data. Users add family members, see their sun signs, and discover inherited astrological patterns across generations.
+AstroDig — a web app that lets users map cosmic connections between people. Users add family members, friends, and coworkers, see their sun signs, and discover astrological patterns across relationships. Features tree, zodiac wheel, and constellation views.
 
 Built by Christina, sole developer and owner of JupiterDigital (Etsy astrology store). This project may eventually connect to or complement existing JupiterDigital products like birthday calendars.
 

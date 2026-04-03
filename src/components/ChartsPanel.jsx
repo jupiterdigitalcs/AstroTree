@@ -154,7 +154,7 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
       {/* ── Sample Trees ──────────────────────────────────────────────── */}
       <div className="sample-charts">
         <h3 className="sample-charts-title">✦ Sample Trees</h3>
-        <p className="sample-charts-sub">Explore a demo family to see how AstroTree works</p>
+        <p className="sample-charts-sub">Explore a demo family to see how AstroDig works</p>
         <div className="charts-list">
           {[buildDemoChart()].map(c => (
             <div key={c.id} className="chart-item chart-item--sample">

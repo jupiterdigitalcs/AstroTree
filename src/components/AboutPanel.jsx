@@ -39,7 +39,7 @@ export default function AboutPanel() {
         <p className="about-bio">
           Hi, I'm Christina — astrologer and creator behind Jupiter Digital.
           I believe the stars hold a mirror to the patterns passed down through
-          our families. AstroTree is my way of making that visible.
+          our families. AstroDig is my way of making that visible.
         </p>
       </div>
 
@@ -92,7 +92,7 @@ export default function AboutPanel() {
       <div className="about-card" id="about-data">
         <h3 className="about-heading">Your Data</h3>
         <p className="about-bio">
-          AstroTree saves your family tree to your browser. If you use cloud sync,
+          AstroDig saves your family tree to your browser. If you use cloud sync,
           your tree data (names, birthdates, and astrological signs) is also stored
           on our servers so you can access it from other devices.
         </p>
@@ -131,7 +131,7 @@ export default function AboutPanel() {
 
       {/* ── App note ──────────────────────────────────────────────────── */}
       <p className="about-app-note">
-        AstroTree is a free tool — if it brings you joy,
+        AstroDig is a free tool — if it brings you joy,
         a shop visit means the world. ✨
       </p>
 

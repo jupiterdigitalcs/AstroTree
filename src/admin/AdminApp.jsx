@@ -16,7 +16,7 @@ export default function AdminApp() {
       <header className="admin-header">
         <div className="admin-header-brand">
           <JupiterIcon size={28} />
-          <span className="admin-header-title">AstroTree Admin</span>
+          <span className="admin-header-title">AstroDig Admin</span>
         </div>
         <button
           type="button"

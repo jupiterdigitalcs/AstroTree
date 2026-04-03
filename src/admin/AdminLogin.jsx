@@ -21,7 +21,7 @@ export default function AdminLogin({ onSuccess }) {
       <div className="admin-login-box">
         <div className="admin-login-brand">
           <JupiterIcon size={40} />
-          <h1 className="admin-login-title">AstroTree Admin</h1>
+          <h1 className="admin-login-title">AstroDig Admin</h1>
         </div>
         <form onSubmit={handleSubmit} className="admin-login-form">
           <input

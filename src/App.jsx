@@ -492,7 +492,7 @@ export default function App() {
       ctx.fillStyle = '#c9a84c'
       ctx.font = `600 ${13 * pr}px Cinzel, Georgia, serif`
       ctx.textAlign = 'left'
-      ctx.fillText('✦ AstroTree · Jupiter Digital', pad, mid)
+      ctx.fillText('✦ AstroDig · Jupiter Digital', pad, mid)
       ctx.fillStyle = 'rgba(184,170,212,0.7)'
       ctx.font = `${10 * pr}px Raleway, Helvetica, sans-serif`
       ctx.textAlign = 'right'
@@ -508,8 +508,8 @@ export default function App() {
         if (navigator.canShare?.({ files: [file] })) {
           await navigator.share({
             files: [file],
-            title: chartTitle ? `${chartTitle} · AstroTree` : 'My Family Astrology Tree',
-            text: 'Check out my family astrology tree, made with AstroTree by Jupiter Digital ✦',
+            title: chartTitle ? `${chartTitle} · AstroDig` : 'My Family Astrology Tree',
+            text: 'Check out my family astrology tree, made with AstroDig by Jupiter Digital ✦',
           })
           return
         }
@@ -573,7 +573,7 @@ export default function App() {
       ctx.fillStyle = '#c9a84c'
       ctx.font = `600 ${13 * pr}px Cinzel, Georgia, serif`
       ctx.textAlign = 'left'
-      ctx.fillText('✦ AstroTree · Jupiter Digital', pad, mid)
+      ctx.fillText('✦ AstroDig · Jupiter Digital', pad, mid)
       ctx.fillStyle = 'rgba(184,170,212,0.7)'
       ctx.font = `${10 * pr}px Raleway, Helvetica, sans-serif`
       ctx.textAlign = 'right'
@@ -589,7 +589,7 @@ export default function App() {
           await navigator.share({
             files: [file],
             title: chartTitle ? `${chartTitle} · Zodiac Wheel` : 'Family Zodiac Wheel',
-            text: 'Check out my family zodiac wheel from AstroTree by Jupiter Digital ✦',
+            text: 'Check out my family zodiac wheel from AstroDig by Jupiter Digital ✦',
           })
           return
         }
@@ -653,7 +653,7 @@ export default function App() {
       ctx.fillStyle = '#c9a84c'
       ctx.font = `600 ${13 * pr}px Cinzel, Georgia, serif`
       ctx.textAlign = 'left'
-      ctx.fillText('✦ AstroTree · Jupiter Digital', pad, mid)
+      ctx.fillText('✦ AstroDig · Jupiter Digital', pad, mid)
       ctx.fillStyle = 'rgba(184,170,212,0.7)'
       ctx.font = `${10 * pr}px Raleway, Helvetica, sans-serif`
       ctx.textAlign = 'right'
@@ -669,7 +669,7 @@ export default function App() {
           await navigator.share({
             files: [file],
             title: chartTitle ? `${chartTitle} · Constellation` : 'Family Constellation',
-            text: 'Check out my constellation map from AstroTree by Jupiter Digital ✦',
+            text: 'Check out my constellation map from AstroDig by Jupiter Digital ✦',
           })
           return
         }
@@ -726,7 +726,7 @@ export default function App() {
           await navigator.share({
             files: [file],
             title: chartTitle ? `${chartTitle} · Astrology Insights` : 'Family Astrology Insights',
-            text: 'Here are my family astrology insights from AstroTree by Jupiter Digital ✦',
+            text: 'Here are my family astrology insights from AstroDig by Jupiter Digital ✦',
           })
           return
         }
@@ -850,8 +850,8 @@ export default function App() {
           <div className="brand-logo"><JupiterIcon size={40} /></div>
           <div className="brand-text">
             <p className="brand-name">Jupiter Digital</p>
-            <h1 className="brand-app">AstroTree</h1>
-            <p className="brand-sub">Family Celestial Tree</p>
+            <h1 className="brand-app">AstroDig</h1>
+            <p className="brand-sub">Cosmic Connections</p>
           </div>
         </div>
 
@@ -956,7 +956,7 @@ export default function App() {
                     <div className="family-welcome">
                       <div className="family-welcome-inline">
                         <JupiterIcon size={30} />
-                        <h2 className="family-welcome-title">Welcome to AstroTree</h2>
+                        <h2 className="family-welcome-title">Welcome to AstroDig</h2>
                       </div>
                       <p className="family-welcome-sub">
                         Build your family's celestial chart and discover the cosmic patterns woven across generations.
@@ -1059,12 +1059,12 @@ export default function App() {
           onClick={() => { setActiveTab('tree'); setEditingNodeId(null); setFitTick(t => t + 1); setTreeViewedCount(nodes.length) }}
         >
           <span className="bottom-tab-icon" style={{ position: 'relative', display: 'inline-flex' }}>
-            🌳
+            ✦
             {nodes.length > treeViewedCount && (
               <span className="bottom-tab-badge">{nodes.length - treeViewedCount}</span>
             )}
           </span>
-          <span className="bottom-tab-label">Tree</span>
+          <span className="bottom-tab-label">Chart</span>
         </button>
         <button
           className={`bottom-tab${activeTab === 'insights' && !editingNodeId ? ' active' : ''}`}
@@ -1097,7 +1097,7 @@ export default function App() {
             <div className="welcome-content">
               <div className="welcome-jd-badge">Jupiter Digital</div>
               <div className="welcome-logo"><JupiterIcon size={72} /></div>
-              <h2 className="welcome-title">AstroTree</h2>
+              <h2 className="welcome-title">AstroDig</h2>
               <p className="welcome-tagline">
                 Discover the celestial patterns<br />woven through your family
               </p>
@@ -1216,7 +1216,7 @@ export default function App() {
             <span className="canvas-brand-logo"><JupiterIcon size={20} /></span>
             <div className="canvas-brand-text">
               <span className="canvas-brand-name">Jupiter Digital</span>
-              <span className="canvas-brand-sub">AstroTree</span>
+              <span className="canvas-brand-sub">AstroDig</span>
               <span className="canvas-brand-contact">
                 jupreturns@gmail.com · <svg style={{display:'inline',verticalAlign:'middle'}} width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> @jupreturn
               </span>
