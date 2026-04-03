@@ -2,16 +2,16 @@ import dagre from '@dagrejs/dagre'
 
 const NODE_WIDTH  = 180
 const NODE_HEIGHT = 110
+const SPOUSE_GAP  = 200 // horizontal gap between spouses
 
 export function applyDagreLayout(nodes, edges) {
   const g = new dagre.graphlib.Graph()
   g.setDefaultEdgeLabel(() => ({}))
-  g.setGraph({ rankdir: 'TB', ranksep: 100, nodesep: 60 })
+  g.setGraph({ rankdir: 'TB', ranksep: 100, nodesep: 80 })
 
   nodes.forEach(node => g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT }))
 
-  // Group parent→child edges by source and sort each group by child birthdate
-  // so siblings render oldest-to-youngest left-to-right in dagre
+  // Add parent→child edges sorted by child birthdate (oldest left)
   const parentChildEdges = edges.filter(e => e.data?.relationType !== 'spouse')
   const byParent = {}
   parentChildEdges.forEach(e => {
@@ -28,6 +28,11 @@ export function applyDagreLayout(nodes, edges) {
       .forEach(e => g.setEdge(e.source, e.target))
   })
 
+  // Add spouse edges so Dagre knows they're connected (same rank via minlen 0)
+  edges
+    .filter(e => e.data?.relationType === 'spouse')
+    .forEach(e => g.setEdge(e.source, e.target, { weight: 2, minlen: 0 }))
+
   dagre.layout(g)
 
   const posMap = {}
@@ -39,7 +44,7 @@ export function applyDagreLayout(nodes, edges) {
     }
   })
 
-  // Post-process: align spouses to the same Y so they sit side-by-side
+  // Post-process: align spouses on the same Y and place them side-by-side
   edges
     .filter(e => e.data?.relationType === 'spouse')
     .forEach(({ source, target }) => {
@@ -47,6 +52,14 @@ export function applyDagreLayout(nodes, edges) {
       const avgY = (posMap[source].y + posMap[target].y) / 2
       posMap[source].y = avgY
       posMap[target].y = avgY
+
+      // If spouses ended up stacked or too close, spread them apart
+      const dx = Math.abs(posMap[source].x - posMap[target].x)
+      if (dx < SPOUSE_GAP) {
+        const midX = (posMap[source].x + posMap[target].x) / 2
+        posMap[source].x = midX - SPOUSE_GAP / 2
+        posMap[target].x = midX + SPOUSE_GAP / 2
+      }
     })
 
   return nodes.map(node => ({
