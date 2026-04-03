@@ -1,13 +1,13 @@
 import dagre from '@dagrejs/dagre'
 
-const NODE_WIDTH  = 180
-const NODE_HEIGHT = 110
-const SPOUSE_GAP  = 200 // horizontal gap between spouses
+const NODE_WIDTH  = 220
+const NODE_HEIGHT = 140
+const SPOUSE_GAP  = 240 // horizontal gap between spouses
 
 export function applyDagreLayout(nodes, edges) {
   const g = new dagre.graphlib.Graph()
   g.setDefaultEdgeLabel(() => ({}))
-  g.setGraph({ rankdir: 'TB', ranksep: 100, nodesep: 80 })
+  g.setGraph({ rankdir: 'TB', ranksep: 120, nodesep: 100 })
 
   nodes.forEach(node => g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT }))
 
