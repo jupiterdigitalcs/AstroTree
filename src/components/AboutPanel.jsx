@@ -33,13 +33,25 @@ export default function AboutPanel() {
         </div>
       </div>
 
+      {/* ── What is AstroDig ─────────────────────────────────────────── */}
+      <div className="about-card">
+        <h3 className="about-heading">What is AstroDig?</h3>
+        <p className="about-bio">
+          AstroDig — short for Astrology Digital — is a free tool to map the
+          cosmic connections between the people in your life. Add family,
+          friends, or coworkers and see everyone's sun signs, elements, and
+          astrological patterns at a glance. View your people as a family tree,
+          zodiac wheel, or constellation map.
+        </p>
+      </div>
+
       {/* ── Bio ───────────────────────────────────────────────────────── */}
       <div className="about-card">
         <h3 className="about-heading">Meet the Astrologer</h3>
         <p className="about-bio">
           Hi, I'm Christina — astrologer and creator behind Jupiter Digital.
           I believe the stars hold a mirror to the patterns passed down through
-          our families. AstroDig is my way of making that visible.
+          our relationships. AstroDig is my way of making that visible.
         </p>
       </div>
 
@@ -92,16 +104,16 @@ export default function AboutPanel() {
       <div className="about-card" id="about-data">
         <h3 className="about-heading">Your Data</h3>
         <p className="about-bio">
-          AstroDig saves your family tree to your browser. If you use cloud sync,
-          your tree data (names, birthdates, and astrological signs) is also stored
+          AstroDig saves your charts to your browser. If you use cloud sync,
+          your chart data (names, birthdates, and astrological signs) is also stored
           on our servers so you can access it from other devices.
         </p>
         <ul className="about-data-list">
           <li>No name, email, or account is required.</li>
           <li>Each browser gets a random anonymous ID — not tied to you personally.</li>
-          <li>You can delete your trees at any time from Saved Trees.</li>
-          <li>Trees shared via link are visible to anyone with that link.</li>
-          <li>Synced trees are visible to the app creator (Jupiter Digital) via an admin panel for support and moderation purposes.</li>
+          <li>You can delete your charts at any time from Saved Charts.</li>
+          <li>Charts shared via link are visible to anyone with that link.</li>
+          <li>Synced charts are visible to the app creator (Jupiter Digital) via an admin panel for support and moderation purposes.</li>
         </ul>
         <p className="about-bio" style={{ marginTop: '0.5rem' }}>
           This is a small independent app. Your data is not sold or used for advertising.
@@ -119,7 +131,7 @@ export default function AboutPanel() {
         {showRemoveConfirm && (
           <div className="about-remove-confirm">
             <p className="about-remove-warning">
-              ⚠ This removes your email from this device. Your trees stay saved locally, but <strong>cloud sync and backup will stop</strong> until you re-enter an email. This doesn't delete your trees from the server.
+              ⚠ This removes your email from this device. Your charts stay saved locally, but <strong>cloud sync and backup will stop</strong> until you re-enter an email. This doesn't delete your charts from the server.
             </p>
             <div className="about-remove-actions">
               <button type="button" className="about-remove-cancel" onClick={() => setShowRemoveConfirm(false)}>Cancel</button>

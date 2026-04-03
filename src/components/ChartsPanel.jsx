@@ -76,8 +76,8 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
   return (
     <div className="charts-panel">
       <div className="charts-panel-header">
-        <h2 className="charts-panel-title">🗂️ My Trees</h2>
-        <button type="button" className="add-row-btn" onClick={onNew}>+ New Tree</button>
+        <h2 className="charts-panel-title">🗂️ My Charts</h2>
+        <button type="button" className="add-row-btn" onClick={onNew}>+ New Chart</button>
       </div>
 
       {/* Email indicator / opt-in */}
@@ -91,7 +91,7 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         </div>
       ) : onAddEmail ? (
         <button type="button" className="charts-add-email-btn" onClick={onAddEmail}>
-          ☁ Back up &amp; sync your trees
+          ☁ Back up &amp; sync your charts
         </button>
       ) : null}
 
@@ -148,12 +148,12 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
           ))}
         </div>
       ) : (
-        <p className="bulk-hint">No saved trees yet. Use 💾 Save on the tree screen.</p>
+        <p className="bulk-hint">No saved charts yet — your first chart saves automatically.</p>
       )}
 
       {/* ── Sample Trees ──────────────────────────────────────────────── */}
       <div className="sample-charts">
-        <h3 className="sample-charts-title">✦ Sample Trees</h3>
+        <h3 className="sample-charts-title">✦ Sample Charts</h3>
         <p className="sample-charts-sub">Explore a demo family to see how AstroDig works</p>
         <div className="charts-list">
           {[buildDemoChart()].map(c => (
@@ -184,8 +184,8 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
           ) : restoreStatus === 'success' ? (
             <div className="restore-result restore-result--ok">
               {restoreCount > 0
-                ? `✓ ${restoreCount} tree${restoreCount !== 1 ? 's' : ''} restored!`
-                : '✓ All up to date — no new trees to restore.'}
+                ? `✓ ${restoreCount} chart${restoreCount !== 1 ? 's' : ''} restored!`
+                : '✓ All up to date — no new charts to restore.'}
               <button type="button" className="restore-dismiss" onClick={() => { setShowRestore(false); setRestoreStatus('idle') }}>×</button>
             </div>
           ) : (
@@ -221,8 +221,8 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
 
       {publicCharts.length > 0 && (
         <div className="featured-charts">
-          <h3 className="featured-charts-title">✦ Featured Trees</h3>
-          <p className="featured-charts-sub">Sample family trees to explore</p>
+          <h3 className="featured-charts-title">✦ Featured Charts</h3>
+          <p className="featured-charts-sub">Sample charts to explore</p>
           <div className="charts-list">
             {publicCharts.map(c => (
               <div key={c.id} className="chart-item chart-item--featured">

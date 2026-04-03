@@ -758,8 +758,8 @@ export default function App() {
       {showNewTreeConfirm && (
         <div className="save-dialog-backdrop" onClick={() => setShowNewTreeConfirm(false)}>
           <div className="save-dialog" onClick={e => e.stopPropagation()}>
-            <p className="save-dialog-title">Start a new tree?</p>
-            <p className="save-dialog-sub">Your current tree is saved and can be reloaded from Saved Trees.</p>
+            <p className="save-dialog-title">Start a new chart?</p>
+            <p className="save-dialog-sub">Your current chart is saved and can be reloaded from Saved Charts.</p>
             <div className="save-dialog-btns">
               <button type="button" className="save-dialog-cancel" onClick={() => setShowNewTreeConfirm(false)}>Cancel</button>
               <button type="button" className="save-dialog-save" onClick={() => { setShowNewTreeConfirm(false); handleNewChart() }}>Start New</button>
@@ -777,10 +777,10 @@ export default function App() {
             onClick={e => e.stopPropagation()}
           >
             <p className="save-dialog-title">
-              {pendingNewTree ? '⚠ Save before starting a new tree?' : '💾 Name this tree'}
+              {pendingNewTree ? '⚠ Save before starting a new chart?' : '💾 Name this chart'}
             </p>
             {!pendingNewTree && (
-              <p className="save-dialog-sub">Saved trees appear in the Saved tab and sync to your devices.</p>
+              <p className="save-dialog-sub">Saved charts appear in the Saved tab and sync to your devices.</p>
             )}
             <input
               type="text"
@@ -833,7 +833,7 @@ export default function App() {
           <span className="mobile-panel-title">
             {editingNodeId ? 'Edit Member'
               : activeTab === 'insights' ? '✦ Insights'
-              : activeTab === 'charts'   ? '🗂️ Saved Trees'
+              : activeTab === 'charts'   ? '🗂️ Saved Charts'
               : activeTab === 'about'    ? <><JupiterIcon size={14} /> About</>
               : '★ Family'}
           </span>
@@ -948,7 +948,7 @@ export default function App() {
                     <div className="family-welcome family-welcome--compact">
                       <div className="family-welcome-inline">
                         <JupiterIcon size={26} />
-                        <h2 className="family-welcome-title">Start a New Tree</h2>
+                        <h2 className="family-welcome-title">Start a New Chart</h2>
                       </div>
                       <p className="family-welcome-sub">Add family members below to build another celestial chart.</p>
                     </div>
@@ -1015,7 +1015,7 @@ export default function App() {
                       className="family-tree-btn"
                       onClick={handleNewTreeClick}
                     >
-                      ＋ New Tree
+                      ＋ New Chart
                     </button>
                   </div>
                 </>
