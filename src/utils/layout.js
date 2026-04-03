@@ -8,17 +8,12 @@ const MIN_GAP_X   = NODE_WIDTH + 30
 export function applyDagreLayout(nodes, edges) {
   if (nodes.length === 0) return nodes
 
-  // ── Build family-only adjacency ──────────────────────────────────────────
-  const familyEdges = edges.filter(e => {
+  // ── Build relationship maps ─────────────────────────────────────────────
+  const parentChildEdges = edges.filter(e => {
     const rt = e.data?.relationType
-    return rt === 'parent-child' || rt === 'spouse' || !rt
+    return rt === 'parent-child' || !rt
   })
-  const parentChildEdges = familyEdges.filter(e =>
-    e.data?.relationType !== 'spouse'
-  )
 
-  // ── Compute generation depth via BFS from roots ─────────────────────────
-  // Build child→parents and parent→children maps
   const childToParents = {}
   const parentToChildren = {}
   parentChildEdges.forEach(e => {
@@ -28,63 +23,49 @@ export function applyDagreLayout(nodes, edges) {
     parentToChildren[e.source].push(e.target)
   })
 
-  // Find spouse pairs
-  const spousePairs = {}
+  const spouseOf = {}
   edges.filter(e => e.data?.relationType === 'spouse').forEach(e => {
-    if (!spousePairs[e.source]) spousePairs[e.source] = []
-    spousePairs[e.source].push(e.target)
-    if (!spousePairs[e.target]) spousePairs[e.target] = []
-    spousePairs[e.target].push(e.source)
+    if (!spouseOf[e.source]) spouseOf[e.source] = []
+    spouseOf[e.source].push(e.target)
+    if (!spouseOf[e.target]) spouseOf[e.target] = []
+    spouseOf[e.target].push(e.source)
   })
 
-  // Nodes connected to family structure (via any family edge)
-  const familyConnected = new Set()
-  familyEdges.forEach(e => {
-    familyConnected.add(e.source)
-    familyConnected.add(e.target)
-  })
-
-  // Roots = nodes that are parents but have no parents themselves
-  // If no clear roots, pick nodes with no incoming parent-child edges
-  const allNodeIds = new Set(nodes.map(n => n.id))
+  // ── Step 1: Assign generations from parent-child edges only ─────────────
+  // True roots = have children but no parents
+  const generation = {}
   const hasParent = new Set(Object.keys(childToParents))
-  const isParent = new Set(Object.keys(parentToChildren))
+  const isParent  = new Set(Object.keys(parentToChildren))
 
   let roots = nodes
-    .filter(n => familyConnected.has(n.id) && !hasParent.has(n.id))
+    .filter(n => isParent.has(n.id) && !hasParent.has(n.id))
     .map(n => n.id)
 
-  // If no roots found (circular?), just pick first family-connected node
-  if (roots.length === 0 && familyConnected.size > 0) {
-    roots = [familyConnected.values().next().value]
+  // Fallback: if no clear roots, any node with parent-child edges but no parents
+  if (roots.length === 0) {
+    roots = nodes
+      .filter(n => !hasParent.has(n.id) && (isParent.has(n.id) || childToParents[n.id]))
+      .map(n => n.id)
   }
 
-  // BFS to assign generations
-  const generation = {}
-  const queue = [...roots]
-  roots.forEach(id => { generation[id] = 0 })
+  // If still nothing (only spouse/friend edges), pick first node
+  if (roots.length === 0 && nodes.length > 0) {
+    roots = [nodes[0].id]
+  }
 
+  // BFS down parent→child edges only
+  roots.forEach(id => { generation[id] = 0 })
+  const queue = [...roots]
   while (queue.length > 0) {
     const id = queue.shift()
     const gen = generation[id]
-
-    // Spouse gets same generation
-    ;(spousePairs[id] || []).forEach(sid => {
-      if (generation[sid] == null) {
-        generation[sid] = gen
-        queue.push(sid)
-      }
-    })
-
-    // Children get next generation
     ;(parentToChildren[id] || []).forEach(cid => {
       if (generation[cid] == null) {
         generation[cid] = gen + 1
         queue.push(cid)
       }
     })
-
-    // Parents get previous generation (for nodes discovered bottom-up)
+    // Also walk UP for any node discovered bottom-up
     ;(childToParents[id] || []).forEach(pid => {
       if (generation[pid] == null) {
         generation[pid] = gen - 1
@@ -93,30 +74,46 @@ export function applyDagreLayout(nodes, edges) {
     })
   }
 
-  // Normalize generations so minimum is 0
-  const genValues = Object.values(generation)
-  if (genValues.length > 0) {
-    const minGen = Math.min(...genValues)
-    if (minGen !== 0) {
-      Object.keys(generation).forEach(id => { generation[id] -= minGen })
-    }
+  // ── Step 2: Propagate generation to spouses ─────────────────────────────
+  // A spouse always inherits their partner's generation
+  let changed = true
+  while (changed) {
+    changed = false
+    nodes.forEach(n => {
+      if (generation[n.id] != null) {
+        ;(spouseOf[n.id] || []).forEach(sid => {
+          if (generation[sid] == null) {
+            generation[sid] = generation[n.id]
+            changed = true
+          }
+        })
+      }
+    })
   }
 
-  // Disconnected nodes (friend/coworker only) — place in their own row
-  const disconnected = nodes.filter(n => !familyConnected.has(n.id))
-  const maxGen = genValues.length > 0 ? Math.max(...Object.values(generation)) : -1
-  disconnected.forEach(n => {
-    generation[n.id] = maxGen + 1
+  // ── Step 3: Handle any remaining unassigned nodes ───────────────────────
+  // (disconnected nodes with no family or spouse edges)
+  const maxGen = Math.max(0, ...Object.values(generation))
+  nodes.forEach(n => {
+    if (generation[n.id] == null) {
+      generation[n.id] = maxGen + 1
+    }
   })
 
-  // ── Run Dagre with only family edges ────────────────────────────────────
+  // Normalize so minimum generation = 0
+  const minGen = Math.min(...Object.values(generation))
+  if (minGen !== 0) {
+    Object.keys(generation).forEach(id => { generation[id] -= minGen })
+  }
+
+  // ── Run Dagre for X positions (family edges only) ──────────────────────
   const g = new dagre.graphlib.Graph()
   g.setDefaultEdgeLabel(() => ({}))
   g.setGraph({ rankdir: 'TB', ranksep: 120, nodesep: 100 })
 
   nodes.forEach(node => g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT }))
 
-  // Feed parent→child edges sorted by child birthdate (oldest left)
+  // Parent→child edges sorted by child birthdate
   const byParent = {}
   parentChildEdges.forEach(e => {
     if (!byParent[e.source]) byParent[e.source] = []
@@ -132,45 +129,41 @@ export function applyDagreLayout(nodes, edges) {
       .forEach(e => g.setEdge(e.source, e.target))
   })
 
-  // Spouse edges (keep on same rank)
+  // Spouse edges
   edges
     .filter(e => e.data?.relationType === 'spouse')
     .forEach(e => g.setEdge(e.source, e.target, { weight: 2, minlen: 1 }))
 
-  // NOTE: friend/coworker edges are NOT added to Dagre — they don't affect layout
-
   dagre.layout(g)
 
-  // ── Extract positions ───────────────────────────────────────────────────
+  // ── Extract Dagre positions (use X only, Y from our generation) ────────
   const posMap = {}
   nodes.forEach(node => {
-    const { x, y } = g.node(node.id)
-    posMap[node.id] = { x: x - NODE_WIDTH / 2, y: y - NODE_HEIGHT / 2 }
+    const { x } = g.node(node.id)
+    posMap[node.id] = { x: x - NODE_WIDTH / 2, y: 0 }
   })
 
-  // ── Force generation alignment ─────────────────────────────────────────
-  // Group nodes by generation and set all nodes in same generation to same Y
+  // ── Set Y from generation ──────────────────────────────────────────────
   const genGroups = {}
   nodes.forEach(n => {
-    const gen = generation[n.id] ?? 0
+    const gen = generation[n.id]
     if (!genGroups[gen]) genGroups[gen] = []
     genGroups[gen].push(n.id)
   })
-
-  // For each generation, use the Y from Dagre for the first node, then align all
   const sortedGens = Object.keys(genGroups).map(Number).sort((a, b) => a - b)
   sortedGens.forEach((gen, gi) => {
-    const targetY = gi * (NODE_HEIGHT + 120) // consistent vertical spacing
+    const targetY = gi * (NODE_HEIGHT + 120)
     genGroups[gen].forEach(id => {
       posMap[id].y = targetY
     })
   })
 
-  // ── Align spouses side-by-side ──────────────────────────────────────────
+  // ── Align spouses side-by-side ─────────────────────────────────────────
   edges
     .filter(e => e.data?.relationType === 'spouse')
     .forEach(({ source, target }) => {
       if (!posMap[source] || !posMap[target]) return
+      // Force same Y (should already be, but ensure)
       const avgY = (posMap[source].y + posMap[target].y) / 2
       posMap[source].y = avgY
       posMap[target].y = avgY
@@ -183,39 +176,34 @@ export function applyDagreLayout(nodes, edges) {
       }
     })
 
-  // ── Center children under parent midpoint, sorted by birthdate ─────────
-  // Process generation by generation top-down so parent positions are final
+  // ── Center children under parent midpoint, sorted by birthdate ────────
   sortedGens.forEach(gen => {
-    if (gen === 0) return // roots have no parents to center under
+    if (gen === 0) return
 
-    // Group children by their parent set
-    const childGroups = {} // key = sorted parent IDs, value = [child IDs]
+    const childGroups = {}
     ;(genGroups[gen] || []).forEach(childId => {
       const parents = childToParents[childId] || []
-      // Also include spouse of any parent (they share the center point)
+      if (parents.length === 0) return // no parents (spouse-only or disconnected)
+      // Include spouse of parents for center calculation
       const allParents = new Set(parents)
       parents.forEach(pid => {
-        ;(spousePairs[pid] || []).forEach(sid => allParents.add(sid))
+        ;(spouseOf[pid] || []).forEach(sid => allParents.add(sid))
       })
       const key = [...allParents].sort().join(',')
-      if (!key) return // disconnected node
       if (!childGroups[key]) childGroups[key] = { parents: [...allParents], children: [] }
       childGroups[key].children.push(childId)
     })
 
-    // Sort child groups left-to-right by parent center X to avoid crossings
+    // Sort child groups by parent center X to avoid crossings
     const groupList = Object.values(childGroups)
     groupList.sort((a, b) => {
-      const aCenter = a.parents.reduce((s, id) => s + (posMap[id]?.x ?? 0), 0) / a.parents.length
-      const bCenter = b.parents.reduce((s, id) => s + (posMap[id]?.x ?? 0), 0) / b.parents.length
-      return aCenter - bCenter
+      const ax = a.parents.reduce((s, id) => s + (posMap[id]?.x ?? 0), 0) / a.parents.length
+      const bx = b.parents.reduce((s, id) => s + (posMap[id]?.x ?? 0), 0) / b.parents.length
+      return ax - bx
     })
 
-    // Assign X positions: each child group centered under its parents
-    // but groups laid out left-to-right without overlapping
     let cursor = -Infinity
     groupList.forEach(({ parents, children }) => {
-      // Sort children by birthdate (oldest left)
       children.sort((a, b) => {
         const na = nodes.find(n => n.id === a)
         const nb = nodes.find(n => n.id === b)
@@ -226,33 +214,33 @@ export function applyDagreLayout(nodes, edges) {
       const totalWidth = children.length * MIN_GAP_X
       let startX = parentCenterX - totalWidth / 2
 
-      // Don't overlap with previous group
       if (startX < cursor) startX = cursor
 
       children.forEach((cid, ci) => {
         posMap[cid].x = startX + ci * MIN_GAP_X
       })
 
-      cursor = startX + totalWidth + 20 // gap between groups
+      cursor = startX + totalWidth + 20
     })
   })
 
-  // ── Place disconnected nodes evenly in their row ────────────────────────
+  // ── Place disconnected nodes centered in their row ─────────────────────
+  const disconnectedGen = sortedGens[sortedGens.length - 1]
+  const disconnected = (genGroups[disconnectedGen] || []).filter(id => {
+    return !childToParents[id] && !parentToChildren[id] &&
+      !edges.some(e => e.data?.relationType === 'spouse' && (e.source === id || e.target === id))
+  })
   if (disconnected.length > 0) {
-    // Find the center X of the whole tree
-    const familyIds = nodes.filter(n => familyConnected.has(n.id)).map(n => n.id)
-    const allX = familyIds.map(id => posMap[id].x)
-    const centerX = allX.length > 0
-      ? (Math.min(...allX) + Math.max(...allX)) / 2
-      : 0
+    const allX = Object.values(posMap).map(p => p.x)
+    const centerX = (Math.min(...allX) + Math.max(...allX)) / 2
     const totalW = disconnected.length * MIN_GAP_X
     const startX = centerX - totalW / 2 + NODE_WIDTH / 2
-    disconnected.forEach((n, i) => {
-      posMap[n.id].x = startX + i * MIN_GAP_X
+    disconnected.forEach((id, i) => {
+      posMap[id].x = startX + i * MIN_GAP_X
     })
   }
 
-  // ── Final overlap separation ────────────────────────────────────────────
+  // ── Final overlap separation ───────────────────────────────────────────
   const ids = Object.keys(posMap)
   for (let pass = 0; pass < 20; pass++) {
     let moved = false
