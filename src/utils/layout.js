@@ -28,10 +28,10 @@ export function applyDagreLayout(nodes, edges) {
       .forEach(e => g.setEdge(e.source, e.target))
   })
 
-  // Add spouse edges so Dagre knows they're connected (same rank via minlen 0)
+  // Add spouse edges so Dagre knows they're connected (keep on same rank)
   edges
     .filter(e => e.data?.relationType === 'spouse')
-    .forEach(e => g.setEdge(e.source, e.target, { weight: 2, minlen: 0 }))
+    .forEach(e => g.setEdge(e.source, e.target, { weight: 2, minlen: 1 }))
 
   dagre.layout(g)
 
