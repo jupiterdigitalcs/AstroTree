@@ -29,6 +29,7 @@ import { ShareButton } from './components/ShareButton.jsx'
 import { fetchChartByToken, isCloudEnabled } from './utils/cloudStorage.js'
 import { EmailCapture, hasBeenAsked, clearEmailAsked } from './components/EmailCapture.jsx'
 import { OnboardingProgress, markInsightsSeen } from './components/OnboardingProgress.jsx'
+import { buildDemoChart } from './utils/demoData.js'
 
 const NODE_TYPES = { astro: AstroNode }
 
@@ -219,12 +220,13 @@ export default function App() {
       ...spouseIds.map(s => makeEdge(primaryId, s, 'spouse')),
     ]
     const nextCounter = counter + members.length
-    setNodes(nextNodes)
+    setNodes(applyDagreLayout(nextNodes, nextEdges))
     setEdges(nextEdges)
     setCounter(nextCounter)
     setActiveTab('tree')
     setEditingNodeId(null)
     setShowAddMore(false)
+    setFitTick(t => t + 1)
     if (wasEmpty) setShowConnectPrompt(true)
     markUsed()
 
@@ -265,17 +267,28 @@ export default function App() {
   const handleAddEdge = useCallback((source, target, relationType = 'parent-child') => {
     setEdges(prev => {
       if (source === target) return prev
-      const isSpouse = relationType === 'spouse'
-      const dup = isSpouse
-        ? prev.some(e => (e.source === source && e.target === target) || (e.source === target && e.target === source))
-        : prev.some(e =>  e.source === source && e.target === target)
-      if (dup) return prev
-      if (!isSpouse && prev.some(e => e.source === target && e.target === source)) return prev
-      // Prevent the same pair being both spouse and parent/child
-      const pairConnected = (e) =>
-        (e.source === source && e.target === target) || (e.source === target && e.target === source)
-      if (isSpouse && prev.some(e => e.data?.relationType !== 'spouse' && pairConnected(e))) return prev
-      if (!isSpouse && prev.some(e => e.data?.relationType === 'spouse' && pairConnected(e))) return prev
+      // Only one relationship per pair — reject if any edge already connects them
+      const alreadyConnected = prev.some(e =>
+        (e.source === source && e.target === target) ||
+        (e.source === target && e.target === source)
+      )
+      if (alreadyConnected) return prev
+      // Prevent parent-child cycles (A→B→…→A)
+      if (relationType !== 'spouse') {
+        const children = new Set([target])
+        let changed = true
+        while (changed) {
+          changed = false
+          for (const e of prev) {
+            if (e.data?.relationType === 'spouse') continue
+            if (children.has(e.source) && !children.has(e.target)) {
+              children.add(e.target)
+              changed = true
+            }
+          }
+        }
+        if (children.has(source)) return prev // would create a cycle
+      }
       return [...prev, makeEdge(source, target, relationType)]
     })
   }, [setEdges])
@@ -295,9 +308,10 @@ export default function App() {
 
   // ── Charts ────────────────────────────────────────────────────────────────
   const handleLoadChart = useCallback((chart) => {
-    setNodes(chart.nodes); setEdges(chart.edges); setCounter(chart.counter)
-    setSavedChartId(chart.id)
-    setEditingNodeId(null); setActiveTab('tree')
+    setNodes(applyDagreLayout(chart.nodes, chart.edges))
+    setEdges(chart.edges); setCounter(chart.counter)
+    setSavedChartId(chart.isSample ? null : chart.id)
+    setEditingNodeId(null); setActiveTab('tree'); setTreeView('tree')
     setFitTick(t => t + 1)
   }, [setNodes, setEdges])
 
@@ -370,6 +384,19 @@ export default function App() {
     setEditingNodeId(null)
     if (tab === 'tree') setFitTick(t => t + 1)
     if (tab === 'insights' && edges.length > 0) markInsightsSeen()
+  }
+
+  // ── Load demo tree ────────────────────────────────────────────────────────
+  function handleLoadDemo() {
+    const demo = buildDemoChart()
+    setNodes(applyDagreLayout(demo.nodes, demo.edges))
+    setEdges(demo.edges)
+    setCounter(demo.counter)
+    setSavedChartId(null)
+    setViewOnly(false)
+    setActiveTab('tree')
+    setFitTick(t => t + 1)
+    markUsed()
   }
 
   // ── Combine two PNG data-URLs vertically on a canvas ─────────────────────
@@ -484,6 +511,85 @@ export default function App() {
       setExporting(false)
     }
   }, [exporting, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Export zodiac wheel image ──────────────────────────────────────────────
+  const handleZodiacExport = useCallback(async () => {
+    const el = document.querySelector('.zodiac-wheel-wrap')
+    if (!el || exporting) return
+    setExportError(null)
+    setExporting(true)
+
+    const chartTitle = loadCharts().find(c => c.id === savedChartId)?.title
+    const slug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family'
+    const filename = `${slug}-zodiac.png`
+
+    try {
+      const url = await toPng(el, {
+        backgroundColor: '#09071a',
+        pixelRatio: 2,
+        filter: node => {
+          const c = node.classList
+          if (!c) return true
+          if (c.contains('zodiac-tooltip')) return false
+          return true
+        },
+      })
+
+      // Composite brand bar below
+      await document.fonts.ready
+      const img = new Image()
+      img.src = url
+      await new Promise(r => { img.onload = r })
+      const pr = 2
+      const barH = 36 * pr
+      const cvs = document.createElement('canvas')
+      cvs.width  = img.width
+      cvs.height = img.height + barH
+      const ctx = cvs.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      ctx.fillStyle = '#09071a'
+      ctx.fillRect(0, img.height, cvs.width, barH)
+      ctx.strokeStyle = 'rgba(201,168,76,0.2)'
+      ctx.lineWidth = 1
+      ctx.beginPath(); ctx.moveTo(0, img.height); ctx.lineTo(cvs.width, img.height); ctx.stroke()
+      const pad = 16 * pr
+      const mid = img.height + barH / 2
+      ctx.textBaseline = 'middle'
+      ctx.fillStyle = '#c9a84c'
+      ctx.font = `600 ${13 * pr}px Cinzel, Georgia, serif`
+      ctx.textAlign = 'left'
+      ctx.fillText('✦ AstroTree · Jupiter Digital', pad, mid)
+      ctx.fillStyle = 'rgba(184,170,212,0.7)'
+      ctx.font = `${10 * pr}px Raleway, Helvetica, sans-serif`
+      ctx.textAlign = 'right'
+      ctx.fillText('jupreturns@gmail.com  ·  @jupreturn', cvs.width - pad, mid)
+      const finalUrl = cvs.toDataURL('image/png')
+
+      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+      if (isMobile && navigator.share) {
+        const res = await fetch(finalUrl)
+        const blob = await res.blob()
+        const file = new File([blob], filename, { type: 'image/png' })
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: chartTitle ? `${chartTitle} · Zodiac Wheel` : 'Family Zodiac Wheel',
+            text: 'Check out my family zodiac wheel from AstroTree by Jupiter Digital ✦',
+          })
+          return
+        }
+      }
+      const link = document.createElement('a')
+      link.download = filename
+      link.href = finalUrl
+      link.click()
+    } catch (err) {
+      if (err?.name === 'AbortError') return
+      setExportError('Export failed — please try again.')
+    } finally {
+      setExporting(false)
+    }
+  }, [exporting, savedChartId])
 
   // ── Export insights image (captures live .insights-panel from the DOM) ────
   const handleInsightsExport = useCallback(async () => {
@@ -911,6 +1017,9 @@ export default function App() {
                 onClick={() => goTab('add')}>
                 ★ Add Family Members
               </button>
+              <button type="button" className="welcome-demo" onClick={handleLoadDemo}>
+                or try a demo family
+              </button>
             </div>
           </div>
         )}
@@ -948,6 +1057,57 @@ export default function App() {
           </div>
         )}
 
+        {/* ── Shared action buttons (visible on both views) ──────────── */}
+        {nodes.length > 0 && (
+          <div className="canvas-panel-btns">
+            <SyncIndicator status={syncStatus} />
+            <button
+              type="button"
+              className="relayout-btn relayout-btn--insights"
+              onClick={() => goTab('insights')}
+            >
+              ✦ Insights
+            </button>
+            <ShareButton savedChartId={savedChartId} syncStatus={syncStatus} />
+            <button
+              type="button"
+              className="relayout-btn relayout-btn--share"
+              onClick={treeView === 'zodiac' ? handleZodiacExport : handleExport}
+              disabled={exporting}
+            >
+              {exporting ? '…' : (<>
+                <span className="export-label-desktop">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}}><path d="M6 1v7M3 6l3 3 3-3M1 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  {treeView === 'zodiac' ? 'Download Zodiac' : 'Download Tree'}
+                </span>
+                <span className="export-label-mobile">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}}><path d="M6 7V1M3 4l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 8v2.5h10V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  Share
+                </span>
+              </>)}
+            </button>
+            {treeView === 'tree' && (
+              <button type="button" className="relayout-btn" onClick={handleRelayout}>
+                ⟳ Re-layout
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* View-only banner for shared charts */}
+        {viewOnly && (
+          <div className="view-only-banner">
+            Viewing a shared tree —{' '}
+            <button
+              type="button"
+              className="view-only-save-btn"
+              onClick={() => { setSaveTitle(''); setShowSaveDialog(true) }}
+            >
+              Save a copy
+            </button>
+          </div>
+        )}
+
         {treeView === 'zodiac' && nodes.length > 0 ? (
           <ZodiacWheel
             nodes={nodes}
@@ -966,64 +1126,6 @@ export default function App() {
           <FitViewOnLayout fitTick={fitTick} fitViewRef={fitViewRef} />
           <Background color="#1a1040" gap={36} size={1} />
           {nodes.length > 0 && <Controls style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />}
-
-          {/* View-only banner for shared charts */}
-          {viewOnly && (
-            <Panel position="top-center">
-              <div className="view-only-banner">
-                Viewing a shared tree —{' '}
-                <button
-                  type="button"
-                  className="view-only-save-btn"
-                  onClick={() => { setSaveTitle(''); setShowSaveDialog(true) }}
-                >
-                  Save a copy
-                </button>
-              </div>
-            </Panel>
-          )}
-
-          {/* Top-right: action buttons */}
-          <Panel position="top-right">
-            <div className="canvas-panel-btns">
-              <SyncIndicator status={syncStatus} />
-              {nodes.length > 0 && (
-                <button
-                  type="button"
-                  className="relayout-btn relayout-btn--insights"
-                  onClick={() => goTab('insights')}
-                >
-                  ✦ Insights
-                </button>
-              )}
-              <ShareButton savedChartId={savedChartId} syncStatus={syncStatus} />
-              {/* Share / Export */}
-              {nodes.length > 0 && (
-                <button
-                  type="button"
-                  className="relayout-btn relayout-btn--share"
-                  onClick={handleExport}
-                  disabled={exporting}
-                >
-                  {exporting ? '…' : (<>
-                    <span className="export-label-desktop">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}}><path d="M6 1v7M3 6l3 3 3-3M1 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      Download Tree
-                    </span>
-                    <span className="export-label-mobile">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}}><path d="M6 7V1M3 4l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 8v2.5h10V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      Share
-                    </span>
-                  </>)}
-                </button>
-              )}
-              {nodes.length > 0 && (
-                <button type="button" className="relayout-btn" onClick={handleRelayout}>
-                  ⟳ Re-layout
-                </button>
-              )}
-            </div>
-          </Panel>
 
           {/* Bottom-right: Jupiter Digital watermark */}
           <Panel position="bottom-right">

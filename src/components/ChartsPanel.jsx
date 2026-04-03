@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { loadCharts, deleteChart, saveChart, renameChart } from '../utils/storage.js'
 import { fetchCharts, fetchPublicCharts, isCloudEnabled, restoreChartsByEmail } from '../utils/cloudStorage.js'
 import { getSavedEmail } from './EmailCapture.jsx'
+import { buildDemoChart } from '../utils/demoData.js'
 
 export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout, onRename, onDuplicate }) {
   const [charts,          setCharts]          = useState(() => loadCharts())
@@ -149,6 +150,30 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
       ) : (
         <p className="bulk-hint">No saved trees yet. Use 💾 Save on the tree screen.</p>
       )}
+
+      {/* ── Sample Trees ──────────────────────────────────────────────── */}
+      <div className="sample-charts">
+        <h3 className="sample-charts-title">✦ Sample Trees</h3>
+        <p className="sample-charts-sub">Explore a demo family to see how AstroTree works</p>
+        <div className="charts-list">
+          {[buildDemoChart()].map(c => (
+            <div key={c.id} className="chart-item chart-item--sample">
+              <div className="chart-item-info">
+                <span className="chart-item-title">
+                  {c.title}
+                  <span className="chart-item-badge chart-item-badge--sample">sample</span>
+                </span>
+                <span className="chart-item-meta">
+                  {c.nodes.length} members · 3 generations
+                </span>
+              </div>
+              <div className="chart-item-actions">
+                <button type="button" className="connection-add-btn" onClick={() => onLoad(c)}>View</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {isCloudEnabled() && (
         <div className="restore-section">

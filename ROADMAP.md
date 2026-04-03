@@ -22,13 +22,15 @@ Surface the cosmic patterns woven through the family.
 - Notable bonds: twins, mirror signs, sibling/cousin element pairs
 - Save and load named charts to localStorage
 - PDF export (tree image + insights summary)
+- Family Signature, Full Compatibility Report, and Family Roles insights
+- Zodiac Wheel view — circular sun sign chart with member markers
+- Sort family members by age (oldest first) everywhere
 
 ---
 
-## MVP 3 — Production & Shareability
+## MVP 3 — Production & Shareability ✅ COMPLETE
 Make the app stable and shareable beyond beta testers.
 
-**Done:**
 - Autosave draft so refresh never loses work
 - Error boundary with recovery screen
 - Vercel deployment config
@@ -38,11 +40,20 @@ Make the app stable and shareable beyond beta testers.
 - Consistent MM/DD/YYYY date input throughout
 - Starfield performance fix
 - Dead CSS cleanup
+- Onboarding stepper walkthrough for new users
+- Native share sheet on mobile exports, direct download on desktop
+- Export brand bar and JupiterDigital icons
+- Rename and duplicate saved charts
+- Database save (Supabase) — charts persist beyond localStorage
+- Admin panel: date filters, created vs saved columns, By User grouped view
+- IP geolocation on device registration
+- Security: SECURITY DEFINER RPCs, removed service role key from browser
+- Mobile polish: nav fixes, canvas height, social icons, export cleanup
 
-**Remaining:**
-- Shareable read-only link — someone builds a tree, sends a URL, relatives can view but not edit
+- Shareable read-only link with "Save a copy" option for viewers
 - Sample/demo tree on the welcome screen so new visitors understand what they're building
-- Onboarding tooltip or first-use walkthrough
+- Zodiac Wheel export (download/share as branded PNG)
+- Unified canvas action bar — Download, Share Link, and Insights work on both Tree and Zodiac views
 
 ---
 
@@ -88,7 +99,7 @@ First paywalled feature. Bridges to the existing JupiterDigital Etsy customer ba
 ---
 
 ## Backlog / Future Ideas
-- User accounts and cloud-saved trees (requires backend — Supabase is the likely path)
+- User accounts with login (charts save to Supabase already, but no auth yet)
 - Invite family members to add their own birth data via link
 - Synastry overlays between any two family members
 - AI-written narrative report: "Your family's cosmic story" (Claude API)

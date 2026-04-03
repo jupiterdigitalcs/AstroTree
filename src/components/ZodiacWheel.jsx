@@ -39,7 +39,8 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
   const cx = size / 2, cy = size / 2
   const outerR = 220
   const innerR = 120
-  const labelR = (outerR + innerR) / 2
+  const labelR = 88   // centered in inner ring (between center circle r≈55 and innerR)
+  const memberR = 175  // centered in outer ring
 
   // Group nodes by sign
   const nodesBySign = {}
@@ -135,8 +136,6 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
               : pad + (usable / (count - 1)) * mi
             const angle = startAngle + offset
 
-            // Place between inner and outer ring
-            const memberR = innerR + (outerR - innerR) * 0.55
             const pos = polarToXY(cx, cy, memberR, angle)
             const isHovered = hoveredNode === n.id
 
@@ -175,7 +174,7 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
 
         {/* Center circle */}
         <circle
-          cx={cx} cy={cy} r={innerR - 30}
+          cx={cx} cy={cy} r={55}
           fill="rgba(9,7,26,0.9)"
           stroke="rgba(201,168,76,0.2)"
           strokeWidth="1"
@@ -211,26 +210,35 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
         )
       })()}
 
-      {/* Legend */}
+      {/* Legend — grouped by zodiac sign */}
       <div className="zodiac-legend">
-        {nodes
-          .slice()
-          .sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999'))
-          .map(n => (
-          <div
-            key={n.id}
-            className={`zodiac-legend-item${hoveredNode === n.id ? ' zodiac-legend-item--active' : ''}`}
-            onMouseEnter={() => setHoveredNode(n.id)}
-            onMouseLeave={() => setHoveredNode(null)}
-            onClick={() => onSelectNode?.(n.id)}
-          >
-            <span className="zodiac-legend-initial" style={{ borderColor: n.data.elementColor, color: n.data.elementColor }}>
-              {n.data.name.charAt(0).toUpperCase()}
-            </span>
-            <span className="zodiac-legend-name">{n.data.name}</span>
-            <span className="zodiac-legend-sign">{n.data.symbol} {n.data.sign}</span>
-          </div>
-        ))}
+        {ZODIAC_ORDER
+          .filter(z => nodesBySign[z.sign].length > 0)
+          .map(z => {
+            const color = ELEMENT_COLORS[z.element] ?? '#c9a84c'
+            return (
+              <div key={z.sign} className="zodiac-legend-group">
+                <div className="zodiac-legend-sign-header" style={{ color }}>
+                  <span className="zodiac-legend-sign-symbol">{z.symbol}</span>
+                  <span className="zodiac-legend-sign-label">{z.sign}</span>
+                </div>
+                {nodesBySign[z.sign].map(n => (
+                  <div
+                    key={n.id}
+                    className={`zodiac-legend-item${hoveredNode === n.id ? ' zodiac-legend-item--active' : ''}`}
+                    onMouseEnter={() => setHoveredNode(n.id)}
+                    onMouseLeave={() => setHoveredNode(null)}
+                    onClick={() => onSelectNode?.(n.id)}
+                  >
+                    <span className="zodiac-legend-initial" style={{ borderColor: color, color }}>
+                      {n.data.name.charAt(0).toUpperCase()}
+                    </span>
+                    <span className="zodiac-legend-name">{n.data.name}</span>
+                  </div>
+                ))}
+              </div>
+            )
+          })}
       </div>
     </div>
   )

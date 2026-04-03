@@ -23,12 +23,12 @@ export default function EditMemberPanel({
     (e.source === node.id || e.target === node.id) && e.data?.relationType === 'spouse'
   )
 
-  const connectedIds = new Set([
-    ...parentEdges.map(e => e.source),
-    ...childEdges.map(e => e.target),
-    ...spouseEdges.map(e => e.source === node.id ? e.target : e.source),
-    node.id,
-  ])
+  // Any node that already shares ANY edge with this node is ineligible
+  const connectedIds = new Set([node.id])
+  edges.forEach(e => {
+    if (e.source === node.id) connectedIds.add(e.target)
+    if (e.target === node.id) connectedIds.add(e.source)
+  })
   const eligibleNodes = allNodes.filter(n => !connectedIds.has(n.id))
 
   // ── Partner-children suggestion ───────────────────────────────────────────

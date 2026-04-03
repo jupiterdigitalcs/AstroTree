@@ -67,6 +67,9 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
         <div className="signature-polarity-track">
           <div className="signature-polarity-fill signature-polarity-fill--masc" style={{ width: `${mascPct}%` }} />
           <div className="signature-polarity-fill signature-polarity-fill--fem"  style={{ width: `${femPct}%` }} />
+          <div className="signature-polarity-marker" style={{ left: `${mascPct}%` }}>
+            <span className="signature-polarity-marker-pct">{mascPct}%</span>
+          </div>
         </div>
         <span className="signature-polarity-label signature-polarity-label--right">Receptive</span>
       </div>
