@@ -22,77 +22,115 @@ const EDGE_DASH = {
   'coworker':     '4,4',
 }
 
-// Simple force-directed layout simulation
-function runForceLayout(nodes, edges, width, height, iterations = 200) {
+// Force-directed layout simulation with cluster-aware spacing
+function runForceLayout(nodes, edges, width, height) {
   if (nodes.length === 0) return []
+  if (nodes.length === 1) return [{ x: width / 2, y: height / 2 }]
 
+  // Scale layout params to node count
+  const n = nodes.length
+  const idealEdgeLen = Math.max(80, Math.min(140, 300 / Math.sqrt(n)))
+  const repulseK = Math.max(4000, 1200 * n)
+  const iterations = Math.min(400, 150 + n * 15)
+
+  // Initialize in a circle
   const positions = nodes.map((_, i) => {
-    const angle = (2 * Math.PI * i) / nodes.length
-    const r = Math.min(width, height) * 0.25
-    return {
-      x: width / 2 + r * Math.cos(angle),
-      y: height / 2 + r * Math.sin(angle),
-      vx: 0, vy: 0,
-    }
+    const angle = (2 * Math.PI * i) / n
+    const r = Math.min(width, height) * 0.28
+    return { x: width / 2 + r * Math.cos(angle), y: height / 2 + r * Math.sin(angle), vx: 0, vy: 0 }
   })
 
   const nodeIndex = {}
-  nodes.forEach((n, i) => { nodeIndex[n.id] = i })
+  nodes.forEach((nd, i) => { nodeIndex[nd.id] = i })
+
+  // Build adjacency for connected-component awareness
+  const adj = new Array(n).fill(null).map(() => new Set())
+  edges.forEach(e => {
+    const si = nodeIndex[e.source], ti = nodeIndex[e.target]
+    if (si != null && ti != null) { adj[si].add(ti); adj[ti].add(si) }
+  })
+
+  const pad = 50
 
   for (let iter = 0; iter < iterations; iter++) {
-    const alpha = 1 - iter / iterations
+    const alpha = Math.pow(1 - iter / iterations, 1.5) // ease-out cooling
 
-    for (let i = 0; i < positions.length; i++) {
-      for (let j = i + 1; j < positions.length; j++) {
-        let dx = positions[j].x - positions[i].x
-        let dy = positions[j].y - positions[i].y
-        let dist = Math.sqrt(dx * dx + dy * dy) || 1
-        const repulse = (8000 * alpha) / (dist * dist)
-        const fx = (dx / dist) * repulse
-        const fy = (dy / dist) * repulse
-        positions[i].vx -= fx
-        positions[i].vy -= fy
-        positions[j].vx += fx
-        positions[j].vy += fy
+    // Repulsion between all pairs
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const dx = positions[j].x - positions[i].x
+        const dy = positions[j].y - positions[i].y
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1
+        const force = (repulseK * alpha) / (dist * dist)
+        const fx = (dx / dist) * force
+        const fy = (dy / dist) * force
+        positions[i].vx -= fx; positions[i].vy -= fy
+        positions[j].vx += fx; positions[j].vy += fy
       }
     }
 
+    // Edge attraction — stronger pull for tighter clusters
     edges.forEach(e => {
-      const si = nodeIndex[e.source]
-      const ti = nodeIndex[e.target]
+      const si = nodeIndex[e.source], ti = nodeIndex[e.target]
       if (si == null || ti == null) return
       const dx = positions[ti].x - positions[si].x
       const dy = positions[ti].y - positions[si].y
       const dist = Math.sqrt(dx * dx + dy * dy) || 1
-      const idealDist = 120
-      const attract = ((dist - idealDist) * 0.05 * alpha)
-      const fx = (dx / dist) * attract
-      const fy = (dy / dist) * attract
-      positions[si].vx += fx
-      positions[si].vy += fy
-      positions[ti].vx -= fx
-      positions[ti].vy -= fy
+      const force = (dist - idealEdgeLen) * 0.08 * alpha
+      const fx = (dx / dist) * force
+      const fy = (dy / dist) * force
+      positions[si].vx += fx; positions[si].vy += fy
+      positions[ti].vx -= fx; positions[ti].vy -= fy
     })
 
+    // Center gravity
+    const cx = width / 2, cy = height / 2
     positions.forEach(p => {
-      p.vx += (width / 2 - p.x) * 0.01 * alpha
-      p.vy += (height / 2 - p.y) * 0.01 * alpha
+      p.vx += (cx - p.x) * 0.008 * alpha
+      p.vy += (cy - p.y) * 0.008 * alpha
     })
 
+    // Apply velocity with damping
+    const damping = 0.55
     positions.forEach(p => {
-      p.vx *= 0.6
-      p.vy *= 0.6
-      p.x += p.vx
-      p.y += p.vy
-      p.x = Math.max(40, Math.min(width - 40, p.x))
-      p.y = Math.max(40, Math.min(height - 40, p.y))
+      p.vx *= damping; p.vy *= damping
+      p.x += p.vx; p.y += p.vy
+      p.x = Math.max(pad, Math.min(width - pad, p.x))
+      p.y = Math.max(pad, Math.min(height - pad, p.y))
     })
   }
+
+  // Post-process: separate any remaining overlaps (min distance between nodes)
+  const minDist = 50
+  for (let pass = 0; pass < 20; pass++) {
+    let moved = false
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const dx = positions[j].x - positions[i].x
+        const dy = positions[j].y - positions[i].y
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1
+        if (dist < minDist) {
+          const push = (minDist - dist) / 2
+          const nx = (dx / dist) * push, ny = (dy / dist) * push
+          positions[i].x -= nx; positions[i].y -= ny
+          positions[j].x += nx; positions[j].y += ny
+          moved = true
+        }
+      }
+    }
+    if (!moved) break
+  }
+
+  // Clamp final positions
+  positions.forEach(p => {
+    p.x = Math.max(pad, Math.min(width - pad, p.x))
+    p.y = Math.max(pad, Math.min(height - pad, p.y))
+  })
 
   return positions
 }
 
-export default function ConstellationView({ nodes, edges, onSelectNode }) {
+export default function ConstellationView({ nodes, edges, onSelectNode, layoutTick }) {
   const [hoveredNode, setHoveredNode] = useState(null)
   const [positions, setPositions] = useState([])
   const [dragging, setDragging] = useState(null) // index of node being dragged
@@ -108,7 +146,9 @@ export default function ConstellationView({ nodes, edges, onSelectNode }) {
   useEffect(() => {
     const pos = runForceLayout(nodes, edges, size, size)
     setPositions(pos)
-  }, [nodes, edges])
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
+  }, [nodes, edges, layoutTick])
 
   const nodeIndex = {}
   nodes.forEach((n, i) => { nodeIndex[n.id] = i })

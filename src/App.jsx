@@ -111,6 +111,7 @@ export default function App() {
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation'
+  const [constellationTick, setConstellationTick] = useState(0)
   const [showEmailCapture,  setShowEmailCapture]  = useState(false)
   const [lastSavedAt,       setLastSavedAt]       = useState(null)
   const [treeViewedCount,   setTreeViewedCount]   = useState(0)
@@ -351,9 +352,13 @@ export default function App() {
   }, [handleLoadChart]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRelayout = useCallback(() => {
-    setNodes(prev => applyDagreLayout(prev, edges))
-    setFitTick(t => t + 1)
-  }, [edges, setNodes])
+    if (treeView === 'constellation') {
+      setConstellationTick(t => t + 1)
+    } else {
+      setNodes(prev => applyDagreLayout(prev, edges))
+      setFitTick(t => t + 1)
+    }
+  }, [edges, setNodes, treeView])
 
   // ── Save tree to named chart ──────────────────────────────────────────────
   function handleSaveChart(e) {
@@ -1183,13 +1188,8 @@ export default function App() {
                 </span>
               </>)}
             </button>
-            {treeView === 'tree' && (
+            {(treeView === 'tree' || treeView === 'constellation') && (
               <button type="button" className="relayout-btn" onClick={handleRelayout}>
-                ⟳ Re-layout
-              </button>
-            )}
-            {treeView === 'constellation' && (
-              <button type="button" className="relayout-btn" onClick={() => setTreeView('constellation')}>
                 ⟳ Re-layout
               </button>
             )}
@@ -1234,6 +1234,7 @@ export default function App() {
             nodes={nodes}
             edges={edges}
             onSelectNode={(id) => setEditingNodeId(id)}
+            layoutTick={constellationTick}
           />
         ) : (
         <ReactFlow
