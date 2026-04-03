@@ -1035,15 +1035,15 @@ export default function App() {
               {' · '}
               <button type="button" className="footer-about-link" onClick={() => goTab('about')}>About</button>
               {' · '}
-              <a href="https://jupiterdigitalevents.com" className="footer-about-link" target="_blank" rel="noopener noreferrer">Events</a>
+              <a href="https://jupiterdigitalevents.com" className="footer-external-link" target="_blank" rel="noopener noreferrer">Events ↗</a>
             </span>
-            {lastSavedAt && (
-              <span className="footer-saved-inline">
-                <SyncIndicator status={syncStatus === 'idle' ? 'synced' : syncStatus} />
-                {formatRelativeTime(lastSavedAt)}
-              </span>
-            )}
           </div>
+          {lastSavedAt && (
+            <div className="footer-saved-row">
+              <SyncIndicator status={syncStatus === 'idle' ? 'synced' : syncStatus} />
+              <span>{formatRelativeTime(lastSavedAt)}</span>
+            </div>
+          )}
         </footer>
       </aside>
 
@@ -1073,7 +1073,7 @@ export default function App() {
           onClick={() => goTab('insights')}
           disabled={nodes.length < 2}
         >
-          <span className="bottom-tab-icon">✦</span>
+          <span className="bottom-tab-icon">☍</span>
           <span className="bottom-tab-label">Insights</span>
         </button>
         <button

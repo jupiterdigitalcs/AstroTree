@@ -106,7 +106,7 @@ export default function AboutPanel() {
         <span className="about-shop-icon">✦</span>
         <span className="about-shop-text">
           <span className="about-shop-name">Jupiter Digital Events</span>
-          <span className="about-shop-sub">Book a reading, workshop, or astrology event</span>
+          <span className="about-shop-sub">Astrology parties, pop-up booths &amp; celestial events</span>
         </span>
         <span className="about-shop-arrow">→</span>
       </a>

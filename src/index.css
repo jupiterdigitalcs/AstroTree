@@ -2583,6 +2583,21 @@ body {
 }
 .footer-about-link:hover { color: var(--gold); background: rgba(201,168,76,0.08); }
 
+.footer-external-link {
+  background: none;
+  border: none;
+  color: var(--gold-dim, #a08840);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.3rem;
+  transition: color 0.15s, background 0.15s;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.footer-external-link:hover { color: var(--gold); background: rgba(201,168,76,0.08); }
+
 
 /* ── Onboarding stepper ─────────────────────────────────────────────────── */
 .onboarding-stepper {
@@ -2775,6 +2790,16 @@ body {
   color: var(--text-muted);
   opacity: 0.7;
   white-space: nowrap;
+}
+
+.footer-saved-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+  padding-top: 0.15rem;
 }
 
 
