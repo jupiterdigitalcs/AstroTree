@@ -37,11 +37,12 @@ export default function AboutPanel() {
       <div className="about-card">
         <h3 className="about-heading">What is AstroDig?</h3>
         <p className="about-bio">
-          AstroDig — short for Astrology Digital — is a free tool to map the
-          cosmic connections between the people in your life. Add family,
-          friends, or coworkers and see everyone's sun signs, elements, and
-          astrological patterns at a glance. View your people as a family tree,
-          zodiac wheel, or constellation map.
+          Like an archaeologist uncovers hidden layers beneath the surface,
+          AstroDig lets you dig into the astrological patterns woven through
+          your relationships — all in digital form. Add family, friends, or
+          coworkers and unearth everyone's sun signs, elements, and cosmic
+          connections at a glance. View your people as a family tree, zodiac
+          wheel, or constellation map.
         </p>
       </div>
 
