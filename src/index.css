@@ -487,6 +487,65 @@ body {
 }
 
 .connection-add-btn:hover:not(:disabled) { background: rgba(201,168,76,0.1); }
+
+/* ── Connection type picker (step 2) ──────────────────────────────── */
+.connection-type-picker {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-top: 0.3rem;
+}
+
+.connection-type-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+}
+
+.connection-type-cancel {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.connection-type-cancel:hover { color: var(--text); }
+
+.connection-type-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.connection-type-btn {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.7rem;
+  padding: 0.3rem 0.55rem;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.connection-type-btn:hover { background: rgba(201,168,76,0.1); border-color: var(--gold-dim); color: var(--text); }
+.connection-type-btn--parent:hover,
+.connection-type-btn--child:hover  { border-color: #c9a84c; color: #c9a84c; }
+.connection-type-btn--spouse:hover { border-color: #d4a0bc; color: #d4a0bc; }
+.connection-type-btn--friend:hover { border-color: #5bc8f5; color: #5bc8f5; }
+.connection-type-btn--coworker:hover { border-color: #a0a0b8; color: #a0a0b8; }
 .connection-add-btn:disabled { opacity: 0.3; cursor: default; }
 
 /* ────────────────────────── Member list ─────────────────────────────────── */

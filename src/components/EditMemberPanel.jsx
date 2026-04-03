@@ -15,6 +15,7 @@ export default function EditMemberPanel({
   const [birthdate,     setBirthdate]     = useState(node.data.birthdate)
   const [error,         setError]         = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [connectTo,     setConnectTo]     = useState(null) // id of node being connected
 
   // ── Derive connections fresh from props every render ──────────────────────
   const parentEdges = edges.filter(e => e.target === node.id && e.data?.relationType === 'parent-child')
@@ -29,7 +30,7 @@ export default function EditMemberPanel({
     (e.source === node.id || e.target === node.id) && e.data?.relationType === 'coworker'
   )
 
-  // Any node that already shares ANY edge with this node is ineligible
+  // Already connected node IDs
   const connectedIds = new Set([node.id])
   edges.forEach(e => {
     if (e.source === node.id) connectedIds.add(e.target)
@@ -37,15 +38,67 @@ export default function EditMemberPanel({
   })
   const eligibleNodes = allNodes.filter(n => !connectedIds.has(n.id))
 
+  // ── Ancestor / descendant sets (for preventing impossible relationships) ──
+  const ancestors = new Set()
+  const descendants = new Set()
+  function walkUp(id) {
+    edges.forEach(e => {
+      if (e.target === id && e.data?.relationType === 'parent-child' && !ancestors.has(e.source)) {
+        ancestors.add(e.source)
+        walkUp(e.source)
+      }
+    })
+  }
+  function walkDown(id) {
+    edges.forEach(e => {
+      if (e.source === id && e.data?.relationType === 'parent-child' && !descendants.has(e.target)) {
+        descendants.add(e.target)
+        walkDown(e.target)
+      }
+    })
+  }
+  walkUp(node.id)
+  walkDown(node.id)
+
+  // How many parents does a given node have?
+  function parentCountOf(nodeId) {
+    return edges.filter(e => e.target === nodeId && e.data?.relationType === 'parent-child').length
+  }
+
+  // ── Compute valid relationship types for a specific other node ────────────
+  function getValidRelationships(otherId) {
+    const types = []
+
+    // Parent of me: only if I have < 2 parents, and other is not my descendant
+    if (parentEdges.length < 2 && !descendants.has(otherId)) {
+      types.push({ key: 'parent', label: 'Parent of me', action: () => onAddEdge(otherId, node.id) })
+    }
+
+    // My child: only if other has < 2 parents, and other is not my ancestor
+    if (parentCountOf(otherId) < 2 && !ancestors.has(otherId)) {
+      types.push({ key: 'child', label: 'My child', action: () => onAddEdge(node.id, otherId) })
+    }
+
+    // Spouse: always valid (non-hierarchical)
+    types.push({ key: 'spouse', label: 'Spouse / partner', action: () => onAddEdge(node.id, otherId, 'spouse') })
+
+    // Friend: always valid
+    types.push({ key: 'friend', label: 'Friend', action: () => onAddEdge(node.id, otherId, 'friend') })
+
+    // Coworker: always valid
+    types.push({ key: 'coworker', label: 'Coworker', action: () => onAddEdge(node.id, otherId, 'coworker') })
+
+    return types
+  }
+
   // ── Partner-children suggestion ───────────────────────────────────────────
-  // Find children that belong to a spouse but not yet to this node
   const myChildIds = new Set(childEdges.map(e => e.target))
   const partnerChildSuggestions = spouseEdges.flatMap(spouseEdge => {
     const partnerId  = spouseEdge.source === node.id ? spouseEdge.target : spouseEdge.source
     const partner    = allNodes.find(n => n.id === partnerId)
     if (!partner) return []
     return edges
-      .filter(e => e.source === partnerId && e.data?.relationType !== 'spouse' && !myChildIds.has(e.target) && e.target !== node.id)
+      .filter(e => e.source === partnerId && e.data?.relationType === 'parent-child' && !myChildIds.has(e.target) && e.target !== node.id)
       .map(e => ({ partner, childId: e.target, childNode: allNodes.find(n => n.id === e.target) }))
       .filter(s => s.childNode)
   })
@@ -56,6 +109,26 @@ export default function EditMemberPanel({
     if (!birthdate)   { setError('Please pick a birthdate.'); return }
     setError('')
     onUpdate(node.id, { name: name.trim(), birthdate })
+  }
+
+  function handleConnect(otherId) {
+    const types = getValidRelationships(otherId)
+    if (types.length === 1) {
+      // Only one option — just do it
+      types[0].action()
+      setConnectTo(null)
+    } else {
+      setConnectTo(otherId)
+    }
+  }
+
+  const connectTarget = connectTo ? allNodes.find(n => n.id === connectTo) : null
+  const connectOptions = connectTo ? getValidRelationships(connectTo) : []
+
+  // If selected node got connected (no longer eligible), reset
+  if (connectTo && connectedIds.has(connectTo)) {
+    // will reset on next render via the effect below
+    setTimeout(() => setConnectTo(null), 0)
   }
 
   const hasConnections = parentEdges.length > 0 || childEdges.length > 0 ||
@@ -121,48 +194,46 @@ export default function EditMemberPanel({
             </button>
           )}
 
-          {eligibleNodes.length > 0 && (
+          {/* ── Add connection: step 1 — pick a person ──────────────────── */}
+          {eligibleNodes.length > 0 && !connectTo && (
             <div className="connection-add-row">
               <select
                 value=""
                 className="connection-add-select"
                 onChange={e => {
                   if (!e.target.value) return
-                  const [id, rel] = e.target.value.split(':')
-                  if (rel === 'parent') onAddEdge(id, node.id)
-                  else if (rel === 'child') onAddEdge(node.id, id)
-                  else if (rel === 'spouse') onAddEdge(node.id, id, 'spouse')
-                  else if (rel === 'friend') onAddEdge(node.id, id, 'friend')
-                  else if (rel === 'coworker') onAddEdge(node.id, id, 'coworker')
+                  handleConnect(e.target.value)
                 }}
               >
                 <option value="">＋ Add connection…</option>
-                <optgroup label="Parent of me">
-                  {eligibleNodes.map(n => (
-                    <option key={n.id} value={`${n.id}:parent`}>{n.data.symbol} {n.data.name}</option>
-                  ))}
-                </optgroup>
-                <optgroup label="My child">
-                  {eligibleNodes.map(n => (
-                    <option key={n.id} value={`${n.id}:child`}>{n.data.symbol} {n.data.name}</option>
-                  ))}
-                </optgroup>
-                <optgroup label="Spouse / partner">
-                  {eligibleNodes.map(n => (
-                    <option key={n.id} value={`${n.id}:spouse`}>{n.data.symbol} {n.data.name}</option>
-                  ))}
-                </optgroup>
-                <optgroup label="Friend">
-                  {eligibleNodes.map(n => (
-                    <option key={n.id} value={`${n.id}:friend`}>{n.data.symbol} {n.data.name}</option>
-                  ))}
-                </optgroup>
-                <optgroup label="Coworker">
-                  {eligibleNodes.map(n => (
-                    <option key={n.id} value={`${n.id}:coworker`}>{n.data.symbol} {n.data.name}</option>
-                  ))}
-                </optgroup>
+                {eligibleNodes.map(n => (
+                  <option key={n.id} value={n.id}>{n.data.symbol} {n.data.name}</option>
+                ))}
               </select>
+            </div>
+          )}
+
+          {/* ── Add connection: step 2 — pick relationship type ─────────── */}
+          {connectTarget && (
+            <div className="connection-type-picker">
+              <div className="connection-type-header">
+                <span>
+                  Connect to <strong>{connectTarget.data.symbol} {connectTarget.data.name}</strong> as:
+                </span>
+                <button type="button" className="connection-type-cancel" onClick={() => setConnectTo(null)}>✕</button>
+              </div>
+              <div className="connection-type-options">
+                {connectOptions.map(opt => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    className={`connection-type-btn connection-type-btn--${opt.key}`}
+                    onClick={() => { opt.action(); setConnectTo(null) }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -211,4 +282,3 @@ function ConnGroup({ label, edgeList, getOther, allNodes, onRemove, accentColor 
     </div>
   )
 }
-
