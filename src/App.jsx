@@ -196,8 +196,8 @@ export default function App() {
       const srcLeft = src.position.x <= tgt.position.x
       return {
         ...edge, type: 'straight',
-        sourceHandle: srcLeft ? 'right' : 'left',
-        targetHandle: srcLeft ? 'left'  : 'right',
+        sourceHandle: srcLeft ? 'right-src' : 'left-src',
+        targetHandle: srcLeft ? 'left-tgt'  : 'right-tgt',
       }
     }),
     [edges, nodes]

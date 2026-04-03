@@ -158,25 +158,71 @@ export function applyDagreLayout(nodes, edges) {
     })
   })
 
-  // ── Align spouses side-by-side ─────────────────────────────────────────
-  edges
-    .filter(e => e.data?.relationType === 'spouse')
-    .forEach(({ source, target }) => {
-      if (!posMap[source] || !posMap[target]) return
-      // Force same Y (should already be, but ensure)
-      const avgY = (posMap[source].y + posMap[target].y) / 2
-      posMap[source].y = avgY
-      posMap[target].y = avgY
+  // ── Arrange each generation row: spouse pairs together, then space evenly ─
+  // Build spouse pair lookup (only process each pair once)
+  const spouseEdgeList = edges.filter(e => e.data?.relationType === 'spouse')
+  const pairedWith = {} // nodeId → partnerId (first spouse edge wins)
+  spouseEdgeList.forEach(({ source, target }) => {
+    if (!pairedWith[source] && !pairedWith[target]) {
+      pairedWith[source] = target
+      pairedWith[target] = source
+    }
+  })
 
-      const dx = Math.abs(posMap[source].x - posMap[target].x)
-      if (dx < SPOUSE_GAP) {
-        const midX = (posMap[source].x + posMap[target].x) / 2
-        posMap[source].x = midX - SPOUSE_GAP / 2
-        posMap[target].x = midX + SPOUSE_GAP / 2
+  // For each generation, build ordered list of "units" (single nodes or spouse pairs)
+  // and lay them out left-to-right
+  sortedGens.forEach(gen => {
+    const row = genGroups[gen] || []
+    if (row.length === 0) return
+
+    // Build units: group spouse pairs as one unit
+    const visited = new Set()
+    const units = [] // each unit: { ids: [id] or [id1, id2], x: dagre center x }
+    // Sort row by Dagre X so we preserve rough order
+    const rowSorted = [...row].sort((a, b) => (posMap[a]?.x ?? 0) - (posMap[b]?.x ?? 0))
+
+    rowSorted.forEach(id => {
+      if (visited.has(id)) return
+      visited.add(id)
+      const partner = pairedWith[id]
+      if (partner && row.includes(partner) && !visited.has(partner)) {
+        visited.add(partner)
+        // Keep the one with lower dagre X on the left
+        const leftId = (posMap[id]?.x ?? 0) <= (posMap[partner]?.x ?? 0) ? id : partner
+        const rightId = leftId === id ? partner : id
+        const cx = ((posMap[id]?.x ?? 0) + (posMap[partner]?.x ?? 0)) / 2
+        units.push({ ids: [leftId, rightId], x: cx, isPair: true })
+      } else {
+        units.push({ ids: [id], x: posMap[id]?.x ?? 0, isPair: false })
       }
     })
 
+    // Sort units by their Dagre center X
+    units.sort((a, b) => a.x - b.x)
+
+    // Lay out units left-to-right with proper spacing
+    // First, compute total width needed
+    const unitWidths = units.map(u => u.isPair ? SPOUSE_GAP + NODE_WIDTH : NODE_WIDTH)
+    const unitGap = 60
+    const totalWidth = unitWidths.reduce((s, w) => s + w, 0) + (units.length - 1) * unitGap
+    // Center the row around the average Dagre X
+    const avgX = units.reduce((s, u) => s + u.x, 0) / units.length
+    let cursor = avgX - totalWidth / 2
+
+    units.forEach((unit, ui) => {
+      if (unit.isPair) {
+        posMap[unit.ids[0]].x = cursor
+        posMap[unit.ids[1]].x = cursor + SPOUSE_GAP
+        posMap[unit.ids[0]].y = posMap[unit.ids[1]].y // ensure same Y
+      } else {
+        posMap[unit.ids[0]].x = cursor
+      }
+      cursor += unitWidths[ui] + unitGap
+    })
+  })
+
   // ── Center children under parent midpoint, sorted by birthdate ────────
+  // Run top-down so parent positions are finalized before children
   sortedGens.forEach(gen => {
     if (gen === 0) return
 
@@ -197,10 +243,13 @@ export function applyDagreLayout(nodes, edges) {
     // Sort child groups by parent center X to avoid crossings
     const groupList = Object.values(childGroups)
     groupList.sort((a, b) => {
-      const ax = a.parents.reduce((s, id) => s + (posMap[id]?.x ?? 0), 0) / a.parents.length
-      const bx = b.parents.reduce((s, id) => s + (posMap[id]?.x ?? 0), 0) / b.parents.length
+      const ax = a.parents.reduce((s, id) => s + (posMap[id]?.x ?? 0) + NODE_WIDTH / 2, 0) / a.parents.length
+      const bx = b.parents.reduce((s, id) => s + (posMap[id]?.x ?? 0) + NODE_WIDTH / 2, 0) / b.parents.length
       return ax - bx
     })
+
+    // Also include nodes that are spouses but have no parents (they stay with their partner)
+    // These are already positioned by the row layout above, so skip them
 
     let cursor = -Infinity
     groupList.forEach(({ parents, children }) => {
@@ -221,6 +270,28 @@ export function applyDagreLayout(nodes, edges) {
       })
 
       cursor = startX + totalWidth + 20
+    })
+
+    // After centering children, re-seat any spouse pairs in this row
+    // (a child who has a spouse needs to stay next to them)
+    ;(genGroups[gen] || []).forEach(id => {
+      const partner = pairedWith[id]
+      if (partner && generation[partner] === gen && posMap[partner]) {
+        const dx = Math.abs(posMap[id].x - posMap[partner].x)
+        if (dx > SPOUSE_GAP + 10 || dx < SPOUSE_GAP - 10) {
+          // Re-align: keep the child in place, pull spouse next to them
+          const childHasParents = (childToParents[id] || []).length > 0
+          const partnerHasParents = (childToParents[partner] || []).length > 0
+          if (childHasParents && !partnerHasParents) {
+            // Child was positioned by parent centering, pull spouse next to them
+            posMap[partner].x = posMap[id].x + SPOUSE_GAP
+            posMap[partner].y = posMap[id].y
+          } else if (!childHasParents && partnerHasParents) {
+            posMap[id].x = posMap[partner].x + SPOUSE_GAP
+            posMap[id].y = posMap[partner].y
+          }
+        }
+      }
     })
   })
 

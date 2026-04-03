@@ -24,8 +24,11 @@ export default function AstroNode({ data, selected }) {
     >
       <Handle type="target" position={Position.Top}    className="node-handle" />
       <Handle type="source" position={Position.Bottom} className="node-handle" />
-      <Handle type="source" position={Position.Right}  className="node-handle node-handle--side" id="right" />
-      <Handle type="target" position={Position.Left}   className="node-handle node-handle--side" id="left" />
+      {/* Side handles need both source+target so spouse edges work in either direction */}
+      <Handle type="source" position={Position.Right}  className="node-handle node-handle--side" id="right-src" />
+      <Handle type="target" position={Position.Right}  className="node-handle node-handle--side" id="right-tgt" />
+      <Handle type="source" position={Position.Left}   className="node-handle node-handle--side" id="left-src" />
+      <Handle type="target" position={Position.Left}   className="node-handle node-handle--side" id="left-tgt" />
 
       <div className="node-symbol" style={{ color: glow, filter: `drop-shadow(0 0 10px ${glow}99)` }}>
         {symbol}
