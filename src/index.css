@@ -1134,6 +1134,10 @@ body {
 }
 
 .canvas-brand {
+  position: absolute;
+  bottom: 0.6rem;
+  right: 0.6rem;
+  z-index: 10;
   display: flex;
   align-items: center;
   gap: 0.5rem;

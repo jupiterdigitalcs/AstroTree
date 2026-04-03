@@ -1108,6 +1108,20 @@ export default function App() {
           </div>
         )}
 
+        {/* Bottom-right: Jupiter Digital watermark (both views) */}
+        {nodes.length > 0 && (
+          <div className="canvas-brand">
+            <span className="canvas-brand-logo"><JupiterIcon size={20} /></span>
+            <div className="canvas-brand-text">
+              <span className="canvas-brand-name">Jupiter Digital</span>
+              <span className="canvas-brand-sub">AstroTree</span>
+              <span className="canvas-brand-contact">
+                jupreturns@gmail.com · <svg style={{display:'inline',verticalAlign:'middle'}} width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> @jupreturn
+              </span>
+            </div>
+          </div>
+        )}
+
         {treeView === 'zodiac' && nodes.length > 0 ? (
           <ZodiacWheel
             nodes={nodes}
@@ -1126,20 +1140,6 @@ export default function App() {
           <FitViewOnLayout fitTick={fitTick} fitViewRef={fitViewRef} />
           <Background color="#1a1040" gap={36} size={1} />
           {nodes.length > 0 && <Controls style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />}
-
-          {/* Bottom-right: Jupiter Digital watermark */}
-          <Panel position="bottom-right">
-            <div className="canvas-brand">
-              <span className="canvas-brand-logo"><JupiterIcon size={20} /></span>
-              <div className="canvas-brand-text">
-                <span className="canvas-brand-name">Jupiter Digital</span>
-                <span className="canvas-brand-sub">AstroTree</span>
-                <span className="canvas-brand-contact">
-                  jupreturns@gmail.com · <svg style={{display:'inline',verticalAlign:'middle'}} width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> @jupreturn
-                </span>
-              </div>
-            </div>
-          </Panel>
         </ReactFlow>
         )}
       </main>
