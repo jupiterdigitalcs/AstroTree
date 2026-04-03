@@ -620,6 +620,7 @@ export default function App() {
           const c = node.classList
           if (!c) return true
           if (c.contains('constellation-tooltip')) return false
+          if (c.contains('constellation-controls')) return false
           return true
         },
       })

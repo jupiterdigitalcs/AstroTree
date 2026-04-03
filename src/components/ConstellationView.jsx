@@ -26,7 +26,6 @@ const EDGE_DASH = {
 function runForceLayout(nodes, edges, width, height, iterations = 200) {
   if (nodes.length === 0) return []
 
-  // Initialize positions in a circle
   const positions = nodes.map((_, i) => {
     const angle = (2 * Math.PI * i) / nodes.length
     const r = Math.min(width, height) * 0.25
@@ -41,9 +40,8 @@ function runForceLayout(nodes, edges, width, height, iterations = 200) {
   nodes.forEach((n, i) => { nodeIndex[n.id] = i })
 
   for (let iter = 0; iter < iterations; iter++) {
-    const alpha = 1 - iter / iterations // cooling
+    const alpha = 1 - iter / iterations
 
-    // Repulsion between all pairs
     for (let i = 0; i < positions.length; i++) {
       for (let j = i + 1; j < positions.length; j++) {
         let dx = positions[j].x - positions[i].x
@@ -59,7 +57,6 @@ function runForceLayout(nodes, edges, width, height, iterations = 200) {
       }
     }
 
-    // Attraction along edges
     edges.forEach(e => {
       const si = nodeIndex[e.source]
       const ti = nodeIndex[e.target]
@@ -77,19 +74,16 @@ function runForceLayout(nodes, edges, width, height, iterations = 200) {
       positions[ti].vy -= fy
     })
 
-    // Center gravity
     positions.forEach(p => {
       p.vx += (width / 2 - p.x) * 0.01 * alpha
       p.vy += (height / 2 - p.y) * 0.01 * alpha
     })
 
-    // Apply velocity with damping
     positions.forEach(p => {
       p.vx *= 0.6
       p.vy *= 0.6
       p.x += p.vx
       p.y += p.vy
-      // Keep in bounds
       p.x = Math.max(40, Math.min(width - 40, p.x))
       p.y = Math.max(40, Math.min(height - 40, p.y))
     })
@@ -101,7 +95,13 @@ function runForceLayout(nodes, edges, width, height, iterations = 200) {
 export default function ConstellationView({ nodes, edges, onSelectNode }) {
   const [hoveredNode, setHoveredNode] = useState(null)
   const [positions, setPositions] = useState([])
-  const containerRef = useRef(null)
+  const [dragging, setDragging] = useState(null) // index of node being dragged
+  const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [isPanning, setIsPanning] = useState(false)
+  const [locked, setLocked] = useState(false)
+  const panStart = useRef(null)
+  const svgRef = useRef(null)
 
   const size = 560
 
@@ -113,129 +113,211 @@ export default function ConstellationView({ nodes, edges, onSelectNode }) {
   const nodeIndex = {}
   nodes.forEach((n, i) => { nodeIndex[n.id] = i })
 
-  // Group nodes by element for the legend
-  const nodesByElement = {}
-  nodes.forEach(n => {
-    const el = n.data.element || 'Unknown'
-    if (!nodesByElement[el]) nodesByElement[el] = []
-    nodesByElement[el].push(n)
-  })
+  // ── Drag handling ──────────────────────────────────────────────────────────
+  const getSVGPoint = useCallback((clientX, clientY) => {
+    const svg = svgRef.current
+    if (!svg) return { x: 0, y: 0 }
+    const rect = svg.getBoundingClientRect()
+    const svgSize = size // viewBox size
+    const scaleX = svgSize / rect.width
+    const scaleY = svgSize / rect.height
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+    }
+  }, [size])
+
+  const handlePointerDown = useCallback((e, nodeIdx) => {
+    if (locked) return
+    e.stopPropagation()
+    e.preventDefault()
+    setDragging(nodeIdx)
+    e.target.setPointerCapture?.(e.pointerId)
+  }, [locked])
+
+  const handlePointerMove = useCallback((e) => {
+    if (dragging != null && !locked) {
+      const pt = getSVGPoint(e.clientX, e.clientY)
+      setPositions(prev => {
+        const next = [...prev]
+        next[dragging] = { ...next[dragging], x: pt.x, y: pt.y }
+        return next
+      })
+    } else if (isPanning && panStart.current) {
+      const dx = e.clientX - panStart.current.x
+      const dy = e.clientY - panStart.current.y
+      setPan({ x: panStart.current.panX + dx, y: panStart.current.panY + dy })
+    }
+  }, [dragging, locked, isPanning, getSVGPoint])
+
+  const handlePointerUp = useCallback(() => {
+    setDragging(null)
+    setIsPanning(false)
+    panStart.current = null
+  }, [])
+
+  const handleBgPointerDown = useCallback((e) => {
+    if (locked) return
+    setIsPanning(true)
+    panStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y }
+  }, [locked, pan])
+
+  const handleWheel = useCallback((e) => {
+    if (locked) return
+    e.preventDefault()
+    setZoom(z => Math.max(0.3, Math.min(3, z - e.deltaY * 0.001)))
+  }, [locked])
+
+  // Active edge types for compact legend
+  const activeEdgeTypes = [...new Set(
+    edges.map(e => e.data?.relationType || 'parent-child')
+  )]
 
   return (
-    <div className="constellation-wrap" ref={containerRef}>
-      <svg viewBox={`0 0 ${size} ${size}`} className="constellation-svg">
-        {/* Background glow */}
-        <defs>
-          {nodes.map((n, i) => (
-            <radialGradient key={`glow-${n.id}`} id={`node-glow-${n.id}`}>
-              <stop offset="0%" stopColor={n.data.elementColor || '#c9a84c'} stopOpacity="0.3" />
-              <stop offset="100%" stopColor={n.data.elementColor || '#c9a84c'} stopOpacity="0" />
-            </radialGradient>
-          ))}
-        </defs>
+    <div
+      className="constellation-wrap"
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+    >
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${size} ${size}`}
+        className="constellation-svg"
+        onWheel={handleWheel}
+        onPointerDown={handleBgPointerDown}
+        style={{ cursor: dragging != null ? 'grabbing' : isPanning ? 'grabbing' : locked ? 'default' : 'grab' }}
+      >
+        <g transform={`translate(${pan.x / (size / 560) * (1/zoom)}, ${pan.y / (size / 560) * (1/zoom)}) scale(${zoom})`}
+           style={{ transformOrigin: `${size/2}px ${size/2}px` }}>
 
-        {/* Edges */}
-        {positions.length === nodes.length && edges.map(e => {
-          const si = nodeIndex[e.source]
-          const ti = nodeIndex[e.target]
-          if (si == null || ti == null) return null
-          const relType = e.data?.relationType || 'parent-child'
-          const color = EDGE_COLORS[relType] || '#c9a84c'
-          const dash = EDGE_DASH[relType] || 'none'
-          return (
-            <line
-              key={e.id}
-              x1={positions[si].x} y1={positions[si].y}
-              x2={positions[ti].x} y2={positions[ti].y}
-              stroke={color}
-              strokeWidth={1.2}
-              strokeDasharray={dash}
-              opacity={0.5}
-              className="constellation-edge"
-            />
-          )
-        })}
+          {/* Defs */}
+          <defs>
+            {nodes.map((n) => (
+              <radialGradient key={`glow-${n.id}`} id={`node-glow-${n.id}`}>
+                <stop offset="0%" stopColor={n.data.elementColor || '#c9a84c'} stopOpacity="0.3" />
+                <stop offset="100%" stopColor={n.data.elementColor || '#c9a84c'} stopOpacity="0" />
+              </radialGradient>
+            ))}
+          </defs>
 
-        {/* Node glows */}
-        {positions.length === nodes.length && nodes.map((n, i) => (
-          <circle
-            key={`glow-${n.id}`}
-            cx={positions[i].x} cy={positions[i].y}
-            r={hoveredNode === n.id ? 35 : 28}
-            fill={`url(#node-glow-${n.id})`}
-            style={{ transition: 'r 0.15s ease' }}
-          />
-        ))}
-
-        {/* Nodes */}
-        {positions.length === nodes.length && nodes.map((n, i) => {
-          const color = n.data.elementColor || '#c9a84c'
-          const isHovered = hoveredNode === n.id
-          return (
-            <g
-              key={n.id}
-              className="constellation-node"
-              onClick={() => onSelectNode?.(n.id)}
-              onMouseEnter={() => setHoveredNode(n.id)}
-              onMouseLeave={() => setHoveredNode(null)}
-              style={{ cursor: 'pointer' }}
-            >
-              <circle
-                cx={positions[i].x} cy={positions[i].y}
-                r={isHovered ? 22 : 18}
-                fill="#0d0b1e"
+          {/* Edges */}
+          {positions.length === nodes.length && edges.map(e => {
+            const si = nodeIndex[e.source]
+            const ti = nodeIndex[e.target]
+            if (si == null || ti == null) return null
+            const relType = e.data?.relationType || 'parent-child'
+            const color = EDGE_COLORS[relType] || '#c9a84c'
+            const dash = EDGE_DASH[relType] || 'none'
+            return (
+              <line
+                key={e.id}
+                x1={positions[si].x} y1={positions[si].y}
+                x2={positions[ti].x} y2={positions[ti].y}
                 stroke={color}
-                strokeWidth={isHovered ? 2.5 : 1.5}
-                style={{
-                  filter: isHovered ? `drop-shadow(0 0 10px ${color})` : `drop-shadow(0 0 5px ${color}55)`,
-                  transition: 'all 0.15s ease',
-                }}
+                strokeWidth={1.2}
+                strokeDasharray={dash}
+                opacity={0.5}
               />
-              <text
-                x={positions[i].x} y={positions[i].y - 2}
-                textAnchor="middle"
-                dominantBaseline="central"
-                className="constellation-node-symbol"
-                fill={color}
-                style={{ fontSize: isHovered ? '14px' : '12px', transition: 'font-size 0.15s ease' }}
-              >
-                {n.data.symbol}
-              </text>
-              <text
-                x={positions[i].x} y={positions[i].y + 32}
-                textAnchor="middle"
-                className="constellation-node-name"
-                fill="rgba(184,170,212,0.85)"
-                style={{
-                  fontSize: '9px',
-                  fontFamily: 'Cinzel, serif',
-                  letterSpacing: '0.04em',
-                  opacity: isHovered ? 1 : 0.7,
-                }}
-              >
-                {n.data.name}
-              </text>
-            </g>
-          )
-        })}
+            )
+          })}
 
-        {/* Center label */}
-        <text
-          x={size / 2} y={size / 2}
-          textAnchor="middle"
-          dominantBaseline="central"
-          fill="rgba(201,168,76,0.15)"
-          style={{ fontSize: '11px', fontFamily: 'Cinzel, serif', letterSpacing: '0.15em' }}
-        >
-          ✦ CONSTELLATION
-        </text>
+          {/* Node glows */}
+          {positions.length === nodes.length && nodes.map((n, i) => (
+            <circle
+              key={`glow-${n.id}`}
+              cx={positions[i].x} cy={positions[i].y}
+              r={hoveredNode === n.id ? 35 : 28}
+              fill={`url(#node-glow-${n.id})`}
+              style={{ transition: dragging != null ? 'none' : 'all 0.15s ease' }}
+            />
+          ))}
+
+          {/* Nodes */}
+          {positions.length === nodes.length && nodes.map((n, i) => {
+            const color = n.data.elementColor || '#c9a84c'
+            const isHovered = hoveredNode === n.id
+            const isDragged = dragging === i
+            return (
+              <g
+                key={n.id}
+                onClick={() => { if (!isDragged) onSelectNode?.(n.id) }}
+                onMouseEnter={() => setHoveredNode(n.id)}
+                onMouseLeave={() => setHoveredNode(null)}
+                onPointerDown={(e) => handlePointerDown(e, i)}
+                style={{ cursor: locked ? 'pointer' : isDragged ? 'grabbing' : 'grab' }}
+              >
+                <circle
+                  cx={positions[i].x} cy={positions[i].y}
+                  r={isHovered ? 22 : 18}
+                  fill="#0d0b1e"
+                  stroke={color}
+                  strokeWidth={isHovered ? 2.5 : 1.5}
+                  style={{
+                    filter: isHovered ? `drop-shadow(0 0 10px ${color})` : `drop-shadow(0 0 5px ${color}55)`,
+                    transition: dragging != null ? 'none' : 'all 0.15s ease',
+                  }}
+                />
+                <text
+                  x={positions[i].x} y={positions[i].y - 2}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="constellation-node-symbol"
+                  fill={color}
+                  style={{ fontSize: isHovered ? '14px' : '12px', transition: 'font-size 0.15s ease' }}
+                >
+                  {n.data.symbol}
+                </text>
+                <text
+                  x={positions[i].x} y={positions[i].y + 32}
+                  textAnchor="middle"
+                  className="constellation-node-name"
+                  fill="rgba(184,170,212,0.85)"
+                  style={{
+                    fontSize: '9px',
+                    fontFamily: 'Cinzel, serif',
+                    letterSpacing: '0.04em',
+                    opacity: isHovered ? 1 : 0.7,
+                  }}
+                >
+                  {n.data.name}
+                </text>
+              </g>
+            )
+          })}
+
+          {/* Center label */}
+          <text
+            x={size / 2} y={size / 2}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="rgba(201,168,76,0.12)"
+            style={{ fontSize: '11px', fontFamily: 'Cinzel, serif', letterSpacing: '0.15em', pointerEvents: 'none' }}
+          >
+            ✦ CONSTELLATION
+          </text>
+        </g>
       </svg>
+
+      {/* Zoom / lock controls */}
+      <div className="constellation-controls">
+        <button type="button" onClick={() => setZoom(z => Math.min(3, z + 0.2))} title="Zoom in">+</button>
+        <button type="button" onClick={() => setZoom(z => Math.max(0.3, z - 0.2))} title="Zoom out">−</button>
+        <button type="button" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }) }} title="Reset view">⟲</button>
+        <button
+          type="button"
+          onClick={() => setLocked(l => !l)}
+          title={locked ? 'Unlock' : 'Lock positions'}
+          className={locked ? 'constellation-ctrl--active' : ''}
+        >
+          {locked ? '🔒' : '🔓'}
+        </button>
+      </div>
 
       {/* Hover tooltip */}
       {hoveredNode && (() => {
         const n = nodes.find(nd => nd.id === hoveredNode)
         if (!n) return null
-        // Find this node's connections
         const connections = edges
           .filter(e => e.source === n.id || e.target === n.id)
           .map(e => {
@@ -259,40 +341,33 @@ export default function ConstellationView({ nodes, edges, onSelectNode }) {
         )
       })()}
 
-      {/* Legend — edge type colors */}
+      {/* Compact legend — inline, bottom of view */}
       <div className="constellation-legend">
-        <div className="constellation-legend-title">Connections</div>
-        {Object.entries(EDGE_COLORS).map(([type, color]) => {
-          const hasType = edges.some(e => (e.data?.relationType || 'parent-child') === type)
-          if (!hasType) return null
-          return (
-            <div key={type} className="constellation-legend-item">
-              <svg width="20" height="8" style={{ flexShrink: 0 }}>
-                <line x1="0" y1="4" x2="20" y2="4"
-                  stroke={color} strokeWidth="2"
-                  strokeDasharray={EDGE_DASH[type]}
-                />
-              </svg>
-              <span style={{ color: `${color}cc` }}>{EDGE_LABELS[type]}</span>
-            </div>
-          )
-        })}
-        <div className="constellation-legend-divider" />
-        {nodes.map(n => (
-          <div
-            key={n.id}
-            className={`zodiac-legend-item${hoveredNode === n.id ? ' zodiac-legend-item--active' : ''}`}
-            onMouseEnter={() => setHoveredNode(n.id)}
-            onMouseLeave={() => setHoveredNode(null)}
-            onClick={() => onSelectNode?.(n.id)}
-          >
-            <span className="zodiac-legend-initial" style={{ borderColor: n.data.elementColor, color: n.data.elementColor }}>
-              {n.data.name.charAt(0).toUpperCase()}
-            </span>
-            <span className="zodiac-legend-name">{n.data.name}</span>
-            <span style={{ color: n.data.elementColor, fontSize: '0.65rem', opacity: 0.7 }}>{n.data.sign}</span>
+        {activeEdgeTypes.length > 0 && (
+          <div className="constellation-legend-edges">
+            {activeEdgeTypes.map(type => (
+              <span key={type} className="constellation-legend-edge">
+                <svg width="16" height="8"><line x1="0" y1="4" x2="16" y2="4" stroke={EDGE_COLORS[type]} strokeWidth="2" strokeDasharray={EDGE_DASH[type]} /></svg>
+                <span style={{ color: `${EDGE_COLORS[type]}bb` }}>{EDGE_LABELS[type]}</span>
+              </span>
+            ))}
           </div>
-        ))}
+        )}
+        <div className="constellation-legend-nodes">
+          {nodes.map(n => (
+            <span
+              key={n.id}
+              className={`constellation-legend-chip${hoveredNode === n.id ? ' constellation-legend-chip--active' : ''}`}
+              onMouseEnter={() => setHoveredNode(n.id)}
+              onMouseLeave={() => setHoveredNode(null)}
+              onClick={() => onSelectNode?.(n.id)}
+              style={{ borderColor: `${n.data.elementColor}44` }}
+            >
+              <span style={{ color: n.data.elementColor }}>{n.data.symbol}</span>
+              <span>{n.data.name}</span>
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   )
