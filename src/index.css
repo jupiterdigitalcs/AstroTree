@@ -1048,6 +1048,14 @@ body {
 }
 
 /* Sync indicator */
+.canvas-sync-float {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 11;
+  pointer-events: none;
+}
+
 .sync-indicator {
   display: flex;
   align-items: center;
@@ -1055,7 +1063,6 @@ body {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  margin-bottom: 0.2rem;
 }
 .sync-indicator--syncing { color: rgba(201,168,76,0.7); }
 .sync-indicator--synced  { color: #5bc8f5; }
@@ -1183,7 +1190,7 @@ body {
 /* ─────────────────────── Canvas panel button group ─────────────────────── */
 .canvas-panel-btns {
   position: absolute;
-  top: 0.6rem;
+  top: 2.5rem;
   right: 0.6rem;
   z-index: 10;
   display: flex;
@@ -3893,4 +3900,14 @@ body:has(.admin-app) {
 .constellation-legend-chip:hover,
 .constellation-legend-chip--active {
   background: rgba(201,168,76,0.1);
+}
+
+@media (max-width: 768px) {
+  .constellation-legend {
+    bottom: calc(0.6rem + 60px + env(safe-area-inset-bottom));
+    max-width: calc(100% - 2rem);
+  }
+  .constellation-controls {
+    bottom: calc(5.5rem + 60px + env(safe-area-inset-bottom));
+  }
 }

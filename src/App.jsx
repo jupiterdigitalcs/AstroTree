@@ -1159,10 +1159,16 @@ export default function App() {
           </div>
         )}
 
+        {/* ── Sync indicator (non-intrusive, doesn't shift buttons) ──── */}
+        {nodes.length > 0 && (
+          <div className="canvas-sync-float">
+            <SyncIndicator status={syncStatus} />
+          </div>
+        )}
+
         {/* ── Shared action buttons (visible on both views) ──────────── */}
         {nodes.length > 0 && (
           <div className="canvas-panel-btns">
-            <SyncIndicator status={syncStatus} />
             <button
               type="button"
               className="relayout-btn relayout-btn--insights"
