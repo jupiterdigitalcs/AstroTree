@@ -30,7 +30,7 @@ function fromRow(row) {
 export async function fetchAllCharts({ search = '', email = '', dateFrom = '', dateTo = '', page = 0 } = {}) {
   try {
     const params = new URLSearchParams({ search, email, dateFrom, dateTo, page: String(page) })
-    const res = await fetch(`/api/admin/charts?${params}`, { headers: adminHeaders() })
+    const res = await fetch(`/api/admin?action=charts&${params}`, { headers: adminHeaders() })
     if (!res.ok) return []
     const data = await res.json()
     return (data ?? []).map(fromRow)
@@ -42,7 +42,7 @@ export async function fetchAllCharts({ search = '', email = '', dateFrom = '', d
 
 export async function fetchAdminStatsManual() {
   try {
-    const res = await fetch('/api/admin/stats', { headers: adminHeaders() })
+    const res = await fetch('/api/admin?action=stats', { headers: adminHeaders() })
     if (!res.ok) return null
     return await res.json()
   } catch (e) {
@@ -53,7 +53,7 @@ export async function fetchAdminStatsManual() {
 
 export async function fetchDevicesGrouped() {
   try {
-    const res = await fetch('/api/admin/devices', { headers: adminHeaders() })
+    const res = await fetch('/api/admin?action=devices', { headers: adminHeaders() })
     if (!res.ok) return []
     const data = await res.json()
     return (data ?? []).map(r => ({
@@ -75,7 +75,7 @@ export async function fetchDevicesGrouped() {
 
 export async function fetchTreesPerDay() {
   try {
-    const res = await fetch('/api/admin/trees-per-day', { headers: adminHeaders() })
+    const res = await fetch('/api/admin?action=trees-per-day', { headers: adminHeaders() })
     if (!res.ok) return []
     const data = await res.json()
     return (data ?? []).map(r => ({ day: r.day, count: Number(r.count) }))

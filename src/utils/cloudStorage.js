@@ -33,7 +33,7 @@ async function fetchGeo() {
 
 export async function uploadChart(chart) {
   try {
-    const res = await fetch('/api/chart/save', {
+    const res = await fetch('/api/chart?action=save', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ export async function uploadChart(chart) {
 
 export async function fetchCharts() {
   try {
-    const res = await fetch('/api/chart/list', {
+    const res = await fetch('/api/chart?action=list', {
       headers: { 'x-device-id': getDeviceId() },
     })
     return await res.json()
@@ -64,7 +64,7 @@ export async function fetchCharts() {
 
 export async function deleteChartCloud(id) {
   try {
-    const res = await fetch('/api/chart/delete', {
+    const res = await fetch('/api/chart?action=delete', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ export async function deleteChartCloud(id) {
 
 export async function fetchPublicCharts() {
   try {
-    const res = await fetch('/api/chart/public')
+    const res = await fetch('/api/chart?action=public')
     return await res.json()
   } catch {
     return []
@@ -89,7 +89,7 @@ export async function fetchPublicCharts() {
 
 export async function fetchChartByToken(token) {
   try {
-    const res = await fetch(`/api/chart/load?token=${encodeURIComponent(token)}`)
+    const res = await fetch(`/api/chart?action=load&token=${encodeURIComponent(token)}`)
     if (!res.ok) return null
     return await res.json()
   } catch {
@@ -99,7 +99,7 @@ export async function fetchChartByToken(token) {
 
 export async function generateShareToken(id) {
   try {
-    const res = await fetch('/api/chart/share', {
+    const res = await fetch('/api/chart?action=share', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ export async function generateShareToken(id) {
 
 export async function restoreChartsByEmail(email) {
   try {
-    const res = await fetch('/api/chart/restore', {
+    const res = await fetch('/api/chart?action=restore', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, deviceId: getDeviceId() }),
@@ -132,7 +132,7 @@ export async function restoreChartsByEmail(email) {
 export async function upsertDevice() {
   try {
     const geo = await fetchGeo()
-    await fetch('/api/device/register', {
+    await fetch('/api/device?action=register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -149,7 +149,7 @@ export async function upsertDevice() {
 
 export async function updateDeviceEmail(email) {
   try {
-    const res = await fetch('/api/device/email', {
+    const res = await fetch('/api/device?action=email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deviceId: getDeviceId(), email }),

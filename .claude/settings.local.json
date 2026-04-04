@@ -22,7 +22,8 @@
       "Bash(npx vitest:*)",
       "Bash(npm ls:*)",
       "Bash(du:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(ls:*)"
     ]
   }
 }
