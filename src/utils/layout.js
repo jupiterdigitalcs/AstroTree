@@ -1,9 +1,9 @@
 import dagre from '@dagrejs/dagre'
 
-const NODE_WIDTH  = 220
-const NODE_HEIGHT = 140
-const SPOUSE_GAP  = 240
-const MIN_GAP_X   = NODE_WIDTH + 30
+const NODE_WIDTH  = 250
+const NODE_HEIGHT = 165
+const SPOUSE_GAP  = 270
+const MIN_GAP_X   = NODE_WIDTH + 35
 
 export function applyDagreLayout(nodes, edges) {
   if (nodes.length === 0) return nodes
@@ -109,7 +109,7 @@ export function applyDagreLayout(nodes, edges) {
   // ── Run Dagre for X positions (family edges only) ──────────────────────
   const g = new dagre.graphlib.Graph()
   g.setDefaultEdgeLabel(() => ({}))
-  g.setGraph({ rankdir: 'TB', ranksep: 120, nodesep: 100 })
+  g.setGraph({ rankdir: 'TB', ranksep: 140, nodesep: 110 })
 
   nodes.forEach(node => g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT }))
 
@@ -269,7 +269,7 @@ export function applyDagreLayout(nodes, edges) {
         posMap[cid].x = startX + ci * MIN_GAP_X
       })
 
-      cursor = startX + totalWidth + 20
+      cursor = startX + totalWidth + 70  // extra gap so sibling-group parent lines don't converge
     })
 
     // After centering children, re-seat any spouse pairs in this row

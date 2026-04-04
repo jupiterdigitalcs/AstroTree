@@ -2,6 +2,9 @@
 export {
   getSunSign,
   getMoonSign,
+  getInnerPlanetSigns,
+  getSunSignAtTime,
+  checkIngressWarnings,
   getElement,
   ELEMENT_COLORS,
   SIGN_MODALITY,

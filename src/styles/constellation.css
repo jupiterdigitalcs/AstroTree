@@ -141,3 +141,12 @@
     bottom: calc(5.5rem + 60px + env(safe-area-inset-bottom));
   }
 }
+
+.constellation-sun-note {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-align: center;
+  margin-bottom: 0.4rem;
+}

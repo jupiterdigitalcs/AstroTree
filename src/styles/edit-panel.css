@@ -49,6 +49,62 @@
 .delete-confirm-actions .delete-btn,
 .delete-confirm-actions .cancel-btn { flex: 1; }
 
+/* ── Ingress warning — shown in EditMemberPanel when a planet changes sign ── */
+.ingress-warning {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  background: rgba(201, 168, 76, 0.07);
+  border: 1px solid rgba(201, 168, 76, 0.28);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+}
+
+.ingress-warning-icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  filter: sepia(1) saturate(2);
+}
+
+.ingress-warning-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ingress-warning-title {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--gold-light);
+  letter-spacing: 0.02em;
+}
+
+.ingress-warning-planet {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.73rem;
+  color: var(--text-soft);
+}
+
+.ingress-warning-arrow {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+
+.ingress-warning-planet--dim {
+  opacity: 0.55;
+}
+
+.ingress-warning-note {
+  font-size: 0.67rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 0.1rem;
+}
+
 .connections-section {
   display: flex;
   flex-direction: column;
@@ -115,6 +171,86 @@
 }
 
 /* parent-select / parent-checkbox (used in EditMemberPanel) */
+/* ── Birth time input ─────────────────────────────────────────────────────── */
+.ingress-warning--resolved {
+  background: rgba(126, 200, 69, 0.06);
+  border-color: rgba(126, 200, 69, 0.28);
+}
+
+.ingress-warning--resolved .ingress-warning-icon {
+  filter: none;
+  color: #7ec845;
+}
+
+.ingress-warning-title--ok {
+  color: #7ec845;
+}
+
+.birthtime-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.67rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-weight: 500;
+  margin-top: 0.35rem;
+}
+
+.birthtime-input {
+  width: auto;
+  color-scheme: dark;
+}
+
+.birthtime-exact-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.74rem;
+  color: var(--text-soft);
+  font-family: 'Raleway', sans-serif;
+  cursor: pointer;
+  margin-top: 0.2rem;
+  line-height: 1.4;
+}
+
+.birthtime-exact-label input {
+  margin-right: 0.35rem;
+}
+
+.birthtime-saved-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.birthtime-edit-btn,
+.birthtime-done-btn {
+  background: transparent;
+  border: 1px solid var(--border-gold);
+  border-radius: 6px;
+  color: var(--gold);
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.birthtime-edit-btn:hover,
+.birthtime-done-btn:hover { background: rgba(201,168,76,0.12); }
+
+.birthtime-done-btn {
+  margin-top: 0.35rem;
+  align-self: flex-start;
+}
+
+/* ── parent-select / parent-checkbox ──────────────────────────────────────── */
 .parent-select { display: flex; flex-direction: column; gap: 0.4rem; }
 .parent-select-label { font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.11em; color: var(--text-muted); }
 

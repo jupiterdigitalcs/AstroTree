@@ -403,3 +403,10 @@
   color: var(--text-muted);
   font-weight: 400;
 }
+
+.pill-warning {
+  font-size: 0.68rem;
+  flex-shrink: 0;
+  filter: sepia(1) saturate(3) hue-rotate(-10deg);
+  opacity: 0.85;
+}

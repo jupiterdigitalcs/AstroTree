@@ -860,21 +860,82 @@
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
   justify-content: center;
+  gap: 1.5rem;
   position: relative;
   background: var(--bg-deep);
   overflow-y: auto;
-  padding: 1rem;
+  padding: 3rem 1.5rem 1.5rem;
 }
 
-.zodiac-wheel-svg {
+.zodiac-zoom-controls {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 1rem;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.zodiac-zoom-btn {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9,7,26,0.85);
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  color: var(--gold);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  backdrop-filter: blur(6px);
+  padding: 0;
+}
+
+.zodiac-zoom-btn:hover {
+  background: rgba(201,168,76,0.18);
+  color: #fff;
+}
+
+.zodiac-zoom-btn--reset {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.zodiac-zoom-area {
+  position: relative;
+  overflow: hidden;
   width: min(90vw, 500px);
   height: min(90vw, 500px);
   max-width: 500px;
   max-height: 500px;
   flex-shrink: 0;
+  touch-action: none;
+  cursor: grab;
+}
+
+.zodiac-zoom-area:active {
+  cursor: grabbing;
+}
+
+.zodiac-zoom-inner {
+  width: 100%;
+  height: 100%;
+  transform-origin: center center;
+  transition: transform 0.05s linear;
+}
+
+.zodiac-wheel-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .zodiac-segment {
@@ -927,49 +988,52 @@
 .zodiac-tooltip-symbol { font-size: 1.1rem; }
 .zodiac-tooltip-name { font-weight: 600; font-size: 0.88rem; }
 .zodiac-tooltip-sign { color: var(--text-muted); font-size: 0.78rem; }
+.zodiac-tooltip-moon { color: #9dbbd4; font-size: 0.72rem; }
 
-/* Legend — grouped by sign */
+/* Legend — flat numbered 2-column grid */
 .zodiac-legend {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 0.6rem;
-  margin-top: 1.2rem;
-  max-width: 500px;
-  width: 100%;
-}
-
-.zodiac-legend-group {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
+  max-width: 280px;
+  width: 100%;
+  max-height: min(90vw, 500px);
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  align-content: start;
 }
 
-.zodiac-legend-sign-header {
+.zodiac-legend-header {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.1rem 0.4rem;
+  justify-content: space-between;
+  gap: 0.5rem;
   font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  opacity: 0.8;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.4rem 0.3rem;
   border-bottom: 1px solid rgba(255,255,255,0.06);
-  padding-bottom: 0.2rem;
-  margin-bottom: 0.05rem;
+  margin-bottom: 0.1rem;
 }
 
-.zodiac-legend-sign-symbol { font-size: 0.72rem; }
-.zodiac-legend-sign-label { font-family: 'Raleway', sans-serif; text-transform: uppercase; font-size: 0.52rem; letter-spacing: 0.06em; }
+.zodiac-legend-note {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+}
 
 .zodiac-legend-item {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.4rem;
   cursor: pointer;
-  padding: 0.2rem 0.4rem;
+  padding: 0.25rem 0.4rem;
   border-radius: 6px;
   transition: background 0.15s;
-  font-size: 0.78rem;
 }
 
 .zodiac-legend-item:hover,
@@ -977,9 +1041,9 @@
   background: rgba(201,168,76,0.1);
 }
 
-.zodiac-legend-initial {
-  width: 1.3rem;
-  height: 1.3rem;
+.zodiac-legend-num {
+  width: 1.4rem;
+  height: 1.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -991,4 +1055,41 @@
   flex-shrink: 0;
 }
 
-.zodiac-legend-name { font-weight: 600; font-size: 0.78rem; }
+.zodiac-legend-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+  min-width: 0;
+}
+
+.zodiac-legend-name { font-weight: 600; font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.zodiac-legend-signs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.zodiac-legend-sep {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.zodiac-moon-initial {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.zodiac-member-sign-glyph {
+  font-size: 9px;
+  font-weight: 400;
+}
+
+.zodiac-moon-sign-glyph {
+  font-size: 7px;
+  font-weight: 400;
+}

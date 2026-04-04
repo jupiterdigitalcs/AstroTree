@@ -31,6 +31,27 @@
 
 html, body, #root { height: 100%; }
 
+/* ── Planet sign display (used across AstroNode, Tables, ZodiacWheel, etc.) ── */
+.planet-sign {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  font-family: 'Raleway', sans-serif;
+}
+
+.planet-sign-glyph {
+  font-size: 0.9em;
+  opacity: 0.95;
+}
+
+.planet-sign-zodiac {
+  font-size: 0.85em;
+}
+
+.planet-sign-name {
+  font-size: 1em;
+}
+
 body {
   font-family: 'Raleway', 'Georgia', serif;
   background: var(--bg);

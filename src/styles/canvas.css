@@ -16,8 +16,8 @@
     0 0 0 1px rgba(0,0,0,0.5),
     0 4px 24px rgba(0,0,0,0.6),
     0 0 20px rgba(160,130,220,0.06);
-  min-width: 155px;
-  padding: 1rem 1.1rem 0.9rem;
+  min-width: 195px;
+  padding: 1.2rem 1.4rem 1.1rem;
   text-align: center;
   cursor: grab;
   transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
@@ -29,14 +29,14 @@
 }
 
 .node-symbol {
-  font-size: 2rem;
+  font-size: 2.4rem;
   line-height: 1;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.4rem;
 }
 
 .node-name {
   font-family: 'Cinzel', serif;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   font-weight: 500;
   color: var(--text);
   letter-spacing: 0.06em;
@@ -44,23 +44,30 @@
 
 .node-sign {
   font-family: 'Raleway', sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.88rem;
   font-weight: 500;
   letter-spacing: 0.06em;
-  margin-top: 0.15rem;
+  margin-top: 0.18rem;
 }
 
 .node-moon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: 'Raleway', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.78rem;
   letter-spacing: 0.04em;
-  margin-top: 0.15rem;
-  opacity: 0.8;
+  margin-top: 0.3rem;
+  background: rgba(100, 160, 210, 0.1);
+  border: 1px solid rgba(100, 160, 210, 0.22);
+  border-radius: 20px;
+  padding: 0.14rem 0.55rem;
+  /* color supplied by PlanetSign inline style */
 }
 
 .node-element {
   font-family: 'Raleway', sans-serif;
-  font-size: 0.58rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
   margin-top: 0.2rem;

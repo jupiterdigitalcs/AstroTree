@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { addEdge } from '@xyflow/react'
-import { getSunSign, getElement, getMoonSign } from '../utils/astrology.js'
+import { getSunSign, getElement, getMoonSign, getSunSignAtTime } from '../utils/astrology.js'
 import { applyDagreLayout } from '../utils/layout.js'
 import { EDGE_STYLE, makeEdge } from '../utils/treeHelpers.js'
 
@@ -38,11 +38,26 @@ export function useTreeState({
     setNodes(prev => prev.map(n => {
       if (n.id !== id) return n
       const updated = { ...n.data, ...patch }
-      if (patch.birthdate && patch.birthdate !== n.data.birthdate) {
+      const bdChanged = patch.birthdate && patch.birthdate !== n.data.birthdate
+      const btChanged = 'birthTime' in patch
+      if (bdChanged) {
         const { sign, symbol }   = getSunSign(patch.birthdate)
         const { element, color } = getElement(sign)
-        const { moonSign, moonSymbol } = getMoonSign(patch.birthdate)
-        Object.assign(updated, { sign, symbol, element, elementColor: color, moonSign, moonSymbol })
+        Object.assign(updated, { sign, symbol, element, elementColor: color })
+      }
+      if (bdChanged || btChanged) {
+        const bd = patch.birthdate || n.data.birthdate
+        const bt = btChanged ? patch.birthTime : n.data.birthTime
+        // Recalculate moon (and sun on ingress days) using birth time
+        const { moonSign, moonSymbol } = getMoonSign(bd, bt ?? null)
+        Object.assign(updated, { moonSign, moonSymbol })
+        if (bt) {
+          const exactSun = getSunSignAtTime(bd, bt)
+          if (exactSun) {
+            const { element, color } = getElement(exactSun.sign)
+            Object.assign(updated, { sign: exactSun.sign, symbol: exactSun.symbol, element, elementColor: color })
+          }
+        }
       }
       return { ...n, data: updated }
     }))

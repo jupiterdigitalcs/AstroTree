@@ -39,15 +39,15 @@ export const EDGE_DASH = {
 export function buildNodeData(member) {
   const { sign, symbol }   = getSunSign(member.birthdate)
   const { element, color } = getElement(sign)
-  const { moonSign, moonSymbol } = getMoonSign(member.birthdate)
-  return { name: member.name, birthdate: member.birthdate, sign, symbol, element, elementColor: color, moonSign, moonSymbol }
+  const { moonSign, moonSymbol } = getMoonSign(member.birthdate, member.birthTime ?? null)
+  return { name: member.name, birthdate: member.birthdate, birthTime: member.birthTime ?? null, exactBirthTime: member.exactBirthTime ?? false, sign, symbol, element, elementColor: color, moonSign, moonSymbol }
 }
 
 // Enrich existing saved nodes with any missing computed fields (e.g. moonSign)
 export function hydrateNodes(nodes) {
   return nodes.map(n => {
     if (n.data?.moonSign || !n.data?.birthdate) return n
-    const { moonSign, moonSymbol } = getMoonSign(n.data.birthdate)
+    const { moonSign, moonSymbol } = getMoonSign(n.data.birthdate, n.data.birthTime ?? null)
     return { ...n, data: { ...n.data, moonSign, moonSymbol } }
   })
 }
@@ -59,6 +59,7 @@ export function makeEdge(source, target, relationType = 'parent-child') {
     data:     { relationType },
     animated: isFamily,
     style:    EDGE_STYLES[relationType] || EDGE_STYLE,
-    type:     'smoothstep',
+    // step (orthogonal routing) keeps parent-child lines from converging in large families
+    type:     isFamily ? 'step' : 'smoothstep',
   }
 }

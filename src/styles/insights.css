@@ -60,6 +60,26 @@
 .insight-couple:first-of-type { border-top: none; padding-top: 0; }
 .insight-compat { font-size: 0.7rem; letter-spacing: 0.04em; font-weight: 500; }
 
+.insight-couple--rare {
+  border-top-color: rgba(201,168,76,0.3);
+  background: linear-gradient(135deg, rgba(201,168,76,0.07) 0%, transparent 100%);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  margin: 0.15rem -0.1rem;
+}
+
+.insight-rare-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 0.15rem;
+}
+
 .element-bar-row { display: grid; grid-template-columns: 3.5rem 1fr 1.2rem; align-items: center; gap: 0.5rem; }
 .element-bar-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500; }
 .element-bar-track { height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }

@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { DateInput } from './DateInput.jsx'
+import { PlanetSign } from './PlanetSign.jsx'
+import { checkIngressWarnings } from '../utils/astrology.js'
 
 export default function EditMemberPanel({
   node,
@@ -11,9 +13,34 @@ export default function EditMemberPanel({
   onRemoveEdge,
   onCancel,
 }) {
-  const [name,          setName]          = useState(node.data.name)
-  const [birthdate,     setBirthdate]     = useState(node.data.birthdate)
-  const [error,         setError]         = useState('')
+  const [name,           setName]           = useState(node.data.name)
+  const [birthdate,      setBirthdate]      = useState(node.data.birthdate)
+  const [birthTime,      setBirthTime]      = useState(node.data.birthTime ?? '')
+  const [exactBirthTime, setExactBirthTime] = useState(node.data.exactBirthTime ?? false)
+  const [isEditingTime,  setIsEditingTime]  = useState(false)
+  const [error,          setError]          = useState('')
+
+  // Warnings based on birthdate only (no birth time) — used to know whether to show the time field
+  const originalWarnings = useMemo(
+    () => birthdate ? checkIngressWarnings(birthdate) : [],
+    [birthdate]
+  )
+  // Active warnings respect birth time — clears when a time is entered
+  const ingressWarnings = useMemo(
+    () => checkIngressWarnings(birthdate, birthTime || null),
+    [birthdate, birthTime]
+  )
+
+  // Detect if entered birth time is a round hour very close to an ingress
+  const showExactCheckbox = useMemo(() => {
+    if (!birthTime || !originalWarnings.length) return false
+    const [h, m] = birthTime.split(':').map(Number)
+    if (m !== 0) return false
+    return originalWarnings.some(w => Math.abs(h - w.ingressHour) <= 1)
+  }, [birthTime, originalWarnings])
+
+  // Show the expanded time-entry form when: actively editing, OR no time set yet and warnings exist
+  const showTimeEditor = isEditingTime || (!birthTime && originalWarnings.length > 0)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [connectTo,     setConnectTo]     = useState(null) // id of node being connected
 
@@ -108,7 +135,7 @@ export default function EditMemberPanel({
     if (!name.trim()) { setError('Please enter a name.'); return }
     if (!birthdate)   { setError('Please pick a birthdate.'); return }
     setError('')
-    onUpdate(node.id, { name: name.trim(), birthdate })
+    onUpdate(node.id, { name: name.trim(), birthdate, birthTime: birthTime || null, exactBirthTime })
   }
 
   function handleConnect(otherId) {
@@ -148,6 +175,100 @@ export default function EditMemberPanel({
         Birthdate
         <DateInput value={birthdate} onChange={setBirthdate} />
       </label>
+
+      {/* ── Birth time ────────────────────────────────────────────────────── */}
+      {originalWarnings.length > 0 && (
+        showTimeEditor ? (
+          /* Expanded — time input + planet context */
+          <div className={`ingress-warning${birthTime && !ingressWarnings.length ? ' ingress-warning--resolved' : ''}`}>
+            <span className="ingress-warning-icon">{birthTime && !ingressWarnings.length ? '✓' : '⚠'}</span>
+            <div className="ingress-warning-body">
+              <span className={`ingress-warning-title${birthTime && !ingressWarnings.length ? ' ingress-warning-title--ok' : ''}`}>
+                {birthTime && !ingressWarnings.length
+                  ? 'Sign confirmed for this time'
+                  : `${originalWarnings.length} planet${originalWarnings.length > 1 ? 's' : ''} change sign on this date`}
+              </span>
+
+              {/* Planet ingress details — always visible while editing so user knows the relevant range */}
+              {originalWarnings.map(w => (
+                <span key={w.name} className="ingress-warning-planet">
+                  <PlanetSign planet={w.planet} sign={w.signStart} />
+                  <span className="ingress-warning-arrow">→</span>
+                  <PlanetSign planet={w.planet} sign={w.signEnd} />
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>
+                    ({w.name} changes at {w.ingressTime})
+                  </span>
+                </span>
+              ))}
+
+              <label className="birthtime-label">
+                Birth time
+                <input
+                  type="time"
+                  className="row-input birthtime-input"
+                  value={birthTime}
+                  onChange={e => { setBirthTime(e.target.value); setExactBirthTime(false) }}
+                />
+              </label>
+
+              {showExactCheckbox && (
+                <label className="birthtime-exact-label">
+                  <input
+                    type="checkbox"
+                    checked={exactBirthTime}
+                    onChange={e => setExactBirthTime(e.target.checked)}
+                    style={{ accentColor: 'var(--gold)' }}
+                  />
+                  This time is exact — birth was right at {birthTime}
+                  <span className="ingress-warning-note" style={{ fontStyle: 'normal' }}>
+                    (Round number close to a sign change — confirm from records if unsure)
+                  </span>
+                </label>
+              )}
+
+              {birthTime && isEditingTime && (
+                <button type="button" className="birthtime-done-btn" onClick={() => setIsEditingTime(false)}>
+                  Done
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* Collapsed — just show the saved time with an Edit button */
+          <div className="ingress-warning ingress-warning--resolved">
+            <span className="ingress-warning-icon">✓</span>
+            <div className="ingress-warning-body">
+              <div className="birthtime-saved-row">
+                <span className="ingress-warning-title ingress-warning-title--ok">
+                  Birth time: {birthTime}
+                </span>
+                <button
+                  type="button"
+                  className="birthtime-edit-btn"
+                  onClick={() => setIsEditingTime(true)}
+                >
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      )}
+
+      {/* Plain field — no ingress warning, but birth time already saved */}
+      {!originalWarnings.length && (
+        birthTime ? (
+          <label>
+            Birth time
+            <input
+              type="time"
+              className="row-input birthtime-input"
+              value={birthTime}
+              onChange={e => setBirthTime(e.target.value)}
+            />
+          </label>
+        ) : null
+      )}
 
       {error && <p className="form-error">{error}</p>}
 

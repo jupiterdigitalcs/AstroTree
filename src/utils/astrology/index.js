@@ -1,6 +1,6 @@
 // Barrel re-export — all existing imports from './utils/astrology.js' continue to work
 export { getSunSign } from './sunSign.js'
-export { getMoonSign } from './birthChart.js'
+export { getMoonSign, getInnerPlanetSigns, getSunSignAtTime, checkIngressWarnings } from './birthChart.js'
 export {
   getElement,
   ELEMENT_COLORS,

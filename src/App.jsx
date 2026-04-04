@@ -23,6 +23,7 @@ import { WelcomeScreen }  from './components/WelcomeScreen.jsx'
 import { JupiterIcon }            from './components/JupiterIcon.jsx'
 import { TablesPanel }           from './components/TablesPanel.jsx'
 import { applyDagreLayout }      from './utils/layout.js'
+import { checkIngressWarnings }  from './utils/astrology.js'
 import { loadDraft, saveChart }  from './utils/storage.js'
 import { useCloudSync } from './hooks/useCloudSync.js'
 import { SyncIndicator } from './components/SyncIndicator.jsx'
@@ -76,6 +77,18 @@ export default function App() {
   const [treeViewedCount,   setTreeViewedCount]   = useState(0)
 
   const fitViewRef = useRef(null)
+
+  // Ingress warnings per node — computed once per nodes change (not on every render)
+  const nodeIngressWarnings = useMemo(() => {
+    const map = {}
+    nodes.forEach(n => {
+      if (n.data?.birthdate) {
+        const w = checkIngressWarnings(n.data.birthdate, n.data.birthTime ?? null)
+        if (w.length > 0) map[n.id] = w
+      }
+    })
+    return map
+  }, [nodes])
 
   // Mobile panel is open when not on the tree tab, or when editing a node
   const panelOpen = activeTab !== 'tree' || !!editingNodeId
@@ -442,6 +455,9 @@ export default function App() {
                             <span className="pill-year"> · {n.data.birthdate.slice(0, 4)}</span>
                           )}
                         </span>
+                        {nodeIngressWarnings[n.id] && (
+                          <span className="pill-warning" title="Tap to edit — birth time may affect sign accuracy">⚠</span>
+                        )}
                       </div>
                     ))}
                   </div>

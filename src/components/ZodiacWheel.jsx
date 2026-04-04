@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { ELEMENT_COLORS } from '../utils/astrology.js'
+import { PlanetSign } from './PlanetSign.jsx'
 
 // Traditional zodiac order starting from Aries, going counter-clockwise (astrological convention)
 const ZODIAC_ORDER = [
@@ -19,6 +20,10 @@ const ZODIAC_ORDER = [
 
 const SEGMENT_ANGLE = 360 / 12 // 30°
 
+function nameInitial(name) {
+  return (name || '?')[0].toUpperCase()
+}
+
 function polarToXY(cx, cy, radius, angleDeg) {
   const rad = (angleDeg - 90) * Math.PI / 180 // -90 so 0° = top
   return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) }
@@ -35,27 +40,99 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
   const [hoveredNode, setHoveredNode] = useState(null)
   const [hoveredSign, setHoveredSign] = useState(null)
 
+  // ── Zoom + pan ─────────────────────────────────────────────────────────────
+  const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const dragBase = useRef(null) // { mx, my, px, py } while dragging
+
+  const clampZoom = (z) => Math.max(0.35, Math.min(4, z))
+
+  const onWheel = useCallback((e) => {
+    e.preventDefault()
+    setZoom(z => clampZoom(z * (e.deltaY < 0 ? 1.12 : 0.9)))
+  }, [])
+
+  function onPointerDown(e) {
+    // Only pan on background — let member markers handle their own clicks
+    if (e.target.closest('.zodiac-member-marker, .zodiac-moon-marker')) return
+    dragBase.current = { mx: e.clientX, my: e.clientY, px: pan.x, py: pan.y }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  function onPointerMove(e) {
+    if (!dragBase.current) return
+    setPan({
+      x: dragBase.current.px + (e.clientX - dragBase.current.mx),
+      y: dragBase.current.py + (e.clientY - dragBase.current.my),
+    })
+  }
+
+  function onPointerUp() { dragBase.current = null }
+
+  function resetView() { setZoom(1); setPan({ x: 0, y: 0 }) }
+
   const size = 500
   const cx = size / 2, cy = size / 2
   const outerR = 220
   const innerR = 120
-  const labelR = 88   // centered in inner ring (between center circle r≈55 and innerR)
-  const memberR = 175  // centered in outer ring
+  const labelR = 88   // centered in inner ring
+  const moonColor = '#9dbbd4'
 
-  // Group nodes by sign
+  // Show moon ring only when family fits both rings clearly
+  const showMoonRing = nodes.length <= 12
+
+  // When showing moon ring, pull sun markers slightly inward so both fit inside outerR
+  const memberR     = showMoonRing ? 162 : 175
+  const moonSepR    = 180  // thin separator between sun and moon zones
+  const moonMemberR = 196  // moon markers — both rings fit within outerR=220
+
+  // Group nodes by sun sign
   const nodesBySign = {}
   ZODIAC_ORDER.forEach(z => { nodesBySign[z.sign] = [] })
   nodes.forEach(n => {
     if (nodesBySign[n.data.sign]) nodesBySign[n.data.sign].push(n)
   })
 
-  // Sort nodes in each sign by birthdate (oldest first)
+  // Group nodes by moon sign
+  const nodesByMoonSign = {}
+  ZODIAC_ORDER.forEach(z => { nodesByMoonSign[z.sign] = [] })
+  nodes.forEach(n => {
+    const ms = n.data.moonSign
+    if (ms && ms !== 'Unknown' && nodesByMoonSign[ms]) nodesByMoonSign[ms].push(n)
+  })
+
+  // Sort by birthdate within each sign group
   Object.values(nodesBySign).forEach(arr => {
     arr.sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999'))
   })
 
+  // Flat sorted node list for legend (oldest first)
+  const sortedNodes = [...nodes].sort((a, b) =>
+    (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999')
+  )
+
   return (
     <div className="zodiac-wheel-wrap">
+      {/* Zoom controls */}
+      <div className="zodiac-zoom-controls">
+        <button className="zodiac-zoom-btn" onClick={() => setZoom(z => clampZoom(z * 1.2))} title="Zoom in">+</button>
+        <button className="zodiac-zoom-btn zodiac-zoom-btn--reset" onClick={resetView} title="Reset view">↺</button>
+        <button className="zodiac-zoom-btn" onClick={() => setZoom(z => clampZoom(z * 0.83))} title="Zoom out">−</button>
+      </div>
+
+      {/* Zoomable + pannable SVG area */}
+      <div
+        className="zodiac-zoom-area"
+        onWheel={onWheel}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerLeave={onPointerUp}
+      >
+        <div
+          className="zodiac-zoom-inner"
+          style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
+        >
       <svg viewBox={`0 0 ${size} ${size}`} className="zodiac-wheel-svg">
         {/* Segment wedges */}
         {ZODIAC_ORDER.map((z, i) => {
@@ -149,7 +226,7 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
                 style={{ cursor: 'pointer' }}
               >
                 <circle
-                  cx={pos.x} cy={pos.y} r={isHovered ? 18 : 15}
+                  cx={pos.x} cy={pos.y} r={isHovered ? 20 : 17}
                   fill="#0d0b1e"
                   stroke={color}
                   strokeWidth={isHovered ? 2 : 1.2}
@@ -159,13 +236,89 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
                   }}
                 />
                 <text
-                  x={pos.x} y={pos.y + 1}
+                  x={pos.x} y={pos.y - 3}
                   textAnchor="middle"
                   dominantBaseline="central"
                   className="zodiac-member-initial"
                   fill={color}
                 >
-                  {n.data.name.charAt(0).toUpperCase()}
+                  {nameInitial(n.data.name)}
+                </text>
+                <text
+                  x={pos.x} y={pos.y + 8}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="zodiac-member-sign-glyph"
+                  fill={color}
+                >
+                  {z.symbol}
+                </text>
+              </g>
+            )
+          })
+        })}
+
+        {/* Moon zone separator + markers — only shown when family is small enough */}
+        {showMoonRing && <circle
+          cx={cx} cy={cy} r={moonSepR}
+          fill="none"
+          stroke={`${moonColor}28`}
+          strokeWidth="1"
+          strokeDasharray="3 5"
+        />}
+
+        {showMoonRing && ZODIAC_ORDER.map((z, i) => {
+          const members = nodesByMoonSign[z.sign]
+          if (!members.length) return null
+          const startAngle = i * SEGMENT_ANGLE
+
+          return members.map((n, mi) => {
+            const count = members.length
+            const pad = 4
+            const usable = SEGMENT_ANGLE - pad * 2
+            const offset = count === 1
+              ? SEGMENT_ANGLE / 2
+              : pad + (usable / (count - 1)) * mi
+            const angle = startAngle + offset
+            const pos = polarToXY(cx, cy, moonMemberR, angle)
+            const isHov = hoveredNode === n.id
+
+            return (
+              <g
+                key={`moon-${n.id}`}
+                onClick={() => onSelectNode?.(n.id)}
+                onMouseEnter={() => setHoveredNode(n.id)}
+                onMouseLeave={() => setHoveredNode(null)}
+                style={{ cursor: 'pointer' }}
+              >
+                <circle
+                  cx={pos.x} cy={pos.y} r={isHov ? 14 : 12}
+                  fill="#0d0b1e"
+                  stroke={moonColor}
+                  strokeWidth={isHov ? 1.5 : 1}
+                  strokeDasharray={isHov ? undefined : '3 2.5'}
+                  style={{
+                    filter: isHov ? `drop-shadow(0 0 6px ${moonColor})` : `drop-shadow(0 0 3px ${moonColor}55)`,
+                    transition: 'all 0.15s ease',
+                  }}
+                />
+                <text
+                  x={pos.x} y={pos.y - 2}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="zodiac-moon-initial"
+                  fill={moonColor}
+                >
+                  {nameInitial(n.data.name)}
+                </text>
+                <text
+                  x={pos.x} y={pos.y + 6}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="zodiac-moon-sign-glyph"
+                  fill={moonColor}
+                >
+                  {z.symbol}
                 </text>
               </g>
             )
@@ -188,57 +341,74 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
           ✦
         </text>
         <text
-          x={cx} y={cy + 10}
+          x={cx} y={cy + 5}
           textAnchor="middle"
           className="zodiac-center-sub"
-          fill="rgba(184,170,212,0.7)"
+          fill="rgba(201,168,76,0.6)"
         >
-          Sun Signs
+          ☀ Sun
+        </text>
+        <text
+          x={cx} y={cy + 19}
+          textAnchor="middle"
+          className="zodiac-center-sub"
+          fill="rgba(157,187,212,0.6)"
+        >
+          ☽ Moon
         </text>
       </svg>
+        </div>{/* zodiac-zoom-inner */}
+        {/* Hover tooltip — inside zoom area for correct relative positioning */}
+        {hoveredNode && (() => {
+          const n = nodes.find(nd => nd.id === hoveredNode)
+          if (!n) return null
+          return (
+            <div className="zodiac-tooltip">
+              <span className="zodiac-tooltip-symbol" style={{ color: n.data.elementColor }}>{n.data.symbol}</span>
+              <span className="zodiac-tooltip-name">{n.data.name}</span>
+              <span className="zodiac-tooltip-sign">{n.data.sign}</span>
+              {n.data.moonSign && n.data.moonSign !== 'Unknown' && (
+                <span className="zodiac-tooltip-moon">
+                  <PlanetSign planet="moon" symbol={n.data.moonSymbol} sign={n.data.moonSign} />
+                </span>
+              )}
+            </div>
+          )
+        })()}
+      </div>{/* zodiac-zoom-area */}
 
-      {/* Hover tooltip */}
-      {hoveredNode && (() => {
-        const n = nodes.find(nd => nd.id === hoveredNode)
-        if (!n) return null
-        return (
-          <div className="zodiac-tooltip">
-            <span className="zodiac-tooltip-symbol" style={{ color: n.data.elementColor }}>{n.data.symbol}</span>
-            <span className="zodiac-tooltip-name">{n.data.name}</span>
-            <span className="zodiac-tooltip-sign">{n.data.sign}</span>
-          </div>
-        )
-      })()}
-
-      {/* Legend — grouped by zodiac sign */}
+      {/* Legend — flat numbered grid, 2 columns, sorted oldest→youngest */}
       <div className="zodiac-legend">
-        {ZODIAC_ORDER
-          .filter(z => nodesBySign[z.sign].length > 0)
-          .map(z => {
-            const color = ELEMENT_COLORS[z.element] ?? '#c9a84c'
-            return (
-              <div key={z.sign} className="zodiac-legend-group">
-                <div className="zodiac-legend-sign-header" style={{ color }}>
-                  <span className="zodiac-legend-sign-symbol">{z.symbol}</span>
-                  <span className="zodiac-legend-sign-label">{z.sign}</span>
-                </div>
-                {nodesBySign[z.sign].map(n => (
-                  <div
-                    key={n.id}
-                    className={`zodiac-legend-item${hoveredNode === n.id ? ' zodiac-legend-item--active' : ''}`}
-                    onMouseEnter={() => setHoveredNode(n.id)}
-                    onMouseLeave={() => setHoveredNode(null)}
-                    onClick={() => onSelectNode?.(n.id)}
-                  >
-                    <span className="zodiac-legend-initial" style={{ borderColor: color, color }}>
-                      {n.data.name.charAt(0).toUpperCase()}
-                    </span>
-                    <span className="zodiac-legend-name">{n.data.name}</span>
-                  </div>
-                ))}
+        <div className="zodiac-legend-header">
+          <span>☀ Sun &nbsp;·&nbsp; ☽ Moon</span>
+          {!showMoonRing && <span className="zodiac-legend-note">Moon hidden (large family)</span>}
+        </div>
+        {sortedNodes.map(n => {
+          const color = n.data.elementColor ?? '#c9a84c'
+          return (
+            <div
+              key={n.id}
+              className={`zodiac-legend-item${hoveredNode === n.id ? ' zodiac-legend-item--active' : ''}`}
+              onMouseEnter={() => setHoveredNode(n.id)}
+              onMouseLeave={() => setHoveredNode(null)}
+              onClick={() => onSelectNode?.(n.id)}
+            >
+              <span className="zodiac-legend-num" style={{ borderColor: color, color }}>
+                {nameInitial(n.data.name)}
+              </span>
+              <div className="zodiac-legend-info">
+                <span className="zodiac-legend-name">{n.data.name}</span>
+                <span className="zodiac-legend-signs">
+                  <span style={{ color }}>{n.data.symbol} {n.data.sign}</span>
+                  {n.data.moonSign && n.data.moonSign !== 'Unknown' && (
+                    <><span className="zodiac-legend-sep"> · </span>
+                    <PlanetSign planet="moon" symbol={n.data.moonSymbol} sign={n.data.moonSign} /></>
+                  )}
+                </span>
               </div>
-            )
-          })}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

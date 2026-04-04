@@ -363,6 +363,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
 
       {/* Compact legend — inline, bottom of view */}
       <div className="constellation-legend">
+        <p className="constellation-sun-note">☀ Nodes colored by Sun sign</p>
         {activeEdgeTypes.length > 0 && (
           <div className="constellation-legend-edges">
             {activeEdgeTypes.map(type => (
