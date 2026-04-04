@@ -208,6 +208,29 @@
   .canvas-brand { display: none; }
   .relayout-btn--insights { display: none; }
   .relayout-btn--sharelink { display: none; }
+
+  /* Move action buttons below the view toggle on mobile */
+  .canvas-panel-btns {
+    top: auto;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+    right: 0.75rem;
+  }
+
+  /* Compact view toggle on mobile so it fits one row */
+  .tree-view-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.68rem;
+  }
+
+  /* Toast position — above the toggle */
+  .saved-toast {
+    top: 4rem;
+  }
+
+  /* No-connections nudge above tab bar */
+  .no-connections-nudge {
+    bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  }
 }
 
 .export-error {
@@ -267,6 +290,83 @@
 }
 
 .connect-prompt-close:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+
+.connect-prompt-action {
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.45);
+  border-radius: 8px;
+  color: var(--gold);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.45rem 1rem;
+  transition: background 0.15s;
+  width: 100%;
+}
+.connect-prompt-action:hover { background: rgba(201,168,76,0.2); }
+
+/* ── Saved toast ───────────────���──────────────────────────────────────────── */
+.saved-toast {
+  position: absolute;
+  top: 3.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: rgba(11,8,26,0.95);
+  border: 1px solid rgba(126,200,69,0.5);
+  border-radius: 10px;
+  color: #7ec845;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  padding: 0.5rem 1.1rem;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  animation: toast-in 0.3s ease;
+  pointer-events: none;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── No-connections nudge (tree view, no edges) ──────────────────────────── */
+.no-connections-nudge {
+  position: absolute;
+  bottom: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(11,8,26,0.88);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+  pointer-events: auto;
+}
+.no-connections-btn {
+  background: none;
+  border: none;
+  color: var(--gold);
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0;
+  letter-spacing: 0.03em;
+}
+.no-connections-btn:hover { text-decoration: underline; }
 
 /* ──────────────────────── Family tab — post-add actions ────────────────── */
 .family-actions {

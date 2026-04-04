@@ -213,7 +213,9 @@ export function useExport({ savedChartId, fitViewRef }) {
 
     const brandEl = el.querySelector('.insights-brand-footer')
     const prevPadding = el.style.padding
+    const prevMinWidth = el.style.minWidth
     el.style.padding = '1.5rem'
+    el.style.minWidth = '420px'
     if (brandEl) brandEl.style.display = 'flex'
 
     const { chartTitle, slug } = getChartSlug(savedChartId)
@@ -256,6 +258,7 @@ export function useExport({ savedChartId, fitViewRef }) {
       setExportError('Export failed — please try again.')
     } finally {
       el.style.padding = prevPadding
+      el.style.minWidth = prevMinWidth
       if (brandEl) brandEl.style.display = ''
       setExporting(false)
     }

@@ -75,6 +75,7 @@ export default function App() {
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
   const [constellationTick, setConstellationTick] = useState(0)
   const [treeViewedCount,   setTreeViewedCount]   = useState(0)
+  const [savedToast,        setSavedToast]        = useState(false)
 
   const fitViewRef = useRef(null)
 
@@ -213,6 +214,8 @@ export default function App() {
       saveChart(chart)
       syncChart(chart)
       setSavedChartId(id)
+      setSavedToast(true)
+      setTimeout(() => setSavedToast(false), 4000)
       if (!hasBeenAsked() && isCloudEnabled()) setShowEmailCapture(true)
     }
   }
@@ -570,16 +573,40 @@ export default function App() {
           />
         )}
 
+        {/* ── Saved toast — shown briefly after first auto-save ───────── */}
+        {savedToast && (
+          <div className="saved-toast">
+            ✓ Chart saved — find it in the Saved tab
+          </div>
+        )}
+
         {/* ── Connect prompt — shown after first add ───────────────────── */}
         {showConnectPrompt && edges.length === 0 && nodes.length > 0 && (
           <div className="connect-prompt">
             <span className="connect-prompt-icon">🔗</span>
-            <span>Tap any card on the tree to connect your family members as parents, children, or partners</span>
+            <span>Connect your family members as parents, children, or partners</span>
+            <button
+              type="button"
+              className="connect-prompt-action"
+              onClick={() => { goTab('add'); setShowConnectPrompt(false) }}
+            >Go to Family →</button>
             <button
               type="button"
               className="connect-prompt-close"
               onClick={() => setShowConnectPrompt(false)}
             >Got it</button>
+          </div>
+        )}
+
+        {/* ── Persistent no-connections nudge (tree view only) ─────────── */}
+        {!showConnectPrompt && treeView === 'tree' && nodes.length > 0 && edges.length === 0 && (
+          <div className="no-connections-nudge">
+            <span>No connections yet —</span>
+            <button
+              type="button"
+              className="no-connections-btn"
+              onClick={() => goTab('add')}
+            >Add Relationships →</button>
           </div>
         )}
 

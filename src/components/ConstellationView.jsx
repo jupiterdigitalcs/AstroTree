@@ -117,7 +117,6 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isPanning, setIsPanning] = useState(false)
-  const [locked, setLocked] = useState(false)
   const panStart = useRef(null)
   const svgRef = useRef(null)
 
@@ -148,15 +147,14 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
   }, [size])
 
   const handlePointerDown = useCallback((e, nodeIdx) => {
-    if (locked) return
     e.stopPropagation()
     e.preventDefault()
     setDragging(nodeIdx)
     e.target.setPointerCapture?.(e.pointerId)
-  }, [locked])
+  }, [])
 
   const handlePointerMove = useCallback((e) => {
-    if (dragging != null && !locked) {
+    if (dragging != null) {
       const pt = getSVGPoint(e.clientX, e.clientY)
       setPositions(prev => {
         const next = [...prev]
@@ -168,7 +166,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
       const dy = e.clientY - panStart.current.y
       setPan({ x: panStart.current.panX + dx, y: panStart.current.panY + dy })
     }
-  }, [dragging, locked, isPanning, getSVGPoint])
+  }, [dragging, isPanning, getSVGPoint])
 
   const handlePointerUp = useCallback(() => {
     setDragging(null)
@@ -177,16 +175,14 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
   }, [])
 
   const handleBgPointerDown = useCallback((e) => {
-    if (locked) return
     setIsPanning(true)
     panStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y }
-  }, [locked, pan])
+  }, [pan])
 
   const handleWheel = useCallback((e) => {
-    if (locked) return
     e.preventDefault()
     setZoom(z => Math.max(0.3, Math.min(3, z - e.deltaY * 0.001)))
-  }, [locked])
+  }, [])
 
   // Active edge types for compact legend
   const activeEdgeTypes = [...new Set(
@@ -206,7 +202,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
         className="constellation-svg"
         onWheel={handleWheel}
         onPointerDown={handleBgPointerDown}
-        style={{ cursor: dragging != null ? 'grabbing' : isPanning ? 'grabbing' : locked ? 'default' : 'grab' }}
+        style={{ cursor: dragging != null ? 'grabbing' : isPanning ? 'grabbing' : 'grab' }}
       >
         <g transform={`translate(${pan.x / (size / 560) * (1/zoom)}, ${pan.y / (size / 560) * (1/zoom)}) scale(${zoom})`}
            style={{ transformOrigin: `${size/2}px ${size/2}px` }}>
@@ -265,7 +261,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
                 onMouseEnter={() => setHoveredNode(n.id)}
                 onMouseLeave={() => setHoveredNode(null)}
                 onPointerDown={(e) => handlePointerDown(e, i)}
-                style={{ cursor: locked ? 'pointer' : isDragged ? 'grabbing' : 'grab' }}
+                style={{ cursor: isDragged ? 'grabbing' : 'grab' }}
               >
                 <circle
                   cx={positions[i].x} cy={positions[i].y}
@@ -319,19 +315,11 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
         </g>
       </svg>
 
-      {/* Zoom / lock controls */}
+      {/* Zoom controls */}
       <div className="constellation-controls">
         <button type="button" onClick={() => setZoom(z => Math.min(3, z + 0.2))} title="Zoom in">+</button>
         <button type="button" onClick={() => setZoom(z => Math.max(0.3, z - 0.2))} title="Zoom out">−</button>
         <button type="button" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }) }} title="Reset view">⟲</button>
-        <button
-          type="button"
-          onClick={() => setLocked(l => !l)}
-          title={locked ? 'Unlock' : 'Lock positions'}
-          className={locked ? 'constellation-ctrl--active' : ''}
-        >
-          {locked ? '🔒' : '🔓'}
-        </button>
       </div>
 
       {/* Hover tooltip */}

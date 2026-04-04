@@ -741,7 +741,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           ))}
           <p className="insight-note" style={{ marginTop: '0.3rem', color: 'var(--text-muted)', fontSize: '0.72rem' }}>
             ♀ Venus reflects how someone loves and what they value. ♂ Mars reflects drive and how they act.
-            {nodes.some(n => !n.data.birthTime) && ' Signs use noon EST for members without a birth time.'}
           </p>
         </div>
       )}
