@@ -17,7 +17,7 @@ async function appendBrandBar(imageUrl, pixelRatio = 2) {
   img.src = imageUrl
   await new Promise(r => { img.onload = r })
   const pr = pixelRatio
-  const barH = 36 * pr
+  const barH = 44 * pr
   const cvs = document.createElement('canvas')
   cvs.width  = img.width
   cvs.height = img.height + barH
@@ -35,10 +35,10 @@ async function appendBrandBar(imageUrl, pixelRatio = 2) {
   ctx.font = `600 ${13 * pr}px Cinzel, Georgia, serif`
   ctx.textAlign = 'left'
   ctx.fillText('✦ AstroDig · Jupiter Digital', pad, mid)
-  ctx.fillStyle = 'rgba(184,170,212,0.7)'
+  ctx.fillStyle = 'rgba(184,170,212,0.65)'
   ctx.font = `${10 * pr}px Raleway, Helvetica, sans-serif`
   ctx.textAlign = 'right'
-  ctx.fillText('jupreturns@gmail.com  ·  @jupreturn', cvs.width - pad, mid)
+  ctx.fillText('astrodig.com  ·  jupiterdigitalevents.com', cvs.width - pad, mid)
   return cvs.toDataURL('image/png')
 }
 
@@ -261,5 +261,33 @@ export function useExport({ savedChartId, fitViewRef }) {
     }
   }, [exporting, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { exporting, exportError, handleExport, handleZodiacExport, handleConstellationExport, handleInsightsExport }
+  const handleTablesExport = useCallback(async () => {
+    const el = document.querySelector('.tables-canvas-wrap')
+    if (!el || exporting) return
+    setExportError(null)
+    setExporting(true)
+
+    const { chartTitle, slug } = getChartSlug(savedChartId)
+    const filename = `${slug}-tables.png`
+
+    try {
+      const url = await (await getToPng())(el, {
+        backgroundColor: '#09071a',
+        pixelRatio: 2,
+      })
+      const finalUrl = await appendBrandBar(url, 2)
+      await shareOrDownload(
+        finalUrl, filename,
+        chartTitle ? `${chartTitle} · Astrology Tables` : 'Family Astrology Tables',
+        'Check out my family astrology data from AstroDig by Jupiter Digital ✦',
+      )
+    } catch (err) {
+      if (err?.name === 'AbortError') return
+      setExportError('Export failed — please try again.')
+    } finally {
+      setExporting(false)
+    }
+  }, [exporting, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { exporting, exportError, handleExport, handleZodiacExport, handleConstellationExport, handleInsightsExport, handleTablesExport }
 }

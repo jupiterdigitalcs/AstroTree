@@ -116,7 +116,7 @@ export default function App() {
     syncChart,
     viewOnly,
   })
-  const { exporting, exportError, handleExport, handleZodiacExport, handleConstellationExport, handleInsightsExport } = useExport({ savedChartId, fitViewRef })
+  const { exporting, exportError, handleExport, handleZodiacExport, handleConstellationExport, handleInsightsExport, handleTablesExport } = useExport({ savedChartId, fitViewRef })
   const {
     edgesForDisplay,
     handleUpdate, handleDelete,
@@ -127,6 +127,16 @@ export default function App() {
     setNodes, setEdges,
     setFitTick, setEditingNodeId,
   })
+
+  // ── Auto-switch to constellation for friend/coworker-only groups ─────────
+  useEffect(() => {
+    if (edges.length === 0 || treeView !== 'tree') return
+    const allNonHierarchical = edges.every(e => {
+      const t = e.data?.relationType
+      return t === 'friend' || t === 'coworker'
+    })
+    if (allNonHierarchical) setTreeView('constellation')
+  }, [edges]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Prevent bots from indexing shared chart pages ──────────────────────────
   useEffect(() => {
@@ -491,13 +501,13 @@ export default function App() {
               {' · '}
               <a href="https://jupiterdigitalevents.com" className="footer-external-link" target="_blank" rel="noopener noreferrer">Events ↗</a>
             </span>
+            {lastSavedAt && (
+              <span className="footer-saved-inline">
+                <SyncIndicator status={syncStatus === 'idle' ? 'synced' : syncStatus} />
+                <span>{formatRelativeTime(lastSavedAt)}</span>
+              </span>
+            )}
           </div>
-          {lastSavedAt && (
-            <div className="footer-saved-row">
-              <SyncIndicator status={syncStatus === 'idle' ? 'synced' : syncStatus} />
-              <span>{formatRelativeTime(lastSavedAt)}</span>
-            </div>
-          )}
         </footer>
       </aside>
 
@@ -550,11 +560,13 @@ export default function App() {
       <main className="canvas">
         {nodes.length === 0 && (
           <WelcomeScreen
+            hasUsedApp={hasUsedApp}
             onBegin={() => {
               goTab('add')
               setTimeout(() => document.querySelector('.add-form input[type="text"]')?.focus(), 50)
             }}
             onDemo={handleLoadDemo}
+            onLoadCharts={() => goTab('charts')}
           />
         )}
 
@@ -626,13 +638,13 @@ export default function App() {
             <button
               type="button"
               className="relayout-btn relayout-btn--share"
-              onClick={treeView === 'zodiac' ? handleZodiacExport : treeView === 'constellation' ? handleConstellationExport : handleExport}
+              onClick={treeView === 'zodiac' ? handleZodiacExport : treeView === 'constellation' ? handleConstellationExport : treeView === 'tables' ? handleTablesExport : handleExport}
               disabled={exporting}
             >
               {exporting ? '…' : (<>
                 <span className="export-label-desktop">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}}><path d="M6 1v7M3 6l3 3 3-3M1 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  {treeView === 'zodiac' ? 'Download Zodiac' : treeView === 'constellation' ? 'Download Constellation' : 'Download Tree'}
+                  {treeView === 'zodiac' ? 'Download Zodiac' : treeView === 'constellation' ? 'Download Constellation' : treeView === 'tables' ? 'Download Tables' : 'Download Tree'}
                 </span>
                 <span className="export-label-mobile">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}}><path d="M6 7V1M3 4l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 8v2.5h10V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>

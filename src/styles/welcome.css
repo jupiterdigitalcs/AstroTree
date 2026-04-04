@@ -118,6 +118,17 @@
 .welcome-cta:hover  { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 6px 30px rgba(201,168,76,0.45); }
 .welcome-cta:active { transform: translateY(0); }
 
+.welcome-cta--secondary {
+  background: rgba(201,168,76,0.08);
+  border: 1px solid rgba(201,168,76,0.35);
+  color: var(--gold);
+  box-shadow: none;
+  font-size: 0.76rem;
+  padding: 0.55rem 1.8rem;
+  margin-top: -0.2rem;
+}
+.welcome-cta--secondary:hover { background: rgba(201,168,76,0.15); box-shadow: none; }
+
 .welcome-mobile-hint {
   display: none;
   font-size: 0.78rem;

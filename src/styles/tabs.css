@@ -197,7 +197,9 @@
   .node-name { font-size: 0.84rem; }
 
   .welcome-cta { display: none; }
+  .welcome-cta--secondary { display: none; }
   .welcome-cta-mobile { display: flex; }
+  .welcome-cta-mobile--secondary { display: flex; }
   .welcome-mobile-hint { display: block; }
   .welcome-title { font-size: 2rem; }
   .welcome-tagline { font-size: 0.88rem; }

@@ -78,8 +78,8 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
   const labelR = 88   // centered in inner ring
   const moonColor = '#9dbbd4'
 
-  // Show moon ring only when family fits both rings clearly
-  const showMoonRing = nodes.length <= 12
+  // Show moon ring for all practical family sizes
+  const showMoonRing = nodes.length <= 24
 
   // When showing moon ring, pull sun markers slightly inward so both fit inside outerR
   const memberR     = showMoonRing ? 162 : 175
@@ -113,13 +113,6 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
 
   return (
     <div className="zodiac-wheel-wrap">
-      {/* Zoom controls */}
-      <div className="zodiac-zoom-controls">
-        <button className="zodiac-zoom-btn" onClick={() => setZoom(z => clampZoom(z * 1.2))} title="Zoom in">+</button>
-        <button className="zodiac-zoom-btn zodiac-zoom-btn--reset" onClick={resetView} title="Reset view">↺</button>
-        <button className="zodiac-zoom-btn" onClick={() => setZoom(z => clampZoom(z * 0.83))} title="Zoom out">−</button>
-      </div>
-
       {/* Zoomable + pannable SVG area */}
       <div
         className="zodiac-zoom-area"
@@ -133,6 +126,7 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
           className="zodiac-zoom-inner"
           style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
         >
+
       <svg viewBox={`0 0 ${size} ${size}`} className="zodiac-wheel-svg">
         {/* Segment wedges */}
         {ZODIAC_ORDER.map((z, i) => {
@@ -249,9 +243,9 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
                   textAnchor="middle"
                   dominantBaseline="central"
                   className="zodiac-member-sign-glyph"
-                  fill={color}
+                  fill="rgba(201,168,76,0.7)"
                 >
-                  {z.symbol}
+                  ☀
                 </text>
               </g>
             )
@@ -316,9 +310,9 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
                   textAnchor="middle"
                   dominantBaseline="central"
                   className="zodiac-moon-sign-glyph"
-                  fill={moonColor}
+                  fill={`${moonColor}bb`}
                 >
-                  {z.symbol}
+                  ☽
                 </text>
               </g>
             )
@@ -358,6 +352,12 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
         </text>
       </svg>
         </div>{/* zodiac-zoom-inner */}
+        {/* Zoom controls — inside zoom area so they're always visible regardless of scroll */}
+        <div className="zodiac-zoom-controls">
+          <button className="zodiac-zoom-btn" onClick={() => setZoom(z => clampZoom(z * 1.2))} title="Zoom in">+</button>
+          <button className="zodiac-zoom-btn zodiac-zoom-btn--reset" onClick={resetView} title="Reset view">↺</button>
+          <button className="zodiac-zoom-btn" onClick={() => setZoom(z => clampZoom(z * 0.83))} title="Zoom out">−</button>
+        </div>
         {/* Hover tooltip — inside zoom area for correct relative positioning */}
         {hoveredNode && (() => {
           const n = nodes.find(nd => nd.id === hoveredNode)

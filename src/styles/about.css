@@ -291,6 +291,17 @@
 }
 .footer-brand-credit a:hover { color: var(--gold); }
 
+.footer-saved-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .footer-about-link {
   background: none;
   border: none;
