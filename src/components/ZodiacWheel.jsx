@@ -263,20 +263,30 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
                           transition: 'all 0.15s ease',
                         }}
                       />
-                      {large && (
-                        <text x={pos.x} y={pos.y - 3}
+                      {large ? (
+                        <>
+                          {/* Initial centered in circle */}
+                          <text x={pos.x} y={pos.y}
+                            textAnchor="middle" dominantBaseline="central"
+                            className="zodiac-member-initial" fill={strokeColor}>
+                            {nameInitial(n.data.name)}
+                          </text>
+                          {/* Glyph just below the circle */}
+                          <text x={pos.x} y={pos.y + ring.markerR + 6}
+                            textAnchor="middle" dominantBaseline="central"
+                            style={{ fontSize: '8px', pointerEvents: 'none' }}
+                            fill={glyphFill}>
+                            {ring.glyph}
+                          </text>
+                        </>
+                      ) : (
+                        <text x={pos.x} y={pos.y + 1}
                           textAnchor="middle" dominantBaseline="central"
-                          className="zodiac-member-initial" fill={strokeColor}>
-                          {nameInitial(n.data.name)}
+                          style={{ fontSize: '7px', pointerEvents: 'none' }}
+                          fill={glyphFill}>
+                          {ring.glyph}
                         </text>
                       )}
-                      <text
-                        x={pos.x} y={pos.y + (large ? 8 : 1)}
-                        textAnchor="middle" dominantBaseline="central"
-                        style={{ fontSize: large ? '9px' : '7px', pointerEvents: 'none' }}
-                        fill={glyphFill}>
-                        {ring.glyph}
-                      </text>
                     </g>
                   )
                 })
