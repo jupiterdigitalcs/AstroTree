@@ -1,6 +1,14 @@
 import { useState, useCallback } from 'react'
-import { toPng } from 'html-to-image'
 import { loadCharts } from '../utils/storage.js'
+
+let _toPng = null
+async function getToPng() {
+  if (!_toPng) {
+    const mod = await import('html-to-image')
+    _toPng = mod.toPng
+  }
+  return _toPng
+}
 
 // ── Shared brand-bar compositing ────────────────────────────────────────────
 async function appendBrandBar(imageUrl, pixelRatio = 2) {
@@ -99,7 +107,7 @@ export function useExport({ savedChartId, fitViewRef }) {
     const filename = `${slug}-tree.png`
 
     try {
-      const url = await toPng(el, {
+      const url = await (await getToPng())(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
         filter: node => {
@@ -138,7 +146,7 @@ export function useExport({ savedChartId, fitViewRef }) {
     const filename = `${slug}-zodiac.png`
 
     try {
-      const url = await toPng(el, {
+      const url = await (await getToPng())(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
         filter: node => {
@@ -172,7 +180,7 @@ export function useExport({ savedChartId, fitViewRef }) {
     const filename = `${slug}-constellation.png`
 
     try {
-      const url = await toPng(el, {
+      const url = await (await getToPng())(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
         filter: node => {
@@ -212,7 +220,7 @@ export function useExport({ savedChartId, fitViewRef }) {
     const filename = `${slug}-insights.png`
 
     try {
-      const url = await toPng(el, {
+      const url = await (await getToPng())(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
         filter: node => {

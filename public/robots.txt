@@ -1,4 +1,17 @@
 User-agent: *
 Allow: /
 
+# Block AI training crawlers from user data (shared chart pages)
+User-agent: GPTBot
+Disallow: /?view=
+
+User-agent: CCBot
+Disallow: /?view=
+
+User-agent: Google-Extended
+Disallow: /?view=
+
+User-agent: anthropic-ai
+Disallow: /?view=
+
 Sitemap: https://astrodig.com/sitemap.xml

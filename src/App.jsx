@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef, lazy, Suspense } from 'react'
 import {
   ReactFlow,
   Background,
@@ -12,8 +12,8 @@ import '@xyflow/react/dist/style.css'
 import AddMembersForm  from './components/AddMembersForm.jsx'
 import AstroNode       from './components/AstroNode.jsx'
 import EditMemberPanel from './components/EditMemberPanel.jsx'
-import ZodiacWheel        from './components/ZodiacWheel.jsx'
-import ConstellationView from './components/ConstellationView.jsx'
+const ZodiacWheel        = lazy(() => import('./components/ZodiacWheel.jsx'))
+const ConstellationView  = lazy(() => import('./components/ConstellationView.jsx'))
 import ChartsPanel     from './components/ChartsPanel.jsx'
 import InsightsPanel   from './components/InsightsPanel.jsx'
 import AboutPanel      from './components/AboutPanel.jsx'
@@ -113,6 +113,14 @@ export default function App() {
     setNodes, setEdges,
     setFitTick, setEditingNodeId,
   })
+
+  // ── Prevent bots from indexing shared chart pages ──────────────────────────
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('view')) {
+      let meta = document.querySelector('meta[name="robots"]')
+      if (meta) meta.setAttribute('content', 'noindex, nofollow')
+    }
+  }, [])
 
   // ── Handle ?view=<share_token> shared chart link ──────────────────────────
   useEffect(() => {
@@ -645,17 +653,21 @@ export default function App() {
         )}
 
         {treeView === 'zodiac' && nodes.length > 0 ? (
-          <ZodiacWheel
-            nodes={nodes}
-            onSelectNode={(id) => setEditingNodeId(id)}
-          />
+          <Suspense fallback={null}>
+            <ZodiacWheel
+              nodes={nodes}
+              onSelectNode={(id) => setEditingNodeId(id)}
+            />
+          </Suspense>
         ) : treeView === 'constellation' && nodes.length > 0 ? (
-          <ConstellationView
-            nodes={nodes}
-            edges={edges}
-            onSelectNode={(id) => setEditingNodeId(id)}
-            layoutTick={constellationTick}
-          />
+          <Suspense fallback={null}>
+            <ConstellationView
+              nodes={nodes}
+              edges={edges}
+              onSelectNode={(id) => setEditingNodeId(id)}
+              layoutTick={constellationTick}
+            />
+          </Suspense>
         ) : (
         <ReactFlow
           nodes={nodes} edges={edgesForDisplay}

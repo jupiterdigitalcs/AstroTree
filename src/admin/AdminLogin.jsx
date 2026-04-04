@@ -6,9 +6,9 @@ export default function AdminLogin({ onSuccess }) {
   const [password, setPassword] = useState('')
   const [error,    setError]    = useState(false)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    if (attemptAdminLogin(password)) {
+    if (await attemptAdminLogin(password)) {
       onSuccess()
     } else {
       setError(true)

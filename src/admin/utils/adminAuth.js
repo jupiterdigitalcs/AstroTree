@@ -1,17 +1,34 @@
 const SESSION_KEY = 'admin_authed'
+const TOKEN_KEY   = 'admin_token'
 
 export function isAdminAuthed() {
-  return sessionStorage.getItem(SESSION_KEY) === '1'
+  return sessionStorage.getItem(SESSION_KEY) === '1' && !!sessionStorage.getItem(TOKEN_KEY)
 }
 
-export function attemptAdminLogin(password) {
-  if (password === import.meta.env.VITE_ADMIN_PASSWORD) {
-    sessionStorage.setItem(SESSION_KEY, '1')
-    return true
+export function getAdminToken() {
+  return sessionStorage.getItem(TOKEN_KEY)
+}
+
+export async function attemptAdminLogin(password) {
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    })
+    const data = await res.json()
+    if (data.ok && data.token) {
+      sessionStorage.setItem(SESSION_KEY, '1')
+      sessionStorage.setItem(TOKEN_KEY, data.token)
+      return true
+    }
+    return false
+  } catch {
+    return false
   }
-  return false
 }
 
 export function adminLogout() {
   sessionStorage.removeItem(SESSION_KEY)
+  sessionStorage.removeItem(TOKEN_KEY)
 }
