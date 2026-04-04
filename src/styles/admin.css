@@ -995,14 +995,23 @@
 .zodiac-tooltip-sign { color: var(--text-muted); font-size: 0.78rem; }
 .zodiac-tooltip-moon { color: #9dbbd4; font-size: 0.72rem; }
 
+/* Side panel: ring toggles stacked above the legend */
+.zodiac-side-panel {
+  display: flex;
+  flex-direction: column;
+  width: 280px;
+  max-height: min(90vw, 500px);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
 /* Legend — flat numbered 2-column grid */
 .zodiac-legend {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  max-width: 280px;
   width: 100%;
-  max-height: min(90vw, 500px);
+  flex: 1;
   overflow-y: auto;
   padding-right: 0.25rem;
   align-content: start;
@@ -1097,4 +1106,55 @@
 .zodiac-moon-sign-glyph {
   font-size: 7px;
   font-weight: 400;
+}
+
+/* ── Zodiac planet ring toggles ─────────────────────────────── */
+.zodiac-ring-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.5rem 0.5rem 0.4rem;
+  justify-content: flex-start;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.zodiac-ring-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.7rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.zodiac-ring-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-soft);
+}
+
+.zodiac-ring-btn--on {
+  background: rgba(201,168,76,0.12);
+  border-color: rgba(201,168,76,0.5);
+  color: var(--gold-light);
+}
+
+.zodiac-ring-btn--on:hover {
+  background: rgba(201,168,76,0.18);
+}
+
+.zodiac-ring-btn:disabled,
+.zodiac-ring-btn--capped {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.zodiac-ring-cap {
+  font-style: italic;
+  opacity: 0.75;
 }

@@ -31,7 +31,7 @@ import { ShareButton } from './components/ShareButton.jsx'
 import { fetchChartByToken, isCloudEnabled } from './utils/cloudStorage.js'
 import { EmailCapture, hasBeenAsked, clearEmailAsked } from './components/EmailCapture.jsx'
 import { OnboardingProgress, markInsightsSeen } from './components/OnboardingProgress.jsx'
-import { buildDemoChart } from './utils/demoData.js'
+import { buildDemoChart, buildDemoCrewChart } from './utils/demoData.js'
 import { buildNodeData, makeEdge, hydrateNodes } from './utils/treeHelpers.js'
 import { formatRelativeTime } from './utils/format.js'
 import { useExport } from './hooks/useExport.js'
@@ -240,6 +240,18 @@ export default function App() {
   // ── Load demo tree ────────────────────────────────────────────────────────
   function handleLoadDemo() {
     const demo = buildDemoChart()
+    setNodes(applyDagreLayout(demo.nodes, demo.edges))
+    setEdges(demo.edges)
+    setCounter(demo.counter)
+    setSavedChartId(null)
+    setViewOnly(false)
+    setActiveTab('tree')
+    setFitTick(t => t + 1)
+    markUsed()
+  }
+
+  function handleLoadDemoCrew() {
+    const demo = buildDemoCrewChart()
     setNodes(applyDagreLayout(demo.nodes, demo.edges))
     setEdges(demo.edges)
     setCounter(demo.counter)
@@ -569,6 +581,7 @@ export default function App() {
               setTimeout(() => document.querySelector('.add-form input[type="text"]')?.focus(), 50)
             }}
             onDemo={handleLoadDemo}
+            onDemoCrew={handleLoadDemoCrew}
             onLoadCharts={() => goTab('charts')}
           />
         )}

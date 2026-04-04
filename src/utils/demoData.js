@@ -23,6 +23,45 @@ const DEMO_EDGE_DEFS = [
   ['node-6', 'node-9'],                 // James → Olivia
 ]
 
+const DEMO_CREW_MEMBERS = [
+  { name: 'Jordan',   birthdate: '1990-05-14' },  // Taurus
+  { name: 'Priya',    birthdate: '1988-08-29' },  // Virgo
+  { name: 'Marcus',   birthdate: '1993-01-07' },  // Capricorn
+  { name: 'Sofia',    birthdate: '1991-11-22' },  // Sagittarius
+  { name: 'Tyler',    birthdate: '1987-03-04' },  // Pisces
+  { name: 'Anika',    birthdate: '1994-06-17' },  // Gemini
+  { name: 'Darius',   birthdate: '1989-10-31' },  // Scorpio
+  { name: 'Chloe',    birthdate: '1992-07-24' },  // Leo
+]
+
+const DEMO_CREW_EDGE_DEFS = [
+  ['crew-1', 'crew-2', 'coworker'],  // Jordan & Priya
+  ['crew-1', 'crew-3', 'coworker'],  // Jordan & Marcus
+  ['crew-1', 'crew-8', 'friend'],    // Jordan & Chloe
+  ['crew-2', 'crew-4', 'coworker'],  // Priya & Sofia
+  ['crew-2', 'crew-6', 'friend'],    // Priya & Anika
+  ['crew-3', 'crew-7', 'coworker'],  // Marcus & Darius
+  ['crew-4', 'crew-5', 'friend'],    // Sofia & Tyler
+  ['crew-5', 'crew-7', 'friend'],    // Tyler & Darius
+  ['crew-6', 'crew-8', 'friend'],    // Anika & Chloe
+]
+
+export function buildDemoCrewChart() {
+  const nodes = DEMO_CREW_MEMBERS.map((m, i) => ({
+    id: `crew-${i + 1}`, type: 'astro',
+    position: { x: 0, y: 0 }, data: buildNodeData(m),
+  }))
+  const edges = DEMO_CREW_EDGE_DEFS.map(([s, t, r]) => makeEdge(s, t, r))
+  return {
+    id: '__sample_crew__',
+    title: 'The Crew',
+    isSample: true,
+    nodes,
+    edges,
+    counter: DEMO_CREW_MEMBERS.length + 1,
+  }
+}
+
 export function buildDemoChart() {
   const nodes = DEMO_MEMBERS.map((m, i) => ({
     id: `node-${i + 1}`, type: 'astro',

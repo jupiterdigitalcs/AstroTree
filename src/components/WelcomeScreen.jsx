@@ -1,6 +1,6 @@
 import { JupiterIcon } from './JupiterIcon.jsx'
 
-export function WelcomeScreen({ onBegin, onDemo, hasUsedApp, onLoadCharts }) {
+export function WelcomeScreen({ onBegin, onDemo, onDemoCrew, hasUsedApp, onLoadCharts }) {
   return (
     <div className="welcome-screen">
       <div className="welcome-content">
@@ -43,9 +43,15 @@ export function WelcomeScreen({ onBegin, onDemo, hasUsedApp, onLoadCharts }) {
           </button>
         )}
 
-        <button type="button" className="welcome-demo" onClick={onDemo}>
-          or try a demo family
-        </button>
+        <div className="welcome-demo-row">
+          <span className="welcome-demo-label">or try a demo:</span>
+          <button type="button" className="welcome-demo" onClick={onDemo}>
+            Family Tree
+          </button>
+          <button type="button" className="welcome-demo" onClick={onDemoCrew}>
+            Friends &amp; Coworkers
+          </button>
+        </div>
       </div>
     </div>
   )

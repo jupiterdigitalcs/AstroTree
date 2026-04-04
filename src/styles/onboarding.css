@@ -169,6 +169,22 @@
   margin-top: -0.15rem;
 }
 
+.welcome-demo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.welcome-demo-label {
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  padding: 0.3rem 0.25rem;
+}
+
 .welcome-demo {
   background: none;
   border: none;
@@ -176,11 +192,13 @@
   font-family: 'Raleway', sans-serif;
   font-size: 0.78rem;
   cursor: pointer;
-  padding: 0.3rem 0.6rem;
+  padding: 0.3rem 0.5rem;
   letter-spacing: 0.03em;
   transition: color 0.15s;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
-.welcome-demo:hover { color: var(--gold-light); text-decoration: underline; }
+.welcome-demo:hover { color: var(--gold-light); }
 
 .footer-brand-left {
   display: flex;

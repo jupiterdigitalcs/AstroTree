@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { loadCharts, deleteChart, saveChart, renameChart } from '../utils/storage.js'
 import { fetchCharts, fetchPublicCharts, isCloudEnabled, restoreChartsByEmail } from '../utils/cloudStorage.js'
 import { getSavedEmail } from './EmailCapture.jsx'
-import { buildDemoChart } from '../utils/demoData.js'
+import { buildDemoChart, buildDemoCrewChart } from '../utils/demoData.js'
 
 export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout, onRename, onDuplicate }) {
   const [charts,          setCharts]          = useState(() => loadCharts())
@@ -154,9 +154,9 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
       {/* ── Sample Trees ──────────────────────────────────────────────── */}
       <div className="sample-charts">
         <h3 className="sample-charts-title">✦ Sample Charts</h3>
-        <p className="sample-charts-sub">Explore a demo family to see how AstroDig works</p>
+        <p className="sample-charts-sub">Explore demo charts to see how AstroDig works</p>
         <div className="charts-list">
-          {[buildDemoChart()].map(c => (
+          {[buildDemoChart(), buildDemoCrewChart()].map(c => (
             <div key={c.id} className="chart-item chart-item--sample">
               <div className="chart-item-info">
                 <span className="chart-item-title">
@@ -164,7 +164,7 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
                   <span className="chart-item-badge chart-item-badge--sample">sample</span>
                 </span>
                 <span className="chart-item-meta">
-                  {c.nodes.length} members · 3 generations
+                  {c.nodes.length} members · {c.id === '__sample_andersons__' ? '3 generations' : 'friends & coworkers'}
                 </span>
               </div>
               <div className="chart-item-actions">
