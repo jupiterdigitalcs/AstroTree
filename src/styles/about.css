@@ -1,0 +1,323 @@
+/* ─────────────────────────────── About panel ───────────────────────────── */
+.about-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-bottom: 1rem;
+}
+
+.about-brand-block {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem 0 0.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.15rem;
+}
+
+.about-brand-logo { font-size: 2rem; line-height: 1; }
+
+.about-brand-name {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  color: var(--gold-light);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.1rem;
+}
+
+.about-brand-tagline {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.about-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+}
+
+.about-heading {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+}
+
+.about-bio {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  line-height: 1.65;
+}
+
+/* Data privacy list */
+.about-data-list {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  line-height: 1.7;
+  padding-left: 1.2rem;
+  margin: 0.5rem 0 0;
+}
+.about-data-list li { margin-bottom: 0.15rem; }
+
+/* Social links */
+.about-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.about-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text);
+  transition: background 0.15s;
+}
+
+.about-link:hover { background: rgba(255,255,255,0.05); }
+
+.about-link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  background: rgba(201,168,76,0.08);
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.about-link-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.about-link-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.about-link-handle {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Etsy shop card */
+.about-shop-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, rgba(201,168,76,0.08) 0%, rgba(140,80,200,0.06) 100%);
+  border: 1px solid var(--border-gold);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.about-shop-card:hover {
+  background: linear-gradient(135deg, rgba(201,168,76,0.14) 0%, rgba(140,80,200,0.1) 100%);
+  border-color: var(--gold);
+}
+
+.about-shop-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 8px;
+  background: rgba(201,168,76,0.1);
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.about-shop-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.about-shop-name {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--gold-light);
+}
+
+.about-shop-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.about-shop-arrow {
+  color: var(--gold);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.about-app-note {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+  padding: 0.25rem 0.5rem;
+}
+
+/* ── Family welcome inline layout ──────────────────────────────────────── */
+.family-welcome-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 0.3rem;
+}
+
+.family-welcome-inline .family-welcome-title {
+  margin-bottom: 0;
+}
+
+/* ── About panel email removal ──────────────────────────────────────────── */
+.about-email-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.65rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.about-email-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.about-remove-email-btn {
+  background: none;
+  border: 1px solid rgba(220,60,60,0.4);
+  border-radius: 6px;
+  color: #e06060;
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.about-remove-email-btn:hover { background: rgba(220,60,60,0.1); }
+
+.about-remove-confirm {
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  background: rgba(220,60,60,0.06);
+  border: 1px solid rgba(220,60,60,0.3);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.about-remove-warning {
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.about-remove-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.about-remove-cancel {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  transition: border-color 0.15s;
+}
+.about-remove-cancel:hover { border-color: var(--border-gold); }
+
+.about-remove-confirm-btn {
+  background: rgba(220,60,60,0.1);
+  border: 1px solid rgba(220,60,60,0.4);
+  border-radius: 6px;
+  color: #e06060;
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  transition: background 0.15s;
+}
+.about-remove-confirm-btn:hover { background: rgba(220,60,60,0.2); }
+
+/* ─────────────────────── Footer brand credit ───────────────────────────── */
+.footer-brand-credit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.3rem 0 0.1rem;
+  flex-wrap: wrap;
+}
+
+.footer-brand-credit a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.footer-brand-credit a:hover { color: var(--gold); }
+
+.footer-about-link {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.3rem;
+  transition: color 0.15s, background 0.15s;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-radius: 4px;
+  text-underline-offset: 2px;
+}
+.footer-about-link:hover { color: var(--gold); background: rgba(201,168,76,0.08); }
+
+.footer-external-link {
+  background: none;
+  border: none;
+  color: var(--gold-dim, #a08840);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.3rem;
+  transition: color 0.15s, background 0.15s;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.footer-external-link:hover { color: var(--gold); background: rgba(201,168,76,0.08); }

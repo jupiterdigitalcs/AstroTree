@@ -1,26 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { ELEMENT_COLORS } from '../utils/astrology.js'
-
-const EDGE_COLORS = {
-  'parent-child': '#c9a84c',
-  'spouse':       '#d4a0bc',
-  'friend':       '#5bc8f5',
-  'coworker':     '#a0a0b8',
-}
-
-const EDGE_LABELS = {
-  'parent-child': 'family',
-  'spouse':       'partner',
-  'friend':       'friend',
-  'coworker':     'coworker',
-}
-
-const EDGE_DASH = {
-  'parent-child': 'none',
-  'spouse':       '6,4',
-  'friend':       '4,4',
-  'coworker':     '4,4',
-}
+import { EDGE_COLORS, EDGE_LABELS, EDGE_DASH } from '../utils/treeHelpers.js'
 
 // Force-directed layout simulation with cluster-aware spacing
 function runForceLayout(nodes, edges, width, height) {

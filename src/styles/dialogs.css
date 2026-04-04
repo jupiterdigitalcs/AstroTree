@@ -1,0 +1,163 @@
+/* ──────────────────────────── Email capture ─────────────────────────────── */
+.email-capture {
+  background: var(--surface-2);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 14px;
+  padding: 1.6rem 1.4rem 1.4rem;
+  width: min(420px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-family: 'Raleway', sans-serif;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.1);
+}
+.email-capture-title {
+  font-size: 1rem;
+  font-family: 'Cinzel', serif;
+  color: var(--gold-light);
+  margin: 0;
+}
+.email-capture-sub {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  margin: 0 0 0.4rem;
+  line-height: 1.55;
+}
+.email-capture form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.email-capture-error {
+  font-size: 0.75rem;
+  color: #e87070;
+  margin: -0.3rem 0 0;
+}
+.input--error {
+  border-color: rgba(232,112,112,0.6) !important;
+}
+
+/* ──────────────────────────── Save dialog ───────────────────────────────── */
+.save-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(9,7,26,0.75);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.save-dialog {
+  background: var(--surface-2, #0e0a2a);
+  border: 1px solid rgba(201,168,76,0.4);
+  border-radius: 16px;
+  padding: 1.5rem;
+  width: min(320px, calc(100% - 3rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 40px rgba(201,168,76,0.08);
+}
+
+.save-dialog-title {
+  font-size: 0.9rem;
+  color: var(--gold-light);
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.08em;
+}
+
+.save-dialog-input {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.85rem;
+  padding: 0.55rem 0.75rem;
+  width: 100%;
+  outline: none;
+  font-family: 'Raleway', sans-serif;
+}
+
+.save-dialog-input:focus {
+  border-color: var(--border-gold);
+}
+
+.save-dialog-btns {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.save-dialog-cancel {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.save-dialog-cancel:hover { border-color: var(--border-gold); color: var(--text); }
+
+.save-dialog-discard {
+  background: rgba(220,60,60,0.08);
+  border: 1px solid rgba(220,60,60,0.35);
+  border-radius: 7px;
+  color: #e06060;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.save-dialog-discard:hover { background: rgba(220,60,60,0.16); }
+
+.save-dialog-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: -0.25rem;
+}
+
+/* ─────────────────── Off-screen insights panel for export ───────────────── */
+.export-insights-root {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 420px;
+  background: #09071a;
+  padding: 1.5rem 1.25rem;
+  z-index: -1;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Compact welcome for returning users */
+.family-welcome--compact {
+  padding: 0.5rem 0.5rem 0.6rem;
+}
+.family-welcome--compact .family-welcome-sub { margin-bottom: 0; }
+
+.save-dialog-save {
+  background: rgba(201,168,76,0.12);
+  border: 1px solid var(--border-gold);
+  border-radius: 7px;
+  color: var(--gold);
+  font-size: 0.8rem;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  transition: background 0.15s, color 0.15s;
+}
+
+.save-dialog-save:hover:not(:disabled) {
+  background: rgba(201,168,76,0.22);
+  color: var(--gold-light);
+}
+
+.save-dialog-save:disabled { opacity: 0.35; cursor: default; }

@@ -1,0 +1,86 @@
+/* ──────────────────────────────── Canvas ────────────────────────────────── */
+.canvas {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.react-flow__renderer { background: transparent !important; }
+
+/* ──────────────────────────── Astro node ────────────────────────────────── */
+.astro-node {
+  background: linear-gradient(145deg, rgba(26,18,52,0.97) 0%, rgba(12,8,28,0.98) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.5),
+    0 4px 24px rgba(0,0,0,0.6),
+    0 0 20px rgba(160,130,220,0.06);
+  min-width: 155px;
+  padding: 1rem 1.1rem 0.9rem;
+  text-align: center;
+  cursor: grab;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+  position: relative;
+}
+
+.astro-node:hover {
+  transform: translateY(-1px);
+}
+
+.node-symbol {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+}
+
+.node-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.06em;
+}
+
+.node-sign {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  margin-top: 0.15rem;
+}
+
+.node-element {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  margin-top: 0.2rem;
+  opacity: 0.75;
+}
+
+/* ──────────────────────── React Flow handles ────────────────────────────── */
+.node-handle.react-flow__handle {
+  background: var(--gold-dim);
+  border: 1px solid var(--gold);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.node-handle--side {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.astro-node:hover .node-handle--side { opacity: 1; }
+
+/* React Flow controls dark overrides */
+.react-flow__controls button {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--gold);
+  fill: var(--gold);
+}
+
+.react-flow__controls button:hover { background: var(--surface-3); }

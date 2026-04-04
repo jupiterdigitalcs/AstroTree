@@ -1,11 +1,8 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
-import { toPng } from 'html-to-image'
 import {
   ReactFlow,
   Background,
   Controls,
-  Panel,
-  addEdge,
   useNodesState,
   useEdgesState,
   useReactFlow,
@@ -20,10 +17,12 @@ import ConstellationView from './components/ConstellationView.jsx'
 import ChartsPanel     from './components/ChartsPanel.jsx'
 import InsightsPanel   from './components/InsightsPanel.jsx'
 import AboutPanel      from './components/AboutPanel.jsx'
+import { SaveDialog }    from './components/SaveDialog.jsx'
+import { NewTreeConfirm } from './components/NewTreeConfirm.jsx'
+import { WelcomeScreen }  from './components/WelcomeScreen.jsx'
 import { JupiterIcon }            from './components/JupiterIcon.jsx'
-import { getSunSign, getElement } from './utils/astrology.js'
 import { applyDagreLayout }      from './utils/layout.js'
-import { saveDraft, loadDraft, saveChart, loadCharts }  from './utils/storage.js'
+import { loadDraft, saveChart }  from './utils/storage.js'
 import { useCloudSync } from './hooks/useCloudSync.js'
 import { SyncIndicator } from './components/SyncIndicator.jsx'
 import { ShareButton } from './components/ShareButton.jsx'
@@ -31,44 +30,13 @@ import { fetchChartByToken, isCloudEnabled } from './utils/cloudStorage.js'
 import { EmailCapture, hasBeenAsked, clearEmailAsked } from './components/EmailCapture.jsx'
 import { OnboardingProgress, markInsightsSeen } from './components/OnboardingProgress.jsx'
 import { buildDemoChart } from './utils/demoData.js'
+import { buildNodeData, makeEdge } from './utils/treeHelpers.js'
+import { formatRelativeTime } from './utils/format.js'
+import { useExport } from './hooks/useExport.js'
+import { useChartManager } from './hooks/useChartManager.js'
+import { useTreeState } from './hooks/useTreeState.js'
 
 const NODE_TYPES = { astro: AstroNode }
-
-function formatRelativeTime(date) {
-  const secs = Math.floor((Date.now() - date.getTime()) / 1000)
-  if (secs < 60) return 'just now'
-  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`
-  return `${Math.floor(secs / 3600)}h ago`
-}
-
-const EDGE_STYLE    = { stroke: '#c9a84c', strokeWidth: 1.5 }
-const SPOUSE_STYLE  = { stroke: '#d4a0bc', strokeWidth: 1.5, strokeDasharray: '6,4' }
-const FRIEND_STYLE  = { stroke: '#5bc8f5', strokeWidth: 1.5, strokeDasharray: '4,4' }
-const COWORKER_STYLE = { stroke: '#a0a0b8', strokeWidth: 1.5, strokeDasharray: '4,4' }
-
-const EDGE_STYLES = {
-  'parent-child': EDGE_STYLE,
-  'spouse':       SPOUSE_STYLE,
-  'friend':       FRIEND_STYLE,
-  'coworker':     COWORKER_STYLE,
-}
-
-function makeEdge(source, target, relationType = 'parent-child') {
-  const isFamily = relationType === 'parent-child'
-  return {
-    id: `e-${source}-${target}`, source, target,
-    data:     { relationType },
-    animated: isFamily,
-    style:    EDGE_STYLES[relationType] || EDGE_STYLE,
-    type:     'smoothstep',
-  }
-}
-
-function buildNodeData(member) {
-  const { sign, symbol }   = getSunSign(member.birthdate)
-  const { element, color } = getElement(sign)
-  return { name: member.name, birthdate: member.birthdate, sign, symbol, element, elementColor: color }
-}
 
 
 // ── Fit the view whenever fitTick increments ──────────────────────────────────
@@ -96,14 +64,6 @@ export default function App() {
   const [showAddMore,       setShowAddMore]       = useState(false)
   const [showConnectPrompt, setShowConnectPrompt] = useState(false)
   const [fitTick,           setFitTick]           = useState(0)
-  const [exporting,         setExporting]         = useState(false)
-  const [exportError,       setExportError]       = useState(null)
-  // Tracks the ID of the last named save; null = never saved
-  const [savedChartId,      setSavedChartId]      = useState(null)
-  const [showSaveDialog,    setShowSaveDialog]    = useState(false)
-  const [saveTitle,         setSaveTitle]         = useState('')
-  const [pendingNewTree,    setPendingNewTree]    = useState(false)
-  const [showNewTreeConfirm, setShowNewTreeConfirm] = useState(false)
   // True once the user has ever added members — shows compact welcome on next empty state
   const [hasUsedApp,        setHasUsedApp]        = useState(() => {
     try { return localStorage.getItem('astrotree_used') === '1' } catch { return false }
@@ -112,8 +72,6 @@ export default function App() {
   const [viewOnly,          setViewOnly]          = useState(false)
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation'
   const [constellationTick, setConstellationTick] = useState(0)
-  const [showEmailCapture,  setShowEmailCapture]  = useState(false)
-  const [lastSavedAt,       setLastSavedAt]       = useState(null)
   const [treeViewedCount,   setTreeViewedCount]   = useState(0)
 
   const fitViewRef = useRef(null)
@@ -123,6 +81,37 @@ export default function App() {
 
   const { syncStatus, syncChart, deleteFromCloud } = useCloudSync({
     onMergeCharts: () => {/* ChartsPanel will re-read localStorage on its own mount */},
+  })
+
+  const {
+    savedChartId, setSavedChartId,
+    showSaveDialog, setShowSaveDialog,
+    saveTitle, setSaveTitle,
+    pendingNewTree, setPendingNewTree,
+    showNewTreeConfirm, setShowNewTreeConfirm,
+    showEmailCapture, setShowEmailCapture,
+    lastSavedAt,
+    handleSaveChart, handleNewChart, handleLoadChart,
+    handleRenameChart, handleDuplicateChart,
+    handleNewTreeClick,
+  } = useChartManager({
+    nodes, edges, counter,
+    setNodes, setEdges, setCounter,
+    setActiveTab, setEditingNodeId, setTreeView,
+    setFitTick, setViewOnly,
+    syncChart,
+    viewOnly,
+  })
+  const { exporting, exportError, handleExport, handleZodiacExport, handleConstellationExport, handleInsightsExport } = useExport({ savedChartId, fitViewRef })
+  const {
+    edgesForDisplay,
+    handleUpdate, handleDelete,
+    handleAddEdge, handleRemoveEdge,
+    onNodeClick, onConnect,
+  } = useTreeState({
+    nodes, edges,
+    setNodes, setEdges,
+    setFitTick, setEditingNodeId,
   })
 
   // ── Handle ?view=<share_token> shared chart link ──────────────────────────
@@ -141,67 +130,10 @@ export default function App() {
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Restore draft on first load ───────────────────────────────────────────
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('view')) return // skip draft if viewing shared link
-    const draft = loadDraft()
-    if (draft?.nodes?.length > 0) {
-      setNodes(draft.nodes)
-      setEdges(draft.edges)
-      setCounter(draft.counter ?? 1)
-      if (draft.savedChartId) setSavedChartId(draft.savedChartId)
-      setActiveTab('add') // always land on Family tab on refresh
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Autosave draft on every change (debounced 600ms) ─────────────────────
-  useEffect(() => {
-    const t = setTimeout(() => saveDraft(nodes, edges, counter, savedChartId), 600)
-    return () => clearTimeout(t)
-  }, [nodes, edges, counter, savedChartId])
-
-  // ── Auto-save to named chart when tree has been saved once ────────────────
-  useEffect(() => {
-    if (!savedChartId || nodes.length === 0) return
-    const t = setTimeout(() => {
-      const existing = loadCharts().find(c => c.id === savedChartId)
-      if (!existing) return // chart was deleted from the Saved tab
-      const updated = { ...existing, nodes, edges, counter, savedAt: new Date().toISOString() }
-      saveChart(updated)
-      syncChart(updated)
-      setLastSavedAt(new Date())
-    }, 800)
-    return () => clearTimeout(t)
-  }, [nodes, edges, counter, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Layout on edge / node count changes ──────────────────────────────────
-  useEffect(() => {
-    if (nodes.length === 0) return
-    setNodes(prev => applyDagreLayout(prev, edges))
-    setFitTick(t => t + 1)
-  }, [edges, nodes.length]) // eslint-disable-line react-hooks/exhaustive-deps
-
   // ── Auto-dismiss connect prompt once first edge is added ─────────────────
   useEffect(() => {
     if (edges.length > 0 && showConnectPrompt) setShowConnectPrompt(false)
   }, [edges.length]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Spouse edges: route straight across using side handles ────────────────
-  const edgesForDisplay = useMemo(() =>
-    edges.map(edge => {
-      if (edge.data?.relationType !== 'spouse') return edge
-      const src = nodes.find(n => n.id === edge.source)
-      const tgt = nodes.find(n => n.id === edge.target)
-      if (!src || !tgt) return edge
-      const srcLeft = src.position.x <= tgt.position.x
-      return {
-        ...edge, type: 'straight',
-        sourceHandle: srcLeft ? 'right-src' : 'left-src',
-        targetHandle: srcLeft ? 'left-tgt'  : 'right-tgt',
-      }
-    }),
-    [edges, nodes]
-  )
 
   function markUsed() {
     setHasUsedApp(prev => {
@@ -253,104 +185,6 @@ export default function App() {
     }
   }
 
-  // ── Update / delete ───────────────────────────────────────────────────────
-  const handleUpdate = useCallback((id, patch) => {
-    setNodes(prev => prev.map(n => {
-      if (n.id !== id) return n
-      const updated = { ...n.data, ...patch }
-      if (patch.birthdate && patch.birthdate !== n.data.birthdate) {
-        const { sign, symbol }   = getSunSign(patch.birthdate)
-        const { element, color } = getElement(sign)
-        Object.assign(updated, { sign, symbol, element, elementColor: color })
-      }
-      return { ...n, data: updated }
-    }))
-    setEditingNodeId(null)
-  }, [setNodes])
-
-  const handleDelete = useCallback((id) => {
-    setNodes(prev => prev.filter(n => n.id !== id))
-    setEdges(prev => prev.filter(e => e.source !== id && e.target !== id))
-    setEditingNodeId(null)
-  }, [setNodes, setEdges])
-
-  // ── Edge management ───────────────────────────────────────────────────────
-  const handleAddEdge = useCallback((source, target, relationType = 'parent-child') => {
-    setEdges(prev => {
-      if (source === target) return prev
-      // Only one relationship per pair — reject if any edge already connects them
-      const alreadyConnected = prev.some(e =>
-        (e.source === source && e.target === target) ||
-        (e.source === target && e.target === source)
-      )
-      if (alreadyConnected) return prev
-      // Prevent parent-child cycles (A→B→…→A) — only applies to parent-child edges
-      if (relationType === 'parent-child') {
-        const children = new Set([target])
-        let changed = true
-        while (changed) {
-          changed = false
-          for (const e of prev) {
-            if (e.data?.relationType !== 'parent-child') continue
-            if (children.has(e.source) && !children.has(e.target)) {
-              children.add(e.target)
-              changed = true
-            }
-          }
-        }
-        if (children.has(source)) return prev // would create a cycle
-      }
-      return [...prev, makeEdge(source, target, relationType)]
-    })
-  }, [setEdges])
-
-  const handleRemoveEdge = useCallback((edgeId) => {
-    setEdges(prev => prev.filter(e => e.id !== edgeId))
-  }, [setEdges])
-
-  const onNodeClick = useCallback((_e, node) => {
-    setEditingNodeId(id => id === node.id ? null : node.id)
-  }, [])
-
-  const onConnect = useCallback(
-    (params) => setEdges(eds => addEdge({ ...params, animated: true, style: EDGE_STYLE, type: 'smoothstep' }, eds)),
-    [setEdges],
-  )
-
-  // ── Charts ────────────────────────────────────────────────────────────────
-  const handleLoadChart = useCallback((chart) => {
-    setNodes(applyDagreLayout(chart.nodes, chart.edges))
-    setEdges(chart.edges); setCounter(chart.counter)
-    setSavedChartId(chart.isSample ? null : chart.id)
-    setEditingNodeId(null); setActiveTab('tree'); setTreeView('tree')
-    setFitTick(t => t + 1)
-  }, [setNodes, setEdges])
-
-  const handleNewChart = useCallback(() => {
-    setNodes([]); setEdges([]); setCounter(1)
-    setSavedChartId(null)
-    setEditingNodeId(null); setActiveTab('add')
-  }, [setNodes, setEdges])
-
-  const handleRenameChart = useCallback((updatedChart) => {
-    // If the active chart was renamed, keep savedChartId pointing to same id (unchanged)
-    // Just sync the rename to cloud
-    syncChart(updatedChart)
-  }, [syncChart]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleDuplicateChart = useCallback((chart) => {
-    const newId    = Date.now().toString()
-    const newChart = {
-      ...chart,
-      id:      newId,
-      title:   `${chart.title} (copy)`,
-      savedAt: new Date().toISOString(),
-    }
-    saveChart(newChart)
-    syncChart(newChart)
-    handleLoadChart(newChart)
-  }, [handleLoadChart]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleRelayout = useCallback(() => {
     if (treeView === 'constellation') {
       setConstellationTick(t => t + 1)
@@ -359,39 +193,6 @@ export default function App() {
       setFitTick(t => t + 1)
     }
   }, [edges, setNodes, treeView])
-
-  // ── Save tree to named chart ──────────────────────────────────────────────
-  function handleSaveChart(e) {
-    e.preventDefault()
-    if (!saveTitle.trim() || nodes.length === 0) return
-    const id = Date.now().toString()
-    const chart = { id, title: saveTitle.trim(), nodes, edges, counter, savedAt: new Date().toISOString() }
-    saveChart(chart)
-    syncChart(chart)
-    setSavedChartId(id)
-    setLastSavedAt(new Date())
-    setViewOnly(false)
-    setShowSaveDialog(false)
-    setSaveTitle('')
-    // Show email capture once, only after their first ever named save
-    if (!hasBeenAsked() && isCloudEnabled()) setShowEmailCapture(true)
-    if (pendingNewTree) {
-      setPendingNewTree(false)
-      handleNewChart()
-    }
-  }
-
-  function handleNewTreeClick() {
-    if (nodes.length === 0) { handleNewChart(); return }
-    markUsed()
-    if (!savedChartId) {
-      setPendingNewTree(true)
-      setSaveTitle('')
-      setShowSaveDialog(true)
-    } else {
-      setShowNewTreeConfirm(true)
-    }
-  }
 
   // ── Navigation helpers ────────────────────────────────────────────────────
   function goTab(tab) {
@@ -414,337 +215,6 @@ export default function App() {
     markUsed()
   }
 
-  // ── Combine two PNG data-URLs vertically on a canvas ─────────────────────
-  function combineImagesVertically(url1, url2) {
-    return new Promise(resolve => {
-      const img1 = new Image(), img2 = new Image()
-      let loaded = 0
-      const onLoad = () => {
-        if (++loaded < 2) return
-        const canvas = document.createElement('canvas')
-        canvas.width  = Math.max(img1.width, img2.width)
-        canvas.height = img1.height + img2.height
-        const ctx = canvas.getContext('2d')
-        ctx.fillStyle = '#09071a'
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        ctx.drawImage(img1, Math.floor((canvas.width - img1.width) / 2), 0)
-        ctx.drawImage(img2, Math.floor((canvas.width - img2.width) / 2), img1.height)
-        resolve(canvas.toDataURL('image/png'))
-      }
-      img1.onload = img2.onload = onLoad
-      img1.src = url1; img2.src = url2
-    })
-  }
-
-  // ── Export: tree + insights image ────────────────────────────────────────
-  // ── Export tree image ─────────────────────────────────────────────────────
-  const handleExport = useCallback(async () => {
-    const el = document.querySelector('.react-flow')
-    if (!el || exporting) return
-    setExportError(null)
-    setExporting(true)
-
-    fitViewRef.current?.({ padding: 0.12, duration: 0 })
-    await new Promise(r => setTimeout(r, 120))
-
-    el.classList.add('exporting')
-
-    const chartTitle = loadCharts().find(c => c.id === savedChartId)?.title
-    const treeSlug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family-tree'
-    const treeFilename = `${treeSlug}-tree.png`
-
-    try {
-      const pr = 2
-      const url = await toPng(el, {
-        backgroundColor: '#09071a',
-        pixelRatio: pr,
-        filter: node => {
-          const c = node.classList
-          if (!c) return true
-          if (c.contains('react-flow__background')) return false
-          if (c.contains('react-flow__controls'))   return false
-          if (c.contains('canvas-panel-btns'))      return false
-          if (c.contains('connect-prompt'))         return false
-          if (c.contains('canvas-brand'))           return false
-          return true
-        },
-      })
-
-      // Composite brand bar below the tree image using canvas API
-      await document.fonts.ready
-      const img = new Image()
-      img.src = url
-      await new Promise(r => { img.onload = r })
-      const barH = 36 * pr
-      const cvs = document.createElement('canvas')
-      cvs.width  = img.width
-      cvs.height = img.height + barH
-      const ctx = cvs.getContext('2d')
-      ctx.drawImage(img, 0, 0)
-      ctx.fillStyle = '#09071a'
-      ctx.fillRect(0, img.height, cvs.width, barH)
-      ctx.strokeStyle = 'rgba(201,168,76,0.2)'
-      ctx.lineWidth = 1
-      ctx.beginPath(); ctx.moveTo(0, img.height); ctx.lineTo(cvs.width, img.height); ctx.stroke()
-      const pad = 16 * pr
-      const mid = img.height + barH / 2
-      ctx.textBaseline = 'middle'
-      ctx.fillStyle = '#c9a84c'
-      ctx.font = `600 ${13 * pr}px Cinzel, Georgia, serif`
-      ctx.textAlign = 'left'
-      ctx.fillText('✦ AstroDig · Jupiter Digital', pad, mid)
-      ctx.fillStyle = 'rgba(184,170,212,0.7)'
-      ctx.font = `${10 * pr}px Raleway, Helvetica, sans-serif`
-      ctx.textAlign = 'right'
-      ctx.fillText('jupreturns@gmail.com  ·  @jupreturn', cvs.width - pad, mid)
-      const finalUrl = cvs.toDataURL('image/png')
-
-      // On mobile, use native share sheet so user can save to camera roll
-      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
-      if (isMobile && navigator.share) {
-        const res = await fetch(finalUrl)
-        const blob = await res.blob()
-        const file = new File([blob], treeFilename, { type: 'image/png' })
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: chartTitle ? `${chartTitle} · AstroDig` : 'My Family Astrology Tree',
-            text: 'Check out my family astrology tree, made with AstroDig by Jupiter Digital ✦',
-          })
-          return
-        }
-      }
-      const link = document.createElement('a')
-      link.download = treeFilename
-      link.href = finalUrl
-      link.click()
-    } catch (err) {
-      if (err?.name === 'AbortError') return
-      setExportError('Export failed — please try again.')
-    } finally {
-      el.classList.remove('exporting')
-      setExporting(false)
-    }
-  }, [exporting, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Export zodiac wheel image ──────────────────────────────────────────────
-  const handleZodiacExport = useCallback(async () => {
-    const el = document.querySelector('.zodiac-wheel-wrap')
-    if (!el || exporting) return
-    setExportError(null)
-    setExporting(true)
-
-    const chartTitle = loadCharts().find(c => c.id === savedChartId)?.title
-    const slug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family'
-    const filename = `${slug}-zodiac.png`
-
-    try {
-      const url = await toPng(el, {
-        backgroundColor: '#09071a',
-        pixelRatio: 2,
-        filter: node => {
-          const c = node.classList
-          if (!c) return true
-          if (c.contains('zodiac-tooltip')) return false
-          return true
-        },
-      })
-
-      // Composite brand bar below
-      await document.fonts.ready
-      const img = new Image()
-      img.src = url
-      await new Promise(r => { img.onload = r })
-      const pr = 2
-      const barH = 36 * pr
-      const cvs = document.createElement('canvas')
-      cvs.width  = img.width
-      cvs.height = img.height + barH
-      const ctx = cvs.getContext('2d')
-      ctx.drawImage(img, 0, 0)
-      ctx.fillStyle = '#09071a'
-      ctx.fillRect(0, img.height, cvs.width, barH)
-      ctx.strokeStyle = 'rgba(201,168,76,0.2)'
-      ctx.lineWidth = 1
-      ctx.beginPath(); ctx.moveTo(0, img.height); ctx.lineTo(cvs.width, img.height); ctx.stroke()
-      const pad = 16 * pr
-      const mid = img.height + barH / 2
-      ctx.textBaseline = 'middle'
-      ctx.fillStyle = '#c9a84c'
-      ctx.font = `600 ${13 * pr}px Cinzel, Georgia, serif`
-      ctx.textAlign = 'left'
-      ctx.fillText('✦ AstroDig · Jupiter Digital', pad, mid)
-      ctx.fillStyle = 'rgba(184,170,212,0.7)'
-      ctx.font = `${10 * pr}px Raleway, Helvetica, sans-serif`
-      ctx.textAlign = 'right'
-      ctx.fillText('jupreturns@gmail.com  ·  @jupreturn', cvs.width - pad, mid)
-      const finalUrl = cvs.toDataURL('image/png')
-
-      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
-      if (isMobile && navigator.share) {
-        const res = await fetch(finalUrl)
-        const blob = await res.blob()
-        const file = new File([blob], filename, { type: 'image/png' })
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: chartTitle ? `${chartTitle} · Zodiac Wheel` : 'Family Zodiac Wheel',
-            text: 'Check out my family zodiac wheel from AstroDig by Jupiter Digital ✦',
-          })
-          return
-        }
-      }
-      const link = document.createElement('a')
-      link.download = filename
-      link.href = finalUrl
-      link.click()
-    } catch (err) {
-      if (err?.name === 'AbortError') return
-      setExportError('Export failed — please try again.')
-    } finally {
-      setExporting(false)
-    }
-  }, [exporting, savedChartId])
-
-  // ── Export constellation image ────────────────────────────────────────────
-  const handleConstellationExport = useCallback(async () => {
-    const el = document.querySelector('.constellation-wrap')
-    if (!el || exporting) return
-    setExportError(null)
-    setExporting(true)
-
-    const chartTitle = loadCharts().find(c => c.id === savedChartId)?.title
-    const slug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family'
-    const filename = `${slug}-constellation.png`
-
-    try {
-      const url = await toPng(el, {
-        backgroundColor: '#09071a',
-        pixelRatio: 2,
-        filter: node => {
-          const c = node.classList
-          if (!c) return true
-          if (c.contains('constellation-tooltip')) return false
-          if (c.contains('constellation-controls')) return false
-          return true
-        },
-      })
-
-      // Composite brand bar below
-      await document.fonts.ready
-      const img = new Image()
-      img.src = url
-      await new Promise(r => { img.onload = r })
-      const pr = 2
-      const barH = 36 * pr
-      const cvs = document.createElement('canvas')
-      cvs.width  = img.width
-      cvs.height = img.height + barH
-      const ctx = cvs.getContext('2d')
-      ctx.drawImage(img, 0, 0)
-      ctx.fillStyle = '#09071a'
-      ctx.fillRect(0, img.height, cvs.width, barH)
-      ctx.strokeStyle = 'rgba(201,168,76,0.2)'
-      ctx.lineWidth = 1
-      ctx.beginPath(); ctx.moveTo(0, img.height); ctx.lineTo(cvs.width, img.height); ctx.stroke()
-      const pad = 16 * pr
-      const mid = img.height + barH / 2
-      ctx.textBaseline = 'middle'
-      ctx.fillStyle = '#c9a84c'
-      ctx.font = `600 ${13 * pr}px Cinzel, Georgia, serif`
-      ctx.textAlign = 'left'
-      ctx.fillText('✦ AstroDig · Jupiter Digital', pad, mid)
-      ctx.fillStyle = 'rgba(184,170,212,0.7)'
-      ctx.font = `${10 * pr}px Raleway, Helvetica, sans-serif`
-      ctx.textAlign = 'right'
-      ctx.fillText('jupreturns@gmail.com  ·  @jupreturn', cvs.width - pad, mid)
-      const finalUrl = cvs.toDataURL('image/png')
-
-      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
-      if (isMobile && navigator.share) {
-        const res = await fetch(finalUrl)
-        const blob = await res.blob()
-        const file = new File([blob], filename, { type: 'image/png' })
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: chartTitle ? `${chartTitle} · Constellation` : 'Family Constellation',
-            text: 'Check out my constellation map from AstroDig by Jupiter Digital ✦',
-          })
-          return
-        }
-      }
-      const link = document.createElement('a')
-      link.download = filename
-      link.href = finalUrl
-      link.click()
-    } catch (err) {
-      if (err?.name === 'AbortError') return
-      setExportError('Export failed — please try again.')
-    } finally {
-      setExporting(false)
-    }
-  }, [exporting, savedChartId])
-
-  // ── Export insights image (captures live .insights-panel from the DOM) ────
-  const handleInsightsExport = useCallback(async () => {
-    const el = document.querySelector('.insights-panel')
-    if (!el || exporting) return
-    setExportError(null)
-    setExporting(true)
-
-    const brandEl = el.querySelector('.insights-brand-footer')
-    const prevPadding = el.style.padding
-    el.style.padding = '1.5rem'
-    if (brandEl) brandEl.style.display = 'flex'
-
-    const chartTitle = loadCharts().find(c => c.id === savedChartId)?.title
-    const slug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family'
-    const filename = `${slug}-insights.png`
-
-    try {
-      const url = await toPng(el, {
-        backgroundColor: '#09071a',
-        pixelRatio: 2,
-        filter: node => {
-          const c = node.classList
-          if (!c) return true
-          if (c.contains('insight-coming-soon'))    return false
-          if (c.contains('insights-export-btn'))    return false
-          if (c.contains('insight-add-more'))       return false
-          if (c.contains('insight-connect-prompt')) return false
-          return true
-        },
-      })
-      // On mobile, use native share sheet so user can save to camera roll
-      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
-      if (isMobile && navigator.share) {
-        const res = await fetch(url)
-        const blob = await res.blob()
-        const file = new File([blob], filename, { type: 'image/png' })
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: chartTitle ? `${chartTitle} · Astrology Insights` : 'Family Astrology Insights',
-            text: 'Here are my family astrology insights from AstroDig by Jupiter Digital ✦',
-          })
-          return
-        }
-      }
-      const link = document.createElement('a')
-      link.download = filename
-      link.href = url
-      link.click()
-    } catch (err) {
-      if (err?.name === 'AbortError') return
-      setExportError('Export failed — please try again.')
-    } finally {
-      el.style.padding = prevPadding
-      if (brandEl) brandEl.style.display = ''
-      setExporting(false)
-    }
-  }, [exporting, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const editingNode = editingNodeId ? nodes.find(n => n.id === editingNodeId) : null
 
   return (
@@ -756,63 +226,22 @@ export default function App() {
 
       {/* ── New Tree confirm (when tree is already saved) ────────────────── */}
       {showNewTreeConfirm && (
-        <div className="save-dialog-backdrop" onClick={() => setShowNewTreeConfirm(false)}>
-          <div className="save-dialog" onClick={e => e.stopPropagation()}>
-            <p className="save-dialog-title">Start a new chart?</p>
-            <p className="save-dialog-sub">Your current chart is saved and can be reloaded from Saved Charts.</p>
-            <div className="save-dialog-btns">
-              <button type="button" className="save-dialog-cancel" onClick={() => setShowNewTreeConfirm(false)}>Cancel</button>
-              <button type="button" className="save-dialog-save" onClick={() => { setShowNewTreeConfirm(false); handleNewChart() }}>Start New</button>
-            </div>
-          </div>
-        </div>
+        <NewTreeConfirm
+          onClose={() => setShowNewTreeConfirm(false)}
+          onConfirm={() => { setShowNewTreeConfirm(false); handleNewChart() }}
+        />
       )}
 
       {/* ── Save dialog — fixed overlay, above sidebar ───────────────────── */}
       {showSaveDialog && (
-        <div className="save-dialog-backdrop" onClick={() => { setShowSaveDialog(false); setPendingNewTree(false) }}>
-          <form
-            className={`save-dialog${pendingNewTree ? ' save-dialog--warning' : ''}`}
-            onSubmit={handleSaveChart}
-            onClick={e => e.stopPropagation()}
-          >
-            <p className="save-dialog-title">
-              {pendingNewTree ? '⚠ Save before starting a new chart?' : '💾 Name this chart'}
-            </p>
-            {!pendingNewTree && (
-              <p className="save-dialog-sub">Saved charts appear in the Saved tab and sync to your devices.</p>
-            )}
-            <input
-              type="text"
-              className="save-dialog-input"
-              placeholder="e.g. Mom's side, 2025…"
-              value={saveTitle}
-              onChange={e => setSaveTitle(e.target.value)}
-              autoFocus
-            />
-            <div className="save-dialog-btns">
-              <button
-                type="button"
-                className="save-dialog-cancel"
-                onClick={() => { setShowSaveDialog(false); setPendingNewTree(false) }}
-              >
-                Cancel
-              </button>
-              {pendingNewTree && (
-                <button
-                  type="button"
-                  className="save-dialog-discard save-dialog-discard--prominent"
-                  onClick={() => { setShowSaveDialog(false); setPendingNewTree(false); handleNewChart() }}
-                >
-                  Discard & Start New
-                </button>
-              )}
-              <button type="submit" className="save-dialog-save" disabled={!saveTitle.trim()}>
-                Save
-              </button>
-            </div>
-          </form>
-        </div>
+        <SaveDialog
+          saveTitle={saveTitle}
+          setSaveTitle={setSaveTitle}
+          pendingNewTree={pendingNewTree}
+          onClose={() => { setShowSaveDialog(false); setPendingNewTree(false) }}
+          onDiscard={() => { setShowSaveDialog(false); setPendingNewTree(false); handleNewChart() }}
+          onSubmit={handleSaveChart}
+        />
       )}
 
       {/* Starfield */}
@@ -1095,30 +524,13 @@ export default function App() {
       {/* ── Canvas ──────────────────────────────────────────────────────── */}
       <main className="canvas">
         {nodes.length === 0 && (
-          <div className="welcome-screen">
-            <div className="welcome-content">
-              <div className="welcome-jd-badge">Jupiter Digital</div>
-              <div className="welcome-logo"><JupiterIcon size={72} /></div>
-              <h2 className="welcome-title">AstroDig</h2>
-              <p className="welcome-tagline">
-                Discover the celestial patterns<br />woven through your family
-              </p>
-              <button type="button" className="welcome-cta"
-                onClick={() => {
-                  goTab('add')
-                  setTimeout(() => document.querySelector('.add-form input[type="text"]')?.focus(), 50)
-                }}>
-                Begin Your Tree →
-              </button>
-              <button type="button" className="welcome-cta-mobile"
-                onClick={() => goTab('add')}>
-                ★ Add Family Members
-              </button>
-              <button type="button" className="welcome-demo" onClick={handleLoadDemo}>
-                or try a demo family
-              </button>
-            </div>
-          </div>
+          <WelcomeScreen
+            onBegin={() => {
+              goTab('add')
+              setTimeout(() => document.querySelector('.add-form input[type="text"]')?.focus(), 50)
+            }}
+            onDemo={handleLoadDemo}
+          />
         )}
 
         {/* ── Connect prompt — shown after first add ───────────────────── */}

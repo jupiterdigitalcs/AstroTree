@@ -1,0 +1,27 @@
+/* ────────────────────────────── Layout ──────────────────────────────────── */
+.app {
+  display: flex;
+  height: 100dvh;
+  position: relative;
+}
+
+/* ────────────────────────────── Starfield ───────────────────────────────── */
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0;
+  animation: twinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0; }
+  50%       { opacity: 0.65; }
+}

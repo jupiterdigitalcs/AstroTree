@@ -18,7 +18,11 @@
       "Bash(pkill -f \"vite\")",
       "Bash(curl -s http://localhost:4173/)",
       "Read(//tmp/**)",
-      "Bash(grep -r \"node-\\\\|astro\\\\|symbol\\\\|element\" /Users/csoll/Projects/AstroTree/src/utils/*.js --include=\"*.js\")"
+      "Bash(grep -r \"node-\\\\|astro\\\\|symbol\\\\|element\" /Users/csoll/Projects/AstroTree/src/utils/*.js --include=\"*.js\")",
+      "Bash(npx vitest:*)",
+      "Bash(npm ls:*)",
+      "Bash(du:*)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

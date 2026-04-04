@@ -1,24 +1,4 @@
-import { getSunSign, getElement } from './astrology.js'
-
-function buildNodeData(member) {
-  const { sign, symbol }   = getSunSign(member.birthdate)
-  const { element, color } = getElement(sign)
-  return { name: member.name, birthdate: member.birthdate, sign, symbol, element, elementColor: color }
-}
-
-const EDGE_STYLE   = { stroke: '#c9a84c', strokeWidth: 1.5 }
-const SPOUSE_STYLE = { stroke: '#d4a0bc', strokeWidth: 1.5, strokeDasharray: '6,4' }
-
-function makeEdge(source, target, relationType = 'parent-child') {
-  const isSpouse = relationType === 'spouse'
-  return {
-    id: `e-${source}-${target}`, source, target,
-    data:     { relationType },
-    animated: !isSpouse,
-    style:    isSpouse ? SPOUSE_STYLE : EDGE_STYLE,
-    type:     'smoothstep',
-  }
-}
+import { buildNodeData, makeEdge } from './treeHelpers.js'
 
 const DEMO_MEMBERS = [
   { name: 'Margaret', birthdate: '1948-03-22' },  // Aries

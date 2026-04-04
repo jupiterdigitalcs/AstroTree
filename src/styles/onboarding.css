@@ -1,0 +1,221 @@
+
+/* ── Onboarding stepper ─────────────────────────────────────────────────── */
+.onboarding-stepper {
+  display: flex;
+  align-items: flex-start;
+  padding: 0.7rem 1.15rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.15rem;
+}
+
+.stepper-step-wrap {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: default;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  flex: 1;
+  min-width: 0;
+}
+
+.stepper-step--active {
+  color: var(--gold-light);
+  cursor: pointer;
+}
+.stepper-step--active:hover { color: var(--gold); }
+
+.stepper-step--done { opacity: 0.5; }
+
+.stepper-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.stepper-step--active .stepper-num {
+  background: rgba(201,168,76,0.15);
+  border-color: var(--gold);
+  animation: stepper-pulse 2s ease-in-out infinite;
+}
+
+.stepper-step--done .stepper-num {
+  background: rgba(201,168,76,0.12);
+  border-color: rgba(201,168,76,0.4);
+}
+
+@keyframes stepper-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0); }
+  50%       { box-shadow: 0 0 0 3px rgba(201,168,76,0.2); }
+}
+
+.stepper-label {
+  font-size: 0.67rem;
+  text-align: center;
+  line-height: 1.25;
+  letter-spacing: 0.03em;
+}
+
+.stepper-connector {
+  width: 1.2rem;
+  height: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+  margin: 0.67rem 0.1rem 0; /* offset to align with center of number circle */
+  transition: background 0.3s;
+}
+.stepper-connector--done { background: rgba(201,168,76,0.4); }
+
+/* ── Connect hint banner ────────────────────────────────────────────────── */
+.connect-hint-banner {
+  font-size: 0.75rem;
+  color: var(--gold-light);
+  opacity: 0.8;
+  margin: 0.4rem 0 0.5rem;
+  letter-spacing: 0.03em;
+}
+
+/* ── Tree tab count badge ───────────────────────────────────────────────── */
+.bottom-tab-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 0.2rem;
+  border-radius: 0.5rem;
+  background: var(--gold);
+  color: var(--bg);
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ── Insight connect prompt card ────────────────────────────────────────── */
+.insight-connect-prompt {
+  border-color: rgba(201,168,76,0.3);
+}
+
+/* ── ChartsPanel header (was footer) ────────────────────────────────────── */
+.charts-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0 0.75rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.5rem;
+}
+
+/* ── Save dialog warning variant ────────────────────────────────────────── */
+.save-dialog--warning {
+  border-color: rgba(220,60,60,0.45) !important;
+}
+
+.save-dialog-discard--prominent {
+  font-size: 0.8rem;
+  padding: 0.45rem 0.85rem;
+}
+
+/* ── Welcome screen mobile CTA ──────────────────────────────────────────── */
+.welcome-cta-mobile {
+  display: none; /* shown only on mobile via media query */
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: linear-gradient(135deg, #7a5018 0%, #c9a84c 55%, #d4b460 100%);
+  border: none;
+  border-radius: 10px;
+  color: #1a0f02;
+  font-family: 'Cinzel', serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 0.75rem 1.6rem;
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(201,168,76,0.3);
+  margin-top: 0.25rem;
+}
+.welcome-cta-mobile:active { opacity: 0.88; transform: scale(0.98); }
+
+.welcome-demo {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0.3rem 0.6rem;
+  letter-spacing: 0.03em;
+  transition: color 0.15s;
+}
+.welcome-demo:hover { color: var(--gold-light); text-decoration: underline; }
+
+.footer-brand-left {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.footer-saved-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.footer-saved-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+  padding-top: 0.15rem;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN PORTAL
+   ═══════════════════════════════════════════════════════════════ */
+
+.admin-app {
+  min-height: 100vh;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: 'Raleway', sans-serif;
+  overflow-y: auto;
+}
+
+/* Allow body to scroll for admin */
+body:has(.admin-app) {
+  overflow: auto;
+}

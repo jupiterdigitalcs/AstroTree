@@ -1,0 +1,39 @@
+/* ───────────────────────────── Reset & base ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* ── Palette ── */
+  --bg:          #09071a;
+  --surface:     #110d28;
+  --surface-2:   #1a1238;
+  --surface-3:   #231848;
+
+  --gold:        #c9a84c;
+  --gold-light:  #e6c76e;
+  --gold-warm:   #d4b057;
+  --gold-dim:    rgba(201,168,76,0.22);
+
+  --rose:        #d4a0bc;
+  --rose-dim:    rgba(212,160,188,0.18);
+
+  --purple:      rgba(160,130,220,0.15);
+  --border:      rgba(160,130,220,0.18);
+  --border-gold: rgba(201,168,76,0.28);
+
+  --text:        #ede6ff;
+  --text-muted:  #8878aa;
+  --text-soft:   #b8aad4;
+
+  --red:         #ff6b7a;
+  --radius:      14px;
+  --sidebar-w:   345px;
+}
+
+html, body, #root { height: 100%; }
+
+body {
+  font-family: 'Raleway', 'Georgia', serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}

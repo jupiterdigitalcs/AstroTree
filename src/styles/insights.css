@@ -1,0 +1,109 @@
+/* ────────────────────────── Insights panel ─────────────────────────────── */
+.insights-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.insights-brand-footer {
+  display: none; /* shown only during export via JS */
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.5rem 0.25rem;
+  border-top: 1px solid rgba(201,168,76,0.2);
+  margin-top: 0.25rem;
+}
+
+.insights-brand-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  color: var(--gold-light);
+  letter-spacing: 0.06em;
+}
+
+.insights-brand-contact {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.insight-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.insight-heading {
+  font-family: 'Cinzel', serif;
+  font-size: 0.68rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+  margin-bottom: 0.05rem;
+}
+
+.insight-note {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+
+.insight-note strong { color: var(--text); font-weight: 500; }
+
+.insight-couple { border-top: 1px solid var(--border); padding-top: 0.35rem; display: flex; flex-direction: column; gap: 0.1rem; }
+.insight-couple:first-of-type { border-top: none; padding-top: 0; }
+.insight-compat { font-size: 0.7rem; letter-spacing: 0.04em; font-weight: 500; }
+
+.element-bar-row { display: grid; grid-template-columns: 3.5rem 1fr 1.2rem; align-items: center; gap: 0.5rem; }
+.element-bar-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500; }
+.element-bar-track { height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
+.element-bar-fill { height: 100%; border-radius: 3px; transition: width 0.45s ease; min-width: 2px; }
+.element-bar-count { font-size: 0.7rem; text-align: right; }
+.insight-coming-soon { border-color: rgba(201,168,76,0.15); background: rgba(201,168,76,0.025); }
+
+.insight-add-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 1rem;
+  border: 1px dashed rgba(201,168,76,0.3);
+  border-radius: 10px;
+  text-align: center;
+}
+.insight-add-more-text { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
+.insight-add-more-btn {
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.4);
+  color: var(--gold);
+  border-radius: 7px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+.insight-add-more-btn:hover { background: rgba(201,168,76,0.22); }
+
+.insights-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.insights-header .form-title { margin: 0; }
+/* Keeps the button pinned right in the header row; visual style comes from relayout-btn--share */
+.insights-export-btn { flex-shrink: 0; }
+
+/* Export button label switching — desktop shows download, mobile shows share */
+.export-label-mobile { display: none; }
+@media (max-width: 768px) {
+  .export-label-desktop { display: none; }
+  .export-label-mobile  { display: inline; }
+}

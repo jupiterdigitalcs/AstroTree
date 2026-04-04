@@ -1,0 +1,143 @@
+/* ─────────────────────── Constellation View ───────────────────────── */
+.constellation-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: var(--bg-deep);
+  overflow: hidden;
+  padding: 0;
+}
+
+.constellation-svg {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  touch-action: none;
+}
+
+.constellation-node-symbol {
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.constellation-node-name {
+  pointer-events: none;
+}
+
+.constellation-tooltip {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+}
+
+.constellation-tooltip-connections {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+  line-height: 1.4;
+}
+
+/* Controls — zoom, reset, lock */
+.constellation-controls {
+  position: absolute;
+  bottom: 5.5rem;
+  left: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 5;
+}
+
+.constellation-controls button {
+  width: 28px;
+  height: 28px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--gold);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.constellation-controls button:first-child { border-radius: 6px 6px 0 0; }
+.constellation-controls button:last-child { border-radius: 0 0 6px 6px; }
+.constellation-controls button:hover { background: var(--surface-3); }
+.constellation-ctrl--active { background: rgba(201,168,76,0.15) !important; }
+
+/* Compact legend — fixed at bottom */
+.constellation-legend {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(9,7,26,0.88);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.4rem 0.7rem;
+  backdrop-filter: blur(8px);
+  max-width: calc(100% - 5rem);
+  z-index: 5;
+}
+
+.constellation-legend-edges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.constellation-legend-edge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  font-family: 'Raleway', sans-serif;
+  letter-spacing: 0.03em;
+}
+
+.constellation-legend-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: center;
+}
+
+.constellation-legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid;
+  border-radius: 12px;
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.constellation-legend-chip:hover,
+.constellation-legend-chip--active {
+  background: rgba(201,168,76,0.1);
+}
+
+@media (max-width: 768px) {
+  .constellation-legend {
+    bottom: calc(0.6rem + 60px + env(safe-area-inset-bottom));
+    max-width: calc(100% - 2rem);
+  }
+  .constellation-controls {
+    bottom: calc(5.5rem + 60px + env(safe-area-inset-bottom));
+  }
+}
