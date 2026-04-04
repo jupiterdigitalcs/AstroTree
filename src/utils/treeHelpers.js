@@ -1,4 +1,4 @@
-import { getSunSign, getElement } from './astrology.js'
+import { getSunSign, getElement, getMoonSign } from './astrology.js'
 
 // ── Edge style constants ─────────────────────────────────────────────────────
 export const EDGE_STYLE      = { stroke: '#c9a84c', strokeWidth: 1.5 }
@@ -39,7 +39,17 @@ export const EDGE_DASH = {
 export function buildNodeData(member) {
   const { sign, symbol }   = getSunSign(member.birthdate)
   const { element, color } = getElement(sign)
-  return { name: member.name, birthdate: member.birthdate, sign, symbol, element, elementColor: color }
+  const { moonSign, moonSymbol } = getMoonSign(member.birthdate)
+  return { name: member.name, birthdate: member.birthdate, sign, symbol, element, elementColor: color, moonSign, moonSymbol }
+}
+
+// Enrich existing saved nodes with any missing computed fields (e.g. moonSign)
+export function hydrateNodes(nodes) {
+  return nodes.map(n => {
+    if (n.data?.moonSign || !n.data?.birthdate) return n
+    const { moonSign, moonSymbol } = getMoonSign(n.data.birthdate)
+    return { ...n, data: { ...n.data, moonSign, moonSymbol } }
+  })
 }
 
 export function makeEdge(source, target, relationType = 'parent-child') {

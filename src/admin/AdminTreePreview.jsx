@@ -46,7 +46,7 @@ export default function AdminTreePreview({ tree, onClose }) {
 
           <div className="admin-preview-members">
             <h3 className="admin-section-title">Members</h3>
-            <AdminMemberList nodes={tree.nodes} />
+            <AdminMemberList nodes={tree.nodes} expanded />
           </div>
         </div>
       </div>

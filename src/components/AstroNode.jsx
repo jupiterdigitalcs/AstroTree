@@ -1,7 +1,7 @@
 import { Handle, Position } from '@xyflow/react'
 
 export default function AstroNode({ data, selected }) {
-  const { name, sign, symbol, element, elementColor } = data
+  const { name, sign, symbol, element, elementColor, moonSign, moonSymbol } = data
 
   const glow   = elementColor ?? '#c9a84c'
   const border = selected
@@ -35,6 +35,11 @@ export default function AstroNode({ data, selected }) {
       </div>
       <div className="node-name">{name}</div>
       <div className="node-sign" style={{ color: glow }}>{sign}</div>
+      {moonSign && moonSign !== 'Unknown' && (
+        <div className="node-moon" style={{ color: `${glow}99` }}>
+          ☽ {moonSymbol} {moonSign}
+        </div>
+      )}
       {element && (
         <div className="node-element" style={{ color: `${glow}99` }}>{element}</div>
       )}

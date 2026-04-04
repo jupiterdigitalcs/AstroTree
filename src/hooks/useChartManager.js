@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { saveDraft, loadDraft, saveChart, loadCharts } from '../utils/storage.js'
 import { applyDagreLayout } from '../utils/layout.js'
+import { hydrateNodes } from '../utils/treeHelpers.js'
 import { hasBeenAsked } from '../components/EmailCapture.jsx'
 import { isCloudEnabled } from '../utils/cloudStorage.js'
 
@@ -25,7 +26,7 @@ export function useChartManager({
     if (new URLSearchParams(window.location.search).get('view')) return
     const draft = loadDraft()
     if (draft?.nodes?.length > 0) {
-      setNodes(draft.nodes)
+      setNodes(hydrateNodes(draft.nodes))
       setEdges(draft.edges)
       setCounter(draft.counter ?? 1)
       if (draft.savedChartId) setSavedChartId(draft.savedChartId)
@@ -55,7 +56,7 @@ export function useChartManager({
   }, [nodes, edges, counter, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLoadChart = useCallback((chart) => {
-    setNodes(applyDagreLayout(chart.nodes, chart.edges))
+    setNodes(applyDagreLayout(hydrateNodes(chart.nodes), chart.edges))
     setEdges(chart.edges); setCounter(chart.counter)
     setSavedChartId(chart.isSample ? null : chart.id)
     setEditingNodeId(null); setActiveTab('tree'); setTreeView('tree')

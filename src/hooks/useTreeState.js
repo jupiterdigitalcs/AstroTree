@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { addEdge } from '@xyflow/react'
-import { getSunSign, getElement } from '../utils/astrology.js'
+import { getSunSign, getElement, getMoonSign } from '../utils/astrology.js'
 import { applyDagreLayout } from '../utils/layout.js'
 import { EDGE_STYLE, makeEdge } from '../utils/treeHelpers.js'
 
@@ -41,7 +41,8 @@ export function useTreeState({
       if (patch.birthdate && patch.birthdate !== n.data.birthdate) {
         const { sign, symbol }   = getSunSign(patch.birthdate)
         const { element, color } = getElement(sign)
-        Object.assign(updated, { sign, symbol, element, elementColor: color })
+        const { moonSign, moonSymbol } = getMoonSign(patch.birthdate)
+        Object.assign(updated, { sign, symbol, element, elementColor: color, moonSign, moonSymbol })
       }
       return { ...n, data: updated }
     }))

@@ -1,6 +1,7 @@
 // Re-export from organized modules — keeps all existing imports working
 export {
   getSunSign,
+  getMoonSign,
   getElement,
   ELEMENT_COLORS,
   SIGN_MODALITY,

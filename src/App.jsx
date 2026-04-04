@@ -21,6 +21,7 @@ import { SaveDialog }    from './components/SaveDialog.jsx'
 import { NewTreeConfirm } from './components/NewTreeConfirm.jsx'
 import { WelcomeScreen }  from './components/WelcomeScreen.jsx'
 import { JupiterIcon }            from './components/JupiterIcon.jsx'
+import { TablesPanel }           from './components/TablesPanel.jsx'
 import { applyDagreLayout }      from './utils/layout.js'
 import { loadDraft, saveChart }  from './utils/storage.js'
 import { useCloudSync } from './hooks/useCloudSync.js'
@@ -30,7 +31,7 @@ import { fetchChartByToken, isCloudEnabled } from './utils/cloudStorage.js'
 import { EmailCapture, hasBeenAsked, clearEmailAsked } from './components/EmailCapture.jsx'
 import { OnboardingProgress, markInsightsSeen } from './components/OnboardingProgress.jsx'
 import { buildDemoChart } from './utils/demoData.js'
-import { buildNodeData, makeEdge } from './utils/treeHelpers.js'
+import { buildNodeData, makeEdge, hydrateNodes } from './utils/treeHelpers.js'
 import { formatRelativeTime } from './utils/format.js'
 import { useExport } from './hooks/useExport.js'
 import { useChartManager } from './hooks/useChartManager.js'
@@ -70,7 +71,7 @@ export default function App() {
   })
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
-  const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation'
+  const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
   const [constellationTick, setConstellationTick] = useState(0)
   const [treeViewedCount,   setTreeViewedCount]   = useState(0)
 
@@ -128,7 +129,7 @@ export default function App() {
     if (!token || !isCloudEnabled()) return
     fetchChartByToken(token).then(chart => {
       if (!chart) return
-      setNodes(chart.nodes)
+      setNodes(hydrateNodes(chart.nodes))
       setEdges(chart.edges)
       setCounter(chart.counter)
       // Do NOT set savedChartId — viewer doesn't own this chart
@@ -578,6 +579,13 @@ export default function App() {
             >
               ✦ Constellation
             </button>
+            <button
+              type="button"
+              className={`tree-view-btn${treeView === 'tables' ? ' tree-view-btn--active' : ''}`}
+              onClick={() => setTreeView('tables')}
+            >
+              ☽ Tables
+            </button>
           </div>
         )}
 
@@ -652,7 +660,11 @@ export default function App() {
           </div>
         )}
 
-        {treeView === 'zodiac' && nodes.length > 0 ? (
+        {treeView === 'tables' && nodes.length > 0 ? (
+          <div className="tables-canvas-wrap">
+            <TablesPanel nodes={nodes} />
+          </div>
+        ) : treeView === 'zodiac' && nodes.length > 0 ? (
           <Suspense fallback={null}>
             <ZodiacWheel
               nodes={nodes}

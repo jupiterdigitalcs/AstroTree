@@ -50,6 +50,14 @@
   margin-top: 0.15rem;
 }
 
+.node-moon {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  margin-top: 0.15rem;
+  opacity: 0.8;
+}
+
 .node-element {
   font-family: 'Raleway', sans-serif;
   font-size: 0.58rem;

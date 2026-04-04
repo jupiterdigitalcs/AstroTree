@@ -1,8 +1,9 @@
 import { getDeviceId } from './identity.js'
 
-// Cloud is enabled when API endpoints are available (always true in production)
+// Cloud is enabled when running on the deployed site (API routes exist)
 export function isCloudEnabled() {
-  return true
+  // Vercel serverless functions aren't available in local vite dev
+  return window.location.hostname !== 'localhost'
 }
 
 export function getReferrer() {
@@ -44,9 +45,14 @@ export async function uploadChart(chart) {
         referrer: getReferrer(),
       }),
     })
-    const data = await res.json()
-    return data
+    if (!res.ok) {
+      const text = await res.text()
+      console.error('[cloud] save failed:', res.status, text)
+      return { ok: false, error: `HTTP ${res.status}` }
+    }
+    return await res.json()
   } catch (e) {
+    console.error('[cloud] save error:', e)
     return { ok: false, error: e.message }
   }
 }
