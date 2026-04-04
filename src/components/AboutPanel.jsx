@@ -39,10 +39,7 @@ export default function AboutPanel() {
         <p className="about-bio">
           Like an archaeologist uncovers hidden layers beneath the surface,
           AstroDig lets you dig into the astrological patterns woven through
-          your relationships — all in digital form. Add family, friends, or
-          coworkers and unearth everyone's sun signs, elements, and cosmic
-          connections at a glance. View your people as a family tree, zodiac
-          wheel, or constellation map.
+          your relationships — all in digital form. 
         </p>
       </div>
 
@@ -51,14 +48,13 @@ export default function AboutPanel() {
         <h3 className="about-heading">Meet the Astrologer</h3>
         <p className="about-bio">
           Hi, I'm Christina — astrologer and creator behind Jupiter Digital.
-          I believe the stars hold a mirror to the patterns passed down through
-          our relationships. AstroDig is my way of making that visible.
+          I believe mirror the patterns of our lives, allowing for special insights and a form of connection to the universe. AstroDig is my way of making that visible.
         </p>
       </div>
 
       {/* ── Social links ──────────────────────────────────────────────── */}
       <div className="about-card">
-        <h3 className="about-heading">Find me online</h3>
+        <h3 className="about-heading">Connect with me</h3>
         <div className="about-links">
           <a href="https://instagram.com/jupreturn" className="about-link" target="_blank" rel="noopener noreferrer">
             <span className="about-link-icon"><IgIcon /></span>
@@ -106,7 +102,7 @@ export default function AboutPanel() {
         <span className="about-shop-icon">✦</span>
         <span className="about-shop-text">
           <span className="about-shop-name">Jupiter Digital Events</span>
-          <span className="about-shop-sub">Astrology parties, pop-up booths &amp; celestial events</span>
+          <span className="about-shop-sub">Astrology parties, booths &amp; celestial events</span>
         </span>
         <span className="about-shop-arrow">→</span>
       </a>
@@ -124,10 +120,10 @@ export default function AboutPanel() {
           <li>Each browser gets a random anonymous ID — not tied to you personally.</li>
           <li>You can delete your charts at any time from Saved Charts.</li>
           <li>Charts shared via link are visible to anyone with that link.</li>
-          <li>Synced charts are visible to the app creator (Jupiter Digital) via an admin panel for support and moderation purposes.</li>
+          <li>Synced charts are visible to the app creator (Jupiter Digital) via an admin panel.</li>
         </ul>
         <p className="about-bio" style={{ marginTop: '0.5rem' }}>
-          This is a small independent app. Your data is not sold or used for advertising.
+          This is a small independent app. Your chart data is not sold or used for advertising.
         </p>
 
         {savedEmail && !showRemoveConfirm && (
@@ -142,7 +138,7 @@ export default function AboutPanel() {
         {showRemoveConfirm && (
           <div className="about-remove-confirm">
             <p className="about-remove-warning">
-              ⚠ This removes your email from this device. Your charts stay saved locally, but <strong>cloud sync and backup will stop</strong> until you re-enter an email. This doesn't delete your charts from the server.
+              ⚠ This removes your email from this device. Your charts stay saved locally, but <strong>sync and backup will stop</strong> until you re-enter an email. This doesn't delete your charts from the server.
             </p>
             <div className="about-remove-actions">
               <button type="button" className="about-remove-cancel" onClick={() => setShowRemoveConfirm(false)}>Cancel</button>
@@ -155,7 +151,7 @@ export default function AboutPanel() {
       {/* ── App note ──────────────────────────────────────────────────── */}
       <p className="about-app-note">
         AstroDig is a free tool — if it brings you joy,
-        a shop visit means the world. ✨
+        a site, social or shop visit means the world. ✨
       </p>
 
     </div>

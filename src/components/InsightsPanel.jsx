@@ -177,7 +177,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           <p className="insight-note">🌙 <strong>Moon Sign</strong> — add birth time for emotional depth</p>
           <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>
           <p className="insight-note">🔮 <strong>Full Chart Overlays</strong> — planetary alignments across generations</p>
-          <p className="insight-note">📅 <strong>Birthday Reminders</strong> — connect to your Jupiter Digital calendar</p>
         </div>
       </div>
     )
@@ -188,7 +187,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       <div className="insights-panel">
         <h2 className="form-title">✦ Family Insights</h2>
         <div className="insight-card insight-connect-prompt">
-          <h3 className="insight-heading">Connect your family members</h3>
+          <h3 className="insight-heading">Connect your group members</h3>
           <p className="insight-note">Your members are added — now connect them on the tree to unlock relationship insights.</p>
           <p className="insight-note" style={{ marginTop: '0.5rem' }}>
             Tap any member card in the <strong>Family</strong> tab, or click a node on the tree, to add connections.
@@ -210,7 +209,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           <p className="insight-note">🌙 <strong>Moon Sign</strong> — add birth time for emotional depth</p>
           <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>
           <p className="insight-note">🔮 <strong>Full Chart Overlays</strong> — planetary alignments across generations</p>
-          <p className="insight-note">📅 <strong>Birthday Reminders</strong> — connect to your Jupiter Digital calendar</p>
         </div>
       </div>
     )
@@ -552,7 +550,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
        Object.keys(signThreads).length === 0 && Object.keys(elementThreads).length === 0 &&
        topBonds.length === 0 && onAddMore && (
         <div className="insight-add-more">
-          <p className="insight-add-more-text">Add more family members &amp; connect them to unlock shared signs, compatibility, and generational patterns.</p>
+          <p className="insight-add-more-text">Add more group members &amp; connect them to unlock shared signs, compatibility, and generational patterns.</p>
           <button type="button" className="insight-add-more-btn" onClick={onAddMore}>
             ＋ Add Family Members
           </button>
@@ -563,7 +561,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       <div className="insight-card insight-coming-soon">
         <h3 className="insight-heading">Coming in future updates ✨</h3>
         <p className="insight-note">🌙 <strong>Moon Sign</strong> — add birth time for emotional depth</p>
-        <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>
+        <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth time for the full picture</p>
         <p className="insight-note">🔮 <strong>Deeper Insights</strong> — themes across generations</p>
       </div>
 

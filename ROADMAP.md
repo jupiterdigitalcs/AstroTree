@@ -50,38 +50,52 @@ Make the app stable and shareable beyond beta testers.
 - Security: SECURITY DEFINER RPCs, removed service role key from browser
 - Mobile polish: nav fixes, canvas height, social icons, export cleanup
 
+
+---
+
+## MVP 4 — Beyond Tree ✅ COMPLETE
+- Rebrand to Astro Dig and more generic for non family groups 
+- Allow adding friends/ coworker relationships 
+- Constellation view for when Tree isn't applicable
 - Shareable read-only link with "Save a copy" option for viewers
 - Sample/demo tree on the welcome screen so new visitors understand what they're building
 - Zodiac Wheel export (download/share as branded PNG)
 - Unified canvas action bar — Download, Share Link, and Insights work on both Tree and Zodiac views
 
----
 
-## MVP 4 — Moon Sign & Birth Time
-Add depth for users who know more than just birthdate.
+## MVP 5 — Moon Sign & Social Planets 
+Add depth for users without extra effort on their end
+Bring in astrological data 
 
 **Features:**
-- Optional birth time field on add/edit form
+- Integrate a chart calculation package (opensource or build own)
+- Assumes location or prefills to make it easy for users
 - Calculate Moon sign from birthdate + approximate time (falls back gracefully if time unknown)
-- Nodes optionally show Sun + Moon (e.g. "☉ Scorpio · ☽ Pisces")
+- Nodes show Sun + Moon (e.g. "☉ Scorpio · ☽ Pisces")
 - Moon-sign layer in Family Insights — elemental breakdown for Moon signs
-- Flag nodes where Moon sign is uncertain due to missing birth time
+- Insights for other social planet patterns - Venus, Mars, Mercury 
+- Flag nodes where Sun or Moon sign is uncertain due to sign change during that day. 
+- Zodiac wheel include all social planets 
+- Constellation enhancements 
+- Insights enhancements 
 
-**Goal:** Meaningful upgrade for astrology-literate users without breaking the simple flow for casual ones.
+**Goal:** Meaningful upgrade for insights without making it more effort for casual ones.
 
 ---
 
-## MVP 5 — Full Chart Profiles
-Collect birth time and place, show the full Big Three.
+## MVP 5 — Advanced Chart Profiles
+Require birth time and place, show the Rising and add Aspect patterns  
 
 **Features:**
+- Optional birth time field on add/edit form- 
 - Birth time + place inputs (city autocomplete)
-- Integrate a chart calculation API (Swiss Ephemeris or AstrologyAPI.com)
-- Each node shows Sun / Moon / Rising
+- Each Tree node shows Sun / Moon / Rising
 - Expanded profile card on node click
 - Cross-family Rising sign analysis in Insights
+- Show major aspects for each person 
+- Advanced insights for aspects 
 
-**Goal:** Becomes a real astrology product, not just a sun sign tool.
+**Goal:** Becomes a real astrology product with advanced insights and research data for group dynamics. 
 
 ---
 
@@ -105,4 +119,3 @@ First paywalled feature. Bridges to the existing JupiterDigital Etsy customer ba
 - AI-written narrative report: "Your family's cosmic story" (Claude API)
 - Etsy integration — import customer birth data for a family chart
 - Recurring patterns across generations (e.g. Saturn placements, Venus signs)
-- Notifications / birthday reminders for family members

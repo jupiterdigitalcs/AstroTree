@@ -62,7 +62,7 @@ export function EmailCapture({ onDismiss }) {
           </>
         ) : (
           <>
-            <p className="email-capture-title">Want to know when new features ship?</p>
+            <p className="email-capture-title">Want to know when new features or sevices ship?</p>
             <p className="email-capture-sub">
               Drop your email — no spam, just occasional updates from Jupiter Digital.
             </p>
