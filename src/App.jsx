@@ -582,7 +582,7 @@ export default function App() {
                   <div className="member-list">
                     <div className="member-list-header">
                       <h3>Your Family · {nodes.length}</h3>
-                      <span className="member-list-hint">tap a name to connect</span>
+                      <span className="member-list-hint">oldest first · tap to connect</span>
                     </div>
 
                     {/* Collapsible add more — placed above member pills for easy access */}
