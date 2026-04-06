@@ -51,6 +51,15 @@ const ELEMENT_THREAD_BLURB = {
   Water: 'Deep emotional intelligence and intuition flowing through the generations',
 }
 
+const SIBLING_ADAPTABILITY = {
+  'Cardinal-Cardinal': 'both initiators — may compete for direction, but together spark real momentum',
+  'Cardinal-Fixed':    'initiation meets endurance — one starts it, one sees it through',
+  'Cardinal-Mutable':  'spark meets flow — one launches, one shapes the path',
+  'Fixed-Fixed':       'immovable force — deep loyalty, shared stubbornness, and lasting bonds',
+  'Fixed-Mutable':     'anchor meets adapter — one holds steady while the other evolves',
+  'Mutable-Mutable':   'highly adaptable together — fluid, curious, and ever-shifting',
+}
+
 const PLUTO_GENS = {
   Cancer:      { years: '~1914–1939', flavor: 'shaped by home, survival, and deep loyalty to family' },
   Leo:         { years: '~1939–1957', flavor: 'driven by identity, pride, and a need to leave their mark' },
@@ -220,12 +229,23 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel }) {
             <div className="family-role-header">
               <span className="family-role-symbol" style={{ color: role.node.data.elementColor }}>{role.node.data.symbol}</span>
               <span className="family-role-name"><strong>{role.node.data.name}</strong></span>
-              <span className="family-role-sign">{role.node.data.sign}</span>
+              <span className="family-role-sign">☀ {role.node.data.sign}{role.node.data.moonSign && role.node.data.moonSign !== 'Unknown' ? ` · ☽ ${role.node.data.moonSign}` : ''}</span>
               <span className="family-role-chevron">{isOpen ? '▲' : '▼'}</span>
             </div>
             {isOpen && (
               <div className="family-role-body">
                 <p className="insight-note">{buildRoleBlurb(role)}</p>
+                {role.node.data.moonSign && role.node.data.moonSign !== 'Unknown' && (() => {
+                  const moonEl = getElement(role.node.data.moonSign).element
+                  const moonMod = SIGN_MODALITY[role.node.data.moonSign]
+                  const moonElBlurb = ELEMENT_ROLE_BLURB[moonEl]
+                  const moonModBlurb = MODALITY_MODIFIER[moonMod]
+                  return (
+                    <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>
+                      ☽ {role.node.data.moonSign} — emotionally {moonModBlurb} {moonElBlurb}.
+                    </p>
+                  )
+                })()}
                 {role.isOnlyElement && (
                   <p className="insight-note family-role-special">✦ Sole {role.node.data.element} energy in the family</p>
                 )}
@@ -346,6 +366,17 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     if (inner?.venus?.sign)   { const el = getElement(inner.venus.sign).element;   if (el) elements.add(el) }
     if (inner?.mars?.sign)    { const el = getElement(inner.mars.sign).element;    if (el) elements.add(el) }
     return elements
+  }
+
+  function getNodePlanetsForElement(node, element) {
+    const glyphs = []
+    if (node.data.element === element) glyphs.push('☀')
+    if (node.data.moonSign && node.data.moonSign !== 'Unknown' && getElement(node.data.moonSign).element === element) glyphs.push('☽')
+    const inner = innerPlanetMap.get(node.id)
+    if (inner?.mercury?.sign && getElement(inner.mercury.sign).element === element) glyphs.push('☿')
+    if (inner?.venus?.sign   && getElement(inner.venus.sign).element   === element) glyphs.push('♀')
+    if (inner?.mars?.sign    && getElement(inner.mars.sign).element    === element) glyphs.push('♂')
+    return glyphs.join(' ')
   }
 
   // ── Per-node warned planets — a planet is excluded if ingress + no birth time ─
@@ -1026,19 +1057,44 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {Object.keys(elementThreads).length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">Elemental Family Threads</h3>
-          {Object.entries(elementThreads).map(([el, chain]) => (
-            <p key={el} className="insight-note">
-              <span style={{ color: ELEMENT_COLORS[el] }}>
-                {el === 'Fire' ? '🔥' : el === 'Earth' ? '🌿' : el === 'Air' ? '💨' : '💧'}{' '}
-                <strong>{el}</strong>
-              </span>
-              {' '}flows through {chain.length} generations:{' '}
-              <strong>{chain.map(n => n.data.name).join(' → ')}</strong>
-              <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '0.15rem' }}>
-                {ELEMENT_THREAD_BLURB[el]}
-              </span>
-            </p>
-          ))}
+          {Object.entries(elementThreads).map(([el, chain]) => {
+            const elSiblingPairs = []
+            ;[...siblingKeys].forEach(key => {
+              const [idA, idB] = key.split('|')
+              const nA = nodes.find(n => n.id === idA)
+              const nB = nodes.find(n => n.id === idB)
+              if (nA && nB && getNodeElements(nA).has(el) && getNodeElements(nB).has(el)) {
+                elSiblingPairs.push([nA, nB])
+              }
+            })
+            return (
+              <p key={el} className="insight-note">
+                <span style={{ color: ELEMENT_COLORS[el] }}>
+                  {el === 'Fire' ? '🔥' : el === 'Earth' ? '🌿' : el === 'Air' ? '💨' : '💧'}{' '}
+                  <strong>{el}</strong>
+                </span>
+                {' '}flows through {chain.length} generations:{' '}
+                <strong>{chain.map(n => {
+                  const planets = getNodePlanetsForElement(n, el)
+                  return planets ? `${n.data.name} (${planets})` : n.data.name
+                }).join(' → ')}</strong>
+                <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '0.15rem' }}>
+                  {ELEMENT_THREAD_BLURB[el]}
+                </span>
+                {elSiblingPairs.map(([nA, nB]) => {
+                  const modA = SIGN_MODALITY[nA.data.sign]
+                  const modB = SIGN_MODALITY[nB.data.sign]
+                  const key2 = [modA, modB].sort().join('-')
+                  const blurb = SIBLING_ADAPTABILITY[key2] || SIBLING_ADAPTABILITY[[modB, modA].join('-')]
+                  return (
+                    <span key={`${nA.id}-${nB.id}`} style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '0.1rem' }}>
+                      ↕ {nA.data.name} & {nB.data.name} (siblings) — {modA} × {modB}{blurb ? `: ${blurb}` : ''}
+                    </span>
+                  )
+                })}
+              </p>
+            )
+          })}
         </div>
       )}
 
@@ -1178,7 +1234,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           </p>
         ) : (
           <a
-            href="https://www.etsy.com/shop/JupiterDigital"
+            href="https://jupiterdigital.etsy.com/listing/1381418600/personalized-astrology-reading-in-depth"
             target="_blank"
             rel="noopener noreferrer"
             className="insight-consult-link"
