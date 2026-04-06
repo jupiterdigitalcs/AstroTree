@@ -1472,8 +1472,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {/* 13. Add more prompt */}
       {sharedSigns.length === 0 && couples.length === 0 &&
-       signThreadList.length === 0 && Object.keys(elementThreads).length === 0 &&
-       topBonds.length === 0 && onAddMore && (
+       topZodiacThreads.length === 0 && topBonds.length === 0 && onAddMore && (
         <div className="insight-add-more">
           <p className="insight-add-more-text">Add more group members &amp; connect them to unlock shared signs, compatibility, and generational patterns.</p>
           <button type="button" className="insight-add-more-btn" onClick={onAddMore}>
