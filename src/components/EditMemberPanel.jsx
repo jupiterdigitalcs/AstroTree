@@ -207,8 +207,17 @@ export default function EditMemberPanel({
       </div>
 
       {/* ── Birth time ────────────────────────────────────────────────────── */}
-      <label>
-        Birth time <span className="birthtime-optional">(optional)</span>
+      <div className="birthtime-field">
+        <div className="birthtime-field-header">
+          <span className="birthtime-field-label">Birth time <span className="birthtime-optional">(optional)</span></span>
+          {birthTime && (
+            <button
+              type="button"
+              className="birthtime-clear-btn"
+              onClick={() => { setBirthTime(''); setExactBirthTime(false); doSave({ birthTime: null, exactBirthTime: false }) }}
+            >Clear</button>
+          )}
+        </div>
         <input
           type="time"
           className="row-input birthtime-input"
@@ -216,7 +225,7 @@ export default function EditMemberPanel({
           onChange={e => { setBirthTime(e.target.value); setExactBirthTime(false) }}
           onBlur={e => doSave({ birthTime: e.target.value })}
         />
-      </label>
+      </div>
 
       {/* Ingress context — only shown when astrologically relevant */}
       {originalWarnings.length > 0 && (
@@ -307,10 +316,7 @@ export default function EditMemberPanel({
           {/* ── Add connections: person chips → inline relationship pills ── */}
           {eligibleNodes.length > 0 && (
             <div className="conn-add-section">
-              <div className="conn-add-header">
-                <span className="parent-select-label">Add connection</span>
-                <span className="conn-age-hint">oldest → youngest</span>
-              </div>
+              <span className="parent-select-label">Add connection</span>
               {eligibleNodes.length > 5 && (
                 <input
                   className="conn-search-input"

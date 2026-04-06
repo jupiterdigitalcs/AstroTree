@@ -261,9 +261,46 @@
   margin-top: 0.35rem;
 }
 
+.birthtime-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.birthtime-field-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.68rem;
+  font-family: 'Raleway', sans-serif;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+.birthtime-field-label {
+  font-size: 0.68rem;
+  font-family: 'Raleway', sans-serif;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+.birthtime-clear-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.68rem;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+.birthtime-clear-btn:hover { color: var(--red, #ff6b7a); }
+
 .birthtime-input {
   width: 100%;
-  max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
   color-scheme: dark;
 }
