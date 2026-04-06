@@ -1,4 +1,30 @@
 /* ─────────────────────── Edit panel / connections ───────────────────────── */
+
+/* ── Insights CTA inside edit panel ─────────────────────────────────────── */
+.edit-insights-cta {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.15rem;
+  background: linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(140,80,200,0.07) 100%);
+  border: 1px solid rgba(201,168,76,0.35);
+  border-radius: 10px;
+  color: var(--gold-light);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  text-align: left;
+}
+.edit-insights-cta span:nth-child(2) { flex: 1; }
+.edit-insights-cta:hover {
+  background: linear-gradient(135deg, rgba(201,168,76,0.17) 0%, rgba(140,80,200,0.12) 100%);
+  border-color: rgba(201,168,76,0.55);
+}
 .edit-panel { border-color: var(--border); }
 
 .edit-panel-title-row {
@@ -39,17 +65,18 @@
 
 .delete-btn {
   background: transparent;
-  border: 1px solid rgba(255,107,122,0.3);
-  border-radius: 8px;
-  color: var(--red);
+  border: none;
+  color: var(--text-muted);
   cursor: pointer;
   font-family: 'Raleway', sans-serif;
-  font-size: 0.8rem;
-  padding: 0.5rem;
-  transition: background 0.2s, border-color 0.2s;
+  font-size: 0.74rem;
+  padding: 0.35rem 0;
+  transition: color 0.2s;
+  text-align: left;
+  letter-spacing: 0.02em;
 }
 
-.delete-btn:hover { background: rgba(255,107,122,0.08); border-color: var(--red); }
+.delete-btn:hover { color: var(--red); }
 
 .delete-confirm {
   display: flex;
@@ -70,6 +97,19 @@
 .delete-confirm-actions { display: flex; gap: 0.5rem; }
 .delete-confirm-actions .delete-btn,
 .delete-confirm-actions .cancel-btn { flex: 1; }
+/* Inside confirm box, delete btn needs proper button styling */
+.delete-confirm-actions .delete-btn {
+  border: 1px solid rgba(255,107,122,0.4);
+  border-radius: 8px;
+  color: var(--red);
+  padding: 0.45rem 0.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+}
+.delete-confirm-actions .delete-btn:hover {
+  background: rgba(255,107,122,0.1);
+  border-color: var(--red);
+}
 
 /* ── Ingress warning — shown in EditMemberPanel when a planet changes sign ── */
 .ingress-warning {

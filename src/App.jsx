@@ -70,6 +70,20 @@ export default function App() {
   const [hasUsedApp,        setHasUsedApp]        = useState(() => {
     try { return localStorage.getItem('astrotree_used') === '1' } catch { return false }
   })
+  // True once user has visited Insights tab — drives the Insights CTA banner
+  const [insightsSeen,      setInsightsSeen]      = useState(() => {
+    try { return localStorage.getItem('astrotree_insights_seen') === '1' } catch { return false }
+  })
+  // True if user is returning after >3 days away — drives welcome-back card
+  const [returnVisit,       setReturnVisit]       = useState(() => {
+    try {
+      const last = localStorage.getItem('astrotree_last_visit')
+      const now  = Date.now()
+      localStorage.setItem('astrotree_last_visit', String(now))
+      if (!last) return false
+      return (now - parseInt(last, 10)) > 3 * 24 * 60 * 60 * 1000
+    } catch { return false }
+  })
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
@@ -232,11 +246,16 @@ export default function App() {
     setNodes(applyDagreLayout(nextNodes, nextEdges))
     setEdges(nextEdges)
     setCounter(nextCounter)
-    setActiveTab('tree')
-    setEditingNodeId(null)
     setShowAddMore(false)
     setFitTick(t => t + 1)
-    if (wasEmpty) setShowConnectPrompt(true)
+    if (wasEmpty) {
+      // Open edit panel for first person so they can add relationships immediately
+      setActiveTab('add')
+      setEditingNodeId(primaryId)
+    } else {
+      setActiveTab('tree')
+      setEditingNodeId(null)
+    }
     markUsed()
 
     // Auto-save on first add when no chart exists yet
@@ -267,7 +286,10 @@ export default function App() {
     setActiveTab(tab)
     setEditingNodeId(null)
     if (tab === 'tree') setFitTick(t => t + 1)
-    if (tab === 'insights' && edges.length > 0) markInsightsSeen()
+    if (tab === 'insights' && edges.length > 0) {
+      markInsightsSeen()
+      setInsightsSeen(true)
+    }
   }
 
   // ── Load demo tree ────────────────────────────────────────────────────────
@@ -462,6 +484,7 @@ export default function App() {
                 onAddEdge={handleAddEdge}
                 onRemoveEdge={handleRemoveEdge}
                 onCancel={() => setEditingNodeId(null)}
+                onGoToInsights={() => { setEditingNodeId(null); goTab('insights') }}
               />
             </>
 
@@ -533,6 +556,20 @@ export default function App() {
                 </>
               ) : (
                 <>
+                  {/* Return visit welcome — shown after 3+ days away */}
+                  {returnVisit && (
+                    <div className="return-visit-card">
+                      <div className="return-visit-body">
+                        <JupiterIcon size={16} />
+                        <div>
+                          <p className="return-visit-greeting">Welcome back ✦</p>
+                          <p className="return-visit-hint">Your chart is right here — pick up where you left off.</p>
+                        </div>
+                      </div>
+                      <button type="button" className="return-visit-close" onClick={() => setReturnVisit(false)}>×</button>
+                    </div>
+                  )}
+
                   {/* Member list header + add more toggle */}
                   <div className="member-list">
                     <div className="member-list-header">
@@ -575,6 +612,28 @@ export default function App() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Save status */}
+                  {lastSavedAt && (
+                    <div className="family-save-status">
+                      <span className="family-save-check">✓</span>
+                      <span className="family-save-label">
+                        Chart auto-saved
+                        <span className="family-save-time"> · {formatRelativeTime(lastSavedAt)}</span>
+                      </span>
+                      {syncStatus === 'synced' && <span className="family-save-cloud" title="Backed up to cloud">☁</span>}
+                      {syncStatus === 'error'  && <span className="family-save-cloud family-save-cloud--err" title="Could not sync — saved locally">☁</span>}
+                    </div>
+                  )}
+
+                  {/* Insights CTA — shown until user visits Insights tab */}
+                  {!insightsSeen && nodes.length >= 2 && edges.length > 0 && (
+                    <button type="button" className="insights-cta-banner" onClick={() => goTab('insights')}>
+                      <span className="insights-cta-icon">✦</span>
+                      <span className="insights-cta-text">Discover your family's cosmic patterns</span>
+                      <span className="insights-cta-arrow">→</span>
+                    </button>
+                  )}
 
                   {/* Divider + New Tree */}
                   <div className="family-bottom-actions">
@@ -705,14 +764,24 @@ export default function App() {
 
         {/* ── Persistent no-connections nudge (tree view only) ─────────── */}
         {!showConnectPrompt && treeView === 'tree' && nodes.length > 0 && edges.length === 0 && (
-          <div className="no-connections-nudge">
-            <span>No connections yet —</span>
-            <button
-              type="button"
-              className="no-connections-btn"
-              onClick={() => goTab('add')}
-            >Add Relationships →</button>
-          </div>
+          <>
+            <div className="no-connections-nudge no-connections-nudge--top">
+              <span>No connections yet —</span>
+              <button
+                type="button"
+                className="no-connections-btn"
+                onClick={() => goTab('add')}
+              >Add Relationships →</button>
+            </div>
+            <div className="no-connections-nudge">
+              <span>No connections yet —</span>
+              <button
+                type="button"
+                className="no-connections-btn"
+                onClick={() => goTab('add')}
+              >Add Relationships →</button>
+            </div>
+          </>
         )}
 
         {/* View toggle (tree vs zodiac vs constellation) */}

@@ -206,6 +206,9 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
             Use <strong>⎘</strong> on any chart above to duplicate it, then rename and edit from there.
           </p>
         )}
+        <button type="button" className="add-row-btn chart-ideas-new-btn" onClick={onNew}>
+          ＋ New Chart
+        </button>
       </div>
 
       {/* ── Sample Trees ──────────────────────────────────────────────── */}

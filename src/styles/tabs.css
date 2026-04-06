@@ -356,6 +356,15 @@
   white-space: nowrap;
   pointer-events: auto;
 }
+/* Top nudge — desktop only, hidden on mobile */
+.no-connections-nudge--top {
+  bottom: auto;
+  top: 1.2rem;
+}
+@media (max-width: 768px) {
+  .no-connections-nudge--top { display: none; }
+}
+
 .no-connections-btn {
   background: none;
   border: none;
@@ -472,3 +481,112 @@
 }
 
 .add-more-toggle:hover { color: var(--text-soft); }
+
+/* ── Family tab — save status strip ─────────────────────────────────────── */
+.family-save-status {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.7rem;
+  margin-top: 0.35rem;
+  background: rgba(126, 200, 69, 0.06);
+  border: 1px solid rgba(126, 200, 69, 0.2);
+  border-radius: 8px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+}
+.family-save-check {
+  color: #7ec845;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.family-save-label {
+  flex: 1;
+  color: var(--text-soft);
+  font-weight: 500;
+}
+.family-save-time {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.family-save-cloud {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.family-save-cloud--err { color: #e07070; opacity: 1; }
+
+/* ── Insights CTA banner (family tab, pre-first-visit) ───────────────────── */
+.insights-cta-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(140,80,200,0.07) 100%);
+  border: 1px solid rgba(201,168,76,0.35);
+  border-radius: 10px;
+  color: var(--gold-light);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  text-align: left;
+}
+.insights-cta-banner:hover {
+  background: linear-gradient(135deg, rgba(201,168,76,0.17) 0%, rgba(140,80,200,0.12) 100%);
+  border-color: rgba(201,168,76,0.55);
+}
+.insights-cta-icon { font-size: 1rem; flex-shrink: 0; }
+.insights-cta-text { flex: 1; }
+.insights-cta-arrow { font-size: 0.9rem; flex-shrink: 0; opacity: 0.7; }
+
+/* ── Return visit welcome card ───────────────────────────────────────────── */
+.return-visit-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  margin-bottom: 0.25rem;
+  background: linear-gradient(135deg, rgba(201,168,76,0.07) 0%, rgba(140,80,200,0.05) 100%);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 10px;
+}
+.return-visit-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+}
+.return-visit-greeting {
+  font-family: 'Cinzel', serif;
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--gold-light);
+  margin: 0 0 0.15rem;
+}
+.return-visit-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+.return-visit-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.return-visit-close:hover { color: var(--text-soft); }

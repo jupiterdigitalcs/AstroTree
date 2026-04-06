@@ -4,7 +4,7 @@ import { DateInput } from './DateInput.jsx'
 
 const makeRows = (n) => Array.from({ length: n }, (_, i) => ({ id: i + 1, name: '', birthdate: '' }))
 
-export default function AddMembersForm({ onAdd, initialRows = 3 }) {
+export default function AddMembersForm({ onAdd, initialRows = 2 }) {
   const [rows,       setRows]       = useState(() => makeRows(initialRows))
   const [rowCounter, setRowCounter] = useState(initialRows + 1)
   const [error,      setError]      = useState('')

@@ -578,3 +578,8 @@
   border-top: 1px solid rgba(255,255,255,0.05);
 }
 
+.chart-ideas-new-btn {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+}
+

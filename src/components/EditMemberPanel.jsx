@@ -12,6 +12,7 @@ export default function EditMemberPanel({
   onAddEdge,
   onRemoveEdge,
   onCancel,
+  onGoToInsights,
 }) {
   const [name,           setName]           = useState(node.data.name)
   const [birthdate,      setBirthdate]      = useState(node.data.birthdate)
@@ -185,20 +186,22 @@ export default function EditMemberPanel({
         {savedFlash && <span className="edit-saved-flash">✓ Saved</span>}
       </div>
 
-      <label>
-        Name
-        <input
-          type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          onBlur={() => doSave()}
-        />
-      </label>
+      <div className="name-date-row">
+        <label>
+          Name
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            onBlur={() => doSave()}
+          />
+        </label>
 
-      <label>
-        Birthdate
-        <DateInput value={birthdate} onChange={v => { setBirthdate(v); if (v && name.trim()) doSave({ birthdate: v }) }} />
-      </label>
+        <label>
+          Birthdate
+          <DateInput value={birthdate} onChange={v => { setBirthdate(v); if (v && name.trim()) doSave({ birthdate: v }) }} />
+        </label>
+      </div>
 
       {/* ── Birth time ────────────────────────────────────────────────────── */}
       <label>
@@ -338,6 +341,14 @@ export default function EditMemberPanel({
             </div>
           )}
         </div>
+      )}
+
+      {onGoToInsights && allNodes.length >= 2 && edges.length > 0 && (
+        <button type="button" className="edit-insights-cta" onClick={onGoToInsights}>
+          <span>✦</span>
+          <span>See Family Insights</span>
+          <span>→</span>
+        </button>
       )}
 
       {!confirmDelete ? (

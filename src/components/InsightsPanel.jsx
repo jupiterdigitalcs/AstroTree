@@ -384,27 +384,23 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       <div className="insights-panel">
         <h2 className="form-title">✦ Family Insights</h2>
         <div className="insight-card insight-connect-prompt">
-          <h3 className="insight-heading">Connect your group members</h3>
-          <p className="insight-note">Your members are added — now connect them on the tree to unlock relationship insights.</p>
-          <p className="insight-note" style={{ marginTop: '0.5rem' }}>
-            Tap any member card in the <strong>Family</strong> tab, or click a node on the tree, to add connections.
+          <h3 className="insight-heading">One step away</h3>
+          <p className="insight-note">
+            Your members are in — now <strong>connect them</strong> to unlock partner harmony, sign threads, compatibility scores, and more.
           </p>
-          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.78rem', opacity: 0.75 }}>
-            <span>💞 Partner harmony — unlocked with spouse connections</span>
-            <span>🔁 Sign threads — unlocked with parent-child connections</span>
-            <span>🌿 Element threads — unlocked with parent-child connections</span>
-            <span>✨ Notable bonds — unlocked with any connections</span>
-          </div>
-          {onGoToTree && (
-            <button type="button" className="add-more-toggle" style={{ marginTop: '1rem' }} onClick={onGoToTree}>
-              → Go to Tree
+          {onAddMore && (
+            <button type="button" className="insights-connect-cta" onClick={onAddMore}>
+              <span>★</span>
+              <span>Go to Family Tab to Connect</span>
+              <span>→</span>
             </button>
           )}
-        </div>
-        <div className="insight-coming-soon">
-          <p className="insight-coming-soon-label">Coming in future updates ✨</p>
-          <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>
-          <p className="insight-note">🔮 <strong>Full Chart Overlays</strong> — planetary alignments across generations</p>
+          <div className="insights-unlock-list">
+            <span>💞 Partner harmony</span>
+            <span>🔁 Zodiac sign threads</span>
+            <span>✨ Notable bonds</span>
+            <span>🌿 Generational patterns</span>
+          </div>
         </div>
       </div>
     )

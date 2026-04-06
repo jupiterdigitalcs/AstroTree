@@ -301,7 +301,9 @@
   /* Full-width rows inside the grid */
   .app--topnav .insights-panel .insights-header,
   .app--topnav .insights-panel .insight-add-more,
-  .app--topnav .insights-panel .insights-brand-footer {
+  .app--topnav .insights-panel .insights-brand-footer,
+  .app--topnav .insights-panel .insight-connect-prompt,
+  .app--topnav .insights-panel > .form-title {
     grid-column: 1 / -1;
   }
 
@@ -316,6 +318,22 @@
   .app--topnav .member-list .add-more-section,
   .app--topnav .member-list .connect-hint-banner {
     grid-column: 1 / -1;
+  }
+
+  /* Name + Birthdate on one line in add form and edit panel */
+  .app--topnav .member-row.multi {
+    grid-template-columns: 0.9rem 1fr 1fr 1.4rem;
+    grid-template-rows: auto;
+  }
+  .app--topnav .member-row.multi .row-num        { grid-row: 1; }
+  .app--topnav .member-row.multi > .row-input    { grid-column: 2; grid-row: 1; }
+  .app--topnav .member-row.multi .date-input     { grid-column: 3; grid-row: 1; }
+  .app--topnav .member-row.multi .row-remove-btn { grid-column: 4; grid-row: 1; }
+
+  .app--topnav .name-date-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
   }
 
   .app--topnav .split-drag-handle  { display: none; }  /* C not useful in this mode */
