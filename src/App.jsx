@@ -601,15 +601,6 @@ export default function App() {
                       <p className="connect-hint-banner">Tap a name below to connect family members on the tree ↓</p>
                     )}
 
-                    {Object.keys(nodeIngressWarnings).length > 0 && (
-                      <div className="ingress-key">
-                        <span className="ingress-key-icon">⚠</span>
-                        <span className="ingress-key-text">
-                          Sign may depend on birth time — tap the member to add it (optional)
-                        </span>
-                      </div>
-                    )}
-
                     {[...nodes].sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999')).map(n => (
                       <div key={n.id} className="member-pill"
                         style={{ borderColor: `${n.data.elementColor}44`, cursor: 'pointer' }}
@@ -628,6 +619,15 @@ export default function App() {
                         )}
                       </div>
                     ))}
+
+                    {Object.keys(nodeIngressWarnings).length > 0 && (
+                      <div className="ingress-key">
+                        <span className="ingress-key-icon">⚠</span>
+                        <span className="ingress-key-text">
+                          Sign may depend on birth time — tap the member to add it (optional)
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Save status */}
