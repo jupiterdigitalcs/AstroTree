@@ -204,20 +204,22 @@ function getArrivalStory(child, parents, elderSiblings) {
 
 // ── Inner components ──────────────────────────────────────────────────────────
 
-function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, total, missingElements }) {
+function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, total, missingElements, isGroupOnly }) {
+  const g = isGroupOnly ? 'group' : 'family'
+  const G = isGroupOnly ? 'Group' : 'Family'
   const desc = FAMILY_SIGNATURE_DESCRIPTIONS[dominant]?.[dominantModality]
   const mascPct = total > 0 ? Math.round(masculine / total * 100) : 50
   const femPct  = total > 0 ? Math.round(feminine  / total * 100) : 50
   return (
     <div className="insight-card insight-signature-card">
-      <h3 className="insight-heading">Family Signature</h3>
+      <h3 className="insight-heading">{G} Signature</h3>
       <div className="signature-hero">
         <span className="signature-element" style={{ color: ELEMENT_COLORS[dominant] }}>{dominant}</span>
         {' / '}
         <span className="signature-modality">{dominantModality}</span>
       </div>
       {desc && (
-        <p className="insight-note signature-desc">Your family {desc}.</p>
+        <p className="insight-note signature-desc">Your {g} {desc}.</p>
       )}
       <div className="signature-polarity-row">
         <span className="signature-polarity-label">Active</span>
@@ -235,7 +237,7 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
       </p>
       {missingElements.length > 0 && (
         <p className="insight-note signature-missing">
-          No {missingElements.join(' or ')} energy — the family may seek this outside the home
+          No {missingElements.join(' or ')} energy — the {g} may seek this outside
         </p>
       )}
     </div>
@@ -291,7 +293,9 @@ function FullCompatPairs({ pairs, title, isExporting, generationLevel }) {
   )
 }
 
-function FamilyRoles({ memberRoles, isExporting, generationLevel }) {
+function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly }) {
+  const g = isGroupOnly ? 'group' : 'family'
+  const G = isGroupOnly ? 'Group' : 'Family'
   const [expanded, setExpanded] = useState(null)
   // For large families in export, trim to oldest 2 generations to keep the card compact
   const displayRoles = isExporting && memberRoles.length >= 8
@@ -300,8 +304,8 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel }) {
   const trimmedCount = memberRoles.length - displayRoles.length
   return (
     <div className="insight-card insight-family-roles">
-      <h3 className="insight-heading">Family Roles</h3>
-      <p className="insight-note" style={{ marginBottom: '0.4rem' }}>Each member's cosmic role in the family dynamic</p>
+      <h3 className="insight-heading">{G} Roles</h3>
+      <p className="insight-note" style={{ marginBottom: '0.4rem' }}>Each member's cosmic role in the {g} dynamic</p>
       {displayRoles.map(role => {
         const isOpen = isExporting || expanded === role.node.id
         return (
@@ -331,7 +335,7 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel }) {
                   )
                 })()}
                 {role.isOnlyElement && (
-                  <p className="insight-note family-role-special">✦ Sole {role.node.data.element} energy in the family</p>
+                  <p className="insight-note family-role-special">✦ Sole {role.node.data.element} energy in the {g}</p>
                 )}
                 {!role.isOnlyElement && role.sameElementPeers.length > 0 && (
                   <p className="insight-note family-role-special">
@@ -1118,6 +1122,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         feminine={feminine}
         total={total}
         missingElements={missingElements}
+        isGroupOnly={isGroupOnly}
       />
 
       {/* 3. Moon Element Makeup — only when enough moon data */}
@@ -1140,7 +1145,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             )
           })}
           <p className="insight-note" style={{ marginTop: '0.4rem' }}>
-            Emotionally, your family is{' '}
+            Emotionally, your {isGroupOnly ? 'group' : 'family'} is{' '}
             <strong style={{ color: ELEMENT_COLORS[moonDominant] }}>{ELEMENT_ENERGY[moonDominant]}</strong>.
             {moonNodes.length < nodes.length && (
               <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
@@ -1300,7 +1305,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               </p>
               {ZODIAC_THREAD_BLURB[sign] && (
                 <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem' }}>
-                  {ZODIAC_THREAD_BLURB[sign]}
+                  {isGroupOnly ? ZODIAC_THREAD_BLURB[sign].replace(/\bthis family\b/gi, 'this group').replace(/\bthe family\b/gi, 'the group') : ZODIAC_THREAD_BLURB[sign]}
                 </p>
               )}
             </div>
@@ -1467,7 +1472,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {/* 12. Family Roles */}
       {memberRoles.length >= 2 && (
-        <FamilyRoles memberRoles={memberRoles} isExporting={exporting} generationLevel={generationLevel} />
+        <FamilyRoles memberRoles={memberRoles} isExporting={exporting} generationLevel={generationLevel} isGroupOnly={isGroupOnly} />
       )}
 
       {/* 13. Add more prompt */}
@@ -1476,7 +1481,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <div className="insight-add-more">
           <p className="insight-add-more-text">Add more group members &amp; connect them to unlock shared signs, compatibility, and generational patterns.</p>
           <button type="button" className="insight-add-more-btn" onClick={onAddMore}>
-            ＋ Add Family Members
+            ＋ Add {isGroupOnly ? 'Group' : 'Family'} Members
           </button>
         </div>
       )}
