@@ -79,6 +79,13 @@ export default function App() {
 
   const fitViewRef = useRef(null)
 
+  // ── TEMP C: resizable sidebar pane — delete this block to revert ─────────────
+  const [sidebarWidth, setSidebarWidth] = useState(345)
+  const isDraggingRef = useRef(false)
+  // ── TEMP E: top nav full-screen layout — delete this line to revert ───────────
+  const topNavMode = true
+  // ── END TEMP ──────────────────────────────────────────────────────────────────
+
   // Ingress warnings per node — computed once per nodes change (not on every render)
   const nodeIngressWarnings = useMemo(() => {
     const map = {}
@@ -176,6 +183,31 @@ export default function App() {
     })
   }
 
+  // ── TEMP C: drag-to-resize sidebar — delete to revert ────────────────────────
+  function startDrag(e) {
+    e.preventDefault()
+    isDraggingRef.current = true
+    const startX = e.clientX ?? e.touches?.[0]?.clientX
+    const startW = sidebarWidth
+    function onMove(ev) {
+      if (!isDraggingRef.current) return
+      const x = ev.clientX ?? ev.touches?.[0]?.clientX
+      setSidebarWidth(Math.max(220, Math.min(window.innerWidth * 0.55, startW + (x - startX))))
+    }
+    function onUp() {
+      isDraggingRef.current = false
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('touchend', onUp)
+  }
+  // ── END TEMP C ────────────────────────────────────────────────────────────────
+
   // ── Add (atomic, supports multiple members) ───────────────────────────────
   function handleAdd({ members, relationships = {} }) {
     const { parentIds = [], childIds = [], spouseIds = [] } = relationships
@@ -265,7 +297,7 @@ export default function App() {
   const editingNode = editingNodeId ? nodes.find(n => n.id === editingNodeId) : null
 
   return (
-    <div className="app">
+    <div className={`app${topNavMode ? ' app--topnav' : ''}${topNavMode && nodes.length > 0 && !panelOpen ? ' app--subnav' : ''}`}> {/* TEMP E */}
       {/* ── Email capture — shown once after first named save ───────────── */}
       {showEmailCapture && (
         <EmailCapture onDismiss={() => setShowEmailCapture(false)} />
@@ -302,8 +334,64 @@ export default function App() {
         )), [])}
       </div>
 
+      {/* ── TEMP E: top nav bar — delete block to revert ───────────────────── */}
+      {topNavMode && (
+        <header className="top-nav">
+          <div className="top-nav-brand">
+            <JupiterIcon size={26} />
+            <div className="top-nav-brand-text">
+              <span className="top-nav-name">AstroDig</span>
+              <span className="top-nav-tagline">Jupiter Digital</span>
+            </div>
+          </div>
+          <nav className="top-nav-tabs" aria-label="Main navigation">
+            <button
+              className={`top-nav-tab${(activeTab === 'add' || !!editingNodeId) ? ' active' : ''}`}
+              onClick={() => goTab('add')}
+            >★ Family</button>
+            <button
+              className={`top-nav-tab${!panelOpen ? ' active' : ''}`}
+              onClick={() => goTab('tree')}
+            >☽ Charts</button>
+            <button
+              className={`top-nav-tab${activeTab === 'insights' && !editingNodeId ? ' active' : ''}`}
+              onClick={() => goTab('insights')}
+              disabled={nodes.length < 2}
+            >✦ Insights</button>
+            <button
+              className={`top-nav-tab${activeTab === 'charts' && !editingNodeId ? ' active' : ''}`}
+              onClick={() => goTab('charts')}
+            >🗂️ Saved</button>
+            <button
+              className={`top-nav-tab${activeTab === 'about' && !editingNodeId ? ' active' : ''}`}
+              onClick={() => goTab('about')}
+            ><JupiterIcon size={14} /> About</button>
+          </nav>
+          <div className="top-nav-right">
+            {lastSavedAt && <SyncIndicator status={syncStatus === 'idle' ? 'synced' : syncStatus} />}
+          </div>
+        </header>
+      )}
+      {topNavMode && nodes.length > 0 && !panelOpen && (
+        <nav className="top-subnav" aria-label="Chart type">
+          <div className="top-subnav-brand">Cosmic Connections</div>
+          <button className={`top-subnav-btn${treeView === 'tree' ? ' active' : ''}`} onClick={() => { setTreeView('tree'); goTab('tree') }}>🌳 Tree</button>
+          <button className={`top-subnav-btn${treeView === 'zodiac' ? ' active' : ''}`} onClick={() => { setTreeView('zodiac'); goTab('tree') }}>☉ Zodiac</button>
+          <button className={`top-subnav-btn${treeView === 'constellation' ? ' active' : ''}`} onClick={() => { setTreeView('constellation'); goTab('tree') }}>✦ Constellation</button>
+          <button className={`top-subnav-btn${treeView === 'tables' ? ' active' : ''}`} onClick={() => { setTreeView('tables'); goTab('tree') }}>☽ Tables</button>
+        </nav>
+      )}
+      {topNavMode && panelOpen && (
+        <div
+          className="top-nav-backdrop"
+          onClick={() => { setActiveTab('tree'); setEditingNodeId(null) }}
+        />
+      )}
+      {/* ── END TEMP E ────────────────────────────────────────────────────── */}
+
       {/* ── Sidebar / Panel ─────────────────────────────────────────────── */}
-      <aside className={`sidebar${panelOpen ? ' open' : ''}`}>
+      {/* TEMP C: inline width drives resize — delete style prop to revert */}
+      <aside className={`sidebar${panelOpen ? ' open' : ''}`} style={window.innerWidth > 768 ? { width: sidebarWidth } : undefined}>
         {/* Mobile panel header — shows tab name and close button */}
         <div className="mobile-panel-header">
           <span className="mobile-panel-title">
@@ -525,6 +613,9 @@ export default function App() {
           </div>
         </footer>
       </aside>
+
+      {/* TEMP C: drag handle between sidebar and canvas — delete to revert */}
+      <div className="split-drag-handle" onMouseDown={startDrag} onTouchStart={startDrag} title="Drag to resize" />
 
       {/* ── Mobile bottom tab bar ────────────────────────────────────────── */}
       <nav className="bottom-tab-bar" aria-label="Main navigation">
@@ -764,6 +855,7 @@ export default function App() {
         </ReactFlow>
         )}
       </main>
+
 
     </div>
   )

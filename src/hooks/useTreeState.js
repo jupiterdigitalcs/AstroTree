@@ -34,7 +34,7 @@ export function useTreeState({
   )
 
   // ── Update / delete ───────────────────────────────────────────────────────
-  const handleUpdate = useCallback((id, patch) => {
+  const handleUpdate = useCallback((id, patch, { keepOpen = false } = {}) => {
     setNodes(prev => prev.map(n => {
       if (n.id !== id) return n
       const updated = { ...n.data, ...patch }
@@ -61,7 +61,7 @@ export function useTreeState({
       }
       return { ...n, data: updated }
     }))
-    setEditingNodeId(null)
+    if (!keepOpen) setEditingNodeId(null)
   }, [setNodes, setEditingNodeId])
 
   const handleDelete = useCallback((id) => {

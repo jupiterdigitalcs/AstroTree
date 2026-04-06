@@ -10,7 +10,7 @@ export function WelcomeScreen({ onBegin, onDemo, onDemoCrew, hasUsedApp, onLoadC
         <p className="welcome-tagline">
           {hasUsedApp
             ? <>Welcome back —<br />your charts are waiting</>
-            : <>Discover the celestial patterns<br />woven through your family</>}
+            : <>Map the astrology of your people<br />— family, friends, or anyone you know</>}
         </p>
 
         {/* Desktop CTA */}
@@ -31,9 +31,9 @@ export function WelcomeScreen({ onBegin, onDemo, onDemoCrew, hasUsedApp, onLoadC
           </button>
         )}
 
-        {/* Mobile CTA — primary */}
+        {/* Mobile CTA — primary (above bullets so it's always visible) */}
         <button type="button" className="welcome-cta-mobile" onClick={hasUsedApp ? onLoadCharts : onBegin}>
-          {hasUsedApp ? '✦ Load Saved Chart' : '★ Add Family Members'}
+          {hasUsedApp ? '✦ Load Saved Chart' : '★ Start Your Chart'}
         </button>
 
         {/* Mobile secondary */}
@@ -43,8 +43,25 @@ export function WelcomeScreen({ onBegin, onDemo, onDemoCrew, hasUsedApp, onLoadC
           </button>
         )}
 
+        {!hasUsedApp && (
+          <div className="welcome-steps">
+            <div className="welcome-step">
+              <span className="welcome-step-icon">☉</span>
+              <span>Enter a birthdate — sun sign appears automatically</span>
+            </div>
+            <div className="welcome-step">
+              <span className="welcome-step-icon">♒</span>
+              <span>See shared signs, element patterns, and compatibility</span>
+            </div>
+            <div className="welcome-step">
+              <span className="welcome-step-icon">✦</span>
+              <span>Add a few now, come back later — it saves as you go</span>
+            </div>
+          </div>
+        )}
+
         <div className="welcome-demo-row">
-          <span className="welcome-demo-label">or try a demo:</span>
+          <span className="welcome-demo-label">or see it in action:</span>
           <button type="button" className="welcome-demo" onClick={onDemo}>
             Family Tree
           </button>

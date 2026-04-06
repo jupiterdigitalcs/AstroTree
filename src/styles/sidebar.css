@@ -75,9 +75,10 @@
   padding: 1rem 1.15rem 1.2rem;
 }
 
-.sidebar-content::-webkit-scrollbar { width: 4px; }
-.sidebar-content::-webkit-scrollbar-track { background: transparent; }
-.sidebar-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.sidebar-content::-webkit-scrollbar { width: 6px; }
+.sidebar-content::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 3px; }
+.sidebar-content::-webkit-scrollbar-thumb { background: rgba(160,130,220,0.4); border-radius: 3px; }
+.sidebar-content::-webkit-scrollbar-thumb:hover { background: rgba(201,168,76,0.5); }
 
 /* ── Footer ───────────────────────────────────────────────────────────────── */
 .sidebar-footer {

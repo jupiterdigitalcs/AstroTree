@@ -197,10 +197,7 @@ export function TablesPanel({ nodes }) {
           </tbody>
         </table>
       </div>
-      <p className="tables-note">
-        ☽ Moon, ☿ Mercury, ♀ Venus, ♂ Mars use noon when no birth time is on file —
-        add it in Edit Member for a more accurate reading.
-      </p>
+
     </div>
   )
 }

@@ -140,7 +140,7 @@
 
 /* ── Welcome screen mobile CTA ──────────────────────────────────────────── */
 .welcome-cta-mobile {
-  display: none; /* shown only on mobile via media query */
+  display: flex; /* hidden on desktop via media query below */
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
@@ -230,6 +230,11 @@
   padding-top: 0.15rem;
 }
 
+
+@media (min-width: 769px) {
+  .welcome-cta-mobile         { display: none; }
+  .welcome-cta-mobile--secondary { display: none; }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    ADMIN PORTAL

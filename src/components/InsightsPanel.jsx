@@ -15,6 +15,18 @@ const ELEMENT_ENERGY = {
   Water: 'intuitive and emotional',
 }
 
+const SIGN_SYMBOLS = {
+  Aries:'♈', Taurus:'♉', Gemini:'♊', Cancer:'♋', Leo:'♌', Virgo:'♍',
+  Libra:'♎', Scorpio:'♏', Sagittarius:'♐', Capricorn:'♑', Aquarius:'♒', Pisces:'♓',
+}
+
+const ELEMENT_THREAD_BLURB = {
+  Fire:  'A family line of passion, courage, and creative drive',
+  Earth: 'A legacy of groundedness, patience, and practical wisdom',
+  Air:   'Generations of quick minds, curiosity, and a gift for connection',
+  Water: 'Deep emotional intelligence and intuition flowing through the generations',
+}
+
 const OPPOSITE_SIGNS = {
   Aries: 'Libra',        Libra:       'Aries',
   Taurus: 'Scorpio',     Scorpio:     'Taurus',
@@ -76,7 +88,7 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
         <span className="signature-polarity-label signature-polarity-label--right">Receptive</span>
       </div>
       <p className="signature-polarity-note">
-        {masculine} active (Fire + Air) · {feminine} receptive (Earth + Water)
+        {masculine} planet placements in active signs (Fire + Air) · {feminine} in receptive signs (Earth + Water)
       </p>
       {missingElements.length > 0 && (
         <p className="insight-note signature-missing">
@@ -358,14 +370,38 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     )
     return parents.length > 0 ? [...parents, node] : [node]
   }
+  function getLongestChainWhere(nodeId, predicate, visited = new Set()) {
+    if (visited.has(nodeId)) return []
+    visited.add(nodeId)
+    const node = nodes.find(n => n.id === nodeId)
+    if (!node || !predicate(node)) return []
+    const parents = (parentMap[nodeId] || []).flatMap(
+      pid => getLongestChainWhere(pid, predicate, visited)
+    )
+    return parents.length > 0 ? [...parents, node] : [node]
+  }
+  function getNodeSigns(node) {
+    const signs = new Set()
+    if (node.data.sign) signs.add(node.data.sign)
+    if (node.data.moonSign && node.data.moonSign !== 'Unknown') signs.add(node.data.moonSign)
+    const inner = innerPlanetData.find(d => d.node.id === node.id)
+    if (inner?.mercury?.sign) signs.add(inner.mercury.sign)
+    if (inner?.venus?.sign)   signs.add(inner.venus.sign)
+    if (inner?.mars?.sign)    signs.add(inner.mars.sign)
+    return signs
+  }
 
-  // ── Sign threads ─────────────────────────────────────────────────────────────
+  // ── Sign threads (all planets) ─────────────────────────────────────────────
+  const allSignsInTree = new Set()
+  nodes.forEach(n => getNodeSigns(n).forEach(s => allSignsInTree.add(s)))
   const signThreads = {}
-  nodes.forEach(n => {
-    const sign = n.data.sign
-    if (signThreads[sign]) return
-    const chain = getLongestChain(n.id, x => x.data.sign, sign, new Set())
-    if (chain.length >= 2) signThreads[sign] = chain
+  allSignsInTree.forEach(sign => {
+    let longest = []
+    nodes.forEach(n => {
+      const chain = getLongestChainWhere(n.id, x => getNodeSigns(x).has(sign), new Set())
+      if (chain.length >= 2 && chain.length > longest.length) longest = chain
+    })
+    if (longest.length >= 2) signThreads[sign] = longest
   })
 
   // ── Elemental family threads ─────────────────────────────────────────────────
@@ -593,11 +629,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         )}
       </div>
 
-      {/* 1. Combined Element Makeup */}
+      {/* 1. Sun Element Makeup */}
       <div className="insight-card">
-        <h3 className="insight-heading">Elemental Makeup</h3>
+        <h3 className="insight-heading">☀ Sun Element Makeup</h3>
 
-        <p className="insight-note" style={{ marginBottom: '0.35rem', fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>☀ Sun</p>
         {ELEMENTS.map(el => {
           const count = elementCounts[el]
           const pct   = Math.round(count / nodes.length * 100)
@@ -613,37 +648,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           )
         })}
 
-        {moonNodes.length >= 2 && moonDominant && (
-          <>
-            <p className="insight-note" style={{ margin: '0.6rem 0 0.35rem', fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>☽ Moon</p>
-            {ELEMENTS.map(el => {
-              const count = moonElementCounts[el]
-              if (count === 0) return null
-              const pct   = Math.round(count / moonNodes.length * 100)
-              const color = ELEMENT_COLORS[el]
-              return (
-                <div key={el} className="element-bar-row">
-                  <span className="element-bar-label" style={{ color }}>{el}</span>
-                  <div className="element-bar-track">
-                    <div className="element-bar-fill" style={{ width: `${pct}%`, background: color }} />
-                  </div>
-                  <span className="element-bar-count" style={{ color }}>{count}</span>
-                </div>
-              )
-            })}
-          </>
-        )}
-
         <p className="insight-note" style={{ marginTop: '0.5rem' }}>
-          ☀ <strong style={{ color: ELEMENT_COLORS[sunDominant] }}>{ELEMENT_ENERGY[sunDominant]}</strong>
-          {moonDominant && moonNodes.length >= 2 && (
-            <> · ☽ emotionally <strong style={{ color: ELEMENT_COLORS[moonDominant] }}>{ELEMENT_ENERGY[moonDominant]}</strong></>
-          )}
-          {moonNodes.length < nodes.length && moonNodes.length > 0 && (
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
-              {' '}({nodes.length - moonNodes.length} without moon data)
-            </span>
-          )}
+          <strong style={{ color: ELEMENT_COLORS[sunDominant] }}>{ELEMENT_ENERGY[sunDominant]}</strong>
         </p>
       </div>
 
@@ -779,13 +785,29 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {Object.keys(signThreads).length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">Sign Threads</h3>
-          {Object.entries(signThreads).map(([sign, chain]) => (
-            <p key={sign} className="insight-note">
-              <strong>{chain[0].data.symbol} {sign}</strong> runs through{' '}
-              {chain.length === 2 ? '2 generations' : `${chain.length} generations`}:{' '}
-              {chain.map(n => n.data.name).join(' → ')}
-            </p>
-          ))}
+          <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.3rem' }}>
+            The same zodiac sign appearing across generations — on any planet.
+          </p>
+          {Object.entries(signThreads).map(([sign, chain]) => {
+            const signSym = SIGN_SYMBOLS[sign] || ''
+            return (
+              <p key={sign} className="insight-note">
+                <strong>{signSym} {sign}</strong> runs through{' '}
+                {chain.length === 2 ? '2 generations' : `${chain.length} generations`}:{' '}
+                {chain.map(n => {
+                  const planets = []
+                  if (n.data.sign === sign) planets.push('☀')
+                  if (n.data.moonSign === sign) planets.push('☽')
+                  const inner = innerPlanetMap.get(n.id)
+                  if (inner?.mercury?.sign === sign) planets.push('☿')
+                  if (inner?.venus?.sign   === sign) planets.push('♀')
+                  if (inner?.mars?.sign    === sign) planets.push('♂')
+                  const suffix = planets.length === 0 || (planets.length === 1 && planets[0] === '☀') ? '' : ` (${planets.join('')})`
+                  return `${n.data.name}${suffix}`
+                }).join(' → ')}
+              </p>
+            )
+          })}
         </div>
       )}
 
@@ -801,6 +823,9 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               </span>
               {' '}flows through {chain.length} generations:{' '}
               <strong>{chain.map(n => n.data.name).join(' → ')}</strong>
+              <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '0.15rem' }}>
+                {ELEMENT_THREAD_BLURB[el]}
+              </span>
             </p>
           ))}
         </div>
@@ -862,7 +887,23 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* 14. Coming Soon */}
+      {/* 14. Consult CTA — excluded from export */}
+      <div className="insight-card insight-consult-cta">
+        <h3 className="insight-heading">Want a deeper reading?</h3>
+        <p className="insight-note">
+          Book a personal astrology consultation with Christina — explore your chart, your family's patterns, and what it all means for you.
+        </p>
+        <a
+          href="https://www.etsy.com/shop/JupiterDigital"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="insight-consult-link"
+        >
+          ✦ Book with Jupiter Digital →
+        </a>
+      </div>
+
+      {/* 15. Coming Soon */}
       <div className="insight-card insight-coming-soon">
         <h3 className="insight-heading">Coming in future updates ✨</h3>
         <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>

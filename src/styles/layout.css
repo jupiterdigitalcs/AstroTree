@@ -25,3 +25,302 @@
   0%, 100% { opacity: 0; }
   50%       { opacity: 0.65; }
 }
+
+/* ══ TEMP C: resizable split pane — delete block to revert ════════════════ */
+
+.split-drag-handle {
+  width: 5px;
+  flex-shrink: 0;
+  background: transparent;
+  border-left: 1px solid var(--border);
+  cursor: col-resize;
+  z-index: 11;
+  position: relative;
+  transition: background 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.split-drag-handle:hover,
+.split-drag-handle:active {
+  background: rgba(201,168,76,0.15);
+  border-left-color: rgba(201,168,76,0.35);
+}
+
+@media (max-width: 768px) {
+  .split-drag-handle { display: none; }
+}
+/* ══ END TEMP C ═════════════════════════════════════════════════════════════ */
+
+/* ══ TEMP E: top nav full-screen layout — delete block to revert ══════════ */
+
+/* Base: top nav elements hidden by default */
+.top-nav          { display: none; }
+.top-subnav       { display: none; }
+.top-nav-backdrop { display: none; }
+
+@media (min-width: 769px) {
+
+  /* ── App becomes a column: nav on top, canvas fills the rest ── */
+  .app--topnav {
+    flex-direction: column;
+    --brand-col: 215px;
+  }
+
+  /* ── Top nav bar ── */
+  .app--topnav .top-nav {
+    display: flex;
+    align-items: stretch;
+    height: 52px;
+    padding: 0 1.2rem;
+    background: rgba(9,7,26,0.97);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    position: relative;
+  }
+
+  .top-nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding-right: 1.4rem;
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+    width: var(--brand-col, 215px);
+    box-sizing: border-box;
+    position: relative;
+  }
+
+
+  .top-nav-brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+  }
+
+  .top-nav-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--gold-light);
+    white-space: nowrap;
+    line-height: 1.1;
+  }
+
+  .top-nav-tagline {
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.55rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    line-height: 1.3;
+  }
+
+  /* ── Sub-nav bar: chart type switcher ── */
+  .app--subnav .top-subnav {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 1rem 0 0;
+    background: rgba(12,9,24,0.99);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    gap: 0.2rem;
+    z-index: 50;
+    position: relative;
+  }
+
+  .top-subnav-brand {
+    width: calc(1.2rem + var(--brand-col, 215px));
+    box-sizing: border-box;
+    padding-left: 1.2rem;
+    flex-shrink: 0;
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.55rem;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-right: 1px solid var(--border);
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    background: rgba(9,7,26,0.97);
+  }
+
+  .top-subnav-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    padding: 0.25rem 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+  }
+  .top-subnav-btn:hover {
+    color: var(--text-soft);
+    background: rgba(255,255,255,0.05);
+    border-color: var(--border);
+  }
+  .top-subnav-btn.active {
+    color: var(--gold-light);
+    background: rgba(201,168,76,0.1);
+    border-color: rgba(201,168,76,0.28);
+  }
+
+  /* When subnav is present, push sidebar and canvas down by subnav height (38px) */
+  .app--subnav .sidebar      { top: 90px !important; height: calc(100dvh - 90px) !important; }
+  .app--subnav .canvas       { height: calc(100dvh - 90px); }
+  .app--subnav .top-nav-backdrop { top: 90px; }
+
+  /* ── Section tabs (Charts / Family / Insights / Saved / About) ── */
+  .top-nav-tabs {
+    display: flex;
+    align-items: stretch;
+    flex: 1;
+    padding: 0 0.5rem;
+    gap: 0;
+  }
+
+  .top-nav-tab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 0 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .top-nav-tab:hover:not(:disabled) { color: var(--text-soft); background: rgba(255,255,255,0.03); }
+  .top-nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .top-nav-tab:disabled { opacity: 0.3; cursor: default; }
+  .top-nav-tab svg { opacity: 0.45; transition: opacity 0.15s; }
+  .top-nav-tab.active svg { opacity: 1; }
+
+  .top-nav-right {
+    display: flex;
+    align-items: center;
+    padding-left: 1rem;
+    border-left: 1px solid var(--border);
+    flex-shrink: 0;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  /* ── Sidebar becomes a left slide-over panel ── */
+  .app--topnav .sidebar {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    width: min(92vw, 720px) !important; /* !important overrides TEMP C inline style */
+    height: calc(100dvh - 52px);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    border-right: 1px solid var(--border);
+    box-shadow: 6px 0 40px rgba(0,0,0,0.55);
+    z-index: 45;
+  }
+
+  .app--topnav .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Show panel close header in top-nav mode; hide redundant title, keep only ✕ */
+  .app--topnav .mobile-panel-header {
+    display: flex !important;
+    justify-content: flex-end;
+    padding: 0.4rem 0.9rem;
+    min-height: 0;
+    border-bottom: none;
+    background: transparent;
+  }
+  .app--topnav .mobile-panel-title { display: none; }
+
+  /* ── Backdrop ── */
+  .app--topnav .top-nav-backdrop {
+    display: block;
+    position: fixed;
+    top: 52px;
+    inset-inline: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 44;
+    backdrop-filter: blur(2px);
+    animation: backdrop-in 0.2s ease;
+  }
+  @keyframes backdrop-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* ── Canvas fills full width below nav ── */
+  .app--topnav .canvas {
+    width: 100%;
+    height: calc(100dvh - 52px);
+    flex: 1;
+  }
+
+  /* ── Hide things superseded by top nav ── */
+  .app--topnav .brand-header    { display: none !important; }
+  .app--topnav .sidebar-tabs    { display: none !important; }
+  .app--topnav .bottom-tab-bar  { display: none !important; }
+  /* ── Wider panel: roomier content layout ── */
+  .app--topnav .sidebar-content {
+    padding: 1.4rem 2rem 1.6rem;
+    gap: 1.1rem;
+  }
+
+  /* Insights: 2-column card grid */
+  .app--topnav .insights-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+  }
+  /* Full-width rows inside the grid */
+  .app--topnav .insights-panel .insights-header,
+  .app--topnav .insights-panel .insight-add-more,
+  .app--topnav .insights-panel .insights-brand-footer {
+    grid-column: 1 / -1;
+  }
+
+  /* Member pills: 2-column grid */
+  .app--topnav .member-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    align-items: start;
+  }
+  .app--topnav .member-list .member-list-header,
+  .app--topnav .member-list .add-more-section,
+  .app--topnav .member-list .connect-hint-banner {
+    grid-column: 1 / -1;
+  }
+
+  .app--topnav .split-drag-handle  { display: none; }  /* C not useful in this mode */
+  .app--topnav .canvas-sync-float  { display: none; }  /* sync indicator is in top nav */
+  .app--topnav .sidebar-footer     { display: none !important; } /* brand footer not needed */
+  .app--topnav .tree-view-toggle   { display: none; }  /* view toggle moved to top nav */
+}
+/* ══ END TEMP E ══════════════════════════════════════════════════════════════ */

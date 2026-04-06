@@ -212,11 +212,8 @@ export function useExport({ savedChartId, fitViewRef }) {
     setExporting(true)
 
     const brandEl = el.querySelector('.insights-brand-footer')
-    const prevPadding = el.style.padding
-    const prevWidth = el.style.width
-    el.style.padding = '1.5rem'
-    el.style.width = '420px'
     if (brandEl) brandEl.style.display = 'flex'
+    el.classList.add('insights-panel--exporting')
 
     const { chartTitle, slug } = getChartSlug(savedChartId)
     const filename = `${slug}-insights.png`
@@ -232,6 +229,7 @@ export function useExport({ savedChartId, fitViewRef }) {
           if (c.contains('insights-export-btn'))    return false
           if (c.contains('insight-add-more'))       return false
           if (c.contains('insight-connect-prompt')) return false
+          if (c.contains('insight-consult-cta'))    return false
           return true
         },
       })
@@ -257,8 +255,7 @@ export function useExport({ savedChartId, fitViewRef }) {
       if (err?.name === 'AbortError') return
       setExportError('Export failed — please try again.')
     } finally {
-      el.style.padding = prevPadding
-      el.style.width = prevWidth
+      el.classList.remove('insights-panel--exporting')
       if (brandEl) brandEl.style.display = ''
       setExporting(false)
     }
@@ -277,6 +274,13 @@ export function useExport({ savedChartId, fitViewRef }) {
       const url = await (await getToPng())(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
+        filter: node => {
+          const c = node.classList
+          if (!c) return true
+          if (c.contains('tables-col-toggles')) return false
+          if (c.contains('tables-title'))       return false
+          return true
+        },
       })
       const finalUrl = await appendBrandBar(url, 2)
       await shareOrDownload(

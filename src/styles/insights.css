@@ -87,6 +87,24 @@
 .element-bar-count { font-size: 0.7rem; text-align: right; }
 .insight-coming-soon { border-color: rgba(201,168,76,0.15); background: rgba(201,168,76,0.025); }
 
+.insight-consult-cta {
+  border-color: rgba(140,80,200,0.3);
+  background: linear-gradient(135deg, rgba(140,80,200,0.06) 0%, rgba(201,168,76,0.04) 100%);
+}
+
+.insight-consult-link {
+  display: inline-block;
+  margin-top: 0.4rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.insight-consult-link:hover { color: var(--gold-light); }
+
 .insight-add-more {
   display: flex;
   flex-direction: column;
@@ -126,4 +144,19 @@
 @media (max-width: 768px) {
   .export-label-desktop { display: none; }
   .export-label-mobile  { display: inline; }
+}
+
+/* ── 2-column layout applied during export ───────────────────────────────── */
+.insights-panel--exporting {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+  padding: 1.5rem !important;
+  width: 720px !important;
+}
+.insights-panel--exporting .insights-header,
+.insights-panel--exporting .insight-add-more,
+.insights-panel--exporting .insights-brand-footer {
+  grid-column: 1 / -1;
 }
