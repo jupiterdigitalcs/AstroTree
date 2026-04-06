@@ -496,6 +496,7 @@ export default function App() {
               exporting={exporting}
               onAddMore={() => goTab('add')}
               onGoToTree={() => goTab('tree')}
+              onEditFirst={nodes.length > 0 ? () => { setEditingNodeId(nodes[0].id); setActiveTab('add') } : undefined}
             />
 
           /* ── Saved charts ───────────────────────────────────────────── */

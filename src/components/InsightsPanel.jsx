@@ -357,23 +357,24 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree }) {
+export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst }) {
+  const isGroupOnly = edges.length > 0 && edges.every(e => {
+    const t = e.data?.relationType
+    return t === 'friend' || t === 'coworker'
+  })
+  const panelTitle = isGroupOnly ? 'Group Insights' : 'Family Insights'
+
   if (nodes.length < 2) {
     return (
       <div className="insights-panel">
-        <h2 className="form-title">✦ Family Insights</h2>
-        <p className="bulk-hint">Add at least two family members to reveal your celestial patterns.</p>
+        <h2 className="form-title">✦ {panelTitle}</h2>
+        <p className="bulk-hint">Add at least two members to reveal your celestial patterns.</p>
         <div className="insight-card insight-coming-soon">
           <h3 className="insight-heading">What you'll unlock</h3>
-          <p className="insight-note">🔥 <strong>Elemental makeup</strong> — which elements dominate your family</p>
+          <p className="insight-note">🔥 <strong>Elemental makeup</strong> — which elements dominate your group</p>
           <p className="insight-note">♊ <strong>Shared signs</strong> — who carries the same cosmic energy</p>
           <p className="insight-note">💞 <strong>Partner harmony</strong> — elemental compatibility for couples</p>
           <p className="insight-note">🔁 <strong>Sign &amp; element threads</strong> — cosmic patterns across generations</p>
-        </div>
-        <div className="insight-coming-soon">
-          <p className="insight-coming-soon-label">Coming in future updates ✨</p>
-          <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>
-          <p className="insight-note">🔮 <strong>Full Chart Overlays</strong> — planetary alignments across generations</p>
         </div>
       </div>
     )
@@ -382,16 +383,16 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   if (edges.length === 0) {
     return (
       <div className="insights-panel">
-        <h2 className="form-title">✦ Family Insights</h2>
+        <h2 className="form-title">✦ {panelTitle}</h2>
         <div className="insight-card insight-connect-prompt">
           <h3 className="insight-heading">One step away</h3>
           <p className="insight-note">
             Your members are in — now <strong>connect them</strong> to unlock partner harmony, sign threads, compatibility scores, and more.
           </p>
-          {onAddMore && (
-            <button type="button" className="insights-connect-cta" onClick={onAddMore}>
+          {(onEditFirst || onAddMore) && (
+            <button type="button" className="insights-connect-cta" onClick={onEditFirst ?? onAddMore}>
               <span>★</span>
-              <span>Go to Family Tab to Connect</span>
+              <span>Edit {nodes[0]?.data?.name ?? 'First Member'} to Add Connections</span>
               <span>→</span>
             </button>
           )}
@@ -428,11 +429,14 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const innerPlanetData = useMemo(() => {
     return nodes.map(n => ({
       node: n,
-      ...getInnerPlanetSigns(n.data.birthdate, n.data.birthTime ?? null),
+      ...getInnerPlanetSigns(n.data?.birthdate ?? null, n.data?.birthTime ?? null),
     }))
   }, [nodes])
 
-  const innerPlanetMap = new Map(innerPlanetData.map(d => [d.node.id, d]))
+  const innerPlanetMap = useMemo(
+    () => new Map(innerPlanetData.map(d => [d.node.id, d])),
+    [innerPlanetData]
+  )
 
   function getNodeElements(node) {
     const elements = new Set()
@@ -1046,7 +1050,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   return (
     <div className="insights-panel">
       <div className="insights-header">
-        <h2 className="form-title">✦ Family Insights</h2>
+        <h2 className="form-title">✦ {panelTitle}</h2>
         {onExport && (
           <button
             type="button"
