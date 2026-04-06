@@ -208,11 +208,12 @@
 
   .canvas-brand { display: none; }
   .relayout-btn--insights { display: none; }
+  .relayout-btn--sharelink { display: none; }
 
-  /* Move action buttons below the view toggle on mobile */
+  /* Position buttons above the fixed tab bar */
   .canvas-panel-btns {
     top: auto;
-    bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    bottom: calc(60px + env(safe-area-inset-bottom) + 0.75rem);
     right: max(0.75rem, env(safe-area-inset-right) + 0.5rem);
   }
 
