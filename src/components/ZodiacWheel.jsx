@@ -66,23 +66,53 @@ function spreadAngles(count, segStart) {
   return Array.from({ length: count }, (_, i) => segStart + pad + (usable / (count - 1)) * i)
 }
 
-export default function ZodiacWheel({ nodes, onSelectNode }) {
+export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
   const [hoveredNode, setHoveredNode] = useState(null)
   const [hoveredSign, setHoveredSign] = useState(null)
   const [zoom, setZoom] = useState(1)
   const [pan,  setPan]  = useState({ x: 0, y: 0 })
   const dragBase = useRef(null)
+  const [selectedGens, setSelectedGens] = useState(new Set()) // empty = all generations
+  const [selectedSign, setSelectedSign] = useState(null)
 
   const [activeRings, setActiveRings] = useState(() =>
-    Object.fromEntries(PLANET_RINGS.map(ring => [
-      ring.key,
-      ring.defaultOn && (ring.hardCap === null || nodes.length <= ring.hardCap),
-    ]))
+    Object.fromEntries(PLANET_RINGS.map(ring => [ring.key, ring.defaultOn]))
   )
 
   function toggleRing(key) {
     setActiveRings(prev => ({ ...prev, [key]: !prev[key] }))
   }
+
+  // ── Generation levels from parent-child edges ──────────────────────────────
+  const genLevels = useMemo(() => {
+    const pcEdges = (edges || []).filter(e => e.data?.relationType === 'parent-child')
+    const parentMap = {}
+    nodes.forEach(n => { parentMap[n.id] = [] })
+    pcEdges.forEach(e => { if (parentMap[e.target]) parentMap[e.target].push(e.source) })
+    const levels = {}
+    function level(id, visited = new Set()) {
+      if (visited.has(id)) return 0
+      if (levels[id] !== undefined) return levels[id]
+      visited.add(id)
+      const parents = parentMap[id] || []
+      levels[id] = parents.length === 0
+        ? 0
+        : Math.max(...parents.map(pid => level(pid, new Set(visited)))) + 1
+      return levels[id]
+    }
+    nodes.forEach(n => level(n.id))
+    return levels
+  }, [nodes, edges])
+
+  const allGens = useMemo(() => {
+    const gens = [...new Set(nodes.map(n => genLevels[n.id] ?? 0))].sort((a, b) => a - b)
+    return gens
+  }, [nodes, genLevels])
+
+  const displayNodes = useMemo(() => {
+    if (selectedGens.size === 0 || nodes.length <= 5) return nodes
+    return nodes.filter(n => selectedGens.has(genLevels[n.id] ?? 0))
+  }, [nodes, selectedGens, genLevels])
 
   const clampZoom = z => Math.max(0.35, Math.min(4, z))
 
@@ -93,15 +123,29 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
 
   function onPointerDown(e) {
     if (e.target.closest('.zodiac-member-marker')) return
-    dragBase.current = { mx: e.clientX, my: e.clientY, px: pan.x, py: pan.y }
+    dragBase.current = { mx: e.clientX, my: e.clientY, px: pan.x, py: pan.y, moved: false, target: e.target }
     e.currentTarget.setPointerCapture(e.pointerId)
   }
   function onPointerMove(e) {
     if (!dragBase.current) return
+    const dx = Math.abs(e.clientX - dragBase.current.mx)
+    const dy = Math.abs(e.clientY - dragBase.current.my)
+    if (dx > 4 || dy > 4) dragBase.current.moved = true
     setPan({ x: dragBase.current.px + (e.clientX - dragBase.current.mx),
               y: dragBase.current.py + (e.clientY - dragBase.current.my) })
   }
-  function onPointerUp() { dragBase.current = null }
+  function onPointerUp() {
+    if (dragBase.current && !dragBase.current.moved) {
+      // Treat as a click — check if it landed on a zodiac segment
+      const sign = dragBase.current.target?.closest?.('[data-sign]')?.dataset?.sign
+      if (sign && anyActiveBySign[sign]) {
+        setSelectedSign(s => s === sign ? null : sign)
+      } else if (!sign) {
+        setSelectedSign(null) // click on empty area clears selection
+      }
+    }
+    dragBase.current = null
+  }
   function resetView()   { setZoom(1); setPan({ x: 0, y: 0 }) }
 
   // Inner planet data — computed only when a planet ring that needs it is active
@@ -113,11 +157,11 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
     return m
   }, [nodes, needsInner])
 
-  // Build sign→nodes[] map for a given planet ring key
+  // Build sign→nodes[] map for a given planet ring key (uses displayNodes)
   function nodesForRing(key) {
     const map = {}
     ZODIAC_ORDER.forEach(z => { map[z.sign] = [] })
-    nodes.forEach(n => {
+    displayNodes.forEach(n => {
       let sign = null
       if      (key === 'sun')  sign = n.data.sign
       else if (key === 'moon') sign = (n.data.moonSign && n.data.moonSign !== 'Unknown') ? n.data.moonSign : null
@@ -125,6 +169,12 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
       if (sign && map[sign]) map[sign].push(n)
     })
     return map
+  }
+
+  // Max nodes in any single zodiac segment for a ring (crowding indicator)
+  function maxPerSegment(key) {
+    const bySign = nodesForRing(key)
+    return Math.max(0, ...ZODIAC_ORDER.map(z => bySign[z.sign]?.length ?? 0))
   }
 
   // Pre-compute for the segment highlight (has ANY active planet in that sign)
@@ -138,9 +188,9 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
     })
     return m
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeRings, innerByNode, nodes])
+  }, [activeRings, innerByNode, displayNodes])
 
-  const sortedNodes = [...nodes].sort((a, b) =>
+  const sortedNodes = [...displayNodes].sort((a, b) =>
     (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999')
   )
 
@@ -171,13 +221,15 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
               const color      = ELEMENT_COLORS[z.element] ?? '#c9a84c'
               const hasMembers = anyActiveBySign[z.sign]
               const isHov      = hoveredSign === z.sign
+              const isSel      = selectedSign === z.sign
               return (
-                <g key={z.sign}>
+                <g key={z.sign} data-sign={z.sign}>
                   <path d={arcPath(outerR, startAngle, endAngle)}
-                    fill={hasMembers ? `${color}18` : 'rgba(255,255,255,0.02)'}
-                    stroke={`${color}44`} strokeWidth="1"
+                    fill={isSel ? `${color}35` : hasMembers ? `${color}18` : 'rgba(255,255,255,0.02)'}
+                    stroke={isSel ? `${color}99` : `${color}44`}
+                    strokeWidth={isSel ? 1.5 : 1}
                     className="zodiac-segment"
-                    style={isHov ? { fill: `${color}28` } : undefined}
+                    style={{ cursor: hasMembers ? 'pointer' : 'default', ...(isHov && !isSel ? { fill: `${color}28` } : {}) }}
                     onMouseEnter={() => setHoveredSign(z.sign)}
                     onMouseLeave={() => setHoveredSign(null)}
                   />
@@ -196,13 +248,14 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
               return (
                 <g key={`lbl-${z.sign}`}>
                   <text x={pos.x} y={pos.y - 6} textAnchor="middle"
-                    className="zodiac-sign-symbol" fill={color}
+                    fontSize={13} fontWeight={600} fill={color}
                     style={{ opacity: hasMembers ? 1 : 0.4 }}>
                     {z.symbol}
                   </text>
                   <text x={pos.x} y={pos.y + 10} textAnchor="middle"
-                    className="zodiac-sign-name" fill={color}
-                    style={{ opacity: hasMembers ? 0.9 : 0.3 }}>
+                    fontSize={6} fill={color}
+                    fontFamily="Raleway, sans-serif"
+                    style={{ opacity: hasMembers ? 0.9 : 0.3, letterSpacing: '0.04em' }}>
                     {z.sign}
                   </text>
                 </g>
@@ -268,24 +321,37 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
                           {/* Initial centered in circle */}
                           <text x={pos.x} y={pos.y}
                             textAnchor="middle" dominantBaseline="central"
-                            className="zodiac-member-initial" fill={strokeColor}>
+                            fontSize={9} fontWeight={700}
+                            fontFamily="Cinzel, Georgia, serif"
+                            fill={strokeColor}>
                             {nameInitial(n.data.name)}
                           </text>
                           {/* Glyph just below the circle */}
                           <text x={pos.x} y={pos.y + ring.markerR + 6}
                             textAnchor="middle" dominantBaseline="central"
-                            style={{ fontSize: '8px', pointerEvents: 'none' }}
+                            fontSize={8} style={{ pointerEvents: 'none' }}
                             fill={glyphFill}>
                             {ring.glyph}
                           </text>
                         </>
                       ) : (
-                        <text x={pos.x} y={pos.y + 1}
-                          textAnchor="middle" dominantBaseline="central"
-                          style={{ fontSize: '7px', pointerEvents: 'none' }}
-                          fill={glyphFill}>
-                          {ring.glyph}
-                        </text>
+                        <>
+                          {/* Initial centered in small circle */}
+                          <text x={pos.x} y={pos.y}
+                            textAnchor="middle" dominantBaseline="central"
+                            fontSize={6} fontWeight={600}
+                            style={{ pointerEvents: 'none' }}
+                            fill={strokeColor}>
+                            {nameInitial(n.data.name)}
+                          </text>
+                          {/* Planet glyph outside, below the circle */}
+                          <text x={pos.x} y={pos.y + ring.markerR + 5}
+                            textAnchor="middle" dominantBaseline="central"
+                            fontSize={7} style={{ pointerEvents: 'none' }}
+                            fill={glyphFill}>
+                            {ring.glyph}
+                          </text>
+                        </>
                       )}
                     </g>
                   )
@@ -297,7 +363,7 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
             <circle cx={cx} cy={cy} r={52}
               fill="rgba(9,7,26,0.92)" stroke="rgba(201,168,76,0.2)" strokeWidth="1" />
             <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
-              className="zodiac-center-title" fill="var(--gold)">✦</text>
+              fontSize={20} fill="var(--gold)">✦</text>
           </svg>
         </div>
 
@@ -346,26 +412,92 @@ export default function ZodiacWheel({ nodes, onSelectNode }) {
       <div className="zodiac-side-panel">
       <div className="zodiac-ring-toggles">
         {PLANET_RINGS.map(ring => {
-          const isCapped = ring.hardCap !== null && nodes.length > ring.hardCap
-          const isOn     = activeRings[ring.key]
+          const isOn      = activeRings[ring.key]
+          const maxSeg    = maxPerSegment(ring.key)
+          const isCrowded = maxSeg > 4
           return (
             <button
               key={ring.key}
-              className={`zodiac-ring-btn${isOn ? ' zodiac-ring-btn--on' : ''}${isCapped ? ' zodiac-ring-btn--capped' : ''}`}
-              onClick={() => !isCapped && toggleRing(ring.key)}
-              disabled={isCapped}
-              title={isCapped ? `Too many people for a clear ${ring.label} ring (max ${ring.hardCap})` : `Toggle ${ring.label} ring`}
+              className={`zodiac-ring-btn${isOn ? ' zodiac-ring-btn--on' : ''}${isCrowded ? ' zodiac-ring-btn--crowded' : ''}`}
+              onClick={() => toggleRing(ring.key)}
+              title={isCrowded ? `${ring.label}: up to ${maxSeg} markers share one sign — use generation filter to reduce` : `Toggle ${ring.label} ring`}
               style={{ '--ring-color': ring.key === 'sun' ? '#c9a84c' : ring.color }}
             >
               {ring.glyph} {ring.label}
-              {isCapped && <span className="zodiac-ring-cap"> crowded</span>}
+              {isCrowded && <span className="zodiac-ring-cap"> ⚠{maxSeg}</span>}
             </button>
           )
         })}
       </div>
+      {nodes.length > 5 && allGens.length > 1 && (
+        <div className="zodiac-gen-filter">
+          <button
+            className={`zodiac-gen-btn${selectedGens.size === 0 ? ' zodiac-gen-btn--on' : ''}`}
+            onClick={() => setSelectedGens(new Set())}
+          >All</button>
+          {allGens.map(g => (
+            <button
+              key={g}
+              className={`zodiac-gen-btn${selectedGens.has(g) ? ' zodiac-gen-btn--on' : ''}`}
+              onClick={() => setSelectedGens(prev => {
+                const next = new Set(prev)
+                if (next.has(g)) next.delete(g); else next.add(g)
+                return next
+              })}
+            >Gen {g + 1}</button>
+          ))}
+        </div>
+      )}
 
-      {/* ── Legend ────────────────────────────────────────────────────────── */}
-      <div className="zodiac-legend">
+      {/* ── Sign detail panel (hidden during export via filter) ────────────── */}
+      {(() => {
+        const z = selectedSign ? ZODIAC_ORDER.find(z => z.sign === selectedSign) : null
+        const color = z ? (ELEMENT_COLORS[z.element] ?? '#c9a84c') : '#c9a84c'
+        const groups = z ? PLANET_RINGS.filter(r => activeRings[r.key]).map(ring => ({
+          ring,
+          members: nodesForRing(ring.key)[selectedSign] ?? [],
+        })).filter(g => g.members.length > 0) : []
+        return (
+          <div className="zodiac-sign-detail" style={{ display: selectedSign ? undefined : 'none' }}>
+            {z && (
+              <>
+                <div className="zodiac-sign-detail-header" style={{ borderColor: `${color}55` }}>
+                  <span className="zodiac-sign-detail-title" style={{ color }}>
+                    {z.symbol} {selectedSign}
+                    <span className="zodiac-sign-detail-element"> {z.element}</span>
+                  </span>
+                  <button className="zodiac-sign-detail-close" onClick={() => setSelectedSign(null)}>✕</button>
+                </div>
+                {groups.length === 0 ? (
+                  <p className="zodiac-sign-detail-empty">No active rings have members here.</p>
+                ) : groups.map(({ ring, members }) => (
+                  <div key={ring.key} className="zodiac-sign-detail-group">
+                    <span className="zodiac-sign-detail-planet"
+                      style={{ color: ring.key === 'sun' ? '#c9a84c' : ring.color }}>
+                      {ring.glyph} {ring.label}
+                    </span>
+                    <div className="zodiac-sign-detail-members">
+                      {members.map(n => (
+                        <button
+                          key={n.id}
+                          className="zodiac-sign-detail-member"
+                          style={{ color: n.data.elementColor ?? '#c9a84c' }}
+                          onClick={() => { onSelectNode?.(n.id); setSelectedSign(null) }}
+                        >
+                          {n.data.symbol} {n.data.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        )
+      })()}
+
+      {/* ── Legend (always rendered; hidden on screen when sign detail is open) ── */}
+      <div className="zodiac-legend" style={{ display: selectedSign ? 'none' : undefined }}>
         <div className="zodiac-legend-header">
           <span>
             {PLANET_RINGS.filter(r => activeRings[r.key]).map(r => r.glyph).join(' · ')}

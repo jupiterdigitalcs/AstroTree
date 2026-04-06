@@ -91,10 +91,13 @@ async function handleShare(req, res) {
   const deviceId = req.headers['x-device-id']
   if (!deviceId || !req.body?.id) return res.status(400).json({ token: null })
   const token = crypto.randomUUID()
-  const { error } = await getSupabase()
+  const { data, error } = await getSupabase()
     .from('charts').update({ share_token: token })
     .eq('id', req.body.id).eq('device_id', deviceId)
-  return error ? res.status(500).json({ token: null }) : res.status(200).json({ token })
+    .select('id')
+  if (error) return res.status(500).json({ token: null })
+  if (!data?.length) return res.status(404).json({ token: null })
+  return res.status(200).json({ token })
 }
 
 async function handleRestore(req, res) {

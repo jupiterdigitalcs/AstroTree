@@ -129,7 +129,7 @@ export default function App() {
     edgesForDisplay,
     handleUpdate, handleDelete,
     handleAddEdge, handleRemoveEdge,
-    onNodeClick, onConnect,
+    onNodeClick, onNodeDragStart, onNodeDrag, onConnect,
   } = useTreeState({
     nodes, edges,
     setNodes, setEdges,
@@ -145,6 +145,7 @@ export default function App() {
     })
     if (allNonHierarchical) setTreeView('constellation')
   }, [edges]) // eslint-disable-line react-hooks/exhaustive-deps
+
 
   // ── Prevent bots from indexing shared chart pages ──────────────────────────
   useEffect(() => {
@@ -791,6 +792,7 @@ export default function App() {
           </div>
         )}
 
+
         {/* View-only banner for shared charts */}
         {viewOnly && (
           <div className="view-only-banner">
@@ -827,6 +829,7 @@ export default function App() {
           <Suspense fallback={null}>
             <ZodiacWheel
               nodes={nodes}
+              edges={edges}
               onSelectNode={(id) => setEditingNodeId(id)}
             />
           </Suspense>
@@ -844,6 +847,7 @@ export default function App() {
           nodes={nodes} edges={edgesForDisplay}
           onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
           onConnect={onConnect} onNodeClick={onNodeClick}
+          onNodeDragStart={onNodeDragStart} onNodeDrag={onNodeDrag}
           nodeTypes={NODE_TYPES}
           fitView fitViewOptions={{ padding: 0.25 }}
           minZoom={0.3} colorMode="dark"

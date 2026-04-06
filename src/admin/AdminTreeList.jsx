@@ -10,11 +10,18 @@ export default function AdminTreeList({ onSelectTree }) {
   const [page,     setPage]     = useState(0)
   const [loading,  setLoading]  = useState(false)
   const [hasMore,  setHasMore]  = useState(true)
+  const [fetchError, setFetchError] = useState(null)
   const debounceRef = useRef(null)
 
   const load = useCallback(async (s, e, df, dt, p, append = false) => {
     setLoading(true)
+    setFetchError(null)
     const results = await fetchAllCharts({ search: s, email: e, dateFrom: df, dateTo: dt, page: p })
+    if (results?.error) {
+      setFetchError(results.error)
+      setLoading(false)
+      return
+    }
     setCharts(prev => append ? [...prev, ...results] : results)
     setHasMore(results.length === 50)
     setLoading(false)
@@ -76,7 +83,14 @@ export default function AdminTreeList({ onSelectTree }) {
         )}
       </div>
 
-      {charts.length === 0 && !loading && (
+      {fetchError && (
+        <p className="admin-empty" style={{ color: '#e87070' }}>
+          {fetchError === 'auth'
+            ? '⚠ Session expired — log out and log back in.'
+            : `⚠ Failed to load charts (${fetchError}) — check console for details.`}
+        </p>
+      )}
+      {!fetchError && charts.length === 0 && !loading && (
         <p className="admin-empty">No trees found.</p>
       )}
 

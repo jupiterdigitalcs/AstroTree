@@ -85,16 +85,46 @@
 .element-bar-track { height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
 .element-bar-fill { height: 100%; border-radius: 3px; transition: width 0.45s ease; min-width: 2px; }
 .element-bar-count { font-size: 0.7rem; text-align: right; }
-.insight-coming-soon { border-color: rgba(201,168,76,0.15); background: rgba(201,168,76,0.025); }
-
-.insight-consult-cta {
-  border-color: rgba(140,80,200,0.3);
-  background: linear-gradient(135deg, rgba(140,80,200,0.06) 0%, rgba(201,168,76,0.04) 100%);
+/* Coming soon — teaser strip, visually separate from data cards */
+.insight-coming-soon {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px dashed rgba(201,168,76,0.2);
+  border-radius: var(--radius);
+  opacity: 0.6;
 }
+.insight-coming-soon-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  opacity: 0.75;
+}
+
+/* Consult CTA — promotional strip, not a data card */
+.insight-consult-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.85rem 1rem 0.85rem 1.1rem;
+  border-left: 3px solid rgba(140,80,200,0.5);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: linear-gradient(to right, rgba(140,80,200,0.08), rgba(140,80,200,0.02));
+}
+.insight-consult-cta-text {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+.insight-consult-cta-text strong { color: var(--text); font-weight: 500; }
 
 .insight-consult-link {
   display: inline-block;
-  margin-top: 0.4rem;
+  margin-top: 0.1rem;
   font-family: 'Cinzel', serif;
   font-size: 0.75rem;
   font-weight: 600;
@@ -104,6 +134,15 @@
   transition: color 0.15s;
 }
 .insight-consult-link:hover { color: var(--gold-light); }
+
+.insight-consult-contact {
+  font-family: 'Cinzel', serif;
+  font-size: 0.73rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  margin-top: 0.1rem;
+}
 
 .insight-add-more {
   display: flex;
@@ -146,17 +185,55 @@
   .export-label-mobile  { display: inline; }
 }
 
-/* ── 2-column layout applied during export ───────────────────────────────── */
-.insights-panel--exporting {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  align-items: start;
-  padding: 1.5rem !important;
-  width: 720px !important;
+/* ── Export-only member list ─────────────────────────────────────────────── */
+.insights-member-list {
+  display: none;
 }
-.insights-panel--exporting .insights-header,
-.insights-panel--exporting .insight-add-more,
-.insights-panel--exporting .insights-brand-footer {
+.insights-panel--exporting .insights-member-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.2rem;
   grid-column: 1 / -1;
+  padding: 0.5rem 0 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.insights-member-chip {
+  font-size: 0.74rem;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+.insights-member-chip strong { color: var(--text); font-weight: 500; }
+
+/* ── Column layout applied during export (CSS columns = natural fill, no blank gaps) ── */
+.insights-panel--exporting {
+  display: block !important;
+  columns: 2;
+  column-gap: 1.1rem;
+  padding: 1.5rem !important;
+  width: 740px !important;
+}
+/* Every direct child: no card splits, consistent spacing */
+.insights-panel--exporting > * {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin-bottom: 0.85rem;
+  display: block;
+}
+/* Full-width items span all columns */
+.insights-panel--exporting .insights-header,
+.insights-panel--exporting .insights-member-list,
+.insights-panel--exporting .insights-brand-footer,
+.insights-panel--exporting .insight-consult-cta {
+  column-span: all;
+}
+
+/* 3 columns for medium families (9–13 insight cards) */
+.insights-panel--exporting--wide {
+  columns: 3 !important;
+  width: 1020px !important;
+}
+/* 4 columns for large families (14+ insight cards) */
+.insights-panel--exporting--xl {
+  columns: 4 !important;
+  width: 1300px !important;
 }

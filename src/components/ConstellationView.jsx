@@ -119,6 +119,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
   const [isPanning, setIsPanning] = useState(false)
   const panStart = useRef(null)
   const svgRef = useRef(null)
+  const dragMoved = useRef(false)
 
   const size = 560
 
@@ -149,12 +150,14 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
   const handlePointerDown = useCallback((e, nodeIdx) => {
     e.stopPropagation()
     e.preventDefault()
+    dragMoved.current = false
     setDragging(nodeIdx)
     e.target.setPointerCapture?.(e.pointerId)
   }, [])
 
   const handlePointerMove = useCallback((e) => {
     if (dragging != null) {
+      dragMoved.current = true
       const pt = getSVGPoint(e.clientX, e.clientY)
       setPositions(prev => {
         const next = [...prev]
@@ -253,15 +256,14 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
           {positions.length === nodes.length && nodes.map((n, i) => {
             const color = n.data.elementColor || '#c9a84c'
             const isHovered = hoveredNode === n.id
-            const isDragged = dragging === i
             return (
               <g
                 key={n.id}
-                onClick={() => { if (!isDragged) onSelectNode?.(n.id) }}
+                onClick={() => { if (!dragMoved.current) onSelectNode?.(n.id) }}
                 onMouseEnter={() => setHoveredNode(n.id)}
                 onMouseLeave={() => setHoveredNode(null)}
                 onPointerDown={(e) => handlePointerDown(e, i)}
-                style={{ cursor: isDragged ? 'grabbing' : 'grab' }}
+                style={{ cursor: dragging === i ? 'grabbing' : 'grab' }}
               >
                 <circle
                   cx={positions[i].x} cy={positions[i].y}

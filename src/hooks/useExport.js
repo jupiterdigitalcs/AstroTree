@@ -152,7 +152,11 @@ export function useExport({ savedChartId, fitViewRef }) {
         filter: node => {
           const c = node.classList
           if (!c) return true
-          if (c.contains('zodiac-tooltip')) return false
+          if (c.contains('zodiac-tooltip'))     return false
+          if (c.contains('zodiac-sign-detail')) return false
+          if (c.contains('zodiac-ring-toggles')) return false
+          if (c.contains('zodiac-gen-filter'))  return false
+          if (c.contains('zodiac-zoom-controls')) return false
           return true
         },
       })
@@ -215,6 +219,13 @@ export function useExport({ savedChartId, fitViewRef }) {
     if (brandEl) brandEl.style.display = 'flex'
     el.classList.add('insights-panel--exporting')
 
+    // Auto-size to 3 or 4 columns for families with many insight cards
+    const cardCount = el.querySelectorAll('.insight-card').length
+    const sizeClass = cardCount >= 14 ? 'insights-panel--exporting--xl'
+                    : cardCount >= 9  ? 'insights-panel--exporting--wide'
+                    : ''
+    if (sizeClass) el.classList.add(sizeClass)
+
     const { chartTitle, slug } = getChartSlug(savedChartId)
     const filename = `${slug}-insights.png`
 
@@ -229,7 +240,6 @@ export function useExport({ savedChartId, fitViewRef }) {
           if (c.contains('insights-export-btn'))    return false
           if (c.contains('insight-add-more'))       return false
           if (c.contains('insight-connect-prompt')) return false
-          if (c.contains('insight-consult-cta'))    return false
           return true
         },
       })
@@ -255,7 +265,7 @@ export function useExport({ savedChartId, fitViewRef }) {
       if (err?.name === 'AbortError') return
       setExportError('Export failed — please try again.')
     } finally {
-      el.classList.remove('insights-panel--exporting')
+      el.classList.remove('insights-panel--exporting', 'insights-panel--exporting--wide', 'insights-panel--exporting--xl')
       if (brandEl) brandEl.style.display = ''
       setExporting(false)
     }

@@ -15,16 +15,66 @@ const ELEMENT_ENERGY = {
   Water: 'intuitive and emotional',
 }
 
+function fmtBirthdate(d) {
+  if (!d) return '—'
+  const [y, mo, day] = d.split('-')
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  return `${months[+mo - 1]} ${+day}, ${y}`
+}
+
 const SIGN_SYMBOLS = {
   Aries:'♈', Taurus:'♉', Gemini:'♊', Cancer:'♋', Leo:'♌', Virgo:'♍',
   Libra:'♎', Scorpio:'♏', Sagittarius:'♐', Capricorn:'♑', Aquarius:'♒', Pisces:'♓',
 }
+
+const SIGN_FLAVOR = {
+  Aries:       'bold, pioneering energy — instinct over hesitation',
+  Taurus:      'steady, sensual, and deeply rooted in the material world',
+  Gemini:      'curious, adaptable, and wired for connection and ideas',
+  Cancer:      'nurturing, intuitive, and attuned to home and memory',
+  Leo:         'expressive, warm-hearted, and built to shine',
+  Virgo:       'precise, devoted, and quietly powerful in service',
+  Libra:       'harmonious, fair-minded, and drawn to beauty and balance',
+  Scorpio:     'intense, perceptive, and transformed by depth',
+  Sagittarius: 'expansive, philosophical, and always seeking meaning',
+  Capricorn:   'disciplined, ambitious, and built to endure',
+  Aquarius:    'visionary, independent, and ahead of its time',
+  Pisces:      'empathic, dreamy, and moved by the unseen',
+}
+
+const PLANET_GLYPH = { sun: '☀', moon: '☽', mercury: '☿', venus: '♀', mars: '♂' }
 
 const ELEMENT_THREAD_BLURB = {
   Fire:  'A family line of passion, courage, and creative drive',
   Earth: 'A legacy of groundedness, patience, and practical wisdom',
   Air:   'Generations of quick minds, curiosity, and a gift for connection',
   Water: 'Deep emotional intelligence and intuition flowing through the generations',
+}
+
+const PLUTO_GENS = {
+  Cancer:      { years: '~1914–1939', flavor: 'shaped by home, survival, and deep loyalty to family' },
+  Leo:         { years: '~1939–1957', flavor: 'driven by identity, pride, and a need to leave their mark' },
+  Virgo:       { years: '~1957–1972', flavor: 'defined by craft, critical thinking, and a drive to improve' },
+  Libra:       { years: '~1972–1984', flavor: 'formed by ideals of fairness, partnership, and social harmony' },
+  Scorpio:     { years: '~1984–1995', flavor: 'marked by transformation, intensity, and truth-seeking' },
+  Sagittarius: { years: '~1995–2008', flavor: 'colored by idealism, global thinking, and the search for meaning' },
+  Capricorn:   { years: '~2008–2024', flavor: 'shaped by ambition, structure, and rethinking the rules' },
+  Aquarius:    { years: '2024+',      flavor: 'awakening into collective vision, technology, and radical change' },
+}
+const PLUTO_ORDER = ['Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius']
+
+function getPlutoSign(birthdate) {
+  if (!birthdate) return null
+  const year = +birthdate.split('-')[0]
+  if (year < 1914) return null
+  if (year <= 1939) return 'Cancer'
+  if (year <= 1957) return 'Leo'
+  if (year <= 1971) return 'Virgo'
+  if (year <= 1983) return 'Libra'
+  if (year <= 1995) return 'Scorpio'
+  if (year <= 2008) return 'Sagittarius'
+  if (year <= 2023) return 'Capricorn'
+  return 'Aquarius'
 }
 
 const OPPOSITE_SIGNS = {
@@ -99,13 +149,18 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
   )
 }
 
-function FullCompatPairs({ pairs }) {
+function FullCompatPairs({ pairs, title, isExporting, generationLevel }) {
   const [showAll, setShowAll] = useState(false)
-  const displayed = showAll ? pairs : pairs.slice(0, 10)
+  // Export: trim to oldest 2 generations for large families
+  const exportPairs = isExporting && pairs.length > 12
+    ? pairs.filter(p => (generationLevel?.[p.a.id] ?? 0) <= 1 && (generationLevel?.[p.b.id] ?? 0) <= 1)
+    : pairs
+  const trimmedCount = pairs.length - exportPairs.length
+  const displayed = showAll ? exportPairs : exportPairs.slice(0, 8)
   return (
-    <div className="insight-card">
-      <h3 className="insight-heading">Full Compatibility Report</h3>
-      <p className="insight-note compat-pair-count">{pairs.length} pair{pairs.length !== 1 ? 's' : ''} across your family</p>
+    <div className="insight-card insight-full-compat">
+      <h3 className="insight-heading">{title}</h3>
+      <p className="insight-note compat-pair-count">{exportPairs.length} notable pair{exportPairs.length !== 1 ? 's' : ''}</p>
       <div className="compat-pair-list">
         {displayed.map(pair => (
           <div key={pairKey(pair.a, pair.b)} className="compat-pair-row">
@@ -121,31 +176,46 @@ function FullCompatPairs({ pairs }) {
                 ☽ {pair.moonNote}
               </p>
             )}
+            {pair.needsTimeCheck && (
+              <p className="insight-compat" style={{ color: 'var(--text-muted)', fontSize: '0.68rem', fontStyle: 'italic', marginTop: '0.1rem' }}>
+                ⚠ Confirm with exact birth time
+              </p>
+            )}
           </div>
         ))}
       </div>
-      {pairs.length > 10 && (
+      {exportPairs.length > 8 && (
         <button type="button" className="compat-show-more-btn" onClick={() => setShowAll(v => !v)}>
-          {showAll ? 'Show less' : `Show all ${pairs.length} pairs`}
+          {showAll ? 'Show less' : `Show all ${exportPairs.length} pairs`}
         </button>
+      )}
+      {trimmedCount > 0 && (
+        <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.2rem' }}>
+          + {trimmedCount} more pair{trimmedCount !== 1 ? 's' : ''} from younger generations — see full panel
+        </p>
       )}
     </div>
   )
 }
 
-function FamilyRoles({ memberRoles }) {
+function FamilyRoles({ memberRoles, isExporting, generationLevel }) {
   const [expanded, setExpanded] = useState(null)
+  // For large families in export, trim to oldest 2 generations to keep the card compact
+  const displayRoles = isExporting && memberRoles.length >= 8
+    ? memberRoles.filter(r => (generationLevel?.[r.node.id] ?? 0) <= 1)
+    : memberRoles
+  const trimmedCount = memberRoles.length - displayRoles.length
   return (
-    <div className="insight-card">
+    <div className="insight-card insight-family-roles">
       <h3 className="insight-heading">Family Roles</h3>
       <p className="insight-note" style={{ marginBottom: '0.4rem' }}>Each member's cosmic role in the family dynamic</p>
-      {memberRoles.map(role => {
-        const isOpen = expanded === role.node.id
+      {displayRoles.map(role => {
+        const isOpen = isExporting || expanded === role.node.id
         return (
           <div
             key={role.node.id}
             className={`family-role-item${isOpen ? ' family-role-item--open' : ''}`}
-            onClick={() => setExpanded(v => v === role.node.id ? null : role.node.id)}
+            onClick={isExporting ? undefined : () => setExpanded(v => v === role.node.id ? null : role.node.id)}
           >
             <div className="family-role-header">
               <span className="family-role-symbol" style={{ color: role.node.data.elementColor }}>{role.node.data.symbol}</span>
@@ -172,6 +242,11 @@ function FamilyRoles({ memberRoles }) {
           </div>
         )
       })}
+      {trimmedCount > 0 && (
+        <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.2rem' }}>
+          + {trimmedCount} younger {trimmedCount === 1 ? 'member' : 'members'} — see full panel for all roles
+        </p>
+      )}
     </div>
   )
 }
@@ -191,8 +266,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           <p className="insight-note">💞 <strong>Partner harmony</strong> — elemental compatibility for couples</p>
           <p className="insight-note">🔁 <strong>Sign &amp; element threads</strong> — cosmic patterns across generations</p>
         </div>
-        <div className="insight-card insight-coming-soon">
-          <h3 className="insight-heading">Coming in future updates ✨</h3>
+        <div className="insight-coming-soon">
+          <p className="insight-coming-soon-label">Coming in future updates ✨</p>
           <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>
           <p className="insight-note">🔮 <strong>Full Chart Overlays</strong> — planetary alignments across generations</p>
         </div>
@@ -222,8 +297,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             </button>
           )}
         </div>
-        <div className="insight-card insight-coming-soon">
-          <h3 className="insight-heading">Coming in future updates ✨</h3>
+        <div className="insight-coming-soon">
+          <p className="insight-coming-soon-label">Coming in future updates ✨</p>
           <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>
           <p className="insight-note">🔮 <strong>Full Chart Overlays</strong> — planetary alignments across generations</p>
         </div>
@@ -256,6 +331,22 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       ...getInnerPlanetSigns(n.data.birthdate, n.data.birthTime ?? null),
     }))
   }, [nodes])
+
+  const innerPlanetMap = new Map(innerPlanetData.map(d => [d.node.id, d]))
+
+  function getNodeElements(node) {
+    const elements = new Set()
+    if (node.data.element) elements.add(node.data.element)
+    if (node.data.moonSign && node.data.moonSign !== 'Unknown') {
+      const el = getElement(node.data.moonSign).element
+      if (el) elements.add(el)
+    }
+    const inner = innerPlanetMap.get(node.id)
+    if (inner?.mercury?.sign) { const el = getElement(inner.mercury.sign).element; if (el) elements.add(el) }
+    if (inner?.venus?.sign)   { const el = getElement(inner.venus.sign).element;   if (el) elements.add(el) }
+    if (inner?.mars?.sign)    { const el = getElement(inner.mars.sign).element;    if (el) elements.add(el) }
+    return elements
+  }
 
   // ── Per-node warned planets — a planet is excluded if ingress + no birth time ─
   const warningsPerNode = useMemo(() => {
@@ -297,6 +388,39 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     })
     return { elC, modC, masc, fem }
   }, [nodes, warningsPerNode, innerPlanetData])
+
+  // ── Dominant sign by total planet count ──────────────────────────────────────
+  const signPlanetTotals = useMemo(() => {
+    const counts = {}
+    nodes.forEach(n => {
+      const warned = warningsPerNode.get(n.id) ?? new Set()
+      const inner  = innerPlanetMap.get(n.id)
+      const candidates = [
+        { planet: 'sun',     sign: n.data.sign },
+        { planet: 'moon',    sign: (n.data.moonSign && n.data.moonSign !== 'Unknown') ? n.data.moonSign : null },
+        { planet: 'mercury', sign: inner?.mercury?.sign ?? null },
+        { planet: 'venus',   sign: inner?.venus?.sign   ?? null },
+        { planet: 'mars',    sign: inner?.mars?.sign    ?? null },
+      ]
+      candidates.forEach(({ planet, sign }) => {
+        if (!sign || warned.has(planet)) return
+        if (!counts[sign]) counts[sign] = { total: 0, planets: {} }
+        counts[sign].total++
+        counts[sign].planets[planet] = (counts[sign].planets[planet] || 0) + 1
+      })
+    })
+    return counts
+  }, [nodes, warningsPerNode, innerPlanetMap])
+
+  const topSigns = useMemo(() => {
+    const sorted = Object.entries(signPlanetTotals)
+      .filter(([, v]) => v.total >= 2)
+      .sort((a, b) => b[1].total - a[1].total)
+    if (!sorted.length) return []
+    const top = [sorted[0]]
+    if (sorted[1] && sorted[0][1].total - sorted[1][1].total <= 1) top.push(sorted[1])
+    return top
+  }, [signPlanetTotals])
 
   const dominant        = ELEMENTS.reduce((a, b) => allPlanetCounts.elC[a] >= allPlanetCounts.elC[b] ? a : b)
   const dominantModality = Object.entries(allPlanetCounts.modC).reduce((a, b) => b[1] > a[1] ? b : a)[0]
@@ -360,25 +484,45 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     parentMap[e.target].push(e.source)
   })
 
+  // ── Generation depth (0 = root/oldest, 1 = children, 2 = grandchildren…) ────
+  const generationLevel = {}
+  ;(function computeGenLevels() {
+    function level(nodeId, visited = new Set()) {
+      if (visited.has(nodeId)) return 0
+      if (generationLevel[nodeId] !== undefined) return generationLevel[nodeId]
+      visited.add(nodeId)
+      const parents = parentMap[nodeId] || []
+      generationLevel[nodeId] = parents.length === 0
+        ? 0
+        : Math.max(...parents.map(pid => level(pid, new Set(visited)))) + 1
+      return generationLevel[nodeId]
+    }
+    nodes.forEach(n => level(n.id))
+  })()
+
   function getLongestChain(nodeId, keyFn, keyValue, visited = new Set()) {
     if (visited.has(nodeId)) return []
     visited.add(nodeId)
     const node = nodes.find(n => n.id === nodeId)
     if (!node || keyFn(node) !== keyValue) return []
-    const parents = (parentMap[nodeId] || []).flatMap(
-      pid => getLongestChain(pid, keyFn, keyValue, visited)
-    )
-    return parents.length > 0 ? [...parents, node] : [node]
+    let bestParent = []
+    for (const pid of (parentMap[nodeId] || [])) {
+      const chain = getLongestChain(pid, keyFn, keyValue, new Set(visited))
+      if (chain.length > bestParent.length) bestParent = chain
+    }
+    return bestParent.length > 0 ? [...bestParent, node] : [node]
   }
   function getLongestChainWhere(nodeId, predicate, visited = new Set()) {
     if (visited.has(nodeId)) return []
     visited.add(nodeId)
     const node = nodes.find(n => n.id === nodeId)
     if (!node || !predicate(node)) return []
-    const parents = (parentMap[nodeId] || []).flatMap(
-      pid => getLongestChainWhere(pid, predicate, visited)
-    )
-    return parents.length > 0 ? [...parents, node] : [node]
+    let bestParent = []
+    for (const pid of (parentMap[nodeId] || [])) {
+      const chain = getLongestChainWhere(pid, predicate, new Set(visited))
+      if (chain.length > bestParent.length) bestParent = chain
+    }
+    return bestParent.length > 0 ? [...bestParent, node] : [node]
   }
   function getNodeSigns(node) {
     const signs = new Set()
@@ -391,26 +535,38 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     return signs
   }
 
-  // ── Sign threads (all planets) ─────────────────────────────────────────────
-  const allSignsInTree = new Set()
-  nodes.forEach(n => getNodeSigns(n).forEach(s => allSignsInTree.add(s)))
-  const signThreads = {}
-  allSignsInTree.forEach(sign => {
-    let longest = []
-    nodes.forEach(n => {
-      const chain = getLongestChainWhere(n.id, x => getNodeSigns(x).has(sign), new Set())
-      if (chain.length >= 2 && chain.length > longest.length) longest = chain
+  // ── Sign threads: sun + moon only (inner planets too noisy) ─────────────────
+  function longestThreadFor(nodePredicate, pool = nodes) {
+    const threads = {}
+    const signs = new Set(pool.map(nodePredicate).filter(Boolean))
+    signs.forEach(sign => {
+      let longest = []
+      pool.forEach(n => {
+        const chain = getLongestChainWhere(n.id, x => nodePredicate(x) === sign, new Set())
+        if (chain.length >= 2 && chain.length > longest.length) longest = chain
+      })
+      if (longest.length >= 2) threads[sign] = longest
     })
-    if (longest.length >= 2) signThreads[sign] = longest
-  })
+    return threads
+  }
+  const sunSignThreads  = longestThreadFor(n => n.data.sign)
+  const moonSignThreads = longestThreadFor(
+    n => (n.data.moonSign && n.data.moonSign !== 'Unknown') ? n.data.moonSign : null,
+    moonNodes
+  )
+  // Merge, sort by chain length descending, cap at 6 to avoid clutter
+  const signThreadList = [
+    ...Object.entries(sunSignThreads).map(([sign, chain]) => ({ sign, chain, planet: 'sun' })),
+    ...Object.entries(moonSignThreads).map(([sign, chain]) => ({ sign, chain, planet: 'moon' })),
+  ].sort((a, b) => b.chain.length - a.chain.length).slice(0, 6)
 
-  // ── Elemental family threads ─────────────────────────────────────────────────
+  // ── Elemental family threads (any planet, not just sun) ──────────────────────
   const elementThreads = {}
   ELEMENTS.forEach(el => {
     let longest = []
     nodes.forEach(n => {
-      if (n.data.element !== el) return
-      const chain = getLongestChain(n.id, x => x.data.element, el, new Set())
+      if (!getNodeElements(n).has(el)) return
+      const chain = getLongestChainWhere(n.id, x => getNodeElements(x).has(el), new Set())
       if (chain.length >= 2 && chain.length > longest.length) longest = chain
     })
     if (longest.length >= 2) elementThreads[el] = longest
@@ -438,14 +594,26 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       })
     )
   })
+  // Grandparent-grandchild: parent's parent → grandchild
+  const grandparentKeys = new Set()
+  parentChildEdges.forEach(e => {
+    ;(childrenByParent[e.target] || []).forEach(gc => {
+      grandparentKeys.add([e.source, gc].sort().join('|'))
+    })
+  })
+  // Great-grandparent: one more level
+  const greatGrandKeys = new Set()
+  ;[...grandparentKeys].forEach(gpKey => {
+    const [gp, gc] = gpKey.split('|')
+    ;(childrenByParent[gc] || []).forEach(ggc => {
+      greatGrandKeys.add([gp, ggc].sort().join('|'))
+    })
+  })
 
   // ── Notable bonds ────────────────────────────────────────────────────────────
   const shownKeys = new Set()
   parentChildEdges.forEach(e => shownKeys.add([e.source, e.target].sort().join('|')))
   spouseEdges.forEach(e => shownKeys.add([e.source, e.target].sort().join('|')))
-
-  // Quick lookup for inner planet data in the bond loops
-  const innerPlanetMap = new Map(innerPlanetData.map(d => [d.node.id, d]))
 
   const notableBonds = []
   for (let i = 0; i < nodes.length; i++) {
@@ -516,7 +684,18 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       }
       if (score === 0) continue
       const rel = isSibling ? 'siblings' : isCousin ? 'cousins' : ''
-      notableBonds.push({ a, b, score, note, noteType, rel })
+      const moonWarnA  = warningsPerNode.get(a.id)?.has('moon')  ?? false
+      const moonWarnB  = warningsPerNode.get(b.id)?.has('moon')  ?? false
+      const venusWarnA = warningsPerNode.get(a.id)?.has('venus') ?? false
+      const venusWarnB = warningsPerNode.get(b.id)?.has('venus') ?? false
+      const marsWarnA  = warningsPerNode.get(a.id)?.has('mars')  ?? false
+      const marsWarnB  = warningsPerNode.get(b.id)?.has('mars')  ?? false
+      const needsTimeCheck =
+        (sameMoon  && (moonWarnA || moonWarnB)) ||
+        ((aSunBMoon || bSunAMoon) && (moonWarnA || moonWarnB)) ||
+        (sameVenus && (venusWarnA || venusWarnB)) ||
+        (sameMars  && (marsWarnA  || marsWarnB))
+      notableBonds.push({ a, b, score, note, noteType, rel, needsTimeCheck })
     }
   }
   notableBonds.sort((x, y) => y.score - x.score)
@@ -532,10 +711,12 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       const a = nodes[i], b = nodes[j]
       const key = pairKey(a, b)
       let relationLabel = 'extended family'
-      if (spouseEdgeSet.has(key))           relationLabel = 'partners'
-      else if (parentChildEdgeSet.has(key)) relationLabel = 'parent & child'
-      else if (siblingKeys.has(key))        relationLabel = 'siblings'
-      else if (cousinKeys.has(key))         relationLabel = 'cousins'
+      if (spouseEdgeSet.has(key))            relationLabel = 'partners'
+      else if (parentChildEdgeSet.has(key))  relationLabel = 'parent & child'
+      else if (siblingKeys.has(key))         relationLabel = 'siblings'
+      else if (cousinKeys.has(key))          relationLabel = 'cousins'
+      else if (greatGrandKeys.has(key))      relationLabel = 'great-grandparent & great-grandchild'
+      else if (grandparentKeys.has(key))     relationLabel = 'grandparent & grandchild'
 
       const aMoon  = a.data.moonSign && a.data.moonSign !== 'Unknown' ? a.data.moonSign : null
       const bMoon  = b.data.moonSign && b.data.moonSign !== 'Unknown' ? b.data.moonSign : null
@@ -576,15 +757,29 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         score = 3; compatLabel = 'Sun-Moon Reflection'; color = '#c4a8d4'
       } else if (sameEl) {
         score = 2; compatLabel = 'Kindred Spirits'; color = ELEMENT_COLORS[a.data.element]
-      } else if (compatEl) {
-        score = 1; compatLabel = 'Natural Flow'; color = '#7ec845'
       } else {
         score = 0; compatLabel = 'Unique Dynamic'; color = 'var(--text-muted)'
       }
-      allCompatPairs.push({ a, b, relationLabel, score, compatLabel, color, moonNote })
+      if (score > 1) {
+        // Flag pairs where a contributing planet may be uncertain due to missing birth time
+        const warnA = warningsPerNode.get(a.id) ?? new Set()
+        const warnB = warningsPerNode.get(b.id) ?? new Set()
+        const needsTimeCheck = (
+          (sameMoon        && (warnA.has('moon')  || warnB.has('moon')))  ||
+          (sameVenus       && (warnA.has('venus') || warnB.has('venus'))) ||
+          (sameMars        && (warnA.has('mars')  || warnB.has('mars')))  ||
+          (sunMoonMirror   && (warnA.has('moon')  || warnB.has('moon')))
+        )
+        allCompatPairs.push({ a, b, relationLabel, score, compatLabel, color, moonNote, needsTimeCheck })
+      }
     }
   }
   allCompatPairs.sort((x, y) => y.score - x.score || (x.a.data.birthdate || '9999').localeCompare(y.a.data.birthdate || '9999'))
+
+  // Select mode for large families: only show highest-scoring pairs
+  const isSelectMode = allCompatPairs.length > 12
+  const compatDisplayPairs = isSelectMode ? allCompatPairs.filter(p => p.score >= 3) : allCompatPairs
+  const compatTitle = isSelectMode ? 'Select Compatibility' : 'Full Compatibility Report'
 
   // ── Member roles (Feature 3) ─────────────────────────────────────────────────
   const distinctEls = new Set(nodes.map(n => n.data.element)).size
@@ -628,6 +823,20 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           </button>
         )}
       </div>
+
+      {/* Export-only: compact member list */}
+      <div className="insights-member-list">
+        {nodes.slice().sort(byAge).map(n => (
+          <span key={n.id} className="insights-member-chip">
+            {n.data.symbol} <strong>{n.data.name}</strong> · {fmtBirthdate(n.data.birthdate)}
+          </span>
+        ))}
+      </div>
+
+      {/* Compat at top when exporting */}
+      {exporting && compatDisplayPairs.length > 0 && (
+        <FullCompatPairs pairs={compatDisplayPairs} title={compatTitle} isExporting={exporting} generationLevel={generationLevel} />
+      )}
 
       {/* 1. Sun Element Makeup */}
       <div className="insight-card">
@@ -719,13 +928,27 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             return (
               <p key={sign} className="insight-note">
                 <PlanetSign planet="moon" symbol={members[0].data.moonSymbol} sign={sign} />
-                {' '}— {members.map(m => m.data.name).join(', ')}
+                {' '}—{' '}
+                {members.map((m, i) => (
+                  <span key={m.id}>
+                    {i > 0 && ', '}
+                    {m.data.name}
+                    {warningsPerNode.get(m.id)?.has('moon') && <span style={{ color: 'var(--gold)', fontSize: '0.75em' }}> ⚠</span>}
+                  </span>
+                ))}
               </p>
             )
           })}
           <p className="insight-note" style={{ marginTop: '0.3rem', color: 'var(--text-muted)', fontSize: '0.72rem' }}>
             Shared moon signs suggest similar emotional needs and instincts.
           </p>
+          {sharedMoonSigns.some(([sign]) =>
+            moonNodes.filter(n => n.data.moonSign === sign).some(m => warningsPerNode.get(m.id)?.has('moon'))
+          ) && (
+            <p className="insight-note" style={{ marginTop: '0.15rem', color: 'var(--text-muted)', fontSize: '0.7rem' }}>
+              ⚠ Moon near sign boundary — add birth time for certainty
+            </p>
+          )}
         </div>
       )}
 
@@ -782,32 +1005,20 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       )}
 
       {/* 8. Sign Threads */}
-      {Object.keys(signThreads).length > 0 && (
+      {signThreadList.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">Sign Threads</h3>
           <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.3rem' }}>
-            The same zodiac sign appearing across generations — on any planet.
+            The same sun or moon sign running through a parent-child line.
           </p>
-          {Object.entries(signThreads).map(([sign, chain]) => {
-            const signSym = SIGN_SYMBOLS[sign] || ''
-            return (
-              <p key={sign} className="insight-note">
-                <strong>{signSym} {sign}</strong> runs through{' '}
-                {chain.length === 2 ? '2 generations' : `${chain.length} generations`}:{' '}
-                {chain.map(n => {
-                  const planets = []
-                  if (n.data.sign === sign) planets.push('☀')
-                  if (n.data.moonSign === sign) planets.push('☽')
-                  const inner = innerPlanetMap.get(n.id)
-                  if (inner?.mercury?.sign === sign) planets.push('☿')
-                  if (inner?.venus?.sign   === sign) planets.push('♀')
-                  if (inner?.mars?.sign    === sign) planets.push('♂')
-                  const suffix = planets.length === 0 || (planets.length === 1 && planets[0] === '☀') ? '' : ` (${planets.join('')})`
-                  return `${n.data.name}${suffix}`
-                }).join(' → ')}
-              </p>
-            )
-          })}
+          {signThreadList.map(({ sign, chain, planet }) => (
+            <p key={`${planet}-${sign}`} className="insight-note">
+              {planet === 'sun' ? '☀' : '☽'}{' '}
+              <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>{' '}
+              {chain.length === 2 ? 'across 2 generations' : `through ${chain.length} generations`}:{' '}
+              {chain.map(n => n.data.name).join(' → ')}
+            </p>
+          ))}
         </div>
       )}
 
@@ -831,11 +1042,75 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* 10. Notable Bonds */}
+      {/* 10. Dominant Sign */}
+      {topSigns.length > 0 && (
+        <div className="insight-card">
+          <h3 className="insight-heading">★ Sign Concentration</h3>
+          <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem' }}>
+            The sign(s) holding the most planets across your whole group.
+          </p>
+          {topSigns.map(([sign, { total, planets }]) => {
+            const planetLine = Object.entries(planets)
+              .sort((a, b) => ['sun','moon','mercury','venus','mars'].indexOf(a[0]) - ['sun','moon','mercury','venus','mars'].indexOf(b[0]))
+              .map(([p, c]) => `${PLANET_GLYPH[p]}${c > 1 ? ` ×${c}` : ''}`)
+              .join('  ')
+            return (
+              <p key={sign} className="insight-note">
+                <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}> — {total} planet{total > 1 ? 's' : ''} &nbsp; {planetLine}</span>
+                <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
+                  {SIGN_FLAVOR[sign]}
+                </span>
+              </p>
+            )
+          })}
+        </div>
+      )}
+
+      {/* 11. Pluto Generations */}
+      {(() => {
+        const genMap = {}
+        nodes.forEach(n => {
+          const ps = getPlutoSign(n.data.birthdate)
+          if (ps) { if (!genMap[ps]) genMap[ps] = []; genMap[ps].push(n) }
+        })
+        const present = PLUTO_ORDER.filter(s => genMap[s])
+        if (present.length < 2) return null
+        return (
+          <div className="insight-card">
+            <h3 className="insight-heading">✦ Pluto Generations</h3>
+            <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem' }}>
+              Pluto's slow orbit imprints each generation with a shared undercurrent.
+            </p>
+            {present.map(sign => {
+              const gen = PLUTO_GENS[sign]
+              const members = genMap[sign]
+              return (
+                <div key={sign} style={{ display: 'flex', flexDirection: 'column', gap: '0.08rem' }}>
+                  <p className="insight-note">
+                    {SIGN_SYMBOLS[sign]}{' '}
+                    <strong>Pluto in {sign}</strong>{' '}
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>({gen.years})</span>
+                    {' — '}{members.length} {members.length === 1 ? 'member' : 'members'}
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>
+                      {' · '}{members.map(m => m.data.name).join(', ')}
+                    </span>
+                  </p>
+                  <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1.1rem', marginTop: '-0.05rem' }}>
+                    {gen.flavor}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        )
+      })()}
+
+      {/* 12. Notable Bonds */}
       {topBonds.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">Notable Bonds</h3>
-          {topBonds.map(({ a, b, note, noteType, rel }) => {
+          {topBonds.map(({ a, b, note, noteType, rel, needsTimeCheck }) => {
             const isRare = noteType === 'cosmic-echo' || noteType === 'rare-alignment'
             const color  = isRare                             ? 'var(--gold)'
                          : noteType === 'soul-twins'          ? 'var(--gold)'
@@ -859,25 +1134,30 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                   {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> — {rel}</span>}
                 </p>
                 <p className="insight-compat" style={{ color }}>{note}</p>
+                {needsTimeCheck && (
+                  <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
+                    ⚠ Confirm with exact birth time
+                  </p>
+                )}
               </div>
             )
           })}
         </div>
       )}
 
-      {/* 11. Full Compatibility Report */}
-      {allCompatPairs.length > 0 && (
-        <FullCompatPairs pairs={allCompatPairs} />
+      {/* 11. Compatibility Report — shown here when not exporting; moved to top when exporting */}
+      {!exporting && compatDisplayPairs.length > 0 && (
+        <FullCompatPairs pairs={compatDisplayPairs} title={compatTitle} isExporting={false} generationLevel={generationLevel} />
       )}
 
       {/* 12. Family Roles */}
       {memberRoles.length >= 2 && (
-        <FamilyRoles memberRoles={memberRoles} />
+        <FamilyRoles memberRoles={memberRoles} isExporting={exporting} generationLevel={generationLevel} />
       )}
 
       {/* 13. Add more prompt */}
       {sharedSigns.length === 0 && couples.length === 0 &&
-       Object.keys(signThreads).length === 0 && Object.keys(elementThreads).length === 0 &&
+       signThreadList.length === 0 && Object.keys(elementThreads).length === 0 &&
        topBonds.length === 0 && onAddMore && (
         <div className="insight-add-more">
           <p className="insight-add-more-text">Add more group members &amp; connect them to unlock shared signs, compatibility, and generational patterns.</p>
@@ -887,25 +1167,30 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* 14. Consult CTA — excluded from export */}
-      <div className="insight-card insight-consult-cta">
-        <h3 className="insight-heading">Want a deeper reading?</h3>
-        <p className="insight-note">
-          Book a personal astrology consultation with Christina — explore your chart, your family's patterns, and what it all means for you.
+      {/* 14. Consult CTA */}
+      <div className="insight-consult-cta">
+        <p className="insight-consult-cta-text">
+          <strong>Want a deeper reading?</strong> Book a personal astrology consultation with Christina — explore your chart, your family's patterns, and what the stars reveal about your connections.
         </p>
-        <a
-          href="https://www.etsy.com/shop/JupiterDigital"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="insight-consult-link"
-        >
-          ✦ Book with Jupiter Digital →
-        </a>
+        {exporting ? (
+          <p className="insight-consult-contact">
+            ✦ Jupiter Digital · jupreturns@gmail.com · IG: @jupreturn
+          </p>
+        ) : (
+          <a
+            href="https://www.etsy.com/shop/JupiterDigital"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="insight-consult-link"
+          >
+            ✦ Book with Jupiter Digital →
+          </a>
+        )}
       </div>
 
       {/* 15. Coming Soon */}
-      <div className="insight-card insight-coming-soon">
-        <h3 className="insight-heading">Coming in future updates ✨</h3>
+      <div className="insight-coming-soon">
+        <p className="insight-coming-soon-label">Coming in future updates ✨</p>
         <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>
         <p className="insight-note">🔮 <strong>Full Chart Overlays</strong> — planetary alignments across generations</p>
       </div>

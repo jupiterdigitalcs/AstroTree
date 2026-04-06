@@ -503,3 +503,68 @@
   background: rgba(91,200,245,0.15);
   border-color: #5bc8f5;
 }
+
+/* ── Chart ideas strip ────────────────────────────────────── */
+.chart-ideas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px dashed rgba(201,168,76,0.2);
+  border-radius: var(--radius);
+  background: rgba(201,168,76,0.03);
+}
+
+.chart-ideas-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.68rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+}
+
+.chart-ideas-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.chart-ideas-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.chart-ideas-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  line-height: 1.45;
+}
+
+.chart-ideas-icon {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  margin-top: 0.05rem;
+}
+
+.chart-ideas-list strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.chart-ideas-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin: 0;
+  padding-top: 0.2rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+

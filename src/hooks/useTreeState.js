@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { addEdge } from '@xyflow/react'
 import { getSunSign, getElement, getMoonSign, getSunSignAtTime } from '../utils/astrology.js'
 import { applyDagreLayout } from '../utils/layout.js'
@@ -102,7 +102,18 @@ export function useTreeState({
     setEdges(prev => prev.filter(e => e.id !== edgeId))
   }, [setEdges])
 
+  const nodeDragMoved = useRef(false)
+
+  const onNodeDragStart = useCallback(() => {
+    nodeDragMoved.current = false
+  }, [])
+
+  const onNodeDrag = useCallback(() => {
+    nodeDragMoved.current = true
+  }, [])
+
   const onNodeClick = useCallback((_e, node) => {
+    if (nodeDragMoved.current) return
     setEditingNodeId(id => id === node.id ? null : node.id)
   }, [setEditingNodeId])
 
@@ -115,6 +126,6 @@ export function useTreeState({
     edgesForDisplay,
     handleUpdate, handleDelete,
     handleAddEdge, handleRemoveEdge,
-    onNodeClick, onConnect,
+    onNodeClick, onNodeDragStart, onNodeDrag, onConnect,
   }
 }

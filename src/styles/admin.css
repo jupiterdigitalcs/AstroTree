@@ -1133,7 +1133,7 @@
   white-space: nowrap;
 }
 
-.zodiac-ring-btn:hover:not(:disabled) {
+.zodiac-ring-btn:hover {
   background: rgba(255,255,255,0.08);
   color: var(--text-soft);
 }
@@ -1148,13 +1148,136 @@
   background: rgba(201,168,76,0.18);
 }
 
-.zodiac-ring-btn:disabled,
-.zodiac-ring-btn--capped {
-  opacity: 0.45;
-  cursor: default;
-}
 
 .zodiac-ring-cap {
   font-style: italic;
   opacity: 0.75;
+}
+
+/* ── Zodiac generation filter ────────────────────────────── */
+.zodiac-gen-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.zodiac-gen-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.zodiac-gen-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-soft);
+}
+
+.zodiac-gen-btn--on {
+  background: rgba(140,80,200,0.22);
+  border-color: rgba(140,80,200,0.65);
+  color: #d4b8f0;
+  box-shadow: 0 0 6px rgba(140,80,200,0.3);
+}
+
+/* Crowded warning state on ring toggle button */
+.zodiac-ring-btn--crowded {
+  border-color: rgba(232,112,112,0.5);
+}
+.zodiac-ring-btn--crowded.zodiac-ring-btn--on {
+  border-color: rgba(232,112,112,0.7);
+}
+
+/* ── Zodiac sign detail panel ────────────────────────────── */
+.zodiac-sign-detail {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.zodiac-sign-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.zodiac-sign-detail-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.zodiac-sign-detail-element {
+  font-size: 0.7rem;
+  font-weight: 400;
+  opacity: 0.65;
+  letter-spacing: 0.04em;
+}
+
+.zodiac-sign-detail-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+  line-height: 1;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.zodiac-sign-detail-close:hover { color: var(--text); background: rgba(255,255,255,0.07); }
+
+.zodiac-sign-detail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.zodiac-sign-detail-planet {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.zodiac-sign-detail-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.zodiac-sign-detail-member {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-family: 'Raleway', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.zodiac-sign-detail-member:hover { background: rgba(255,255,255,0.09); }
+
+.zodiac-sign-detail-empty {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 0.75rem;
 }

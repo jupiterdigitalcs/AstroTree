@@ -31,12 +31,17 @@ export async function fetchAllCharts({ search = '', email = '', dateFrom = '', d
   try {
     const params = new URLSearchParams({ search, email, dateFrom, dateTo, page: String(page) })
     const res = await fetch(`/api/admin?action=charts&${params}`, { headers: adminHeaders() })
-    if (!res.ok) return []
+    if (res.status === 401) return { error: 'auth' }
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      console.error('admin_get_charts error:', res.status, body)
+      return { error: `server (${res.status})` }
+    }
     const data = await res.json()
     return (data ?? []).map(fromRow)
   } catch (e) {
     console.error('admin_get_charts exception:', e)
-    return []
+    return { error: 'network' }
   }
 }
 

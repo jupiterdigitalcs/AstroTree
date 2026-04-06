@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { Analytics } from '@vercel/analytics/react'
 import App from './App.jsx'
 import AdminApp from './admin/AdminApp.jsx'
 import { ErrorBoundary } from './components/ErrorBoundary.jsx'
@@ -12,5 +13,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       {isAdmin ? <AdminApp /> : <App />}
     </ErrorBoundary>
+    <Analytics />
   </React.StrictMode>,
 )
