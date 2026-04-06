@@ -89,3 +89,14 @@ export async function fetchTreesPerDay() {
     return []
   }
 }
+
+export async function fetchEngagementStats() {
+  try {
+    const res = await fetch('/api/admin?action=engagement', { headers: adminHeaders() })
+    if (!res.ok) return null
+    return await res.json()
+  } catch (e) {
+    console.error('admin_get_engagement_stats exception:', e)
+    return null
+  }
+}

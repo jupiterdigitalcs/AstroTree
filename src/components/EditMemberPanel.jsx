@@ -40,6 +40,7 @@ export default function EditMemberPanel({
   }, [birthTime, originalWarnings])
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [connectTo,     setConnectTo]     = useState(null) // id of node being connected
+  const [connSearch,    setConnSearch]    = useState('')
   const [savedFlash,    setSavedFlash]    = useState(false)
   const savedTimerRef = useRef(null)
 
@@ -78,7 +79,9 @@ export default function EditMemberPanel({
     if (e.source === node.id) connectedIds.add(e.target)
     if (e.target === node.id) connectedIds.add(e.source)
   })
-  const eligibleNodes = allNodes.filter(n => !connectedIds.has(n.id))
+  const eligibleNodes = allNodes
+    .filter(n => !connectedIds.has(n.id))
+    .sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999'))
 
   // ── Ancestor / descendant sets (for preventing impossible relationships) ──
   const ancestors = new Set()
@@ -304,19 +307,33 @@ export default function EditMemberPanel({
           {/* ── Add connections: person chips → inline relationship pills ── */}
           {eligibleNodes.length > 0 && (
             <div className="conn-add-section">
-              <span className="parent-select-label">Add connection</span>
+              <div className="conn-add-header">
+                <span className="parent-select-label">Add connection</span>
+                <span className="conn-age-hint">oldest → youngest</span>
+              </div>
+              {eligibleNodes.length > 5 && (
+                <input
+                  className="conn-search-input"
+                  type="search"
+                  placeholder="Filter people…"
+                  value={connSearch}
+                  onChange={e => setConnSearch(e.target.value)}
+                />
+              )}
               <div className="conn-eligible-grid">
-                {eligibleNodes.map(n => (
-                  <button
-                    key={n.id}
-                    type="button"
-                    className={`conn-eligible-chip${connectTo === n.id ? ' selected' : ''}`}
-                    onClick={() => handleConnect(n.id)}
-                  >
-                    <span className="conn-chip-symbol">{n.data.symbol}</span>
-                    <span>{n.data.name}</span>
-                  </button>
-                ))}
+                {eligibleNodes
+                  .filter(n => !connSearch || n.data.name.toLowerCase().includes(connSearch.toLowerCase()))
+                  .map(n => (
+                    <button
+                      key={n.id}
+                      type="button"
+                      className={`conn-eligible-chip${connectTo === n.id ? ' selected' : ''}`}
+                      onClick={() => handleConnect(n.id)}
+                    >
+                      <span className="conn-chip-symbol">{n.data.symbol}</span>
+                      <span>{n.data.name}</span>
+                    </button>
+                  ))}
               </div>
               {connectTarget && (
                 <div className="conn-type-row">

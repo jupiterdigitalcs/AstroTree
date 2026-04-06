@@ -107,23 +107,35 @@ export default function AboutPanel() {
         <span className="about-shop-arrow">→</span>
       </a>
 
-      {/* ── Your Data ─────────────────────────────────────────────────── */}
+      {/* ── Your Data & Privacy ───────────────────────────────────────── */}
       <div className="about-card" id="about-data">
-        <h3 className="about-heading">Your Data</h3>
+        <h3 className="about-heading">Your Data &amp; Privacy</h3>
         <p className="about-bio">
-          AstroDig saves your charts to your browser. If you use cloud sync,
-          your chart data (names, birthdates, and astrological signs) is also stored
-          on our servers so you can access it from other devices.
+          AstroDig saves your charts locally in your browser and, if you enable cloud sync, on our servers.
+          Each browser gets a random anonymous ID — no account required.
         </p>
+
+        <p className="about-data-subhead">What we collect</p>
         <ul className="about-data-list">
-          <li>No name, email, or account is required.</li>
-          <li>Each browser gets a random anonymous ID — not tied to you personally.</li>
-          <li>You can delete your charts at any time from Saved Charts.</li>
-          <li>Charts shared via link are visible to anyone with that link.</li>
-          <li>Synced charts are visible to the app creator (Jupiter Digital) via an admin panel.</li>
+          <li>Chart data (names, birthdates, astrological signs)</li>
+          <li>Your email, if you provide it</li>
         </ul>
+
+        <p className="about-data-subhead">How we use it</p>
+        <ul className="about-data-list">
+          <li>To sync and store your charts</li>
+          <li>To send app updates, announcements, and occasional offers from Jupiter Digital</li>
+        </ul>
+
+        <p className="about-data-subhead">What we don't do</p>
+        <ul className="about-data-list">
+          <li>Sell your data or share it with third parties</li>
+        </ul>
+
         <p className="about-bio" style={{ marginTop: '0.5rem' }}>
-          This is a small independent app. Your chart data is not sold or used for advertising.
+          You can delete your charts anytime from Saved Charts, or request data or email removal by
+          contacting us at <a className="about-inline-link" href="mailto:jupreturns@gmail.com">jupreturns@gmail.com</a>.
+          This app is not intended for children under 13.
         </p>
 
         {savedEmail && !showRemoveConfirm && (

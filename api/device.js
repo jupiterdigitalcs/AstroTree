@@ -25,7 +25,22 @@ async function handleEmail(req, res) {
   return res.status(200).json({ ok: !error })
 }
 
-const ROUTES = { register: handleRegister, email: handleEmail }
+async function handlePing(req, res) {
+  const { deviceId } = req.body
+  if (!deviceId) return res.status(400).json({ error: 'Missing device ID' })
+  await getSupabase().rpc('device_ping', { p_device_id: deviceId })
+  return res.status(200).json({ ok: true })
+}
+
+async function handleEvent(req, res) {
+  const { deviceId, eventName } = req.body
+  if (!deviceId || !eventName) return res.status(400).json({ ok: false })
+  const name = String(eventName).slice(0, 64)
+  await getSupabase().from('device_events').insert({ device_id: deviceId, event_name: name })
+  return res.status(200).json({ ok: true })
+}
+
+const ROUTES = { register: handleRegister, email: handleEmail, ping: handlePing, event: handleEvent }
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })

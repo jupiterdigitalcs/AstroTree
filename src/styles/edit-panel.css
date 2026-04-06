@@ -357,6 +357,35 @@
   gap: 0.5rem;
 }
 
+.conn-add-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.conn-age-hint {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.conn-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text-soft);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.65rem;
+  outline: none;
+}
+.conn-search-input:focus {
+  border-color: rgba(201,168,76,0.45);
+}
+
 .conn-eligible-grid {
   display: flex;
   flex-wrap: wrap;

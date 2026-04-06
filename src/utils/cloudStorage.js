@@ -165,3 +165,25 @@ export async function updateDeviceEmail(email) {
     return { ok: false }
   }
 }
+
+export async function pingVisit() {
+  if (!isCloudEnabled()) return
+  try {
+    await fetch('/api/device?action=ping', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: getDeviceId() }),
+    })
+  } catch {}
+}
+
+export async function logEvent(eventName) {
+  if (!isCloudEnabled()) return
+  try {
+    await fetch('/api/device?action=event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: getDeviceId(), eventName }),
+    })
+  } catch {}
+}

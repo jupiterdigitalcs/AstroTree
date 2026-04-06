@@ -28,7 +28,7 @@ import { loadDraft, saveChart }  from './utils/storage.js'
 import { useCloudSync } from './hooks/useCloudSync.js'
 import { SyncIndicator } from './components/SyncIndicator.jsx'
 import { ShareButton } from './components/ShareButton.jsx'
-import { fetchChartByToken, isCloudEnabled } from './utils/cloudStorage.js'
+import { fetchChartByToken, isCloudEnabled, pingVisit, logEvent } from './utils/cloudStorage.js'
 import { EmailCapture, hasBeenAsked, clearEmailAsked } from './components/EmailCapture.jsx'
 import { OnboardingProgress, markInsightsSeen } from './components/OnboardingProgress.jsx'
 import { buildDemoChart, buildDemoCrewChart } from './utils/demoData.js'
@@ -161,6 +161,11 @@ export default function App() {
   }, [edges]) // eslint-disable-line react-hooks/exhaustive-deps
 
 
+  // ── Log return visits for engagement tracking ────────────────────────────
+  useEffect(() => {
+    if (returnVisit && hasUsedApp) pingVisit()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Prevent bots from indexing shared chart pages ──────────────────────────
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('view')) {
@@ -182,6 +187,7 @@ export default function App() {
       setViewOnly(true)
       setActiveTab('tree')
       setFitTick(t => t + 1)
+      logEvent('share_viewed')
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -288,6 +294,7 @@ export default function App() {
     if (tab === 'tree') setFitTick(t => t + 1)
     if (tab === 'insights' && edges.length > 0) {
       markInsightsSeen()
+      if (!insightsSeen) logEvent('insights_seen')
       setInsightsSeen(true)
     }
   }
@@ -492,7 +499,7 @@ export default function App() {
           ) : activeTab === 'insights' ? (
             <InsightsPanel
               nodes={nodes} edges={edges}
-              onExport={nodes.length >= 2 ? handleInsightsExport : undefined}
+              onExport={nodes.length >= 2 ? () => { logEvent('export'); handleInsightsExport() } : undefined}
               exporting={exporting}
               onAddMore={() => goTab('add')}
               onGoToTree={() => goTab('tree')}
@@ -592,6 +599,15 @@ export default function App() {
 
                     {edges.length === 0 && (
                       <p className="connect-hint-banner">Tap a name below to connect family members on the tree ↓</p>
+                    )}
+
+                    {Object.keys(nodeIngressWarnings).length > 0 && (
+                      <div className="ingress-key">
+                        <span className="ingress-key-icon">⚠</span>
+                        <span className="ingress-key-text">
+                          Sign may depend on birth time — tap the member to add it (optional)
+                        </span>
+                      </div>
                     )}
 
                     {[...nodes].sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999')).map(n => (
@@ -840,7 +856,7 @@ export default function App() {
             <button
               type="button"
               className="relayout-btn relayout-btn--share"
-              onClick={treeView === 'zodiac' ? handleZodiacExport : treeView === 'constellation' ? handleConstellationExport : treeView === 'tables' ? handleTablesExport : handleExport}
+              onClick={() => { logEvent('export'); (treeView === 'zodiac' ? handleZodiacExport : treeView === 'constellation' ? handleConstellationExport : treeView === 'tables' ? handleTablesExport : handleExport)() }}
               disabled={exporting}
             >
               {exporting ? '…' : (<>

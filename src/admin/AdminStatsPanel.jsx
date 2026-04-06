@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
-import { fetchAdminStatsManual, fetchTreesPerDay } from './utils/adminStorage.js'
+import { fetchAdminStatsManual, fetchTreesPerDay, fetchEngagementStats } from './utils/adminStorage.js'
 
 export default function AdminStatsPanel() {
-  const [stats,  setStats]  = useState(null)
-  const [perDay, setPerDay] = useState([])
+  const [stats,      setStats]      = useState(null)
+  const [perDay,     setPerDay]     = useState([])
+  const [engagement, setEngagement] = useState(null)
 
   useEffect(() => {
     fetchAdminStatsManual().then(s => { if (s) setStats(s) })
     fetchTreesPerDay().then(setPerDay)
+    fetchEngagementStats().then(e => { if (e) setEngagement(e) })
   }, [])
 
   const maxCount = perDay.length ? Math.max(...perDay.map(d => d.count)) : 1
@@ -20,6 +22,15 @@ export default function AdminStatsPanel() {
         <StatCard label="Devices"       value={stats?.totalDevices ?? '—'} />
         <StatCard label="Trees Today"   value={stats?.treesToday   ?? '—'} />
       </div>
+
+      {engagement && (
+        <div className="admin-stat-cards" style={{ marginTop: '0.75rem' }}>
+          <StatCard label="Return Visit Rate" value={engagement.returnVisitPct != null ? `${engagement.returnVisitPct}%` : '—'} />
+          <StatCard label="Insights Reach"    value={engagement.insightsReachPct != null ? `${engagement.insightsReachPct}%` : '—'} />
+          <StatCard label="Share Views"       value={engagement.shareViewCount ?? '—'} />
+          <StatCard label="Avg Members/Chart" value={engagement.avgMembersPerChart ?? '—'} />
+        </div>
+      )}
 
       {perDay.length > 0 && (
         <div className="admin-chart">
