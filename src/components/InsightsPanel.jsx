@@ -118,6 +118,90 @@ function byAgeNode(a, b) {
   return (a.node.data.birthdate || '9999').localeCompare(b.node.data.birthdate || '9999')
 }
 
+const ELEMENT_QUALITY = {
+  Fire:  'bold and passionate',
+  Earth: 'steady and grounded',
+  Air:   'curious and communicative',
+  Water: 'sensitive and emotionally deep',
+}
+
+const MOON_STYLE = {
+  Aries:       'processes emotions quickly and moves on fast',
+  Taurus:      'takes time to open up and craves security above all',
+  Gemini:      'talks through feelings and needs mental space to process',
+  Cancer:      'feels deeply and holds onto emotional memory',
+  Leo:         'needs to feel appreciated and expresses feelings openly',
+  Virgo:       'processes by analyzing and shows love through acts of service',
+  Libra:       'avoids conflict and needs harmony to feel emotionally safe',
+  Scorpio:     'feels everything intensely and holds it for a long time',
+  Sagittarius: 'needs freedom and tends to stay upbeat on the surface',
+  Capricorn:   'keeps emotions private and handles things practically',
+  Aquarius:    'steps back to process and needs intellectual independence',
+  Pisces:      'absorbs the emotions of others and needs quiet to recharge',
+}
+
+const ZODIAC_THREAD_BLURB = {
+  Aries:       'A streak of boldness runs in this family — independent thinkers who act on instinct and resist being told what to do',
+  Taurus:      'A deep rootedness passes through the generations — this family prizes stability, comfort, and building things that last',
+  Gemini:      'Curiosity is the family inheritance — quick minds, a gift for conversation, and a need to keep learning',
+  Cancer:      'The home and its memory bind this family — emotional attunement, loyalty, and a fierce protectiveness of those they love',
+  Leo:         'A warmth and need for self-expression flows through — this family carries a natural light and doesn\'t shrink from being seen',
+  Virgo:       'A thread of precision and quiet devotion — these are the ones who notice the details, show up consistently, and fix things without being asked',
+  Libra:       'A need for harmony and fairness is woven through — this family values beauty, balance, and keeping the peace, sometimes to a fault',
+  Scorpio:     'Emotional depth and perception run strong — this family feels things fully, sees beneath the surface, and is shaped by transformation',
+  Sagittarius: 'An expansive, searching spirit recurs — this family is restless with meaning, drawn to big ideas, travel, and the question of why',
+  Capricorn:   'An ambition to build something lasting runs in the blood — this family respects discipline, earns trust slowly, and plays the long game',
+  Aquarius:    'An independent streak and a vision that runs ahead of its time — this family thinks differently and doesn\'t follow trends',
+  Pisces:      'A deep empathy and sensitivity recurs across the line — this family feels the world more than most and carries a strong imaginative inner life',
+}
+
+const SIGN_SHORT = {
+  Aries:       'acts first, thinks later — instinctive and driven by impulse',
+  Taurus:      'patient and deeply rooted — values stability and comfort above all',
+  Gemini:      'wired for connection and ideas — mentally restless, rarely still',
+  Cancer:      'nurturing and emotionally attuned — home and family come first',
+  Leo:         'warm and expressive — needs to be seen and loves to make others shine',
+  Virgo:       'precise and quietly devoted — notices what everyone else misses',
+  Libra:       'harmony-seeking and fair-minded — hates conflict, needs balance',
+  Scorpio:     'perceptive and emotionally intense — feels everything deeply',
+  Sagittarius: 'expansive and freedom-seeking — always chasing meaning and the horizon',
+  Capricorn:   'disciplined and driven — plays the long game, built to endure',
+  Aquarius:    'independent and ahead of their time — marches to their own beat',
+  Pisces:      'empathic and dreamy — moved by the unseen, feels others\' emotions',
+}
+
+function getArrivalStory(child, parents, elderSiblings) {
+  const el = child.data.element
+  const sign = child.data.sign
+  const pool = [...parents, ...elderSiblings]
+  const elCountBefore = pool.filter(n => n.data.element === el).length
+  const qual = ELEMENT_QUALITY[el] || el
+
+  let main
+  if (elCountBefore === 0) {
+    const elsBefore = new Set(pool.map(n => n.data.element))
+    if (elsBefore.size + 1 === 4) main = `rounded out the family — brought a quality none of the others had`
+    else if (elderSiblings.length === 0) main = `brought ${qual} energy to a family that didn't have it yet`
+    else main = `introduced something new — ${qual}, a quality no one else here carries`
+  } else {
+    const matchingParent = parents.find(p => p.data.element === el)
+    const matchingSibling = elderSiblings.find(s => s.data.element === el)
+    const totalAfter = pool.length + 1
+    const countAfter = elCountBefore + 1
+    if (parents.length >= 2 && parents.every(p => p.data.element === el)) {
+      main = `born into it on both sides — ${qual} runs through this whole family`
+    } else if (matchingParent && !matchingSibling) {
+      main = `took after ${matchingParent.data.name} — ${qual}, just like them`
+    } else if (matchingSibling && !matchingParent) {
+      main = `like ${matchingSibling.data.name} before them — ${qual}, the two of them`
+    } else {
+      main = `${qual} — now ${countAfter} of ${totalAfter} in this family share this`
+    }
+  }
+
+  return { main, detail: SIGN_SHORT[sign] || null }
+}
+
 // ── Inner components ──────────────────────────────────────────────────────────
 
 function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, total, missingElements }) {
@@ -379,6 +463,79 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     return glyphs.join(' ')
   }
 
+  function buildCoupleAnalysis(src, tgt) {
+    const srcMoon   = src.data.moonSign && src.data.moonSign !== 'Unknown' ? src.data.moonSign : null
+    const tgtMoon   = tgt.data.moonSign && tgt.data.moonSign !== 'Unknown' ? tgt.data.moonSign : null
+    const srcInn    = innerPlanetMap.get(src.id)
+    const tgtInn    = innerPlanetMap.get(tgt.id)
+    const srcVenus  = srcInn?.venus?.sign ?? null
+    const tgtVenus  = tgtInn?.venus?.sign ?? null
+    const srcMars   = srcInn?.mars?.sign  ?? null
+    const tgtMars   = tgtInn?.mars?.sign  ?? null
+
+    const insights = []
+
+    // Sun-Moon reflection — highest priority
+    const aSunBMoon = tgtMoon === src.data.sign
+    const bSunAMoon = srcMoon === tgt.data.sign
+    if (aSunBMoon && bSunAMoon) {
+      insights.push({ score: 10, tagline: 'Rare Mirror Bond', color: 'var(--gold)',
+        text: `${src.data.name}'s ${src.data.sign} sun falls on ${tgt.data.name}'s moon, and ${tgt.data.name}'s ${tgt.data.sign} sun falls on ${src.data.name}'s — they each embody what the other feels most deeply. Extraordinarily rare.` })
+    } else if (aSunBMoon) {
+      insights.push({ score: 8, tagline: 'Sun-Moon Connection', color: '#c4a8d4',
+        text: `${src.data.name}'s ${src.data.sign} sun falls on ${tgt.data.name}'s moon — ${src.data.name} naturally embodies what ${tgt.data.name} feels most deeply.` })
+    } else if (bSunAMoon) {
+      insights.push({ score: 8, tagline: 'Sun-Moon Connection', color: '#c4a8d4',
+        text: `${tgt.data.name}'s ${tgt.data.sign} sun falls on ${src.data.name}'s moon — ${tgt.data.name} naturally embodies what ${src.data.name} feels most deeply.` })
+    }
+
+    // Venus in partner's sun sign — deep admiration
+    if (srcVenus && srcVenus === tgt.data.sign)
+      insights.push({ score: 7, tagline: 'Venus Connection', color: 'var(--rose)',
+        text: `${src.data.name}'s Venus is in ${tgt.data.sign} — ${src.data.name} is drawn to exactly who ${tgt.data.name} is.` })
+    if (tgtVenus && tgtVenus === src.data.sign)
+      insights.push({ score: 7, tagline: 'Venus Connection', color: 'var(--rose)',
+        text: `${tgt.data.name}'s Venus is in ${src.data.sign} — ${tgt.data.name} is drawn to exactly who ${src.data.name} is.` })
+
+    // Same moon sign — emotional twins
+    if (srcMoon && tgtMoon && srcMoon === tgtMoon)
+      insights.push({ score: 7, tagline: 'Emotional Twins', color: '#9dbbd4',
+        text: `Both ${srcMoon} moons — they feel and process the same way, an almost wordless emotional understanding.` })
+
+    // Same Venus sign — identical love language
+    if (srcVenus && tgtVenus && srcVenus === tgtVenus)
+      insights.push({ score: 6, tagline: 'Same Love Language', color: 'var(--rose)',
+        text: `Both Venus in ${srcVenus} — they show love the same way and want the same things from each other.` })
+
+    // Compatible moons (different signs)
+    if (srcMoon && tgtMoon && srcMoon !== tgtMoon) {
+      const compat = areCompatible(getElement(srcMoon).element, getElement(tgtMoon).element)
+      if (compat)
+        insights.push({ score: 5, tagline: 'Emotionally Attuned', color: '#9dbbd4',
+          text: `${srcMoon} and ${tgtMoon} moons — compatible emotional styles. ${src.data.name} ${MOON_STYLE[srcMoon] ?? ''}; ${tgt.data.name} ${MOON_STYLE[tgtMoon] ?? ''}.` })
+      else
+        insights.push({ score: 2, tagline: 'Different Emotional Rhythms', color: '#c9a84c',
+          text: `${srcMoon} and ${tgtMoon} moons — they process feelings differently. ${src.data.name} ${MOON_STYLE[srcMoon] ?? ''}; ${tgt.data.name} ${MOON_STYLE[tgtMoon] ?? ''}.` })
+    }
+
+    // Mars ↔ Venus elemental pull
+    if (srcMars && tgtVenus && areCompatible(getElement(srcMars).element, getElement(tgtVenus).element))
+      insights.push({ score: 4, tagline: 'Natural Pull', color: 'var(--rose)',
+        text: `${src.data.name}'s ${srcMars} Mars aligns with ${tgt.data.name}'s ${tgtVenus} Venus — natural attraction dynamic.` })
+    else if (tgtMars && srcVenus && areCompatible(getElement(tgtMars).element, getElement(srcVenus).element))
+      insights.push({ score: 4, tagline: 'Natural Pull', color: 'var(--rose)',
+        text: `${tgt.data.name}'s ${tgtMars} Mars aligns with ${src.data.name}'s ${srcVenus} Venus — natural attraction dynamic.` })
+
+    if (insights.length === 0) {
+      const compat = areCompatible(src.data.element, tgt.data.element)
+      return { tagline: compat ? 'Harmonious' : 'Complementary', taglineColor: compat ? '#7ec845' : '#c9a84c', narrativeItems: [] }
+    }
+
+    insights.sort((a, b) => b.score - a.score)
+    const top = insights.slice(0, 2)
+    return { tagline: top[0].tagline, taglineColor: top[0].color, narrativeItems: top.map(i => i.text) }
+  }
+
   // ── Per-node warned planets — a planet is excluded if ingress + no birth time ─
   const warningsPerNode = useMemo(() => {
     const map = new Map()
@@ -591,17 +748,42 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     ...Object.entries(moonSignThreads).map(([sign, chain]) => ({ sign, chain, planet: 'moon' })),
   ].sort((a, b) => b.chain.length - a.chain.length).slice(0, 6)
 
-  // ── Elemental family threads (any planet, not just sun) ──────────────────────
-  const elementThreads = {}
-  ELEMENTS.forEach(el => {
-    let longest = []
-    nodes.forEach(n => {
-      if (!getNodeElements(n).has(el)) return
-      const chain = getLongestChainWhere(n.id, x => getNodeElements(x).has(el), new Set())
-      if (chain.length >= 2 && chain.length > longest.length) longest = chain
+  // ── Zodiac threads — same sign across generations via any planet ─────────────
+  // Notable = spans 3+ generations OR 4+ connected carriers.
+  // Capped at top 3 by depth then count.
+  const ALL_SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces']
+  function getSignPlanetGlyphs(node, sign) {
+    const g = []
+    if (node.data.sign === sign) g.push('☀')
+    if (node.data.moonSign && node.data.moonSign !== 'Unknown' && node.data.moonSign === sign) g.push('☽')
+    const inner = innerPlanetMap.get(node.id)
+    if (inner?.mercury?.sign === sign) g.push('☿')
+    if (inner?.venus?.sign   === sign) g.push('♀')
+    if (inner?.mars?.sign    === sign) g.push('♂')
+    return g.join('')
+  }
+  const topZodiacThreads = (() => {
+    const threads = []
+    ALL_SIGNS.forEach(sign => {
+      const carriers = nodes.filter(n => getNodeSigns(n).has(sign))
+      if (carriers.length < 2) return
+      const hasLink = carriers.some(n =>
+        (parentMap[n.id] || []).some(pid => carriers.find(c => c.id === pid))
+      )
+      if (!hasLink) return
+      const byGen = {}
+      carriers.forEach(n => {
+        const gen = generationLevel[n.id] ?? 0
+        if (!byGen[gen]) byGen[gen] = []
+        byGen[gen].push(n)
+      })
+      const gens = Object.keys(byGen).map(Number).sort()
+      if (gens.length < 2) return
+      const total = carriers.length
+      if (gens.length >= 3 || total >= 4) threads.push({ sign, byGen, gens, total })
     })
-    if (longest.length >= 2) elementThreads[el] = longest
-  })
+    return threads.sort((a, b) => b.gens.length - a.gens.length || b.total - a.total).slice(0, 3)
+  })()
 
   // ── Sibling / cousin sets ────────────────────────────────────────────────────
   const childrenByParent = {}
@@ -830,6 +1012,41 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     }
   }).sort(byAgeNode)
 
+  // ── Arrival groups — driven by spouse edges so all children of a couple appear
+  // even if some kids are only connected to one parent in the tree
+  const arrivalGroups = (() => {
+    const groups = []
+    const seen = new Set()
+    spouseEdges.forEach(e => {
+      const p1 = nodes.find(n => n.id === e.source)
+      const p2 = nodes.find(n => n.id === e.target)
+      if (!p1 || !p2) return
+      const key = [p1.id, p2.id].sort().join('|')
+      if (seen.has(key)) return
+      seen.add(key)
+      const children = nodes.filter(n => {
+        const pids = parentMap[n.id] || []
+        return pids.includes(p1.id) || pids.includes(p2.id)
+      })
+      if (children.length < 2) return
+      const parents = [p1, p2].sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999'))
+      groups.push({ parents, children })
+    })
+    return groups
+      .map(g => ({
+        ...g,
+        children: [
+          ...g.children.filter(c => c.data.birthdate).sort((a, b) => a.data.birthdate.localeCompare(b.data.birthdate)),
+          ...g.children.filter(c => !c.data.birthdate),
+        ],
+      }))
+      .sort((a, b) => {
+        const genA = Math.min(...a.parents.map(p => generationLevel[p.id] ?? 0))
+        const genB = Math.min(...b.parents.map(p => generationLevel[p.id] ?? 0))
+        return genA - genB
+      })
+  })()
+
   return (
     <div className="insights-panel">
       <div className="insights-header">
@@ -1009,25 +1226,25 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {couples.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">Partner Compatibility</h3>
-          {couples.map(({ src, tgt, compatible }, i) => {
-            const srcMoonEl = src.data.moonSign && src.data.moonSign !== 'Unknown' ? getElement(src.data.moonSign).element : null
-            const tgtMoonEl = tgt.data.moonSign && tgt.data.moonSign !== 'Unknown' ? getElement(tgt.data.moonSign).element : null
-            const moonCompat = srcMoonEl && tgtMoonEl ? areCompatible(srcMoonEl, tgtMoonEl) : null
+          {couples.map(({ src, tgt }, i) => {
+            const { tagline, taglineColor, narrativeItems } = buildCoupleAnalysis(src, tgt)
             return (
               <div key={i} className="insight-couple">
                 <p className="insight-note">
                   {src.data.symbol} <strong>{src.data.name}</strong> &amp;{' '}
                   {tgt.data.symbol} <strong>{tgt.data.name}</strong>
                 </p>
-                <p className="insight-compat" style={{ color: compatible ? '#7ec845' : '#c9a84c' }}>
-                  ☀ {compatible ? 'Harmonious sun elements' : 'Complementary sun energies'}
-                  {' '}({src.data.element} & {tgt.data.element})
+                <p className="insight-compat" style={{ color: taglineColor }}>
+                  {tagline}
                 </p>
-                {moonCompat !== null && (
-                  <p className="insight-compat" style={{ color: moonCompat ? '#9dbbd4' : '#c9a84c', marginTop: '0.15rem' }}>
-                    ☽ {moonCompat ? 'Compatible emotional natures' : 'Different emotional styles'}
-                    {' '}({srcMoonEl} & {tgtMoonEl} moon)
-                  </p>
+                {narrativeItems.length > 0 && (
+                  <div style={{ marginTop: '0.3rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    {narrativeItems.map((text, ni) => (
+                      <p key={ni} className="insight-note" style={{ fontSize: '0.78rem', color: 'var(--text-soft)', lineHeight: 1.55, paddingLeft: '0.75rem', borderLeft: '2px solid rgba(255,255,255,0.08)' }}>
+                        {text}
+                      </p>
+                    ))}
+                  </div>
                 )}
               </div>
             )
@@ -1053,52 +1270,94 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* 9. Elemental Threads */}
-      {Object.keys(elementThreads).length > 0 && (
+      {/* 9. Zodiac Threads */}
+      {topZodiacThreads.length > 0 && (
         <div className="insight-card">
-          <h3 className="insight-heading">Elemental Family Threads</h3>
-          {Object.entries(elementThreads).map(([el, chain]) => {
-            const elSiblingPairs = []
-            ;[...siblingKeys].forEach(key => {
-              const [idA, idB] = key.split('|')
-              const nA = nodes.find(n => n.id === idA)
-              const nB = nodes.find(n => n.id === idB)
-              if (nA && nB && getNodeElements(nA).has(el) && getNodeElements(nB).has(el)) {
-                elSiblingPairs.push([nA, nB])
-              }
-            })
+          <h3 className="insight-heading">Zodiac Threads</h3>
+          <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.1rem' }}>
+            Like a gene that runs in families — this sign keeps showing up across generations, carried through different planets in different people.
+          </p>
+          {topZodiacThreads.map(({ sign, byGen, gens }) => (
+            <div key={sign} style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+              <p className="insight-note">
+                <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>
+                {' '}—{' '}
+                {gens.map((gen, gi) => (
+                  <span key={gen}>
+                    {gi > 0 && <span style={{ color: 'var(--text-muted)' }}> → </span>}
+                    {byGen[gen].map((n, ni) => {
+                      const glyphs = getSignPlanetGlyphs(n, sign)
+                      return (
+                        <span key={n.id}>
+                          {ni > 0 && ', '}
+                          <strong>{n.data.name}</strong>
+                          {glyphs && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> ({glyphs})</span>}
+                        </span>
+                      )
+                    })}
+                  </span>
+                ))}
+              </p>
+              {ZODIAC_THREAD_BLURB[sign] && (
+                <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem' }}>
+                  {ZODIAC_THREAD_BLURB[sign]}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 10. Family Arrivals */}
+      {arrivalGroups.length > 0 && (
+        <div className="insight-card">
+          <h3 className="insight-heading">✦ Family Arrivals</h3>
+          <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem' }}>
+            What each child brought to the mix — in energy, personality, and the family dynamic.
+          </p>
+          {arrivalGroups.map((group, gi) => {
+            const coupleLabel = `${group.parents[0].data.name} & ${group.parents[1].data.name}`
             return (
-              <p key={el} className="insight-note">
-                <span style={{ color: ELEMENT_COLORS[el] }}>
-                  {el === 'Fire' ? '🔥' : el === 'Earth' ? '🌿' : el === 'Air' ? '💨' : '💧'}{' '}
-                  <strong>{el}</strong>
-                </span>
-                {' '}flows through {chain.length} generations:{' '}
-                <strong>{chain.map(n => {
-                  const planets = getNodePlanetsForElement(n, el)
-                  return planets ? `${n.data.name} (${planets})` : n.data.name
-                }).join(' → ')}</strong>
-                <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '0.15rem' }}>
-                  {ELEMENT_THREAD_BLURB[el]}
-                </span>
-                {elSiblingPairs.map(([nA, nB]) => {
-                  const modA = SIGN_MODALITY[nA.data.sign]
-                  const modB = SIGN_MODALITY[nB.data.sign]
-                  const key2 = [modA, modB].sort().join('-')
-                  const blurb = SIBLING_ADAPTABILITY[key2] || SIBLING_ADAPTABILITY[[modB, modA].join('-')]
+              <div key={gi} style={{ marginBottom: gi < arrivalGroups.length - 1 ? '1rem' : 0 }}>
+                <p style={{ fontSize: '0.8rem', fontFamily: "'Cinzel', serif", letterSpacing: '0.05em', color: 'var(--gold-light)', marginBottom: '0.3rem' }}>
+                  {coupleLabel}
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontFamily: "'Raleway', sans-serif", letterSpacing: 0 }}>
+                    {' '}(
+                    {group.parents.map((p, pi) => (
+                      <span key={p.id}>
+                        {pi > 0 && ' · '}
+                        <span style={{ color: ELEMENT_COLORS[p.data.element] }}>{p.data.element}</span>
+                      </span>
+                    ))}
+                    )
+                  </span>
+                </p>
+                {group.children.map((child, ci) => {
+                  const elderSiblings = group.children.slice(0, ci)
+                  const { main, detail } = getArrivalStory(child, group.parents, elderSiblings)
                   return (
-                    <span key={`${nA.id}-${nB.id}`} style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '0.1rem' }}>
-                      ↕ {nA.data.name} & {nB.data.name} (siblings) — {modA} × {modB}{blurb ? `: ${blurb}` : ''}
-                    </span>
+                    <div key={child.id} style={{ paddingLeft: '0.6rem', marginBottom: ci < group.children.length - 1 ? '0.4rem' : 0 }}>
+                      <p className="insight-note">
+                        <span style={{ color: ELEMENT_COLORS[child.data.element] }}>
+                          {SIGN_SYMBOLS[child.data.sign]} <strong>{child.data.name}</strong>
+                        </span>
+                        {' '}— {main}
+                      </p>
+                      {detail && (
+                        <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem', marginTop: '0.05rem' }}>
+                          {child.data.sign}: {detail}
+                        </p>
+                      )}
+                    </div>
                   )
                 })}
-              </p>
+              </div>
             )
           })}
         </div>
       )}
 
-      {/* 10. Dominant Sign */}
+      {/* 11. Dominant Sign */}
       {topSigns.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">★ Sign Concentration</h3>

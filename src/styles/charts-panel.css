@@ -111,6 +111,16 @@
 .restore-section {
   margin-top: 0.6rem;
 }
+.restore-section--top {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+.restore-section--top .restore-cloud-btn {
+  margin-top: 0;
+  color: var(--text-soft);
+  border-color: rgba(201,168,76,0.3);
+  border-style: solid;
+}
 .restore-form {
   display: flex;
   flex-direction: column;

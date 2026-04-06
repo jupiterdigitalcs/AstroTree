@@ -95,6 +95,43 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         </button>
       ) : null}
 
+      {isCloudEnabled() && (
+        <div className="restore-section restore-section--top">
+          {!showRestore ? (
+            <button type="button" className="restore-cloud-btn" onClick={() => { setShowRestore(true); setRestoreStatus('idle') }}>
+              ☁ Restore from another device
+            </button>
+          ) : restoreStatus === 'success' ? (
+            <div className="restore-result restore-result--ok">
+              {restoreCount > 0
+                ? `✓ ${restoreCount} chart${restoreCount !== 1 ? 's' : ''} restored!`
+                : '✓ All up to date — no new charts to restore.'}
+              <button type="button" className="restore-dismiss" onClick={() => { setShowRestore(false); setRestoreStatus('idle') }}>×</button>
+            </div>
+          ) : (
+            <form className="restore-form" onSubmit={handleEmailRestore}>
+              <p className="restore-form-label">Enter the email you used on your other device:</p>
+              <input
+                type="email"
+                className="save-dialog-input"
+                placeholder="your@email.com"
+                value={restoreEmail}
+                onChange={e => { setRestoreEmail(e.target.value); setRestoreStatus('idle') }}
+                disabled={restoreStatus === 'loading'}
+              />
+              {restoreStatus === 'not_found' && <p className="restore-error">No account found with that email.</p>}
+              {restoreStatus === 'error'     && <p className="restore-error">Something went wrong — try again.</p>}
+              <div className="restore-form-btns">
+                <button type="button" className="save-dialog-cancel" onClick={() => { setShowRestore(false); setRestoreStatus('idle') }}>Cancel</button>
+                <button type="submit" className="save-dialog-save" disabled={restoreStatus === 'loading' || !restoreEmail.trim()}>
+                  {restoreStatus === 'loading' ? 'Restoring…' : 'Restore'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
+
       {sorted.length > 0 ? (
         <div className="charts-list">
           {sorted.map(c => (
@@ -194,44 +231,6 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
           ))}
         </div>
       </div>
-
-      {isCloudEnabled() && (
-        <div className="restore-section">
-          {!showRestore ? (
-            <button type="button" className="restore-cloud-btn" onClick={() => { setShowRestore(true); setRestoreStatus('idle') }}>
-              ☁ Restore from another device
-            </button>
-          ) : restoreStatus === 'success' ? (
-            <div className="restore-result restore-result--ok">
-              {restoreCount > 0
-                ? `✓ ${restoreCount} chart${restoreCount !== 1 ? 's' : ''} restored!`
-                : '✓ All up to date — no new charts to restore.'}
-              <button type="button" className="restore-dismiss" onClick={() => { setShowRestore(false); setRestoreStatus('idle') }}>×</button>
-            </div>
-          ) : (
-            <form className="restore-form" onSubmit={handleEmailRestore}>
-              <p className="restore-form-label">Enter the email you used on your other device:</p>
-              <input
-                type="email"
-                className="save-dialog-input"
-                placeholder="your@email.com"
-                value={restoreEmail}
-                onChange={e => { setRestoreEmail(e.target.value); setRestoreStatus('idle') }}
-                autoFocus
-                disabled={restoreStatus === 'loading'}
-              />
-              {restoreStatus === 'not_found' && <p className="restore-error">No account found with that email.</p>}
-              {restoreStatus === 'error'     && <p className="restore-error">Something went wrong — try again.</p>}
-              <div className="restore-form-btns">
-                <button type="button" className="save-dialog-cancel" onClick={() => { setShowRestore(false); setRestoreStatus('idle') }}>Cancel</button>
-                <button type="submit" className="save-dialog-save" disabled={restoreStatus === 'loading' || !restoreEmail.trim()}>
-                  {restoreStatus === 'loading' ? 'Restoring…' : 'Restore'}
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      )}
 
       {onGoToAbout && (
         <button type="button" className="charts-data-link" onClick={onGoToAbout}>

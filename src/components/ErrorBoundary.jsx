@@ -24,11 +24,8 @@ export class ErrorBoundary extends Component {
           <h2 style={{ color: '#e6c76e', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
             Something went wrong
           </h2>
-          <p style={{ color: '#8878aa', fontSize: '0.875rem', marginBottom: '0.75rem', maxWidth: '28rem' }}>
+          <p style={{ color: '#8878aa', fontSize: '0.875rem', marginBottom: '1.5rem', maxWidth: '28rem' }}>
             An unexpected error occurred. Your saved trees are safe in localStorage.
-          </p>
-          <p style={{ color: '#e07070', fontSize: '0.72rem', marginBottom: '1.5rem', maxWidth: '28rem', fontFamily: 'monospace', wordBreak: 'break-word' }}>
-            {this.state.error?.message}
           </p>
           <button
             onClick={() => this.setState({ error: null })}
