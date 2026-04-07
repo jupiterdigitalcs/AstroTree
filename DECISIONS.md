@@ -4,9 +4,14 @@ A log of technical and product decisions — the *why* behind choices, so future
 
 ---
 
-## React + Vite
-**Why:** Fast local dev, minimal setup, Claude Code works with it naturally. Vite's dev server is snappy. Easy Vercel deployment when ready.
-**Alternatives considered:** Plain HTML/JS (too limited as app grows), Next.js (overkill until we need a backend/SSR).
+## Next.js App Router (migrated from Vite SPA — April 2026)
+**Why:** The app outgrew the client-side SPA architecture. Upcoming features (birth time reconciliation, transit calculations) need server-side computation. Ad-hoc routing via `window.location.pathname` and query params was getting fragile. Admin code was shipping in the same bundle as the main app. Next.js gives us file-based routing, server components for heavy computation, automatic code splitting per route, and server-rendered SEO metadata — all on the same Vercel deployment.
+**What changed:** React 18 → 19, Vite → Next.js 16 (Turbopack), `index.html` + `main.jsx` → `src/app/layout.jsx` + `src/app/page.jsx`, Vercel serverless functions → Next.js route handlers in `src/app/api/`.
+**What stayed:** All React components, hooks, CSS, Supabase, localStorage patterns. The existing App.jsx renders client-side via `dynamic(..., { ssr: false })`.
+**Alternatives considered:** Staying with Vite + adding a router (doesn't solve server computation), Remix (less Vercel-native), Astro (better for content sites, not interactive apps).
+
+### Previous: React + Vite (MVP 1–2)
+Fast local dev, minimal setup. Outgrown once server-side computation and proper routing became necessary.
 
 ---
 
@@ -27,15 +32,15 @@ A log of technical and product decisions — the *why* behind choices, so future
 
 ---
 
-## Custom JS sun sign logic (no API for MVP 1-2)
-**Why:** Sun sign calculation is simple date logic — no external dependency needed. Faster, no API costs, no rate limits.
-**When this changes:** MVP 3 — Swiss Ephemeris or AstrologyAPI.com for full chart calculations including Moon, Rising, and house placements.
+## Celestine for astrology calculations
+**Why:** Started with custom date-range logic for sun signs (MVP 1–2). Now using the Celestine package for ephemeris calculations — gives us Moon, Mercury, Venus, Mars signs plus ingress warnings from birth date/time. Runs client-side currently; will move to server-side (Next.js server actions or API routes) for heavier features like transit calculations.
+**When this changes:** Birth time reconciliation and transits will require server-side computation to avoid blocking the UI thread.
 
 ---
 
-## React state only (no persistence yet)
-**Why:** Keeps MVP 1-2 simple. No backend, no auth, no database decisions to make prematurely.
-**When this changes:** MVP 5 — user accounts and saved trees will require a backend. Decision not yet made on stack (likely Supabase or Firebase for a solo project).
+## Supabase for persistence (device-based, no user accounts)
+**Why:** Supabase gives us Postgres + RPC functions with minimal setup. All access is server-side through API routes — no Supabase keys exposed to the client. Device IDs (localStorage UUIDs) serve as the identity model instead of user accounts.
+**When this changes:** User accounts would unlock multi-device sync and per-user billing, but device-based auth is good enough for now.
 
 ---
 

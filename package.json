@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -17,8 +17,9 @@
     "@xyflow/react": "^12.3.6",
     "celestine": "^0.2.1",
     "html-to-image": "^1.11.11",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "next": "^16.2.2",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "stripe": "^22.0.0"
   },
   "devDependencies": {

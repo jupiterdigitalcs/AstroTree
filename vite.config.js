@@ -1,18 +1,7 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 
+// Vite config retained only for vitest — the app is now built with Next.js
 export default defineConfig({
-  plugins: [react()],
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'xyflow': ['@xyflow/react'],
-          'dagre': ['@dagrejs/dagre'],
-        },
-      },
-    },
-  },
   test: {
     environment: 'node',
   },

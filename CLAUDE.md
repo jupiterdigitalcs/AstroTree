@@ -75,3 +75,28 @@ MVP 2 complete — live at astrodig.com:
 ## What's Next
 - **MVP 3:** Birth chart calculations using Celestine package — birth time + place input, planet positions, house placements, aspects between family members' charts
 - Celestine drops into `/src/utils/astrology/birthChart.js`, lazy-loaded when birth chart view is active
+
+## Insights Panel Card Order (do not reorder unless asked)                                                          
+  1. Family Signature                                                                                                 
+  2. Sun Element distribution                                                                                         
+  3. Moon Element distribution                              
+  4. Notable Bonds                                                                                                    
+  5. Shared Signs                                           
+  6. Partner Compatibility                                                                                            
+  7. Family Roles
+  8. Family Arrivals                                                                                                  
+  9. Sign Concentration                                     
+  10. Full Compatibility Report (after Zodiac Threads)                                                                
+  11. Pluto Generations
+
+ ## Component Size Guidelines                                                                                        
+  - App.jsx is intentionally large (~700 lines) — orchestration only, don't split unless asked
+  - InsightsPanel.jsx is intentionally large — all insight cards live in one file by design                           
+  - EditMemberPanel.jsx handles all member editing in one place — keep it that way                                    
+                                                                                                                      
+  ## CSS Organization                                                                                                 
+  - 15 CSS files in /src/styles/ — each maps to a feature area                                                        
+  - Birth time / edit panel styles → edit-panel.css                                                                   
+  - Zodiac mobile hints, zoom controls → admin.css (mobile media query section)                                       
+  - Tab bar / React Flow controls mobile positioning → tabs.css                                                       
+  - New component styles go in the most relevant existing file, not a new file      

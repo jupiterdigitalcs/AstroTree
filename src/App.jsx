@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useCallback, useEffect, useMemo, useRef, lazy, Suspense } from 'react'
 import {
   ReactFlow,

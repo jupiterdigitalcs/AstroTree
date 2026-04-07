@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { isAdminAuthed, adminLogout } from './utils/adminAuth.js'
 import AdminLogin from './AdminLogin.jsx'

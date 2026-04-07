@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useCallback, useEffect } from 'react'
 import { saveDraft, loadDraft, saveChart, loadCharts } from '../utils/storage.js'
 import { applyDagreLayout } from '../utils/layout.js'

@@ -1,9 +1,8 @@
 import { getDeviceId } from './identity.js'
 
-// Cloud is enabled when running on the deployed site (API routes exist)
+// Cloud is always enabled — Next.js API routes work in dev and production
 export function isCloudEnabled() {
-  // Vercel serverless functions aren't available in local vite dev
-  return window.location.hostname !== 'localhost'
+  return true
 }
 
 export function getReferrer() {

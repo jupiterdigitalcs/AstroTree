@@ -1,3 +1,5 @@
+'use client'
+
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { addEdge } from '@xyflow/react'
 import { getSunSign, getElement, getMoonSign, getSunSignAtTime } from '../utils/astrology.js'
