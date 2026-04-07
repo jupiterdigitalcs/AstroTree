@@ -1,4 +1,5 @@
-import { getSunSign, getElement, getMoonSign } from './astrology.js'
+import { getSunSign, getElement } from './astrology.js'
+import { computeAstrology, computeAstrologyBatch } from './astrologyAPI.js'
 
 // ── Edge style constants ─────────────────────────────────────────────────────
 export const EDGE_STYLE      = { stroke: '#c9a84c', strokeWidth: 1.5 }
@@ -36,19 +37,41 @@ export const EDGE_DASH = {
 }
 
 // ── Node + edge builders ─────────────────────────────────────────────────────
-export function buildNodeData(member) {
+export async function buildNodeData(member) {
   const { sign, symbol }   = getSunSign(member.birthdate)
   const { element, color } = getElement(sign)
-  const { moonSign, moonSymbol } = getMoonSign(member.birthdate, member.birthTime ?? null)
-  return { name: member.name, birthdate: member.birthdate, birthTime: member.birthTime ?? null, exactBirthTime: member.exactBirthTime ?? false, sign, symbol, element, elementColor: color, moonSign, moonSymbol }
+  const base = { name: member.name, birthdate: member.birthdate, birthTime: member.birthTime ?? null, exactBirthTime: member.exactBirthTime ?? false, sign, symbol, element, elementColor: color, moonSign: 'Unknown', moonSymbol: '☽' }
+
+  const astro = await computeAstrology(member.birthdate, member.birthTime ?? null)
+  if (astro) {
+    if (astro.moon) Object.assign(base, astro.moon)
+    if (astro.innerPlanets) base.innerPlanets = astro.innerPlanets
+    if (astro.ingressWarnings) base.ingressWarnings = astro.ingressWarnings
+    if (astro.sunAtTime?.sign) {
+      const { element: el, color: c } = getElement(astro.sunAtTime.sign)
+      Object.assign(base, { sign: astro.sunAtTime.sign, symbol: astro.sunAtTime.symbol, element: el, elementColor: c })
+    }
+  }
+  return base
 }
 
-// Enrich existing saved nodes with any missing computed fields (e.g. moonSign)
-export function hydrateNodes(nodes) {
+// Enrich existing saved nodes with any missing computed fields
+export async function hydrateNodes(nodes) {
+  const needsHydration = nodes.filter(n => !n.data?.innerPlanets && n.data?.birthdate)
+  if (needsHydration.length === 0) return nodes
+
+  const batch = await computeAstrologyBatch(
+    needsHydration.map(n => ({ id: n.id, birthdate: n.data.birthdate, birthTime: n.data.birthTime ?? null }))
+  )
+
   return nodes.map(n => {
-    if (n.data?.moonSign || !n.data?.birthdate) return n
-    const { moonSign, moonSymbol } = getMoonSign(n.data.birthdate, n.data.birthTime ?? null)
-    return { ...n, data: { ...n.data, moonSign, moonSymbol } }
+    const astro = batch[n.id]
+    if (!astro) return n
+    const enriched = { ...n.data }
+    if (astro.moon && !n.data.moonSign) Object.assign(enriched, astro.moon)
+    if (astro.innerPlanets) enriched.innerPlanets = astro.innerPlanets
+    if (astro.ingressWarnings) enriched.ingressWarnings = astro.ingressWarnings
+    return { ...n, data: enriched }
   })
 }
 
@@ -59,7 +82,6 @@ export function makeEdge(source, target, relationType = 'parent-child') {
     data:     { relationType },
     animated: isFamily,
     style:    EDGE_STYLES[relationType] || EDGE_STYLE,
-    // step (orthogonal routing) keeps parent-child lines from converging in large families
     type:     isFamily ? 'step' : 'smoothstep',
   }
 }

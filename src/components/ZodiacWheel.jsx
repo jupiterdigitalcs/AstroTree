@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useMemo } from 'react'
-import { ELEMENT_COLORS, getInnerPlanetSigns } from '../utils/astrology.js'
+import { ELEMENT_COLORS } from '../utils/astrology.js'
 import { PlanetSign } from './PlanetSign.jsx'
 
 const ZODIAC_ORDER = [
@@ -153,7 +153,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
   const innerByNode = useMemo(() => {
     if (!needsInner) return {}
     const m = {}
-    nodes.forEach(n => { m[n.id] = getInnerPlanetSigns(n.data.birthdate, n.data.birthTime ?? null) })
+    nodes.forEach(n => { m[n.id] = n.data?.innerPlanets ?? { mercury: { sign: null, symbol: '☿' }, venus: { sign: null, symbol: '♀' }, mars: { sign: null, symbol: '♂' } } })
     return m
   }, [nodes, needsInner])
 

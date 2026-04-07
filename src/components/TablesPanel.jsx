@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { getMoonSign, getInnerPlanetSigns } from '../utils/astrology.js'
 import { PlanetSign } from './PlanetSign.jsx'
 
 const ELEMENT_ORDER = ['Fire', 'Earth', 'Air', 'Water']
@@ -35,8 +34,9 @@ export function TablesPanel({ nodes }) {
 
   const rawRows = nodes.map(n => {
     const d = n.data
-    const { moonSign, moonSymbol } = d.moonSign ? d : getMoonSign(d.birthdate)
-    const inner = needsInner ? getInnerPlanetSigns(d.birthdate, d.birthTime ?? null) : null
+    const moonSign = d.moonSign ?? 'Unknown'
+    const moonSymbol = d.moonSymbol ?? '☽'
+    const inner = needsInner ? (d.innerPlanets ?? null) : null
     return {
       id: n.id,
       name: d.name,

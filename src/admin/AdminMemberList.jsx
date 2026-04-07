@@ -1,22 +1,12 @@
-import { calculateChart } from 'celestine'
-import { getMoonSign } from '../utils/astrology.js'
-
-function getPlanets(birthdate) {
-  try {
-    const date = new Date(birthdate + 'T12:00:00')
-    const chart = calculateChart({
-      year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate(),
-      hour: 12, minute: 0, second: 0, timezone: -5,
-      latitude: 40.7128, longitude: -74.0060,
-    })
-    const names = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']
-    return names.map((name, i) => ({
-      name,
-      sign: chart.planets[i]?.signName ?? '—',
-    }))
-  } catch {
-    return null
+function getPlanetsFromData(d) {
+  if (!d) return null
+  const planets = [{ name: 'Sun', sign: d.sign ?? '—' }, { name: 'Moon', sign: d.moonSign ?? '—' }]
+  if (d.innerPlanets) {
+    planets.push({ name: 'Mercury', sign: d.innerPlanets.mercury?.sign ?? '—' })
+    planets.push({ name: 'Venus', sign: d.innerPlanets.venus?.sign ?? '—' })
+    planets.push({ name: 'Mars', sign: d.innerPlanets.mars?.sign ?? '—' })
   }
+  return planets
 }
 
 export default function AdminMemberList({ nodes, expanded = false }) {
@@ -26,8 +16,9 @@ export default function AdminMemberList({ nodes, expanded = false }) {
     <div className="admin-member-list">
       {nodes.map(n => {
         const d = n.data
-        const { moonSign, moonSymbol } = d?.moonSign ? d : getMoonSign(d?.birthdate)
-        const planets = expanded && d?.birthdate ? getPlanets(d.birthdate) : null
+        const moonSign = d?.moonSign ?? 'Unknown'
+        const moonSymbol = d?.moonSymbol ?? '☽'
+        const planets = expanded ? getPlanetsFromData(d) : null
 
         return (
           <div key={n.id} className="admin-member-card">

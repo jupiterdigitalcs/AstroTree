@@ -28,11 +28,12 @@ export function useChartManager({
     if (new URLSearchParams(window.location.search).get('view')) return
     const draft = loadDraft()
     if (draft?.nodes?.length > 0) {
-      setNodes(hydrateNodes(draft.nodes))
+      // Set nodes immediately (may have cached astro data), then hydrate async
       setEdges(draft.edges)
       setCounter(draft.counter ?? 1)
       if (draft.savedChartId) setSavedChartId(draft.savedChartId)
       setActiveTab('add')
+      hydrateNodes(draft.nodes).then(hydrated => setNodes(hydrated))
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -57,8 +58,9 @@ export function useChartManager({
     return () => clearTimeout(t)
   }, [nodes, edges, counter, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleLoadChart = useCallback((chart) => {
-    setNodes(applyDagreLayout(hydrateNodes(chart.nodes), chart.edges))
+  const handleLoadChart = useCallback(async (chart) => {
+    const hydrated = await hydrateNodes(chart.nodes)
+    setNodes(applyDagreLayout(hydrated, chart.edges))
     setEdges(chart.edges); setCounter(chart.counter)
     setSavedChartId(chart.isSample ? null : chart.id)
     setEditingNodeId(null); setActiveTab('tree'); setTreeView('tree')

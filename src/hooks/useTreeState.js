@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { addEdge } from '@xyflow/react'
-import { getSunSign, getElement, getMoonSign, getSunSignAtTime } from '../utils/astrology.js'
+import { getSunSign, getElement } from '../utils/astrology.js'
+import { computeAstrology } from '../utils/astrologyAPI.js'
 import { applyDagreLayout } from '../utils/layout.js'
 import { EDGE_STYLE, makeEdge } from '../utils/treeHelpers.js'
 
@@ -37,34 +38,47 @@ export function useTreeState({
 
   // ── Update / delete ───────────────────────────────────────────────────────
   const handleUpdate = useCallback((id, patch, { keepOpen = false } = {}) => {
+    const bdChanged = !!patch.birthdate
+    const btChanged = 'birthTime' in patch
+
+    // Synchronous sun sign update (pure lookup, no API call)
     setNodes(prev => prev.map(n => {
       if (n.id !== id) return n
       const updated = { ...n.data, ...patch }
-      const bdChanged = patch.birthdate && patch.birthdate !== n.data.birthdate
-      const btChanged = 'birthTime' in patch
-      if (bdChanged) {
+      if (bdChanged && patch.birthdate !== n.data.birthdate) {
         const { sign, symbol }   = getSunSign(patch.birthdate)
         const { element, color } = getElement(sign)
         Object.assign(updated, { sign, symbol, element, elementColor: color })
       }
-      if (bdChanged || btChanged) {
-        const bd = patch.birthdate || n.data.birthdate
-        const bt = btChanged ? patch.birthTime : n.data.birthTime
-        // Recalculate moon (and sun on ingress days) using birth time
-        const { moonSign, moonSymbol } = getMoonSign(bd, bt ?? null)
-        Object.assign(updated, { moonSign, moonSymbol })
-        if (bt) {
-          const exactSun = getSunSignAtTime(bd, bt)
-          if (exactSun) {
-            const { element, color } = getElement(exactSun.sign)
-            Object.assign(updated, { sign: exactSun.sign, symbol: exactSun.symbol, element, elementColor: color })
-          }
-        }
-      }
       return { ...n, data: updated }
     }))
     if (!keepOpen) setEditingNodeId(null)
-  }, [setNodes, setEditingNodeId])
+
+    // Async: fetch moon/planets/ingress from server when birthdate or time changes
+    if (bdChanged || btChanged) {
+      // Find the current node to get the right birthdate/time
+      const node = nodes.find(n => n.id === id)
+      const bd = patch.birthdate || node?.data?.birthdate
+      const bt = btChanged ? patch.birthTime : node?.data?.birthTime
+      if (bd) {
+        computeAstrology(bd, bt ?? null).then(astro => {
+          if (!astro) return
+          setNodes(prev => prev.map(n => {
+            if (n.id !== id) return n
+            const enriched = { ...n.data }
+            if (astro.moon) Object.assign(enriched, astro.moon)
+            if (astro.innerPlanets) enriched.innerPlanets = astro.innerPlanets
+            if (astro.ingressWarnings) enriched.ingressWarnings = astro.ingressWarnings
+            if (astro.sunAtTime?.sign) {
+              const { element, color } = getElement(astro.sunAtTime.sign)
+              Object.assign(enriched, { sign: astro.sunAtTime.sign, symbol: astro.sunAtTime.symbol, element, elementColor: color })
+            }
+            return { ...n, data: enriched }
+          }))
+        })
+      }
+    }
+  }, [setNodes, setEditingNodeId, nodes])
 
   const handleDelete = useCallback((id) => {
     setNodes(prev => prev.filter(n => n.id !== id))

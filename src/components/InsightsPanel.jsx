@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import {
-  getElement, getInnerPlanetSigns, checkIngressWarnings,
+  getElement,
   ELEMENT_COLORS, SIGN_MODALITY, POLARITY_GROUP,
   FAMILY_SIGNATURE_DESCRIPTIONS, ELEMENT_ROLE_BLURB, MODALITY_MODIFIER,
 } from '../utils/astrology.js'
@@ -463,7 +463,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const innerPlanetData = useMemo(() => {
     return nodes.map(n => ({
       node: n,
-      ...getInnerPlanetSigns(n.data?.birthdate ?? null, n.data?.birthTime ?? null),
+      ...(n.data?.innerPlanets ?? { mercury: { sign: null, symbol: '☿' }, venus: { sign: null, symbol: '♀' }, mars: { sign: null, symbol: '♂' } }),
     }))
   }, [nodes])
 
@@ -574,8 +574,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const warningsPerNode = useMemo(() => {
     const map = new Map()
     nodes.forEach(n => {
-      if (!n.data?.birthdate) { map.set(n.id, new Set()); return }
-      const ws = checkIngressWarnings(n.data.birthdate, n.data.birthTime ?? null)
+      const ws = n.data?.ingressWarnings ?? []
       map.set(n.id, new Set(ws.map(w => w.planet)))
     })
     return map

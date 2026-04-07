@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import { DateInput } from './DateInput.jsx'
 import { PlanetSign } from './PlanetSign.jsx'
-import { checkIngressWarnings } from '../utils/astrology.js'
 
 // Convert stored 24h "HH:MM" → 12h display + AM/PM
 function to12h(time24) {
@@ -51,16 +50,10 @@ export default function EditMemberPanel({
   const birthTime = birthTimeInput ? (to24h(birthTimeInput, birthTimeAmPm) ?? '') : ''
   const [error,          setError]          = useState('')
 
-  // Warnings based on birthdate only (no birth time)
-  const originalWarnings = useMemo(
-    () => birthdate ? checkIngressWarnings(birthdate) : [],
-    [birthdate]
-  )
-  // Active warnings — clears when a confirming time is entered
-  const ingressWarnings = useMemo(
-    () => checkIngressWarnings(birthdate, birthTime || null),
-    [birthdate, birthTime]
-  )
+  // Ingress warnings from precomputed node data
+  const originalWarnings = node.data?.ingressWarnings ?? []
+  // Active warnings — clear when birth time is entered (resolves ambiguity)
+  const ingressWarnings = birthTime ? [] : originalWarnings
 
   // Show exact-time checkbox when birth time is a round hour near a sign change
   const showExactCheckbox = useMemo(() => {

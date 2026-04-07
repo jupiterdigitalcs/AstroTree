@@ -3,6 +3,12 @@ import { loadCharts, deleteChart, saveChart, renameChart } from '../utils/storag
 import { fetchCharts, fetchPublicCharts, isCloudEnabled, restoreChartsByEmail } from '../utils/cloudStorage.js'
 import { getSavedEmail } from './EmailCapture.jsx'
 import { buildDemoChart, buildDemoCrewChart } from '../utils/demoData.js'
+
+// Static sample chart metadata — avoids async in render path
+const SAMPLE_CHARTS = [
+  { id: '__sample_andersons__', title: 'The Andersons', memberCount: 9, desc: '3 generations', loader: buildDemoChart },
+  { id: '__sample_crew__', title: 'The Crew', memberCount: 8, desc: 'friends & coworkers', loader: buildDemoCrewChart },
+]
 import { isPaywallEnabled, getChartLimit } from '../utils/entitlements.js'
 
 export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout, onRename, onDuplicate, entitlements, onUpgrade }) {
@@ -238,19 +244,19 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         <h3 className="sample-charts-title">✦ Sample Charts</h3>
         <p className="sample-charts-sub">Explore demo charts to see how AstroDig works</p>
         <div className="charts-list">
-          {[buildDemoChart(), buildDemoCrewChart()].map(c => (
-            <div key={c.id} className="chart-item chart-item--sample">
+          {SAMPLE_CHARTS.map(s => (
+            <div key={s.id} className="chart-item chart-item--sample">
               <div className="chart-item-info">
                 <span className="chart-item-title">
-                  {c.title}
+                  {s.title}
                   <span className="chart-item-badge chart-item-badge--sample">sample</span>
                 </span>
                 <span className="chart-item-meta">
-                  {c.nodes.length} members · {c.id === '__sample_andersons__' ? '3 generations' : 'friends & coworkers'}
+                  {s.memberCount} members · {s.desc}
                 </span>
               </div>
               <div className="chart-item-actions">
-                <button type="button" className="connection-add-btn" onClick={() => onLoad(c)}>View</button>
+                <button type="button" className="connection-add-btn" onClick={async () => onLoad(await s.loader())}>View</button>
               </div>
             </div>
           ))}

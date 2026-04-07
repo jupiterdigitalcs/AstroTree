@@ -25,7 +25,6 @@ import { WelcomeScreen }  from './components/WelcomeScreen.jsx'
 import { JupiterIcon }            from './components/JupiterIcon.jsx'
 import { TablesPanel }           from './components/TablesPanel.jsx'
 import { applyDagreLayout }      from './utils/layout.js'
-import { checkIngressWarnings }  from './utils/astrology.js'
 import { loadDraft, saveChart }  from './utils/storage.js'
 import { useCloudSync } from './hooks/useCloudSync.js'
 import { SyncIndicator } from './components/SyncIndicator.jsx'
@@ -41,6 +40,7 @@ import { formatRelativeTime } from './utils/format.js'
 import { useExport } from './hooks/useExport.js'
 import { useChartManager } from './hooks/useChartManager.js'
 import { useTreeState } from './hooks/useTreeState.js'
+import { useOnboardingState } from './hooks/useOnboardingState.js'
 
 const NODE_TYPES = { astro: AstroNode }
 
@@ -70,24 +70,7 @@ export default function App() {
   const [showAddMore,       setShowAddMore]       = useState(false)
   const [showConnectPrompt, setShowConnectPrompt] = useState(false)
   const [fitTick,           setFitTick]           = useState(0)
-  // True once the user has ever added members — shows compact welcome on next empty state
-  const [hasUsedApp,        setHasUsedApp]        = useState(() => {
-    try { return localStorage.getItem('astrotree_used') === '1' } catch { return false }
-  })
-  // True once user has visited Insights tab — drives the Insights CTA banner
-  const [insightsSeen,      setInsightsSeen]      = useState(() => {
-    try { return localStorage.getItem('astrotree_insights_seen') === '1' } catch { return false }
-  })
-  // True if user is returning after >3 days away — drives welcome-back card
-  const [returnVisit,       setReturnVisit]       = useState(() => {
-    try {
-      const last = localStorage.getItem('astrotree_last_visit')
-      const now  = Date.now()
-      localStorage.setItem('astrotree_last_visit', String(now))
-      if (!last) return false
-      return (now - parseInt(last, 10)) > 3 * 24 * 60 * 60 * 1000
-    } catch { return false }
-  })
+  const { hasUsedApp, insightsSeen, setInsightsSeen, returnVisit, markUsed } = useOnboardingState()
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
@@ -105,14 +88,12 @@ export default function App() {
   const topNavMode = true
   // ── END TEMP ──────────────────────────────────────────────────────────────────
 
-  // Ingress warnings per node — computed once per nodes change (not on every render)
+  // Ingress warnings per node — read from precomputed node.data.ingressWarnings
   const nodeIngressWarnings = useMemo(() => {
     const map = {}
     nodes.forEach(n => {
-      if (n.data?.birthdate) {
-        const w = checkIngressWarnings(n.data.birthdate, n.data.birthTime ?? null)
-        if (w.length > 0) map[n.id] = w
-      }
+      const w = n.data?.ingressWarnings
+      if (w?.length > 0) map[n.id] = w
     })
     return map
   }, [nodes])
@@ -184,9 +165,9 @@ export default function App() {
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get('view')
     if (!token || !isCloudEnabled()) return
-    fetchChartByToken(token).then(chart => {
+    fetchChartByToken(token).then(async chart => {
       if (!chart) return
-      setNodes(hydrateNodes(chart.nodes))
+      setNodes(await hydrateNodes(chart.nodes))
       setEdges(chart.edges)
       setCounter(chart.counter)
       // Do NOT set savedChartId — viewer doesn't own this chart
@@ -219,14 +200,6 @@ export default function App() {
     prevEdgeCountRef.current = edges.length
   }, [edges.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function markUsed() {
-    setHasUsedApp(prev => {
-      if (prev) return prev
-      try { localStorage.setItem('astrotree_used', '1') } catch {}
-      return true
-    })
-  }
-
   // ── TEMP C: drag-to-resize sidebar — delete to revert ────────────────────────
   function startDrag(e) {
     e.preventDefault()
@@ -253,16 +226,17 @@ export default function App() {
   // ── END TEMP C ────────────────────────────────────────────────────────────────
 
   // ── Add (atomic, supports multiple members) ───────────────────────────────
-  function handleAdd({ members, relationships = {} }) {
+  async function handleAdd({ members, relationships = {} }) {
     const { parentIds = [], childIds = [], spouseIds = [] } = relationships
     const wasEmpty  = nodes.length === 0
     const startIdx  = counter
     const primaryId = `node-${startIdx}`
+    const builtData = await Promise.all(members.map(m => buildNodeData(m)))
     const nextNodes = [
       ...nodes,
-      ...members.map((m, i) => ({
+      ...builtData.map((data, i) => ({
         id: `node-${startIdx + i}`, type: 'astro',
-        position: { x: 0, y: 0 }, data: buildNodeData(m),
+        position: { x: 0, y: 0 }, data,
       })),
     ]
     const nextEdges = [
@@ -325,8 +299,8 @@ export default function App() {
   }
 
   // ── Load demo tree ────────────────────────────────────────────────────────
-  function handleLoadDemo() {
-    const demo = buildDemoChart()
+  async function handleLoadDemo() {
+    const demo = await buildDemoChart()
     setNodes(applyDagreLayout(demo.nodes, demo.edges))
     setEdges(demo.edges)
     setCounter(demo.counter)
@@ -337,8 +311,8 @@ export default function App() {
     markUsed()
   }
 
-  function handleLoadDemoCrew() {
-    const demo = buildDemoCrewChart()
+  async function handleLoadDemoCrew() {
+    const demo = await buildDemoCrewChart()
     setNodes(applyDagreLayout(demo.nodes, demo.edges))
     setEdges(demo.edges)
     setCounter(demo.counter)

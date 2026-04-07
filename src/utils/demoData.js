@@ -46,10 +46,11 @@ const DEMO_CREW_EDGE_DEFS = [
   ['crew-6', 'crew-8', 'friend'],    // Anika & Chloe
 ]
 
-export function buildDemoCrewChart() {
-  const nodes = DEMO_CREW_MEMBERS.map((m, i) => ({
+export async function buildDemoCrewChart() {
+  const builtData = await Promise.all(DEMO_CREW_MEMBERS.map(m => buildNodeData(m)))
+  const nodes = builtData.map((data, i) => ({
     id: `crew-${i + 1}`, type: 'astro',
-    position: { x: 0, y: 0 }, data: buildNodeData(m),
+    position: { x: 0, y: 0 }, data,
   }))
   const edges = DEMO_CREW_EDGE_DEFS.map(([s, t, r]) => makeEdge(s, t, r))
   return {
@@ -62,10 +63,11 @@ export function buildDemoCrewChart() {
   }
 }
 
-export function buildDemoChart() {
-  const nodes = DEMO_MEMBERS.map((m, i) => ({
+export async function buildDemoChart() {
+  const builtData = await Promise.all(DEMO_MEMBERS.map(m => buildNodeData(m)))
+  const nodes = builtData.map((data, i) => ({
     id: `node-${i + 1}`, type: 'astro',
-    position: { x: 0, y: 0 }, data: buildNodeData(m),
+    position: { x: 0, y: 0 }, data,
   }))
   const edges = DEMO_EDGE_DEFS.map(([s, t, r]) => makeEdge(s, t, r))
   return {

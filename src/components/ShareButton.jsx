@@ -14,7 +14,7 @@ export function ShareButton({ savedChartId, syncStatus }) {
     setShareError(false)
     const token = await generateShareToken(savedChartId)
     if (token) {
-      const url = `${window.location.origin}${window.location.pathname}?view=${token}`
+      const url = `${window.location.origin}/view/${token}`
       try {
         await navigator.clipboard.writeText(url)
         setCopied(true)
