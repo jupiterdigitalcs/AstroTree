@@ -44,30 +44,36 @@ async function appendBrandBar(imageUrl, pixelRatio = 2) {
   return cvs.toDataURL('image/png')
 }
 
+// ── Convert data URL to blob (avoids Chrome data URL download restrictions) ──
+function dataUrlToBlob(dataUrl) {
+  const [header, b64] = dataUrl.split(',')
+  const mime = header.match(/:(.*?);/)[1]
+  const bytes = atob(b64)
+  const arr = new Uint8Array(bytes.length)
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i)
+  return new Blob([arr], { type: mime })
+}
+
 // ── Mobile share or desktop download ────────────────────────────────────────
 async function shareOrDownload(dataUrl, filename, shareTitle, shareText) {
+  const blob = dataUrlToBlob(dataUrl)
   const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
   if (isMobile && navigator.share) {
-    const res = await fetch(dataUrl)
-    const blob = await res.blob()
     const file = new File([blob], filename, { type: 'image/png' })
     if (navigator.canShare?.({ files: [file] })) {
       await navigator.share({ files: [file], title: shareTitle, text: shareText })
       return
     }
   }
-  // Convert to blob URL and force download via DOM-attached link
-  const res = await fetch(dataUrl)
-  const blob = await res.blob()
-  const blobUrl = URL.createObjectURL(blob)
+  const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.download = filename
-  link.href = blobUrl
+  link.href = url
   link.style.display = 'none'
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
-  setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
+  URL.revokeObjectURL(url)
 }
 
 function getChartSlug(savedChartId) {
@@ -259,8 +265,7 @@ export function useExport({ savedChartId, fitViewRef }) {
       })
       const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
       if (isMobile && navigator.share) {
-        const res = await fetch(url)
-        const blob = await res.blob()
+        const blob = dataUrlToBlob(url)
         const file = new File([blob], filename, { type: 'image/png' })
         if (navigator.canShare?.({ files: [file] })) {
           await navigator.share({
@@ -271,9 +276,7 @@ export function useExport({ savedChartId, fitViewRef }) {
           return
         }
       }
-      const dlRes = await fetch(url)
-      const dlBlob = await dlRes.blob()
-      const blobUrl = URL.createObjectURL(dlBlob)
+      const blobUrl = URL.createObjectURL(dataUrlToBlob(url))
       const link = document.createElement('a')
       link.download = filename
       link.href = blobUrl
@@ -281,7 +284,7 @@ export function useExport({ savedChartId, fitViewRef }) {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
+      URL.revokeObjectURL(blobUrl)
     } catch (err) {
       if (err?.name === 'AbortError') return
       setExportError('Export failed — please try again.')
