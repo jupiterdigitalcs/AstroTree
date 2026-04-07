@@ -1,4 +1,4 @@
-export default function SlideOutro({ data, onShare }) {
+export default function SlideOutro({ data, onShare, sharing }) {
   return (
     <div className="dig-slide-content">
       <p className="dig-label dig-fly-in" style={{ '--i': 0 }}>Your DIG</p>
@@ -29,8 +29,14 @@ export default function SlideOutro({ data, onShare }) {
         <br />This is yours.
       </p>
       {onShare && (
-        <button type="button" className="dig-share-btn dig-fade-in" style={{ '--i': 4 }} onClick={onShare}>
-          Share Your DIG
+        <button
+          type="button"
+          className="dig-share-btn dig-fade-in"
+          style={{ '--i': 4 }}
+          onClick={onShare}
+          disabled={sharing}
+        >
+          {sharing ? 'Capturing...' : 'Share Your DIG'}
         </button>
       )}
       <p className="dig-fade-in" style={{ '--i': 5, marginTop: '1.2rem', fontSize: '0.6rem', color: 'rgba(255,255,255,0.25)', fontFamily: 'Raleway, sans-serif' }}>

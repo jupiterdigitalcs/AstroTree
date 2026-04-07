@@ -1103,6 +1103,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       .map(sign => ({ sign, members: genMap[sign], flavor: PLUTO_GENS[sign]?.flavor }))
 
     return {
+      nodes,
       memberCount: nodes.length,
       familyName: isGroupOnly ? 'group' : 'family',
       dominant, dominantModality, masculine, feminine, total, missingElements,

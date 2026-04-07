@@ -3,8 +3,8 @@
 import { useState, useCallback } from 'react'
 import { loadCharts } from '../utils/storage.js'
 
-let _toPng = null
-async function getToPng() {
+export let _toPng = null
+export async function getToPng() {
   if (!_toPng) {
     const mod = await import('html-to-image')
     _toPng = mod.toPng
@@ -45,7 +45,7 @@ async function appendBrandBar(imageUrl, pixelRatio = 2) {
 }
 
 // ── Convert data URL to blob (avoids Chrome data URL download restrictions) ──
-function dataUrlToBlob(dataUrl) {
+export function dataUrlToBlob(dataUrl) {
   const [header, b64] = dataUrl.split(',')
   const mime = header.match(/:(.*?);/)[1]
   const bytes = atob(b64)
@@ -55,7 +55,7 @@ function dataUrlToBlob(dataUrl) {
 }
 
 // ── Mobile share or desktop download ────────────────────────────────────────
-async function shareOrDownload(dataUrl, filename, shareTitle, shareText) {
+export async function shareOrDownload(dataUrl, filename, shareTitle, shareText) {
   const blob = dataUrlToBlob(dataUrl)
   const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
   if (isMobile && navigator.share) {
