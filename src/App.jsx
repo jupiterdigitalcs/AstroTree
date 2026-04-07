@@ -739,6 +739,10 @@ export default function App() {
               <button type="button" className="footer-about-link" onClick={() => goTab('about')}>About</button>
               {' · '}
               <a href="https://jupiterdigitalevents.com" className="footer-external-link" target="_blank" rel="noopener noreferrer">Events ↗</a>
+              {nodes.length >= 3 && edges.length > 0 && canAccess('advanced_insights', entitlements?.tier, entitlements?.config) && (<>
+                {' · '}
+                <button type="button" className="footer-about-link footer-dig-link" onClick={() => { setInsightsTab('dig'); goTab('insights') }}>✦ The DIG</button>
+              </>)}
             </span>
             {lastSavedAt && (
               <span className="footer-saved-inline">

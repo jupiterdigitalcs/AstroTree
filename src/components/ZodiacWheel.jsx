@@ -132,6 +132,8 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
     return () => el.removeEventListener('wheel', handleWheel)
   }, [])
 
+  const pinchRef = useRef(null) // { dist, zoom, panX, panY }
+
   function onPointerDown(e) {
     if (e.target.closest('.zodiac-member-marker')) return
     if (e.target.closest('.zodiac-zoom-btn')) return
@@ -148,17 +150,49 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
   }
   function onPointerUp() {
     if (dragBase.current && !dragBase.current.moved) {
-      // Treat as a click — check if it landed on a zodiac segment
       const sign = dragBase.current.target?.closest?.('[data-sign]')?.dataset?.sign
       if (sign && anyActiveBySign[sign]) {
         setSelectedSign(s => s === sign ? null : sign)
       } else if (!sign) {
-        setSelectedSign(null) // click on empty area clears selection
+        setSelectedSign(null)
       }
     }
     dragBase.current = null
   }
-  function resetView()   { setZoom(1); setPan({ x: 0, y: 0 }) }
+  function resetView() { setZoom(1); setPan({ x: 0, y: 0 }) }
+
+  // Pinch-to-zoom via touch events
+  useEffect(() => {
+    const el = zoomAreaRef.current
+    if (!el) return
+    function dist(t) {
+      const dx = t[0].clientX - t[1].clientX
+      const dy = t[0].clientY - t[1].clientY
+      return Math.sqrt(dx * dx + dy * dy)
+    }
+    function onTouchStart(e) {
+      if (e.touches.length === 2) {
+        e.preventDefault()
+        pinchRef.current = { dist: dist(e.touches), zoom, panX: pan.x, panY: pan.y }
+      }
+    }
+    function onTouchMove(e) {
+      if (e.touches.length === 2 && pinchRef.current) {
+        e.preventDefault()
+        const scale = dist(e.touches) / pinchRef.current.dist
+        setZoom(clampZoom(pinchRef.current.zoom * scale))
+      }
+    }
+    function onTouchEnd() { pinchRef.current = null }
+    el.addEventListener('touchstart', onTouchStart, { passive: false })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd)
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+    }
+  })
 
   // Inner planet data — computed only when a planet ring that needs it is active
   const needsInner = activeRings.mercury || activeRings.venus || activeRings.mars
@@ -387,7 +421,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
       </div>
 
       {/* Mobile pan hint */}
-        <p className="zodiac-mobile-hint">drag to pan · pinch to zoom</p>
+        <p className="zodiac-mobile-hint">drag to pan · pinch to zoom · tap ↺ to reset</p>
 
         {/* Hover tooltip */}
         {hoveredNode && (() => {
