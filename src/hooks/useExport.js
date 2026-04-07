@@ -112,6 +112,7 @@ export function useExport({ savedChartId, fitViewRef }) {
       const url = await (await getToPng())(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
+        skipFonts: true,
         filter: node => {
           const c = node.classList
           if (!c) return true
@@ -151,6 +152,7 @@ export function useExport({ savedChartId, fitViewRef }) {
       const url = await (await getToPng())(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
+        skipFonts: true,
         filter: node => {
           const c = node.classList
           if (!c) return true
@@ -189,6 +191,7 @@ export function useExport({ savedChartId, fitViewRef }) {
       const url = await (await getToPng())(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
+        skipFonts: true,
         filter: node => {
           const c = node.classList
           if (!c) return true
@@ -235,6 +238,7 @@ export function useExport({ savedChartId, fitViewRef }) {
       const url = await (await getToPng())(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
+        skipFonts: true,
         filter: node => {
           const c = node.classList
           if (!c) return true
@@ -286,6 +290,7 @@ export function useExport({ savedChartId, fitViewRef }) {
       const url = await (await getToPng())(el, {
         backgroundColor: '#09071a',
         pixelRatio: 2,
+        skipFonts: true,
         filter: node => {
           const c = node.classList
           if (!c) return true

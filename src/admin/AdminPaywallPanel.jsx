@@ -7,6 +7,7 @@ export default function AdminPaywallPanel() {
   const [purchases, setPurchases] = useState([])
   const [saving,    setSaving]    = useState(null) // key being saved
   const [newProduct, setNewProduct] = useState({ key: '', name: '', stripePriceId: '', amountCents: '' })
+  const [newCode,    setNewCode]    = useState({ code: '', tier: 'premium' })
 
   useEffect(() => {
     fetchPaywallConfig().then(c => { if (c && typeof c === 'object') setConfig(c) })
@@ -25,6 +26,7 @@ export default function AdminPaywallPanel() {
   const paywallEnabled   = config.paywall_enabled === true
   const gatedFeatures    = config.gated_features ?? []
   const products         = config.products ?? []
+  const promoCodes       = config.promo_codes ?? []
   const chartLimitFree   = config.chart_limit_free ?? 3
   const chartLimitPremium = config.chart_limit_premium ?? 50
 
@@ -45,6 +47,21 @@ export default function AdminPaywallPanel() {
     const next = [...products, { ...newProduct, amountCents: parseInt(newProduct.amountCents, 10) || 0 }]
     save('products', next)
     setNewProduct({ key: '', name: '', stripePriceId: '', amountCents: '' })
+  }
+
+  function togglePromoCode(idx) {
+    const next = promoCodes.map((p, i) => i === idx ? { ...p, active: !p.active } : p)
+    save('promo_codes', next)
+  }
+
+  function removePromoCode(idx) {
+    save('promo_codes', promoCodes.filter((_, i) => i !== idx))
+  }
+
+  function addPromoCode() {
+    if (!newCode.code.trim()) return
+    save('promo_codes', [...promoCodes, { code: newCode.code.trim(), tier: newCode.tier, active: true }])
+    setNewCode({ code: '', tier: 'premium' })
   }
 
   return (
@@ -138,6 +155,47 @@ export default function AdminPaywallPanel() {
           <input placeholder="Stripe Price ID" value={newProduct.stripePriceId} onChange={e => setNewProduct(p => ({ ...p, stripePriceId: e.target.value }))} />
           <input placeholder="Amount (cents)" type="number" value={newProduct.amountCents} onChange={e => setNewProduct(p => ({ ...p, amountCents: e.target.value }))} />
           <button type="button" onClick={addProduct} disabled={!newProduct.key || !newProduct.stripePriceId}>Add</button>
+        </div>
+      </div>
+
+      {/* ── Promo Codes ─────────────────────────────── */}
+      <div className="admin-paywall-section">
+        <h3 className="admin-paywall-heading">Promo Codes</h3>
+        <p className="admin-paywall-hint">Users enter these in the upgrade prompt to unlock premium without paying.</p>
+        {promoCodes.length > 0 && (
+          <table className="admin-paywall-table">
+            <thead>
+              <tr><th>Code</th><th>Tier</th><th>Active</th><th></th></tr>
+            </thead>
+            <tbody>
+              {promoCodes.map((p, i) => (
+                <tr key={i} style={{ opacity: p.active === false ? 0.4 : 1 }}>
+                  <td className="admin-paywall-mono">{p.code}</td>
+                  <td>{p.tier}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className={`admin-paywall-toggle ${p.active !== false ? 'admin-paywall-toggle--on' : ''}`}
+                      onClick={() => togglePromoCode(i)}
+                      style={{ fontSize: '0.65rem', padding: '0.15rem 0.5rem' }}
+                    >
+                      {p.active !== false ? 'ON' : 'OFF'}
+                    </button>
+                  </td>
+                  <td>
+                    <button type="button" className="admin-paywall-remove" onClick={() => removePromoCode(i)}>x</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        <div className="admin-paywall-add-product">
+          <input placeholder="Code (case-sensitive)" value={newCode.code} onChange={e => setNewCode(p => ({ ...p, code: e.target.value }))} />
+          <select value={newCode.tier} onChange={e => setNewCode(p => ({ ...p, tier: e.target.value }))} style={{ background: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', padding: '0.3rem' }}>
+            <option value="premium">Premium</option>
+          </select>
+          <button type="button" onClick={addPromoCode} disabled={!newCode.code.trim()}>Add</button>
         </div>
       </div>
 

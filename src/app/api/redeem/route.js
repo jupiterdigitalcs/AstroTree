@@ -1,12 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSupabase } from '../_lib/supabase.js'
 
-// Valid promo codes → maps to tier upgrade
-// Add new codes here as needed
-const PROMO_CODES = {
-  'JupiterPisces': 'premium',
-}
-
 export async function POST(request) {
   try {
     const { code, email, deviceId } = await request.json()
@@ -15,13 +9,19 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: 'Missing fields' }, { status: 400 })
     }
 
-    // Validate code (case-sensitive)
-    const tier = PROMO_CODES[code]
-    if (!tier) {
+    const sb = getSupabase()
+
+    // Load promo codes from paywall_config
+    const { data: row } = await sb.from('paywall_config').select('value').eq('key', 'promo_codes').single()
+    const promoCodes = row?.value ?? []
+    // Each code: { code: string, tier: string, active: boolean }
+    const match = promoCodes.find(p => p.code === code && p.active !== false)
+
+    if (!match) {
       return NextResponse.json({ ok: false, error: 'Invalid code' }, { status: 400 })
     }
 
-    const sb = getSupabase()
+    const tier = match.tier || 'premium'
 
     // Update device: set tier, save email
     const { error } = await sb.from('devices').update({
