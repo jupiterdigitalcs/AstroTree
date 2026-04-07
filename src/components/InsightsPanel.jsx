@@ -5,6 +5,7 @@ import {
   FAMILY_SIGNATURE_DESCRIPTIONS, ELEMENT_ROLE_BLURB, MODALITY_MODIFIER,
 } from '../utils/astrology.js'
 import { PlanetSign } from './PlanetSign.jsx'
+import { canAccess } from '../utils/entitlements.js'
 
 const ELEMENTS = ['Fire', 'Earth', 'Air', 'Water']
 
@@ -391,7 +392,8 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst }) {
+export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements }) {
+  const hasAdvanced = canAccess('advanced_insights', entitlements?.tier, entitlements?.config)
   const isGroupOnly = edges.length > 0 && edges.every(e => {
     const t = e.data?.relationType
     return t === 'friend' || t === 'coworker'
@@ -1185,45 +1187,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* 4. Notable Bonds */}
-      {topBonds.length > 0 && (
-        <div className="insight-card">
-          <h3 className="insight-heading">Notable Bonds</h3>
-          {topBonds.map(({ a, b, note, noteType, rel, needsTimeCheck }) => {
-            const isRare = noteType === 'cosmic-echo' || noteType === 'rare-alignment'
-            const color  = isRare                             ? 'var(--gold)'
-                         : noteType === 'soul-twins'          ? 'var(--gold)'
-                         : noteType === 'cosmic-twins'        ? 'var(--gold)'
-                         : noteType === 'lunar-bond'          ? '#9dbbd4'
-                         : noteType === 'mirror'              ? 'var(--rose)'
-                         : noteType === 'sun-moon-reflection' ? '#c4a8d4'
-                         : '#7ec845'
-            return (
-              <div
-                key={pairKey(a, b)}
-                className={`insight-couple${isRare ? ' insight-couple--rare' : ''}`}
-              >
-                {isRare && (
-                  <p className="insight-rare-badge">
-                    {noteType === 'cosmic-echo' ? '✦✦✦ Extremely Rare' : '✦✦ Rare'}
-                  </p>
-                )}
-                <p className="insight-note">
-                  <strong>{a.data.name}</strong> &amp; <strong>{b.data.name}</strong>
-                  {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> — {rel}</span>}
-                </p>
-                <p className="insight-compat" style={{ color }}>{note}</p>
-                {needsTimeCheck && (
-                  <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
-                    ⚠ Confirm with exact birth time
-                  </p>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
-
       {/* 5. Shared Sun Signs */}
       {sharedSigns.length > 0 && (
         <div className="insight-card">
@@ -1273,7 +1236,67 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* 6. Shared Venus & Mars Signs */}
+      {/* ── Premium insights gate ───────────────────────────────────────── */}
+      {!hasAdvanced && (
+        <div className="insight-card" style={{ textAlign: 'center', padding: '1.5rem 1rem' }}>
+          <div className="insight-locked-banner" onClick={onUpgrade}>
+            🔒 Unlock Premium Insights
+          </div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', lineHeight: 1.5, margin: '0.5rem 0 0' }}>
+            Your chart has {nodes.length} members — premium unlocks:
+          </p>
+          <ul style={{ textAlign: 'left', fontSize: '0.78rem', color: 'var(--text-dim)', lineHeight: 1.7, margin: '0.6rem auto', maxWidth: '260px', paddingLeft: '1.2rem' }}>
+            {topBonds.length > 0 && <li>Notable Bonds ({topBonds.length} found)</li>}
+            {(sharedVenusSigns.length > 0 || sharedMarsSigns.length > 0) && <li>Venus &amp; Mars Shared Signs</li>}
+            {couples.length > 0 && <li>Partner Compatibility ({couples.length} pair{couples.length > 1 ? 's' : ''})</li>}
+            <li>Family Roles &amp; Archetypes</li>
+            <li>Zodiac Threads</li>
+            <li>Full Compatibility Report</li>
+            <li>Family Arrivals (seasonal)</li>
+            <li>Pluto Generations</li>
+            <li>Sign Concentration</li>
+          </ul>
+        </div>
+      )}
+
+      {hasAdvanced && (<>
+      {/* 4. Notable Bonds (premium) */}
+      {topBonds.length > 0 && (
+        <div className="insight-card">
+          <h3 className="insight-heading">Notable Bonds</h3>
+          {topBonds.map(({ a, b, note, noteType, rel, needsTimeCheck }) => {
+            const isRare = noteType === 'cosmic-echo' || noteType === 'rare-alignment'
+            const color  = isRare                             ? 'var(--gold)'
+                         : noteType === 'soul-twins'          ? 'var(--gold)'
+                         : noteType === 'cosmic-twins'        ? 'var(--gold)'
+                         : noteType === 'lunar-bond'          ? '#9dbbd4'
+                         : noteType === 'mirror'              ? 'var(--rose)'
+                         : noteType === 'sun-moon-reflection' ? '#c4a8d4'
+                         : '#7ec845'
+            return (
+              <div key={pairKey(a, b)} className={`insight-couple${isRare ? ' insight-couple--rare' : ''}`}>
+                {isRare && (
+                  <p className="insight-rare-badge">
+                    {noteType === 'cosmic-echo' ? '✦✦✦ Extremely Rare' : '✦✦ Rare'}
+                  </p>
+                )}
+                <p className="insight-note">
+                  <strong>{a.data.name}</strong> &amp; <strong>{b.data.name}</strong>
+                  {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> — {rel}</span>}
+                </p>
+                <p className="insight-compat" style={{ color }}>{note}</p>
+                {needsTimeCheck && (
+                  <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
+                    ⚠ Confirm with exact birth time
+                  </p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* 6. Shared Venus & Mars Signs (premium) */}
       {(sharedVenusSigns.length > 0 || sharedMarsSigns.length > 0) && (
         <div className="insight-card">
           <h3 className="insight-heading">♀ Venus · ♂ Mars — Shared Signs</h3>
@@ -1518,6 +1541,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         )
       })()}
 
+      </>)}
       {/* 13. Add more prompt */}
       {sharedSigns.length === 0 && couples.length === 0 &&
        topZodiacThreads.length === 0 && topBonds.length === 0 && onAddMore && (

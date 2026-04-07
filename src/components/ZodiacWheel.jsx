@@ -18,6 +18,9 @@ const ZODIAC_ORDER = [
 ]
 
 const SEGMENT_ANGLE = 30
+// Rotation offset: Cancer (index 3) at the ascendant (9 o'clock / left side)
+// Cancer is index 3 → needs to land at 270° → offset = 270 - (3 * 30) = 180
+const START_OFFSET = 180
 
 // Planet rings — ordered innermost to outermost.
 // Sun uses element color (null = derive from node); others use fixed planet color.
@@ -216,7 +219,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
 
             {/* Segment wedges */}
             {ZODIAC_ORDER.map((z, i) => {
-              const startAngle = i * SEGMENT_ANGLE
+              const startAngle = i * SEGMENT_ANGLE + START_OFFSET
               const endAngle   = startAngle + SEGMENT_ANGLE
               const color      = ELEMENT_COLORS[z.element] ?? '#c9a84c'
               const hasMembers = anyActiveBySign[z.sign]
@@ -241,7 +244,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
 
             {/* Sign labels */}
             {ZODIAC_ORDER.map((z, i) => {
-              const midAngle   = i * SEGMENT_ANGLE + SEGMENT_ANGLE / 2
+              const midAngle   = i * SEGMENT_ANGLE + START_OFFSET + SEGMENT_ANGLE / 2
               const pos        = polarToXY(labelR, midAngle)
               const color      = ELEMENT_COLORS[z.element] ?? '#c9a84c'
               const hasMembers = anyActiveBySign[z.sign]
@@ -281,7 +284,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
               return ZODIAC_ORDER.map((z, si) => {
                 const members = bySign[z.sign]
                 if (!members.length) return null
-                const angles = spreadAngles(members.length, si * SEGMENT_ANGLE)
+                const angles = spreadAngles(members.length, si * SEGMENT_ANGLE + START_OFFSET)
                 return members.map((n, mi) => {
                   const pos   = polarToXY(ring.r, angles[mi])
                   const isHov = hoveredNode === n.id

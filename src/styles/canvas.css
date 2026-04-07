@@ -99,3 +99,210 @@
 }
 
 .react-flow__controls button:hover { background: var(--surface-3); }
+
+/* ──────────────────────── Locked overlay ────────────────────────────────── */
+.locked-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 7, 26, 0.85);
+  backdrop-filter: blur(6px);
+  z-index: 20;
+}
+
+.locked-overlay-content {
+  text-align: center;
+  max-width: 320px;
+  padding: 2rem;
+}
+
+.locked-overlay-icon {
+  font-size: 2.4rem;
+  display: block;
+  margin-bottom: 0.8rem;
+}
+
+.locked-overlay-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.3rem;
+  color: var(--gold);
+  margin: 0 0 0.5rem;
+}
+
+.locked-overlay-desc {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin: 0 0 1.2rem;
+}
+
+.locked-overlay-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--bg);
+  background: linear-gradient(135deg, var(--gold) 0%, #e0c060 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.6rem;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.locked-overlay-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* ──────────────────── PRO tag / tier badge ──────────────────────────────── */
+.pro-tag {
+  display: inline-block;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--bg);
+  background: var(--gold);
+  border-radius: 3px;
+  padding: 0.1rem 0.35rem;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+
+.pro-tag--subtle {
+  background: rgba(201, 168, 76, 0.2);
+  color: var(--gold);
+}
+
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  border: 1px solid;
+}
+
+.tier-badge--free {
+  color: var(--text-dim);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.tier-badge--premium {
+  color: var(--gold);
+  border-color: rgba(201, 168, 76, 0.3);
+  background: rgba(201, 168, 76, 0.08);
+}
+
+/* ──────────────────── Locked view tab hint ──────────────────────────────── */
+.tab-lock-icon {
+  font-size: 0.65rem;
+  opacity: 0.6;
+  margin-left: 0.2rem;
+}
+
+/* ──────────────────── Chart list blur for locked charts ─────────────────── */
+.chart-item--locked {
+  position: relative;
+  pointer-events: none;
+}
+
+.chart-item--locked > * {
+  filter: blur(3px);
+  opacity: 0.5;
+}
+
+.chart-item--locked::after {
+  content: '🔒 Unlock with Premium';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  pointer-events: auto;
+  cursor: pointer;
+  filter: none;
+  opacity: 1;
+}
+
+/* ──────────────────── Insights locked card ──────────────────────────────── */
+.insight-card--locked {
+  position: relative;
+  pointer-events: none;
+}
+
+.insight-card--locked > *:not(.insight-locked-banner) {
+  filter: blur(4px);
+  opacity: 0.4;
+}
+
+.insight-locked-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  color: var(--gold);
+  background: rgba(201, 168, 76, 0.06);
+  border: 1px solid rgba(201, 168, 76, 0.15);
+  border-radius: 8px;
+  margin-bottom: 0.6rem;
+  pointer-events: auto;
+  cursor: pointer;
+  filter: none;
+  opacity: 1;
+}
+
+.insight-locked-banner:hover {
+  background: rgba(201, 168, 76, 0.1);
+}
+
+/* ──────────────────── Premium welcome toast ─────────────────────────────── */
+.premium-toast {
+  position: fixed;
+  top: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: linear-gradient(135deg, rgba(30, 25, 55, 0.95) 0%, rgba(20, 15, 40, 0.98) 100%);
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  border-radius: 12px;
+  padding: 1rem 1.6rem;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: toast-in 0.3s ease-out;
+}
+
+.premium-toast-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  color: var(--gold);
+  margin: 0 0 0.3rem;
+}
+
+.premium-toast-sub {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}

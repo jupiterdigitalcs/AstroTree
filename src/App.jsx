@@ -41,6 +41,9 @@ import { useExport } from './hooks/useExport.js'
 import { useChartManager } from './hooks/useChartManager.js'
 import { useTreeState } from './hooks/useTreeState.js'
 import { useOnboardingState } from './hooks/useOnboardingState.js'
+import { useHistoryNav } from './hooks/useHistoryNav.js'
+import { canAccess } from './utils/entitlements.js'
+import { LockedOverlay } from './components/LockedOverlay.jsx'
 
 const NODE_TYPES = { astro: AstroNode }
 
@@ -78,6 +81,7 @@ export default function App() {
   const [newMembersForChart,    setNewMembersForChart]    = useState(0)
   const [newEdgesForInsights,   setNewEdgesForInsights]   = useState(0)
   const [savedToast,        setSavedToast]        = useState(false)
+  const [premiumToast,      setPremiumToast]      = useState(false)
 
   const fitViewRef = useRef(null)
 
@@ -87,6 +91,9 @@ export default function App() {
   // ── TEMP E: top nav full-screen layout — delete this line to revert ───────────
   const topNavMode = true
   // ── END TEMP ──────────────────────────────────────────────────────────────────
+
+  // ── Browser history integration (back button) ──────────────────────────────
+  useHistoryNav({ activeTab, treeView, editingNodeId, setActiveTab, setTreeView, setEditingNodeId })
 
   // Ingress warnings per node — read from precomputed node.data.ingressWarnings
   const nodeIngressWarnings = useMemo(() => {
@@ -181,7 +188,11 @@ export default function App() {
   // ── Handle ?purchase=success return from Stripe ────────────────────────────
   useEffect(() => {
     const status = checkPurchaseReturn()
-    if (status === 'success') refreshEntitlements()
+    if (status === 'success') {
+      refreshEntitlements()
+      setPremiumToast(true)
+      setTimeout(() => setPremiumToast(false), 5000)
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Auto-dismiss connect prompt once first edge is added ─────────────────
@@ -334,7 +345,18 @@ export default function App() {
 
       {/* ── Upgrade prompt ──────────────────────────────────────────────── */}
       {showUpgradePrompt && (
-        <UpgradePrompt onClose={() => setShowUpgradePrompt(false)} />
+        <UpgradePrompt
+          onClose={() => setShowUpgradePrompt(false)}
+          onRedeemed={() => { refreshEntitlements(); setPremiumToast(true); setTimeout(() => setPremiumToast(false), 5000) }}
+        />
+      )}
+
+      {/* ── Premium welcome toast ────────────────────────────────────────── */}
+      {premiumToast && (
+        <div className="premium-toast">
+          <p className="premium-toast-title">✦ Welcome to Premium!</p>
+          <p className="premium-toast-sub">Zodiac Wheel, Tables, full Insights, and unlimited charts are now unlocked.</p>
+        </div>
       )}
 
       {/* ── New Tree confirm (when tree is already saved) ────────────────── */}
@@ -410,9 +432,9 @@ export default function App() {
         <nav className="top-subnav" aria-label="Chart type">
           <div className="top-subnav-brand">Cosmic Connections</div>
           <button className={`top-subnav-btn${treeView === 'tree' ? ' active' : ''}`} onClick={() => { setTreeView('tree'); goTab('tree') }}>🌳 Tree</button>
-          <button className={`top-subnav-btn${treeView === 'zodiac' ? ' active' : ''}`} onClick={() => { setTreeView('zodiac'); goTab('tree') }}>☉ Zodiac</button>
+          <button className={`top-subnav-btn${treeView === 'zodiac' ? ' active' : ''}`} onClick={() => { setTreeView('zodiac'); goTab('tree') }}>☉ Zodiac{!canAccess('zodiac_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
           <button className={`top-subnav-btn${treeView === 'constellation' ? ' active' : ''}`} onClick={() => { setTreeView('constellation'); goTab('tree') }}>✦ Constellation</button>
-          <button className={`top-subnav-btn${treeView === 'tables' ? ' active' : ''}`} onClick={() => { setTreeView('tables'); goTab('tree') }}>☽ Tables</button>
+          <button className={`top-subnav-btn${treeView === 'tables' ? ' active' : ''}`} onClick={() => { setTreeView('tables'); goTab('tree') }}>☽ Tables{!canAccess('tables_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
         </nav>
       )}
       {topNavMode && panelOpen && (
@@ -516,6 +538,8 @@ export default function App() {
               onAddMore={() => goTab('add')}
               onGoToTree={() => goTab('tree')}
               onEditFirst={nodes.length > 0 ? () => { setEditingNodeId(nodes[0].id); setActiveTab('add') } : undefined}
+              onUpgrade={() => setShowUpgradePrompt(true)}
+              entitlements={entitlements}
             />
 
           /* ── Saved charts ───────────────────────────────────────────── */
@@ -701,6 +725,17 @@ export default function App() {
               </span>
             )}
           </div>
+          {entitlements && (
+            <div style={{ marginTop: '0.4rem', textAlign: 'center' }}>
+              {entitlements?.tier === 'premium' ? (
+                <span className="tier-badge tier-badge--premium">✦ Premium</span>
+              ) : (
+                <button type="button" className="tier-badge tier-badge--free" onClick={() => setShowUpgradePrompt(true)} style={{ cursor: 'pointer', background: 'none' }}>
+                  Free Plan · Upgrade
+                </button>
+              )}
+            </div>
+          )}
         </footer>
       </aside>
 
@@ -926,17 +961,33 @@ export default function App() {
         )}
 
         {treeView === 'tables' && nodes.length > 0 ? (
-          <div className="tables-canvas-wrap">
+          <div className="tables-canvas-wrap" style={{ position: 'relative' }}>
+            {!canAccess('tables_view', entitlements?.tier, entitlements?.config) && (
+              <LockedOverlay
+                feature="Tables View"
+                description="See every family member's sun, moon, and planetary signs in a sortable table."
+                onUpgrade={() => setShowUpgradePrompt(true)}
+              />
+            )}
             <TablesPanel nodes={nodes} />
           </div>
         ) : treeView === 'zodiac' && nodes.length > 0 ? (
-          <Suspense fallback={null}>
-            <ZodiacWheel
-              nodes={nodes}
-              edges={edges}
-              onSelectNode={(id) => setEditingNodeId(id)}
-            />
-          </Suspense>
+          <div style={{ position: 'relative', flex: 1 }}>
+            {!canAccess('zodiac_view', entitlements?.tier, entitlements?.config) && (
+              <LockedOverlay
+                feature="Zodiac Wheel"
+                description="Map your family across the zodiac with sun, moon, and planetary rings."
+                onUpgrade={() => setShowUpgradePrompt(true)}
+              />
+            )}
+            <Suspense fallback={null}>
+              <ZodiacWheel
+                nodes={nodes}
+                edges={edges}
+                onSelectNode={(id) => setEditingNodeId(id)}
+              />
+            </Suspense>
+          </div>
         ) : treeView === 'constellation' && nodes.length > 0 ? (
           <Suspense fallback={null}>
             <ConstellationView

@@ -38,9 +38,22 @@ export function getChartLimit(tier, config) {
 
 // Well-known gatable feature keys (used in admin panel checkboxes)
 export const FEATURE_KEYS = [
-  { key: 'pdf_export',         label: 'PDF Export' },
+  { key: 'zodiac_view',        label: 'Zodiac Wheel View' },
+  { key: 'tables_view',        label: 'Tables View' },
   { key: 'advanced_insights',  label: 'Advanced Insights' },
   { key: 'constellation_view', label: 'Constellation View' },
   { key: 'zodiac_export',      label: 'Zodiac Wheel Export' },
+  { key: 'pdf_export',         label: 'PDF Export' },
   { key: 'unlimited_charts',   label: 'Unlimited Charts' },
 ]
+
+// Helper: quick check using cached entitlements
+export function canAccessFeature(featureKey) {
+  const ent = getCachedEntitlements()
+  if (!ent) return true // not loaded yet — don't block
+  return canAccess(featureKey, ent.tier, ent.config)
+}
+
+export function isPremium() {
+  return getCachedEntitlements()?.tier === 'premium'
+}

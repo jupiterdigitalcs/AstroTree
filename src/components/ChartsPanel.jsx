@@ -160,10 +160,16 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         </div>
       )}
 
-      {sorted.length > 0 ? (
+      {sorted.length > 0 ? (() => {
+        const chartLimit = entitlements && isPaywallEnabled(entitlements.config) && entitlements.tier !== 'premium'
+          ? getChartLimit(entitlements.tier, entitlements.config)
+          : Infinity
+        return (
         <div className="charts-list">
-          {sorted.map(c => (
-            <div key={c.id} className={`chart-item${c.id === savedChartId ? ' chart-item--active' : ''}`}>
+          {sorted.map((c, idx) => {
+            const isLocked = idx >= chartLimit && c.id !== savedChartId
+            return (
+            <div key={c.id} className={`chart-item${c.id === savedChartId ? ' chart-item--active' : ''}${isLocked ? ' chart-item--locked' : ''}`} onClick={isLocked ? onUpgrade : undefined}>
               {pendingDeleteId === c.id ? (
                 <div className="chart-item-confirm">
                   <span className="chart-item-confirm-text">Delete "{c.title}"?</span>
@@ -210,9 +216,11 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
                 </>
               )}
             </div>
-          ))}
+            )
+          })}
         </div>
-      ) : (
+        )
+      })() : (
         <p className="bulk-hint">No saved charts yet — your first chart saves automatically.</p>
       )}
 

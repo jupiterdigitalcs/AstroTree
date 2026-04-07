@@ -1,9 +1,18 @@
 import { useState } from 'react'
 import { startCheckout } from '../utils/checkout.js'
+import { getDeviceId } from '../utils/identity.js'
 
-export function UpgradePrompt({ onClose, feature }) {
+export function UpgradePrompt({ onClose, feature, onRedeemed }) {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState(null)
+
+  // Promo code state
+  const [showCode, setShowCode]       = useState(false)
+  const [codeValue, setCodeValue]     = useState('')
+  const [codeEmail, setCodeEmail]     = useState('')
+  const [codeLoading, setCodeLoading] = useState(false)
+  const [codeError, setCodeError]     = useState(null)
+  const [codeSuccess, setCodeSuccess] = useState(false)
 
   async function handleUpgrade() {
     setLoading(true)
@@ -15,25 +24,74 @@ export function UpgradePrompt({ onClose, feature }) {
         : result.error)
       setLoading(false)
     }
-    // If ok, user is being redirected to Stripe — keep loading state
+  }
+
+  async function handleRedeem(e) {
+    e.preventDefault()
+    if (!codeValue.trim() || !codeEmail.trim()) return
+    setCodeLoading(true)
+    setCodeError(null)
+    try {
+      const res = await fetch('/api/redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: codeValue.trim(),
+          email: codeEmail.trim(),
+          deviceId: getDeviceId(),
+        }),
+      })
+      const data = await res.json()
+      if (data.ok) {
+        setCodeSuccess(true)
+        if (onRedeemed) onRedeemed()
+      } else {
+        setCodeError(data.error || 'Invalid code')
+      }
+    } catch {
+      setCodeError('Something went wrong — try again')
+    }
+    setCodeLoading(false)
+  }
+
+  if (codeSuccess) {
+    return (
+      <div className="save-dialog-backdrop" onClick={onClose}>
+        <div className="save-dialog upgrade-prompt" onClick={e => e.stopPropagation()}>
+          <p className="save-dialog-title">✦ Premium Unlocked!</p>
+          <p className="save-dialog-sub">
+            All features are now available. Enjoy your full AstroDig experience.
+          </p>
+          <div className="save-dialog-btns">
+            <button type="button" className="save-dialog-save upgrade-btn" onClick={onClose}>
+              Let's Go
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="save-dialog-backdrop" onClick={onClose}>
       <div className="save-dialog upgrade-prompt" onClick={e => e.stopPropagation()}>
-        <p className="save-dialog-title">Unlock Premium</p>
-        <p className="save-dialog-sub">
-          {feature
-            ? `This feature requires a premium upgrade.`
-            : `Upgrade to unlock all features and unlimited charts.`
-          }
-        </p>
+        <p className="save-dialog-title">✦ Unlock Premium</p>
+        {feature ? (
+          <p className="save-dialog-sub">
+            <strong>{feature}</strong> is a premium feature. Upgrade to unlock it plus everything below.
+          </p>
+        ) : (
+          <p className="save-dialog-sub">
+            One upgrade, everything unlocked — for all your charts, forever.
+          </p>
+        )}
 
         <ul className="upgrade-features-list">
-          <li>Unlimited saved charts</li>
-          <li>Premium PDF export</li>
-          <li>Advanced insights</li>
-          <li>All future features</li>
+          <li>☉ <strong>Zodiac Wheel</strong> — map your family across the zodiac</li>
+          <li>☽ <strong>Tables View</strong> — sortable sun, moon &amp; planet grid</li>
+          <li>✦ <strong>Full Insights</strong> — compatibility, roles, zodiac threads, pluto generations</li>
+          <li>🗂️ <strong>Unlimited Charts</strong> — save as many as you want</li>
+          <li>🔮 <strong>Future Features</strong> — birth time reconciliation, transits &amp; more</li>
         </ul>
 
         {error && <p className="upgrade-error">{error}</p>}
@@ -48,8 +106,64 @@ export function UpgradePrompt({ onClose, feature }) {
             onClick={handleUpgrade}
             disabled={loading}
           >
-            {loading ? 'Redirecting...' : 'Upgrade Now'}
+            {loading ? 'Redirecting to checkout...' : 'Upgrade Now'}
           </button>
+        </div>
+
+        {/* Promo code section */}
+        <div style={{ marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.8rem' }}>
+          {!showCode ? (
+            <button
+              type="button"
+              onClick={() => setShowCode(true)}
+              style={{ background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              Have a promo code?
+            </button>
+          ) : (
+            <form onSubmit={handleRedeem} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <input
+                type="email"
+                placeholder="Your email"
+                value={codeEmail}
+                onChange={e => setCodeEmail(e.target.value)}
+                required
+                style={{
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: '6px', padding: '0.45rem 0.7rem', color: 'var(--text)',
+                  fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem',
+                }}
+              />
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  type="text"
+                  placeholder="Promo code"
+                  value={codeValue}
+                  onChange={e => setCodeValue(e.target.value)}
+                  required
+                  style={{
+                    flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)',
+                    borderRadius: '6px', padding: '0.45rem 0.7rem', color: 'var(--text)',
+                    fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem',
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={codeLoading}
+                  style={{
+                    background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.3)',
+                    borderRadius: '6px', padding: '0.45rem 0.8rem', color: 'var(--gold)',
+                    fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', cursor: 'pointer',
+                  }}
+                >
+                  {codeLoading ? '...' : 'Redeem'}
+                </button>
+              </div>
+              {codeError && (
+                <p style={{ fontSize: '0.75rem', color: '#e87070', margin: 0 }}>{codeError}</p>
+              )}
+            </form>
+          )}
         </div>
       </div>
     </div>
