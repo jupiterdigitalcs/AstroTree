@@ -39,12 +39,21 @@ export default async function handler(req, res) {
         completed_at: new Date().toISOString(),
       }).eq('stripe_session_id', session.id)
 
-      // Upgrade device tier if this is a premium_upgrade product
-      if (productKey === 'premium_upgrade' && deviceId) {
-        await sb.from('devices').update({
-          tier: 'premium',
-          tier_updated_at: new Date().toISOString(),
-        }).eq('id', deviceId)
+      // Save Stripe customer + email to device, upgrade tier if applicable
+      if (deviceId) {
+        const updates = {}
+        if (session.customer) updates.stripe_customer_id = session.customer
+        if (session.customer_details?.email) {
+          updates.email = session.customer_details.email
+          updates.email_opt_in = true
+        }
+        if (productKey === 'premium_upgrade') {
+          updates.tier = 'premium'
+          updates.tier_updated_at = new Date().toISOString()
+        }
+        if (Object.keys(updates).length) {
+          await sb.from('devices').update(updates).eq('id', deviceId)
+        }
       }
     }
 

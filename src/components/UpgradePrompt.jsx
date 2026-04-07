@@ -1,25 +1,15 @@
 import { useState } from 'react'
 import { startCheckout } from '../utils/checkout.js'
-import { getSavedEmail } from './EmailCapture.jsx'
 
-export function UpgradePrompt({ onClose, onNeedEmail, feature }) {
+export function UpgradePrompt({ onClose, feature }) {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState(null)
 
   async function handleUpgrade() {
-    // Check for email locally first — avoid unnecessary API roundtrip
-    if (!getSavedEmail()) {
-      onNeedEmail?.()
-      return
-    }
     setLoading(true)
     setError(null)
     const result = await startCheckout('premium_upgrade')
     if (!result.ok) {
-      if (result.error === 'Email required before purchase') {
-        onNeedEmail?.()
-        return
-      }
       setError(result.error === 'Product not configured'
         ? 'Upgrade is not available yet — check back soon!'
         : result.error)

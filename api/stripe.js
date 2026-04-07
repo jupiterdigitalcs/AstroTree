@@ -15,10 +15,6 @@ async function handleCreateSession(req, res) {
 
   const sb = getSupabase()
 
-  // Device must have an email before purchasing
-  const { data: device } = await sb.from('devices').select('email, stripe_customer_id').eq('id', deviceId).single()
-  if (!device?.email) return res.status(400).json({ error: 'Email required before purchase' })
-
   // Look up product config from paywall_config
   const { data: productsRow } = await sb.from('paywall_config').select('value').eq('key', 'products').single()
   const products = productsRow?.value ?? []
@@ -27,28 +23,30 @@ async function handleCreateSession(req, res) {
 
   const stripe = getStripe()
 
-  // Create or reuse Stripe customer
-  let customerId = device.stripe_customer_id
-  if (!customerId) {
-    const customer = await stripe.customers.create({ email: device.email, metadata: { deviceId } })
-    customerId = customer.id
-    await sb.from('devices').update({ stripe_customer_id: customerId }).eq('id', deviceId)
-  }
+  // Reuse existing Stripe customer if we have one
+  const { data: device } = await sb.from('devices').select('email, stripe_customer_id').eq('id', deviceId).single()
+  let customerId = device?.stripe_customer_id ?? null
 
   // Build success/cancel URLs
   const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || 'https://astrodig.com'
   const successUrl = `${origin}/?purchase=success`
   const cancelUrl  = `${origin}/?purchase=cancelled`
 
-  // Create Checkout Session
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
+  // Create Checkout Session — Stripe collects the email during checkout
+  const sessionParams = {
     mode: 'payment',
     line_items: [{ price: product.stripePriceId, quantity: 1 }],
     success_url: successUrl,
     cancel_url:  cancelUrl,
     metadata: { deviceId, productKey },
-  })
+  }
+  if (customerId) {
+    sessionParams.customer = customerId
+  } else {
+    // Pre-fill email if we have it, but don't require it
+    sessionParams.customer_email = device?.email || undefined
+  }
+  const session = await stripe.checkout.sessions.create(sessionParams)
 
   // Insert pending purchase record
   await sb.from('purchases').insert({

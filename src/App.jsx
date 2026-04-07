@@ -122,7 +122,6 @@ export default function App() {
     onMergeCharts: () => {/* ChartsPanel will re-read localStorage on its own mount */},
   })
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
-  const [upgradeAfterEmail, setUpgradeAfterEmail] = useState(false)
 
   const {
     savedChartId, setSavedChartId,
@@ -354,18 +353,12 @@ export default function App() {
     <div className={`app${topNavMode ? ' app--topnav' : ''}${topNavMode && nodes.length > 0 && !panelOpen ? ' app--subnav' : ''}`}> {/* TEMP E */}
       {/* ── Email capture — shown once after first named save ───────────── */}
       {showEmailCapture && (
-        <EmailCapture onDismiss={() => {
-          setShowEmailCapture(false)
-          if (upgradeAfterEmail) { setUpgradeAfterEmail(false); setShowUpgradePrompt(true) }
-        }} />
+        <EmailCapture onDismiss={() => setShowEmailCapture(false)} />
       )}
 
       {/* ── Upgrade prompt ──────────────────────────────────────────────── */}
       {showUpgradePrompt && (
-        <UpgradePrompt
-          onClose={() => setShowUpgradePrompt(false)}
-          onNeedEmail={() => { setShowUpgradePrompt(false); setUpgradeAfterEmail(true); clearEmailAsked(); setShowEmailCapture(true) }}
-        />
+        <UpgradePrompt onClose={() => setShowUpgradePrompt(false)} />
       )}
 
       {/* ── New Tree confirm (when tree is already saved) ────────────────── */}
