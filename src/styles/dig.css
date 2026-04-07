@@ -1,0 +1,318 @@
+/* ──────────────────────────── The DIG ───────────────────────────────────── */
+
+/* ── Full-screen overlay ─────────────────────────────────────────────────── */
+.dig-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: #05031a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ── Progress bar ────────────────────────────────────────────────────────── */
+.dig-progress {
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px 0;
+  z-index: 10;
+}
+
+.dig-progress-seg {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.dig-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--gold);
+  transition: width 0.4s ease;
+}
+
+/* ── Close button ────────────────────────────────────────────────────────── */
+.dig-close {
+  position: absolute;
+  top: 24px;
+  right: 16px;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+
+.dig-close:hover { background: rgba(255, 255, 255, 0.2); }
+
+/* ── Slide container ─────────────────────────────────────────────────────── */
+.dig-slide-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.dig-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+  will-change: transform, opacity;
+}
+
+.dig-slide--active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.dig-slide--exit-left {
+  opacity: 0;
+  transform: translateX(-30%);
+}
+
+.dig-slide--exit-right {
+  opacity: 0;
+  transform: translateX(30%);
+}
+
+/* ── Background layers ───────────────────────────────────────────────────── */
+.dig-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.dig-bg--starfield {
+  background: radial-gradient(ellipse at 50% 30%, rgba(30, 20, 80, 0.6) 0%, transparent 70%);
+}
+
+.dig-bg--fire {
+  background: radial-gradient(ellipse at 50% 60%, rgba(180, 60, 30, 0.2) 0%, transparent 70%);
+}
+
+.dig-bg--earth {
+  background: radial-gradient(ellipse at 50% 60%, rgba(60, 120, 50, 0.15) 0%, transparent 70%);
+}
+
+.dig-bg--air {
+  background: radial-gradient(ellipse at 50% 40%, rgba(60, 100, 180, 0.15) 0%, transparent 70%);
+}
+
+.dig-bg--water {
+  background: radial-gradient(ellipse at 50% 60%, rgba(40, 80, 160, 0.2) 0%, transparent 70%);
+}
+
+.dig-bg--orbits {
+  background: radial-gradient(ellipse at 50% 50%, rgba(160, 80, 160, 0.15) 0%, transparent 70%);
+}
+
+.dig-bg--constellation {
+  background: radial-gradient(ellipse at 50% 40%, rgba(80, 60, 140, 0.2) 0%, transparent 70%);
+}
+
+/* Ambient particles */
+.dig-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 20%, rgba(255,255,255,0.2) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 70%, rgba(201,168,76,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.15) 0%, transparent 100%),
+    radial-gradient(1px 1px at 10% 60%, rgba(255,255,255,0.2) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 90% 50%, rgba(201,168,76,0.2) 0%, transparent 100%);
+  animation: dig-twinkle 4s ease-in-out infinite alternate;
+}
+
+@keyframes dig-twinkle {
+  from { opacity: 0.4; }
+  to   { opacity: 1; }
+}
+
+/* ── Slide content typography ────────────────────────────────────────────── */
+.dig-slide-content {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+  width: 100%;
+}
+
+.dig-label {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 1rem;
+}
+
+.dig-headline {
+  font-family: 'Cinzel', serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: white;
+  line-height: 1.3;
+  margin: 0 0 0.8rem;
+}
+
+.dig-headline--gold { color: var(--gold); }
+.dig-headline--rose { color: var(--rose, #d4a0bc); }
+
+.dig-stat {
+  font-family: 'Cinzel', serif;
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0.5rem 0;
+}
+
+.dig-body {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.dig-names {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: white;
+  margin: 0.6rem 0;
+}
+
+.dig-badge {
+  display: inline-block;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+  border: 1px solid;
+  margin-bottom: 0.8rem;
+}
+
+.dig-divider {
+  width: 40px;
+  height: 1px;
+  background: rgba(201, 168, 76, 0.3);
+  margin: 1rem auto;
+}
+
+/* ── Reveal animations ───────────────────────────────────────────────────── */
+.dig-slide--active .dig-fly-in {
+  animation: dig-fly-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 0.12s);
+}
+
+.dig-slide--active .dig-scale-pop {
+  animation: dig-scale-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--i, 0) * 0.12s + 0.2s);
+}
+
+.dig-slide--active .dig-fade-in {
+  animation: dig-fade-in 0.8s ease both;
+  animation-delay: calc(var(--i, 0) * 0.15s + 0.3s);
+}
+
+@keyframes dig-fly-in {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dig-scale-pop {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes dig-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Outro share button ──────────────────────────────────────────────────── */
+.dig-share-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--bg, #09071a);
+  background: linear-gradient(135deg, var(--gold) 0%, #e0c060 100%);
+  border: none;
+  border-radius: 10px;
+  padding: 0.7rem 2rem;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  margin-top: 1.5rem;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.dig-share-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* ── DIG button in Insights panel ────────────────────────────────────────── */
+.dig-launch-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.12) 0%, rgba(160, 80, 160, 0.08) 100%);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 10px;
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dig-launch-btn:hover {
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.18) 0%, rgba(160, 80, 160, 0.12) 100%);
+  border-color: rgba(201, 168, 76, 0.4);
+}
+
+.dig-launch-btn--locked {
+  opacity: 0.6;
+}
+
+/* ── Mobile adjustments ──────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .dig-slide { padding: 2rem 1.5rem; }
+  .dig-headline { font-size: 1.4rem; }
+  .dig-stat { font-size: 2.8rem; }
+  .dig-body { font-size: 0.85rem; }
+}

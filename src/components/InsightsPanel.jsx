@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, lazy, Suspense } from 'react'
 import {
   getElement,
   ELEMENT_COLORS, SIGN_MODALITY, POLARITY_GROUP,
@@ -6,6 +6,8 @@ import {
 } from '../utils/astrology.js'
 import { PlanetSign } from './PlanetSign.jsx'
 import { canAccess } from '../utils/entitlements.js'
+
+const TheDig = lazy(() => import('./dig/TheDig.jsx'))
 
 const ELEMENTS = ['Fire', 'Earth', 'Air', 'Water']
 
@@ -394,6 +396,7 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
 
 export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements }) {
   const hasAdvanced = canAccess('advanced_insights', entitlements?.tier, entitlements?.config)
+  const [showDig, setShowDig] = useState(false)
   const isGroupOnly = edges.length > 0 && edges.every(e => {
     const t = e.data?.relationType
     return t === 'friend' || t === 'coworker'
@@ -1087,8 +1090,40 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       })
   })()
 
+  // ── Assemble DIG data from already-computed values ────────────────────────
+  const digData = useMemo(() => {
+    // Compute pluto groups for the DIG
+    const genMap = {}
+    nodes.forEach(n => {
+      const ps = getPlutoSign(n.data?.birthdate)
+      if (ps) { if (!genMap[ps]) genMap[ps] = []; genMap[ps].push(n) }
+    })
+    const plutoGroups = PLUTO_ORDER
+      .filter(s => genMap[s])
+      .map(sign => ({ sign, members: genMap[sign], flavor: PLUTO_GENS[sign]?.flavor }))
+
+    return {
+      memberCount: nodes.length,
+      familyName: isGroupOnly ? 'group' : 'family',
+      dominant, dominantModality, masculine, feminine, total, missingElements,
+      signatureDesc: FAMILY_SIGNATURE_DESCRIPTIONS[dominant]?.[dominantModality] ?? '',
+      topBonds,
+      signThreadList,
+      memberRoles,
+      couples,
+      plutoGroups,
+    }
+  }, [nodes, dominant, dominantModality, masculine, feminine, total, missingElements, topBonds, signThreadList, memberRoles, couples, isGroupOnly])
+
   return (
     <div className="insights-panel">
+      {/* ── The DIG overlay ────────────────────────────────────────────── */}
+      {showDig && (
+        <Suspense fallback={null}>
+          <TheDig digData={digData} onClose={() => setShowDig(false)} />
+        </Suspense>
+      )}
+
       <div className="insights-header">
         <h2 className="form-title">✦ {panelTitle}</h2>
         {onExport && (
@@ -1111,6 +1146,17 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           </button>
         )}
       </div>
+
+      {/* ── The DIG launch button ─────────────────────────────────────── */}
+      {edges.length > 0 && (
+        <button
+          type="button"
+          className={`dig-launch-btn${!hasAdvanced ? ' dig-launch-btn--locked' : ''}`}
+          onClick={hasAdvanced ? () => setShowDig(true) : onUpgrade}
+        >
+          ✦ {hasAdvanced ? 'View Your DIG' : '🔒 The DIG'}{hasAdvanced && <span className="pro-tag pro-tag--subtle">PRO</span>}
+        </button>
+      )}
 
       {/* Export-only: compact member list */}
       <div className="insights-member-list">
