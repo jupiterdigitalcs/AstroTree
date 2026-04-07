@@ -64,53 +64,6 @@ async function handleCreateSession(req, res) {
   return res.status(200).json({ url: session.url })
 }
 
-// ── Stripe Webhook ──────────────────────────────────────────────────────────
-
-async function handleWebhook(req, res) {
-  const stripe = getStripe()
-  const sig = req.headers['stripe-signature']
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-
-  let event
-  try {
-    // Vercel passes raw body as a buffer when bodyParser is disabled
-    const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body)
-    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret)
-  } catch (err) {
-    console.error('[stripe] webhook signature verification failed:', err.message)
-    return res.status(400).json({ error: 'Webhook signature verification failed' })
-  }
-
-  const sb = getSupabase()
-
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object
-    const { deviceId, productKey } = session.metadata ?? {}
-
-    // Update purchase record
-    await sb.from('purchases').update({
-      status: 'completed',
-      stripe_payment_intent: session.payment_intent,
-      completed_at: new Date().toISOString(),
-    }).eq('stripe_session_id', session.id)
-
-    // Upgrade device tier if this is a premium_upgrade product
-    if (productKey === 'premium_upgrade' && deviceId) {
-      await sb.from('devices').update({
-        tier: 'premium',
-        tier_updated_at: new Date().toISOString(),
-      }).eq('id', deviceId)
-    }
-  }
-
-  if (event.type === 'checkout.session.expired') {
-    const session = event.data.object
-    await sb.from('purchases').update({ status: 'expired' }).eq('stripe_session_id', session.id)
-  }
-
-  return res.status(200).json({ received: true })
-}
-
 // ── Check purchase status (after redirect back) ─────────────────────────────
 
 async function handleStatus(req, res) {
@@ -136,13 +89,7 @@ async function handleStatus(req, res) {
 
 const ROUTES = {
   'create-session': handleCreateSession,
-  'webhook':        handleWebhook,
   'status':         handleStatus,
-}
-
-// Disable body parsing for webhook (needs raw body for signature verification)
-export const config = {
-  api: { bodyParser: { sizeLimit: '1mb' } },
 }
 
 export default async function handler(req, res) {
