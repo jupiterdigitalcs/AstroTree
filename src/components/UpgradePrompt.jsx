@@ -1,11 +1,17 @@
 import { useState } from 'react'
 import { startCheckout } from '../utils/checkout.js'
+import { getSavedEmail } from './EmailCapture.jsx'
 
 export function UpgradePrompt({ onClose, onNeedEmail, feature }) {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState(null)
 
   async function handleUpgrade() {
+    // Check for email locally first — avoid unnecessary API roundtrip
+    if (!getSavedEmail()) {
+      onNeedEmail?.()
+      return
+    }
     setLoading(true)
     setError(null)
     const result = await startCheckout('premium_upgrade')
@@ -14,7 +20,9 @@ export function UpgradePrompt({ onClose, onNeedEmail, feature }) {
         onNeedEmail?.()
         return
       }
-      setError(result.error)
+      setError(result.error === 'Product not configured'
+        ? 'Upgrade is not available yet — check back soon!'
+        : result.error)
       setLoading(false)
     }
     // If ok, user is being redirected to Stripe — keep loading state
