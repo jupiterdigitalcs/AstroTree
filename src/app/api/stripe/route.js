@@ -34,6 +34,7 @@ async function handleCreateSession(request) {
     success_url: successUrl,
     cancel_url:  cancelUrl,
     metadata: { deviceId, productKey },
+    allow_promotion_codes: true,
   }
   if (customerId) {
     sessionParams.customer = customerId

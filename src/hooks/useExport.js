@@ -56,10 +56,15 @@ async function shareOrDownload(dataUrl, filename, shareTitle, shareText) {
       return
     }
   }
+  // Convert data URL to blob URL for direct download (avoids "Save As" dialog)
+  const res = await fetch(dataUrl)
+  const blob = await res.blob()
+  const blobUrl = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.download = filename
-  link.href = dataUrl
+  link.href = blobUrl
   link.click()
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
 }
 
 function getChartSlug(savedChartId) {
@@ -263,10 +268,14 @@ export function useExport({ savedChartId, fitViewRef }) {
           return
         }
       }
+      const dlRes = await fetch(url)
+      const dlBlob = await dlRes.blob()
+      const blobUrl = URL.createObjectURL(dlBlob)
       const link = document.createElement('a')
       link.download = filename
-      link.href = url
+      link.href = blobUrl
       link.click()
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
     } catch (err) {
       if (err?.name === 'AbortError') return
       setExportError('Export failed — please try again.')
