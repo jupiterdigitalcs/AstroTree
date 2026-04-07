@@ -134,6 +134,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
 
   function onPointerDown(e) {
     if (e.target.closest('.zodiac-member-marker')) return
+    if (e.target.closest('.zodiac-zoom-btn')) return
     dragBase.current = { mx: e.clientX, my: e.clientY, px: pan.x, py: pan.y, moved: false, target: e.target }
     e.currentTarget.setPointerCapture(e.pointerId)
   }
@@ -377,15 +378,15 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
               fontSize={20} fill="var(--gold)">✦</text>
           </svg>
         </div>
-
-        {/* Zoom controls — hidden on mobile, gestures handle it there */}
+        {/* Zoom controls inside the zoom area so they sit on top */}
         <div className="zodiac-zoom-controls">
-          <button className="zodiac-zoom-btn" onClick={() => setZoom(z => clampZoom(z * 1.2))} title="Zoom in">+</button>
-          <button className="zodiac-zoom-btn zodiac-zoom-btn--reset" onClick={resetView} title="Reset view">↺</button>
-          <button className="zodiac-zoom-btn" onClick={() => setZoom(z => clampZoom(z * 0.83))} title="Zoom out">−</button>
+          <button className="zodiac-zoom-btn" onClick={(e) => { e.stopPropagation(); setZoom(z => clampZoom(z * 1.2)) }} title="Zoom in">+</button>
+          <button className="zodiac-zoom-btn zodiac-zoom-btn--reset" onClick={(e) => { e.stopPropagation(); resetView() }} title="Reset view">↺</button>
+          <button className="zodiac-zoom-btn" onClick={(e) => { e.stopPropagation(); setZoom(z => clampZoom(z * 0.83)) }} title="Zoom out">−</button>
         </div>
+      </div>
 
-        {/* Mobile pan hint */}
+      {/* Mobile pan hint */}
         <p className="zodiac-mobile-hint">drag to pan · pinch to zoom</p>
 
         {/* Hover tooltip */}
@@ -420,7 +421,6 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
             </div>
           )
         })()}
-      </div>
 
       {/* ── Side panel: ring toggles + legend ─────────────────────────────── */}
       <div className="zodiac-side-panel">

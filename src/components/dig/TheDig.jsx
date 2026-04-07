@@ -48,39 +48,33 @@ export default function TheDig({ digData, onClose, chartTitle }) {
     onSwipeRight: () => go('back'),
   })
 
+  // Share the current slide (mobile: native share, desktop: summary download)
   async function handleShare() {
     if (sharing) return
     setSharing(true)
-    const savedCurrent = current
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
     try {
       const { getToPng } = await import('../../hooks/useExport.js')
       const toPng = await getToPng()
       const slug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family'
 
-      // Mobile: capture each slide individually for native share sheet
+      // Mobile: capture just the current slide and share it
       if (isMobile && navigator.share) {
-        const captures = []
-        for (let i = 0; i < slides.length; i++) {
-          setCurrent(i)
-          setDirection('forward')
-          await new Promise(r => setTimeout(r, 500))
-          const el = document.querySelector('.dig-slide--active')
-          if (!el) continue
-          captures.push(await toPng(el, { backgroundColor: '#05031a', pixelRatio: 2, skipFonts: true }))
-        }
-        if (captures.length > 0) {
-          const files = await Promise.all(captures.map(async (src, i) => {
-            const b = await (await fetch(src)).blob()
-            return new File([b], `the-dig-${slug}-${i + 1}.png`, { type: 'image/png' })
-          }))
-          if (navigator.canShare?.({ files })) {
-            await navigator.share({ files, title: 'The DIG — AstroDig', text: 'My family\'s cosmic story ✦' })
-            setCurrent(savedCurrent)
-            setSharing(false)
-            return
+        const el = document.querySelector('.dig-slide--active')
+        if (el) {
+          const dataUrl = await toPng(el, { backgroundColor: '#05031a', pixelRatio: 2, skipFonts: true })
+          const parts = dataUrl.split(',')
+          const bin = atob(parts[1])
+          const arr = new Uint8Array(bin.length)
+          for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i)
+          const blob = new Blob([arr], { type: parts[0].match(/:(.*?);/)[1] })
+          const file = new File([blob], `the-dig-${slug}-${current + 1}.png`, { type: 'image/png' })
+          if (navigator.canShare?.({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'The DIG — AstroDig', text: 'My family\'s cosmic story ✦ astrodig.com' })
           }
         }
+        setSharing(false)
+        return
       }
 
       // Desktop: render a summary card and download it
@@ -111,7 +105,6 @@ export default function TheDig({ digData, onClose, chartTitle }) {
     } catch (e) {
       console.error('[dig] share error:', e)
     }
-    setCurrent(savedCurrent)
     setSharing(false)
   }
 

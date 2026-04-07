@@ -2,11 +2,11 @@ import { Analytics } from '@vercel/analytics/react'
 import '../styles/index.css'
 
 export const metadata = {
-  title: 'AstroDig — Free Family Astrology Tree & Sun Sign Chart | Jupiter Digital',
+  title: 'AstroDig — Map Your Cosmic Connections | Jupiter Digital',
   description:
-    "Map your family's astrological sun signs across generations. AstroDig is a free tool to build your family astrology tree, discover inherited cosmic patterns, and explore generational birth charts.",
+    "Map cosmic connections between family, friends, and coworkers. AstroDig builds your astrology chart with sun signs, moon signs, planetary placements, compatibility insights, and The DIG — your Wrapped-style cosmic story.",
   keywords:
-    'family astrology tree, astrological family tree, sun sign family chart, family birth chart, inherited astrological patterns, generational astrology, cosmic family tree, free astrology tool, AstroDig, Jupiter Digital',
+    'family astrology, astrology chart builder, sun sign chart, moon sign compatibility, zodiac wheel, family birth chart, cosmic connections, astrology insights, The DIG, AstroDig, Jupiter Digital',
   metadataBase: new URL('https://astrodig.com'),
   alternates: { canonical: '/' },
   robots: 'index, follow',
@@ -14,9 +14,9 @@ export const metadata = {
     type: 'website',
     url: 'https://astrodig.com',
     siteName: 'AstroDig by Jupiter Digital',
-    title: 'AstroDig — Free Family Astrology Tree',
+    title: 'AstroDig — Map Your Cosmic Connections',
     description:
-      "Map your family's astrological sun signs across generations. Discover inherited cosmic patterns and generational birth charts — free tool by Jupiter Digital.",
+      "Build your astrology chart — sun signs, moon signs, compatibility, zodiac wheel, and The DIG. Free tool by Jupiter Digital.",
     images: [
       {
         url: '/og-image.svg',
@@ -31,9 +31,9 @@ export const metadata = {
     card: 'summary_large_image',
     site: '@jupiter_dig',
     creator: '@jupiter_dig',
-    title: 'AstroDig — Free Family Astrology Tree',
+    title: 'AstroDig — Map Your Cosmic Connections',
     description:
-      "Map your family's astrological sun signs across generations. Discover inherited cosmic patterns — free tool by Jupiter Digital.",
+      "Build your astrology chart — sun signs, moon signs, compatibility, zodiac wheel, and The DIG. Free tool by Jupiter Digital.",
     images: ['/og-image.svg'],
   },
   icons: {
@@ -56,17 +56,18 @@ const jsonLd = {
       alternateName: 'AstroDig — Cosmic Connections',
       url: 'https://astrodig.com',
       description:
-        'A free web application to build your family astrology tree, map sun signs across generations, and discover inherited astrological patterns.',
+        'A free web application to map cosmic connections — build astrology charts with sun signs, moon signs, planetary placements, compatibility insights, zodiac wheel, and The DIG.',
       applicationCategory: 'UtilitiesApplication',
       applicationSubCategory: 'Astrology',
       operatingSystem: 'Any',
       browserRequirements: 'Requires JavaScript',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       featureList: [
-        'Family astrology tree builder',
-        'Sun sign assignment per family member',
-        'Generational cosmic pattern visualization',
-        'Interactive family birth chart',
+        'Family and group astrology chart builder',
+        'Sun, moon, and planetary sign tracking',
+        'Zodiac wheel and constellation visualizations',
+        'Compatibility insights and cosmic connection analysis',
+        'The DIG — Wrapped-style cosmic story experience',
       ],
       creator: { '@id': 'https://astrodig.com/#organization' },
       publisher: { '@id': 'https://astrodig.com/#organization' },

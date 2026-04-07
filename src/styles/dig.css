@@ -160,6 +160,50 @@
   width: 100%;
 }
 
+/* ── Brand watermark on every slide ────────────────────────────────────── */
+.dig-slide-brand {
+  position: absolute;
+  bottom: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: rgba(201, 168, 76, 0.25);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── Per-slide share button (mobile) ───────────────────────────────────── */
+.dig-slide-share {
+  position: absolute;
+  bottom: 2.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 20px;
+  color: var(--gold);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.4rem 1.2rem;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  display: none;
+}
+
+.dig-slide-share:active {
+  background: rgba(201, 168, 76, 0.15);
+}
+
+@media (max-width: 600px) {
+  .dig-slide-share { display: block; }
+}
+
 .dig-label {
   font-family: 'Raleway', sans-serif;
   font-size: 0.7rem;

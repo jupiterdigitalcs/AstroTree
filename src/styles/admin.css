@@ -944,6 +944,25 @@
   cursor: grab;
 }
 
+/* Bigger wheel on wide screens */
+@media (min-width: 900px) {
+  .zodiac-zoom-area {
+    width: min(60vh, 680px);
+    height: min(60vh, 680px);
+    max-width: 680px;
+    max-height: 680px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .zodiac-zoom-area {
+    width: min(70vh, 800px);
+    height: min(70vh, 800px);
+    max-width: 800px;
+    max-height: 800px;
+  }
+}
+
 .zodiac-zoom-area:active {
   cursor: grabbing;
 }

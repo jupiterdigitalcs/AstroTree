@@ -53,6 +53,17 @@ export default function DigSlide({ slide, state, onShare, sharing }) {
     <div className={className}>
       <div className={`dig-bg dig-bg--${slide.mood}`} />
       <Component data={slide.data} active={state === 'active'} onShare={onShare} sharing={sharing} />
+      {slide.type !== 'intro' && onShare && (
+        <button
+          type="button"
+          className="dig-slide-share"
+          onClick={(e) => { e.stopPropagation(); onShare() }}
+          disabled={sharing}
+        >{sharing ? '...' : '↑ Share This Slide'}</button>
+      )}
+      <div className="dig-slide-brand">
+        ✦ AstroDig · Jupiter Digital
+      </div>
     </div>
   )
 }
