@@ -254,11 +254,14 @@ export default function EditMemberPanel({
             type="text"
             inputMode="numeric"
             className="row-input birthtime-input"
-            placeholder="9:30"
+            placeholder="HH:MM"
             value={birthTimeInput}
             onChange={e => {
-              // Allow digits and colon only; don't auto-format while typing
-              setBirthTimeInput(e.target.value.replace(/[^\d:]/g, '').slice(0, 5))
+              const digits = e.target.value.replace(/\D/g, '').slice(0, 4)
+              let formatted = digits
+              if (digits.length >= 3) formatted = digits.slice(0, -2) + ':' + digits.slice(-2)
+              else if (digits.length === 2 && birthTimeInput.length < e.target.value.length) formatted = digits + ':'
+              setBirthTimeInput(formatted)
               setExactBirthTime(false)
             }}
             onBlur={() => {
@@ -272,19 +275,20 @@ export default function EditMemberPanel({
               }
             }}
           />
-          <select
-            className="birthtime-ampm-select"
-            value={birthTimeAmPm}
-            onChange={e => {
-              const newAmPm = e.target.value
-              setBirthTimeAmPm(newAmPm)
-              const t24 = to24h(birthTimeInput, newAmPm)
-              if (t24) doSave({ birthTime: t24 })
-            }}
-          >
-            <option value="AM">AM</option>
-            <option value="PM">PM</option>
-          </select>
+          <div className="birthtime-ampm-pills">
+            {['AM', 'PM'].map(v => (
+              <button
+                key={v}
+                type="button"
+                className={`birthtime-ampm-pill${birthTimeAmPm === v ? ' active' : ''}`}
+                onClick={() => {
+                  setBirthTimeAmPm(v)
+                  const t24 = to24h(birthTimeInput, v)
+                  if (t24) doSave({ birthTime: t24 })
+                }}
+              >{v}</button>
+            ))}
+          </div>
         </div>
       </div>
 

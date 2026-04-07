@@ -295,6 +295,7 @@
   flex-direction: column;
   gap: 0.3rem;
   min-width: 0;
+  max-width: 11rem;
 }
 
 .birthtime-field-header {
@@ -334,24 +335,38 @@
 }
 
 .birthtime-input {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 0;
+  min-width: 3.5rem;
+  width: 0;
   box-sizing: border-box;
   color-scheme: dark;
 }
 
-.birthtime-ampm-select {
+.birthtime-ampm-pills {
+  display: flex;
   flex-shrink: 0;
-  width: 4.2rem;
-  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  font-size: 0.82rem;
-  padding: 0.35rem 0.3rem;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.birthtime-ampm-pill {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.28rem 0.4rem;
   cursor: pointer;
-  color-scheme: dark;
-  box-sizing: border-box;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+.birthtime-ampm-pill + .birthtime-ampm-pill {
+  border-left: 1px solid var(--border);
+}
+.birthtime-ampm-pill.active {
+  background: rgba(201,168,76,0.18);
+  color: var(--gold-light);
 }
 
 .birthtime-exact-label {
