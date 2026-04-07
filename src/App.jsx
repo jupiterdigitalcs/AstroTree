@@ -77,6 +77,7 @@ export default function App() {
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
+  const [insightsTab,       setInsightsTab]       = useState('insights') // 'insights' | 'dig'
   const [constellationTick, setConstellationTick] = useState(0)
   const [newMembersForChart,    setNewMembersForChart]    = useState(0)
   const [newEdgesForInsights,   setNewEdgesForInsights]   = useState(0)
@@ -338,7 +339,7 @@ export default function App() {
   const editingNode = editingNodeId ? nodes.find(n => n.id === editingNodeId) : null
 
   return (
-    <div className={`app${topNavMode ? ' app--topnav' : ''}${topNavMode && nodes.length > 0 && !panelOpen ? ' app--subnav' : ''}`}> {/* TEMP E */}
+    <div className={`app${topNavMode ? ' app--topnav' : ''}${topNavMode && nodes.length > 0 && (!panelOpen || activeTab === 'insights') ? ' app--subnav' : ''}${topNavMode && activeTab === 'insights' ? ' app--insights-main' : ''}`}> {/* TEMP E */}
       {/* ── Email capture — shown once after first named save ───────────── */}
       {showEmailCapture && (
         <EmailCapture onDismiss={() => setShowEmailCapture(false)} />
@@ -425,6 +426,13 @@ export default function App() {
             ><JupiterIcon size={14} /> About</button>
           </nav>
           <div className="top-nav-right">
+            {nodes.length >= 3 && edges.length > 0 && canAccess('advanced_insights', entitlements?.tier, entitlements?.config) && (
+              <button
+                type="button"
+                className="top-nav-dig-cta"
+                onClick={() => { setInsightsTab('dig'); goTab('insights') }}
+              >✦ The DIG</button>
+            )}
             {lastSavedAt && <SyncIndicator status={syncStatus === 'idle' ? 'synced' : syncStatus} />}
           </div>
         </header>
@@ -436,6 +444,16 @@ export default function App() {
           <button className={`top-subnav-btn${treeView === 'constellation' ? ' active' : ''}`} onClick={() => { setTreeView('constellation'); goTab('tree') }}>✦ Constellation</button>
           <button className={`top-subnav-btn${treeView === 'zodiac' ? ' active' : ''}`} onClick={() => { setTreeView('zodiac'); goTab('tree') }}>☉ Zodiac{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">PRO</span> : !canAccess('zodiac_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
           <button className={`top-subnav-btn${treeView === 'tables' ? ' active' : ''}`} onClick={() => { setTreeView('tables'); goTab('tree') }}>☽ Tables{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">PRO</span> : !canAccess('tables_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
+        </nav>
+      )}
+      {topNavMode && activeTab === 'insights' && edges.length > 0 && (
+        <nav className="top-subnav" aria-label="Insights sections">
+          <div className="top-subnav-brand">Insights</div>
+          <button className={`top-subnav-btn${insightsTab === 'insights' ? ' active' : ''}`} onClick={() => setInsightsTab('insights')}>✦ Insights</button>
+          <button
+            className={`top-subnav-btn${insightsTab === 'dig' ? ' active' : ''}`}
+            onClick={() => { if (canAccess('advanced_insights', entitlements?.tier, entitlements?.config)) { setInsightsTab('dig') } else { setShowUpgradePrompt(true) } }}
+          >✦ The DIG{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">PRO</span> : <span className="tab-lock-icon">🔒</span>}</button>
         </nav>
       )}
       {topNavMode && panelOpen && (
@@ -530,7 +548,7 @@ export default function App() {
               />
             </>
 
-          /* ── Family Insights ────────────────────────────────────────── */
+          /* ── Family Insights (sidebar — used on mobile) ─────────── */
           ) : activeTab === 'insights' ? (
             <InsightsPanel
               nodes={nodes} edges={edges}
@@ -542,6 +560,8 @@ export default function App() {
               onUpgrade={() => setShowUpgradePrompt(true)}
               entitlements={entitlements}
               chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null}
+              insightsTab={insightsTab}
+              onInsightsTabChange={setInsightsTab}
             />
 
           /* ── Saved charts ───────────────────────────────────────────── */
@@ -890,6 +910,16 @@ export default function App() {
           </div>
         )}
 
+        {/* ── Chart view explanation ─────────────────────────────────── */}
+        {nodes.length > 0 && (
+          <div className="chart-view-explain">
+            {treeView === 'tree' && 'Hierarchical family tree — drag to rearrange, click to edit.'}
+            {treeView === 'constellation' && 'Force-directed network — see friends, coworkers, and all connections as a star map.'}
+            {treeView === 'zodiac' && 'Zodiac wheel — members placed by sun sign with moon and planetary rings.'}
+            {treeView === 'tables' && 'Data tables — every member\'s sun, moon, and planetary signs at a glance.'}
+          </div>
+        )}
+
         {/* ── Sync indicator (non-intrusive, doesn't shift buttons) ──── */}
         {nodes.length > 0 && (
           <div className="canvas-sync-float">
@@ -962,7 +992,24 @@ export default function App() {
           </div>
         )}
 
-        {treeView === 'tables' && nodes.length > 0 ? (
+        {/* ── Insights in main area (topnav mode) ──────────────────── */}
+        {topNavMode && activeTab === 'insights' ? (
+          <div className="insights-main-area">
+            <InsightsPanel
+              nodes={nodes} edges={edges}
+              onExport={nodes.length >= 2 ? () => { logEvent('export'); handleInsightsExport() } : undefined}
+              exporting={exporting}
+              onAddMore={() => goTab('add')}
+              onGoToTree={() => goTab('tree')}
+              onEditFirst={nodes.length > 0 ? () => { setEditingNodeId(nodes[0].id); setActiveTab('add') } : undefined}
+              onUpgrade={() => setShowUpgradePrompt(true)}
+              entitlements={entitlements}
+              chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null}
+              insightsTab={insightsTab}
+              onInsightsTabChange={setInsightsTab}
+            />
+          </div>
+        ) : treeView === 'tables' && nodes.length > 0 ? (
           <div className="tables-canvas-wrap" style={{ position: 'relative' }}>
             {!canAccess('tables_view', entitlements?.tier, entitlements?.config) && (
               <LockedOverlay

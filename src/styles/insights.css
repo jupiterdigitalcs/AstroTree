@@ -41,6 +41,33 @@
   gap: 0.45rem;
 }
 
+/* ── Insights rendered in main content area (topnav mode) ──────────── */
+/* ── Insights rendered in main content area (desktop topnav mode) ──── */
+.insights-main-area {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .app--topnav .insights-main-area {
+    display: block;
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    padding: 2rem 3rem;
+    background: var(--bg);
+    z-index: 20;
+  }
+
+  .app--topnav .insights-main-area .insights-panel {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .app--topnav .insights-main-area .insight-card {
+    max-width: none;
+  }
+}
+
 .insights-brand-footer {
   display: none; /* shown only during export via JS */
   align-items: center;
@@ -82,7 +109,27 @@
   letter-spacing: 0.14em;
   color: var(--gold);
   margin-bottom: 0.05rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
+
+.insight-pro-tag {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(201, 168, 76, 0.12);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 4px;
+  padding: 0.08rem 0.35rem;
+  line-height: 1;
+}
+
+/* Hide PRO tag during export */
+.insights-panel--exporting .insight-pro-tag { display: none; }
 
 .insight-note {
   font-size: 0.82rem;

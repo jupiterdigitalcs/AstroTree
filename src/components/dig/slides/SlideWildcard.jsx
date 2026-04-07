@@ -5,9 +5,9 @@ export default function SlideWildcard({ data }) {
   const d = node.data
 
   return (
-    <div className="dig-slide-content">
+    <div className="dig-slide-content dig-sparkles">
       <p className="dig-label dig-fly-in" style={{ '--i': 0 }}>The Wildcard</p>
-      <div className="dig-scale-pop" style={{ '--i': 0 }}>
+      <div className="dig-scale-pop dig-glow" style={{ '--i': 0, color: ELEMENT_COLOR[d.element] }}>
         <span className="dig-stat" style={{ color: ELEMENT_COLOR[d.element] }}>{d.symbol}</span>
       </div>
       <h2 className="dig-headline dig-fly-in" style={{ '--i': 1 }}>

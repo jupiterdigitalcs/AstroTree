@@ -6,6 +6,16 @@ import SlideCosmicDuo from './slides/SlideCosmicDuo.jsx'
 import SlideWildcard from './slides/SlideWildcard.jsx'
 import SlideCosmicDNA from './slides/SlideCosmicDNA.jsx'
 import SlideOutro from './slides/SlideOutro.jsx'
+import SlideGlue from './slides/SlideGlue.jsx'
+import SlideElementClash from './slides/SlideElementClash.jsx'
+import SlideClone from './slides/SlideClone.jsx'
+import SlideVenusVibes from './slides/SlideVenusVibes.jsx'
+import SlideMarsEnergy from './slides/SlideMarsEnergy.jsx'
+import SlideMoonMirror from './slides/SlideMoonMirror.jsx'
+import SlideOldSoul from './slides/SlideOldSoul.jsx'
+import SlideRebel from './slides/SlideRebel.jsx'
+import SlideGenBridge from './slides/SlideGenBridge.jsx'
+import SlideRareOne from './slides/SlideRareOne.jsx'
 
 const SLIDE_COMPONENTS = {
   intro: SlideIntro,
@@ -16,6 +26,16 @@ const SLIDE_COMPONENTS = {
   wildcard: SlideWildcard,
   cosmicDNA: SlideCosmicDNA,
   outro: SlideOutro,
+  glue: SlideGlue,
+  elementClash: SlideElementClash,
+  clone: SlideClone,
+  venusVibes: SlideVenusVibes,
+  marsEnergy: SlideMarsEnergy,
+  moonMirror: SlideMoonMirror,
+  oldSoul: SlideOldSoul,
+  rebel: SlideRebel,
+  genBridge: SlideGenBridge,
+  rareOne: SlideRareOne,
 }
 
 export default function DigSlide({ slide, state, onShare, sharing }) {

@@ -287,7 +287,7 @@ function FullCompatPairs({ pairs, title, isExporting, generationLevel }) {
   const displayed = showAll ? exportPairs : exportPairs.slice(0, 8)
   return (
     <div className="insight-card insight-full-compat">
-      <h3 className="insight-heading">{title}</h3>
+      <h3 className="insight-heading">{title}<span className="insight-pro-tag">PRO</span></h3>
       <p className="insight-note compat-pair-count">{exportPairs.length} notable pair{exportPairs.length !== 1 ? 's' : ''}</p>
       <div className="compat-pair-list">
         {displayed.map(pair => (
@@ -337,7 +337,7 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
   const trimmedCount = memberRoles.length - displayRoles.length
   return (
     <div className="insight-card insight-family-roles">
-      <h3 className="insight-heading">{G} Roles</h3>
+      <h3 className="insight-heading">{G} Roles<span className="insight-pro-tag">PRO</span></h3>
       <p className="insight-note" style={{ marginBottom: '0.4rem' }}>Each member's cosmic role in the {g} dynamic</p>
       {displayRoles.map(role => {
         const isOpen = isExporting || expanded === role.node.id
@@ -394,9 +394,10 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements, chartTitle }) {
+export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements, chartTitle, insightsTab = 'insights', onInsightsTabChange }) {
   const hasAdvanced = canAccess('advanced_insights', entitlements?.tier, entitlements?.config)
   const [showDig, setShowDig] = useState(false)
+  const [digExporting, setDigExporting] = useState(false)
   const isGroupOnly = edges.length > 0 && edges.every(e => {
     const t = e.data?.relationType
     return t === 'friend' || t === 'coworker'
@@ -1104,6 +1105,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
     return {
       nodes,
+      edges,
       memberCount: nodes.length,
       familyName: isGroupOnly ? 'group' : 'family',
       dominant, dominantModality, masculine, feminine, total, missingElements,
@@ -1114,7 +1116,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       couples,
       plutoGroups,
     }
-  }, [nodes, dominant, dominantModality, masculine, feminine, total, missingElements, topBonds, signThreadList, memberRoles, couples, isGroupOnly])
+  }, [nodes, edges, dominant, dominantModality, masculine, feminine, total, missingElements, topBonds, signThreadList, memberRoles, couples, isGroupOnly])
 
   return (
     <div className="insights-panel">
@@ -1148,15 +1150,117 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         )}
       </div>
 
-      {/* ── The DIG launch button ─────────────────────────────────────── */}
+      {/* ── Insights sub-nav (sidebar fallback — top-nav version lives in App.jsx) ── */}
       {edges.length > 0 && (
-        <button
-          type="button"
-          className={`dig-launch-btn${!hasAdvanced ? ' dig-launch-btn--locked' : ''}`}
-          onClick={hasAdvanced ? () => setShowDig(true) : onUpgrade}
-        >
-          ✦ {hasAdvanced ? 'View Your DIG' : '🔒 The DIG'}{hasAdvanced && <span className="pro-tag pro-tag--subtle">PRO</span>}
-        </button>
+        <nav className="insights-subnav">
+          <button
+            type="button"
+            className={`insights-subnav-btn${insightsTab === 'insights' ? ' active' : ''}`}
+            onClick={() => onInsightsTabChange?.('insights')}
+          >✦ Insights</button>
+          <button
+            type="button"
+            className={`insights-subnav-btn${insightsTab === 'dig' ? ' active' : ''}${!hasAdvanced ? ' insights-subnav-btn--locked' : ''}`}
+            onClick={hasAdvanced ? () => onInsightsTabChange?.('dig') : onUpgrade}
+          >✦ The DIG{hasAdvanced ? <span className="pro-tag pro-tag--subtle">PRO</span> : <span className="tab-lock-icon">🔒</span>}</button>
+        </nav>
+      )}
+
+      {/* ── The DIG section ────────────────────────────────────────────── */}
+      {insightsTab === 'dig' && hasAdvanced && edges.length > 0 && (
+        <div className="dig-section">
+          <div className="dig-section-header">
+            <h3 className="dig-section-title">✦ The DIG</h3>
+            <p className="dig-section-desc">Your family's cosmic story — a Spotify Wrapped-style experience of your family's astrological DNA.</p>
+          </div>
+          {nodes.length < 3 ? (
+            <div className="dig-section-gate">
+              <p className="dig-section-gate-text">Add at least <strong>3 members</strong> with connections to unlock The DIG. More members = more slides and better insights.</p>
+              {onAddMore && (
+                <button type="button" className="dig-launch-btn" onClick={onAddMore}>
+                  ＋ Add More Members
+                </button>
+              )}
+            </div>
+          ) : (<>
+          <div className="dig-section-actions">
+            <button
+              type="button"
+              className="dig-launch-btn"
+              onClick={() => setShowDig(true)}
+            >
+              ▶ View Your DIG
+            </button>
+            <button
+              type="button"
+              className="dig-launch-btn dig-launch-btn--download"
+              disabled={digExporting}
+              onClick={async () => {
+                if (digExporting) return
+                setDigExporting(true)
+                try {
+                  const { buildSlides, buildDigSummaryHtml } = await import('../utils/digSlides.js')
+                  const slides = buildSlides(digData)
+                  const { getToPng } = await import('../hooks/useExport.js')
+                  const toPng = await getToPng()
+
+                  // Render summary card — briefly visible for capture
+                  const wrap = document.createElement('div')
+                  wrap.className = 'dig-summary-card'
+                  wrap.style.cssText = 'position:fixed;left:0;top:0;width:420px;background:#05031a;z-index:9999;'
+                  wrap.innerHTML = buildDigSummaryHtml(digData, slides, chartTitle)
+                  document.body.appendChild(wrap)
+                  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+
+                  const slug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family'
+                  const filename = `the-dig-${slug}-summary.png`
+
+                  const dataUrl = await toPng(wrap, { backgroundColor: '#05031a', pixelRatio: 2, skipFonts: true })
+                  document.body.removeChild(wrap)
+
+                  // Convert data URL to blob
+                  const parts = dataUrl.split(',')
+                  const mime = parts[0].match(/:(.*?);/)[1]
+                  const bin = atob(parts[1])
+                  const arr = new Uint8Array(bin.length)
+                  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i)
+                  const blob = new Blob([arr], { type: mime })
+                  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+                  if (isMobile && navigator.share) {
+                    const file = new File([blob], filename, { type: 'image/png' })
+                    if (navigator.canShare?.({ files: [file] })) {
+                      await navigator.share({ files: [file], title: 'The DIG — AstroDig', text: 'My family\'s cosmic story ✦' })
+                      setDigExporting(false)
+                      return
+                    }
+                  }
+                  const blobUrl = URL.createObjectURL(blob)
+                  const link = document.createElement('a')
+                  link.download = filename
+                  link.href = blobUrl
+                  link.style.display = 'none'
+                  document.body.appendChild(link)
+                  link.click()
+                  document.body.removeChild(link)
+                  URL.revokeObjectURL(blobUrl)
+                } catch (e) {
+                  console.error('[dig] summary export error:', e)
+                } finally {
+                  setDigExporting(false)
+                }
+              }}
+            >
+              {digExporting ? '…' : (<>
+                <span className="export-label-desktop">↓ Download Summary</span>
+                <span className="export-label-mobile">↑ Share Summary</span>
+              </>)}
+            </button>
+          </div>
+          <p className="dig-section-mobile-note">
+            📱 For individual shareable slides, view The DIG on mobile and tap Share.
+          </p>
+          </>)}
+        </div>
       )}
 
       {/* Export-only: compact member list */}
@@ -1167,6 +1271,9 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           </span>
         ))}
       </div>
+
+      {/* ── Insight cards (hidden when DIG tab active) ─────────────── */}
+      {insightsTab === 'insights' && (<>
 
       {/* 1. Family Signature */}
       <FamilySignatureCard
@@ -1321,7 +1428,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* 4. Notable Bonds (premium) */}
       {topBonds.length > 0 && (
         <div className="insight-card">
-          <h3 className="insight-heading">Notable Bonds</h3>
+          <h3 className="insight-heading">Notable Bonds<span className="insight-pro-tag">PRO</span></h3>
           {topBonds.map(({ a, b, note, noteType, rel, needsTimeCheck }) => {
             const isRare = noteType === 'cosmic-echo' || noteType === 'rare-alignment'
             const color  = isRare                             ? 'var(--gold)'
@@ -1357,7 +1464,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* 6. Shared Venus & Mars Signs (premium) */}
       {(sharedVenusSigns.length > 0 || sharedMarsSigns.length > 0) && (
         <div className="insight-card">
-          <h3 className="insight-heading">♀ Venus · ♂ Mars — Shared Signs</h3>
+          <h3 className="insight-heading">♀ Venus · ♂ Mars — Shared Signs<span className="insight-pro-tag">PRO</span></h3>
           {sharedVenusSigns.map(({ sign, symbol, members }) => (
             <div key={`v-${sign}`} style={{ marginBottom: '0.35rem' }}>
               <p className="insight-note">
@@ -1393,7 +1500,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* 7. Partner Compatibility */}
       {couples.length > 0 && (
         <div className="insight-card">
-          <h3 className="insight-heading">Partner Compatibility</h3>
+          <h3 className="insight-heading">Partner Compatibility<span className="insight-pro-tag">PRO</span></h3>
           {couples.map(({ src, tgt }, i) => {
             const { tagline, taglineColor, narrativeItems } = buildCoupleAnalysis(src, tgt)
             return (
@@ -1423,7 +1530,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* 9. Sign Threads */}
       {signThreadList.length > 0 && (
         <div className="insight-card">
-          <h3 className="insight-heading">Sign Threads</h3>
+          <h3 className="insight-heading">Sign Threads<span className="insight-pro-tag">PRO</span></h3>
           <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.3rem' }}>
             The same sun or moon sign running through a parent-child line.
           </p>
@@ -1441,7 +1548,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* 9. Zodiac Threads */}
       {topZodiacThreads.length > 0 && (
         <div className="insight-card">
-          <h3 className="insight-heading">Zodiac Threads</h3>
+          <h3 className="insight-heading">Zodiac Threads<span className="insight-pro-tag">PRO</span></h3>
           <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.1rem' }}>
             Like a gene that runs in families — this sign keeps showing up across generations, carried through different planets in different people.
           </p>
@@ -1489,7 +1596,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* 12. Family Arrivals */}
       {arrivalGroups.length > 0 && (
         <div className="insight-card">
-          <h3 className="insight-heading">✦ Family Arrivals</h3>
+          <h3 className="insight-heading">✦ Family Arrivals<span className="insight-pro-tag">PRO</span></h3>
           <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem' }}>
             What each child brought to the mix — in energy, personality, and the family dynamic.
           </p>
@@ -1538,7 +1645,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* 11. Dominant Sign */}
       {topSigns.length > 0 && (
         <div className="insight-card">
-          <h3 className="insight-heading">★ Sign Concentration</h3>
+          <h3 className="insight-heading">★ Sign Concentration<span className="insight-pro-tag">PRO</span></h3>
           <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem' }}>
             The sign(s) holding the most planets across your whole group.
           </p>
@@ -1571,7 +1678,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         if (present.length < 2) return null
         return (
           <div className="insight-card">
-            <h3 className="insight-heading">✦ Pluto Generations</h3>
+            <h3 className="insight-heading">✦ Pluto Generations<span className="insight-pro-tag">PRO</span></h3>
             <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem' }}>
               Pluto's slow orbit imprints each generation with a shared undercurrent.
             </p>
@@ -1610,6 +1717,22 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           </button>
         </div>
       )}
+
+      {/* DIG teaser inside insights */}
+      {hasAdvanced && edges.length > 0 && nodes.length >= 3 && (
+        <button
+          type="button"
+          className="dig-teaser-card"
+          onClick={() => onInsightsTabChange?.('dig')}
+        >
+          <span className="dig-teaser-label">✦ The DIG</span>
+          <span className="dig-teaser-text">See your family's cosmic story — Wrapped-style slides, shareable highlights, and more.</span>
+          <span className="dig-teaser-arrow">View The DIG →</span>
+        </button>
+      )}
+
+      </>)}
+      {/* ── end insight cards ─────────────────────────────────────────── */}
 
       {/* 14. Consult CTA */}
       <div className="insight-consult-cta">

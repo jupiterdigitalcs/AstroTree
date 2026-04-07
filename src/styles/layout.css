@@ -340,5 +340,11 @@
   .app--topnav .canvas-sync-float  { display: none; }  /* sync indicator is in top nav */
   .app--topnav .sidebar-footer     { display: none !important; } /* brand footer not needed */
   .app--topnav .tree-view-toggle   { display: none; }  /* view toggle moved to top nav */
+  .app--topnav .chart-view-explain { top: 0.5rem; }
+  .app--topnav .insights-subnav    { display: none; }  /* insights subnav moved to top nav */
+
+  /* When insights shows in main area, hide sidebar + backdrop on desktop */
+  .app--insights-main .sidebar       { transform: translateX(-100%) !important; }
+  .app--insights-main .top-nav-backdrop { display: none !important; }
 }
 /* ══ END TEMP E ══════════════════════════════════════════════════════════════ */

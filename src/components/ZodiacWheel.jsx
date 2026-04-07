@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { ELEMENT_COLORS } from '../utils/astrology.js'
 import { PlanetSign } from './PlanetSign.jsx'
 
@@ -18,9 +18,9 @@ const ZODIAC_ORDER = [
 ]
 
 const SEGMENT_ANGLE = 30
-// Rotation offset: Cancer (index 3) at the ascendant (9 o'clock / left side)
-// Cancer is index 3 → needs to land at 270° → offset = 270 - (3 * 30) = 180
-const START_OFFSET = 180
+// Thema Mundi: Cancer at the ascendant (9 o'clock), shifted one slot CCW.
+// Cancer end = 3*30 + offset + 30 = 270 → offset = 150
+const START_OFFSET = 150
 
 // Planet rings — ordered innermost to outermost.
 // Sun uses element color (null = derive from node); others use fixed planet color.
@@ -75,6 +75,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
   const [zoom, setZoom] = useState(1)
   const [pan,  setPan]  = useState({ x: 0, y: 0 })
   const dragBase = useRef(null)
+  const zoomAreaRef = useRef(null)
   const [selectedGens, setSelectedGens] = useState(new Set()) // empty = all generations
   const [selectedSign, setSelectedSign] = useState(null)
 
@@ -119,9 +120,16 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
 
   const clampZoom = z => Math.max(0.35, Math.min(4, z))
 
-  const onWheel = useCallback(e => {
-    e.preventDefault()
-    setZoom(z => clampZoom(z * (e.deltaY < 0 ? 1.12 : 0.9)))
+  // Attach wheel listener with { passive: false } so preventDefault works
+  useEffect(() => {
+    const el = zoomAreaRef.current
+    if (!el) return
+    function handleWheel(e) {
+      e.preventDefault()
+      setZoom(z => clampZoom(z * (e.deltaY < 0 ? 1.12 : 0.9)))
+    }
+    el.addEventListener('wheel', handleWheel, { passive: false })
+    return () => el.removeEventListener('wheel', handleWheel)
   }, [])
 
   function onPointerDown(e) {
@@ -204,8 +212,8 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
     <div className="zodiac-wheel-wrap">
       {/* ── Zoomable + pannable SVG ────────────────────────────────────────── */}
       <div
+        ref={zoomAreaRef}
         className="zodiac-zoom-area"
-        onWheel={onWheel}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

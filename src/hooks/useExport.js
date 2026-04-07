@@ -260,6 +260,10 @@ export function useExport({ savedChartId, fitViewRef }) {
           if (c.contains('insights-export-btn'))    return false
           if (c.contains('insight-add-more'))       return false
           if (c.contains('insight-connect-prompt')) return false
+          if (c.contains('dig-launch-btn'))         return false
+          if (c.contains('insights-subnav'))        return false
+          if (c.contains('insight-pro-tag'))        return false
+          if (c.contains('dig-teaser-card'))       return false
           return true
         },
       })

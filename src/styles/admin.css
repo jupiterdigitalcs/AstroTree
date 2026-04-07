@@ -857,6 +857,24 @@
   font-weight: 700;
 }
 
+/* ── Chart view explanation ────────────────────────────────────────────── */
+.chart-view-explain {
+  position: absolute;
+  top: 3rem;
+  left: 0.6rem;
+  z-index: 9;
+  max-width: 320px;
+  padding: 0.35rem 0.7rem;
+  background: rgba(9, 7, 26, 0.75);
+  border: 1px solid rgba(201, 168, 76, 0.12);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.45;
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    ZODIAC WHEEL
    ═══════════════════════════════════════════════════════════════ */
