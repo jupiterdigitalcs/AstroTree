@@ -433,8 +433,8 @@ export default function App() {
         <nav className="top-subnav" aria-label="Chart type">
           <div className="top-subnav-brand">Cosmic Connections</div>
           <button className={`top-subnav-btn${treeView === 'tree' ? ' active' : ''}`} onClick={() => { setTreeView('tree'); goTab('tree') }}>🌳 Tree</button>
-          <button className={`top-subnav-btn${treeView === 'zodiac' ? ' active' : ''}`} onClick={() => { setTreeView('zodiac'); goTab('tree') }}>☉ Zodiac{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">PRO</span> : !canAccess('zodiac_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
           <button className={`top-subnav-btn${treeView === 'constellation' ? ' active' : ''}`} onClick={() => { setTreeView('constellation'); goTab('tree') }}>✦ Constellation</button>
+          <button className={`top-subnav-btn${treeView === 'zodiac' ? ' active' : ''}`} onClick={() => { setTreeView('zodiac'); goTab('tree') }}>☉ Zodiac{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">PRO</span> : !canAccess('zodiac_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
           <button className={`top-subnav-btn${treeView === 'tables' ? ' active' : ''}`} onClick={() => { setTreeView('tables'); goTab('tree') }}>☽ Tables{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">PRO</span> : !canAccess('tables_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
         </nav>
       )}
@@ -867,17 +867,17 @@ export default function App() {
             </button>
             <button
               type="button"
-              className={`tree-view-btn${treeView === 'zodiac' ? ' tree-view-btn--active' : ''}`}
-              onClick={() => setTreeView('zodiac')}
-            >
-              ☉ Zodiac
-            </button>
-            <button
-              type="button"
               className={`tree-view-btn${treeView === 'constellation' ? ' tree-view-btn--active' : ''}`}
               onClick={() => setTreeView('constellation')}
             >
               ✦ Constellation
+            </button>
+            <button
+              type="button"
+              className={`tree-view-btn${treeView === 'zodiac' ? ' tree-view-btn--active' : ''}`}
+              onClick={() => setTreeView('zodiac')}
+            >
+              ☉ Zodiac
             </button>
             <button
               type="button"

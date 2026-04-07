@@ -56,14 +56,17 @@ async function shareOrDownload(dataUrl, filename, shareTitle, shareText) {
       return
     }
   }
-  // Convert data URL to blob URL for direct download (avoids "Save As" dialog)
+  // Convert to blob URL and force download via DOM-attached link
   const res = await fetch(dataUrl)
   const blob = await res.blob()
   const blobUrl = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.download = filename
   link.href = blobUrl
+  link.style.display = 'none'
+  document.body.appendChild(link)
   link.click()
+  document.body.removeChild(link)
   setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
 }
 
@@ -274,7 +277,10 @@ export function useExport({ savedChartId, fitViewRef }) {
       const link = document.createElement('a')
       link.download = filename
       link.href = blobUrl
+      link.style.display = 'none'
+      document.body.appendChild(link)
       link.click()
+      document.body.removeChild(link)
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
     } catch (err) {
       if (err?.name === 'AbortError') return
