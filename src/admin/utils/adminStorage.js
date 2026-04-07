@@ -90,6 +90,46 @@ export async function fetchTreesPerDay() {
   }
 }
 
+export async function fetchPaywallConfig() {
+  try {
+    const res = await fetch('/api/admin?action=paywall-config', { headers: adminHeaders() })
+    if (!res.ok) return []
+    const data = await res.json()
+    // Convert array of { key, value, updated_at } to a map
+    const config = {}
+    for (const row of data ?? []) config[row.key] = row.value
+    return config
+  } catch (e) {
+    console.error('fetchPaywallConfig exception:', e)
+    return {}
+  }
+}
+
+export async function updatePaywallConfig(key, value) {
+  try {
+    const res = await fetch('/api/admin?action=paywall-config-set', {
+      method: 'POST',
+      headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, value }),
+    })
+    return await res.json()
+  } catch (e) {
+    console.error('updatePaywallConfig exception:', e)
+    return { ok: false }
+  }
+}
+
+export async function fetchPurchases() {
+  try {
+    const res = await fetch('/api/admin?action=purchases', { headers: adminHeaders() })
+    if (!res.ok) return []
+    return await res.json()
+  } catch (e) {
+    console.error('fetchPurchases exception:', e)
+    return []
+  }
+}
+
 export async function fetchEngagementStats() {
   try {
     const res = await fetch('/api/admin?action=engagement', { headers: adminHeaders() })

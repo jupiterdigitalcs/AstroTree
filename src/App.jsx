@@ -30,6 +30,8 @@ import { SyncIndicator } from './components/SyncIndicator.jsx'
 import { ShareButton } from './components/ShareButton.jsx'
 import { fetchChartByToken, isCloudEnabled, pingVisit, logEvent } from './utils/cloudStorage.js'
 import { EmailCapture, hasBeenAsked, clearEmailAsked } from './components/EmailCapture.jsx'
+import { UpgradePrompt } from './components/UpgradePrompt.jsx'
+import { checkPurchaseReturn } from './utils/checkout.js'
 import { OnboardingProgress, markInsightsSeen } from './components/OnboardingProgress.jsx'
 import { buildDemoChart, buildDemoCrewChart } from './utils/demoData.js'
 import { buildNodeData, makeEdge, hydrateNodes } from './utils/treeHelpers.js'
@@ -116,9 +118,10 @@ export default function App() {
   // Mobile panel is open when not on the tree tab, or when editing a node
   const panelOpen = activeTab !== 'tree' || !!editingNodeId
 
-  const { syncStatus, syncChart, deleteFromCloud } = useCloudSync({
+  const { syncStatus, syncChart, deleteFromCloud, entitlements, refreshEntitlements } = useCloudSync({
     onMergeCharts: () => {/* ChartsPanel will re-read localStorage on its own mount */},
   })
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
 
   const {
     savedChartId, setSavedChartId,
@@ -190,6 +193,12 @@ export default function App() {
       setFitTick(t => t + 1)
       logEvent('share_viewed')
     })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Handle ?purchase=success return from Stripe ────────────────────────────
+  useEffect(() => {
+    const status = checkPurchaseReturn()
+    if (status === 'success') refreshEntitlements()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Auto-dismiss connect prompt once first edge is added ─────────────────
@@ -345,6 +354,14 @@ export default function App() {
       {/* ── Email capture — shown once after first named save ───────────── */}
       {showEmailCapture && (
         <EmailCapture onDismiss={() => setShowEmailCapture(false)} />
+      )}
+
+      {/* ── Upgrade prompt ──────────────────────────────────────────────── */}
+      {showUpgradePrompt && (
+        <UpgradePrompt
+          onClose={() => setShowUpgradePrompt(false)}
+          onNeedEmail={() => { setShowUpgradePrompt(false); clearEmailAsked(); setShowEmailCapture(true) }}
+        />
       )}
 
       {/* ── New Tree confirm (when tree is already saved) ────────────────── */}
@@ -544,6 +561,8 @@ export default function App() {
                   el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 }, 120)
               }}
+              entitlements={entitlements}
+              onUpgrade={() => setShowUpgradePrompt(true)}
             />
 
           /* ── About ──────────────────────────────────────────────────── */

@@ -133,6 +133,20 @@ export async function restoreChartsByEmail(email) {
   }
 }
 
+// ── Entitlements ─────────────────────────────────────────────────────────────
+
+export async function fetchEntitlements() {
+  try {
+    const res = await fetch('/api/device?action=entitlements', {
+      headers: { 'x-device-id': getDeviceId() },
+    })
+    if (!res.ok) return { tier: 'free', config: {} }
+    return await res.json()
+  } catch {
+    return { tier: 'free', config: {} }
+  }
+}
+
 // ── Device tracking ──────────────────────────────────────────────────────────
 
 export async function upsertDevice() {

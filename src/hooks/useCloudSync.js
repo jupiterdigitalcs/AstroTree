@@ -1,15 +1,21 @@
 import { useState, useEffect, useCallback } from 'react'
-import { uploadChart, deleteChartCloud as _deleteCloud, fetchCharts, isCloudEnabled, upsertDevice } from '../utils/cloudStorage.js'
+import { uploadChart, deleteChartCloud as _deleteCloud, fetchCharts, isCloudEnabled, upsertDevice, fetchEntitlements } from '../utils/cloudStorage.js'
 import { saveChart, loadCharts } from '../utils/storage.js'
+import { setCachedEntitlements } from '../utils/entitlements.js'
 
 // syncStatus: 'idle' | 'syncing' | 'synced' | 'error'
 export function useCloudSync({ onMergeCharts }) {
   const [syncStatus, setSyncStatus] = useState('idle')
+  const [entitlements, setEntitlements] = useState({ tier: 'free', config: {} })
 
-  // On mount: register/update device row, then merge cloud charts
+  // On mount: register/update device row, fetch entitlements, then merge cloud charts
   useEffect(() => {
     if (!isCloudEnabled()) return
     upsertDevice()
+    fetchEntitlements().then(ent => {
+      setEntitlements(ent)
+      setCachedEntitlements(ent)
+    })
     fetchCharts().then(cloudCharts => {
       if (!cloudCharts.length) return
       const local = loadCharts()
@@ -49,5 +55,12 @@ export function useCloudSync({ onMergeCharts }) {
     await _deleteCloud(id)
   }, [])
 
-  return { syncStatus, syncChart, deleteFromCloud }
+  const refreshEntitlements = useCallback(async () => {
+    if (!isCloudEnabled()) return
+    const ent = await fetchEntitlements()
+    setEntitlements(ent)
+    setCachedEntitlements(ent)
+  }, [])
+
+  return { syncStatus, syncChart, deleteFromCloud, entitlements, refreshEntitlements }
 }

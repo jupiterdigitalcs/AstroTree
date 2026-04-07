@@ -3,8 +3,9 @@ import { loadCharts, deleteChart, saveChart, renameChart } from '../utils/storag
 import { fetchCharts, fetchPublicCharts, isCloudEnabled, restoreChartsByEmail } from '../utils/cloudStorage.js'
 import { getSavedEmail } from './EmailCapture.jsx'
 import { buildDemoChart, buildDemoCrewChart } from '../utils/demoData.js'
+import { isPaywallEnabled, getChartLimit } from '../utils/entitlements.js'
 
-export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout, onRename, onDuplicate }) {
+export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout, onRename, onDuplicate, entitlements, onUpgrade }) {
   const [charts,          setCharts]          = useState(() => loadCharts())
   const [publicCharts,    setPublicCharts]    = useState([])
   const [restoring,       setRestoring]       = useState(false)
@@ -76,8 +77,29 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
   return (
     <div className="charts-panel">
       <div className="charts-panel-header">
-        <h2 className="charts-panel-title">🗂️ My Charts</h2>
-        <button type="button" className="add-row-btn" onClick={onNew}>+ New Chart</button>
+        <h2 className="charts-panel-title">🗂️ My Charts
+          {entitlements && isPaywallEnabled(entitlements.config) && (() => {
+            const limit = getChartLimit(entitlements.tier, entitlements.config)
+            const count = charts.filter(c => !c.isSample).length
+            return limit < Infinity ? (
+              <span className={`chart-limit-badge${count >= limit ? ' chart-limit-badge--warn' : ''}`}>
+                {' '}({count}/{limit})
+              </span>
+            ) : null
+          })()}
+        </h2>
+        {entitlements && isPaywallEnabled(entitlements.config) && (() => {
+          const limit = getChartLimit(entitlements.tier, entitlements.config)
+          const count = charts.filter(c => !c.isSample).length
+          return count >= limit && entitlements.tier !== 'premium' ? (
+            <button type="button" className="chart-limit-upgrade" onClick={onUpgrade}>Upgrade</button>
+          ) : (
+            <button type="button" className="add-row-btn" onClick={onNew}>+ New Chart</button>
+          )
+        })()}
+        {(!entitlements || !isPaywallEnabled(entitlements?.config)) && (
+          <button type="button" className="add-row-btn" onClick={onNew}>+ New Chart</button>
+        )}
       </div>
 
       {/* Email indicator / opt-in */}

@@ -32,6 +32,14 @@ async function handlePing(req, res) {
   return res.status(200).json({ ok: true })
 }
 
+async function handleEntitlements(req, res) {
+  const deviceId = req.headers['x-device-id'] || req.body?.deviceId
+  if (!deviceId) return res.status(400).json({ error: 'Missing device ID' })
+  const { data, error } = await getSupabase().rpc('get_device_entitlements', { p_device_id: deviceId })
+  if (error) return res.status(500).json({ tier: 'free', config: {} })
+  return res.status(200).json(data ?? { tier: 'free', config: {} })
+}
+
 async function handleEvent(req, res) {
   const { deviceId, eventName } = req.body
   if (!deviceId || !eventName) return res.status(400).json({ ok: false })
@@ -40,13 +48,15 @@ async function handleEvent(req, res) {
   return res.status(200).json({ ok: true })
 }
 
-const ROUTES = { register: handleRegister, email: handleEmail, ping: handlePing, event: handleEvent }
+const ROUTES = { register: handleRegister, email: handleEmail, ping: handlePing, event: handleEvent, entitlements: handleEntitlements }
+const GET_ALLOWED = new Set(['entitlements'])
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  const action = req.query.action
+  if (req.method !== 'POST' && !GET_ALLOWED.has(action)) return res.status(405).json({ error: 'Method not allowed' })
   try {
-    const fn = ROUTES[req.query.action]
-    if (!fn) return res.status(400).json({ error: `Unknown action: ${req.query.action}` })
+    const fn = ROUTES[action]
+    if (!fn) return res.status(400).json({ error: `Unknown action: ${action}` })
     return await fn(req, res)
   } catch {
     return res.status(200).json({ ok: true })

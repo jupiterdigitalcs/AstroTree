@@ -1312,3 +1312,202 @@
   padding: 0.2rem 0;
   pointer-events: none;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN PAYWALL PANEL
+   ═══════════════════════════════════════════════════════════════ */
+
+.admin-paywall-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.admin-paywall-section {
+  border: 1px solid var(--border-gold);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.admin-paywall-heading {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  margin: 0 0 0.6rem;
+}
+
+.admin-paywall-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0.3rem 0 0;
+}
+
+.admin-paywall-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-paywall-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+}
+
+.admin-paywall-toggle {
+  padding: 0.35rem 1rem;
+  border-radius: 20px;
+  border: 1px solid var(--border-gold);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 4rem;
+}
+
+.admin-paywall-toggle:hover { border-color: var(--gold); }
+
+.admin-paywall-toggle--on {
+  background: var(--gold);
+  color: #09071a;
+  border-color: var(--gold);
+}
+
+.admin-paywall-limits {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.admin-paywall-limit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+
+.admin-paywall-limit-field input {
+  width: 5rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  padding: 0.35rem 0.6rem;
+  color: var(--text);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.85rem;
+}
+
+.admin-paywall-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.admin-paywall-feature-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.83rem;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.admin-paywall-feature-row input[type="checkbox"] {
+  accent-color: var(--gold);
+}
+
+/* ── Paywall products table ──────────────────────────────────── */
+.admin-paywall-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-paywall-table th {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-gold);
+}
+
+.admin-paywall-table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid rgba(201,168,76,0.08);
+  color: var(--text-soft);
+}
+
+.admin-paywall-mono {
+  font-family: monospace;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.admin-paywall-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.admin-paywall-remove:hover { color: #e87070; background: rgba(232,112,112,0.1); }
+
+.admin-paywall-add-product {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.admin-paywall-add-product input {
+  flex: 1;
+  min-width: 8rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  padding: 0.35rem 0.6rem;
+  color: var(--text);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.8rem;
+}
+
+.admin-paywall-add-product button {
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
+  border: 1px solid var(--gold);
+  background: rgba(201,168,76,0.15);
+  color: var(--gold);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.admin-paywall-add-product button:hover { background: rgba(201,168,76,0.25); }
+.admin-paywall-add-product button:disabled { opacity: 0.4; cursor: default; }
+
+/* ── Purchase status badges ──────────────────────────────────── */
+.admin-paywall-status {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.admin-paywall-status--completed { color: #7ec845; background: rgba(126,200,69,0.12); }
+.admin-paywall-status--pending   { color: var(--gold); background: rgba(201,168,76,0.12); }
+.admin-paywall-status--refunded  { color: #e87070; background: rgba(232,112,112,0.12); }
+.admin-paywall-status--expired   { color: var(--text-muted); background: rgba(255,255,255,0.05); }

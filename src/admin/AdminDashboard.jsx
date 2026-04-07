@@ -3,10 +3,11 @@ import AdminStatsPanel from './AdminStatsPanel.jsx'
 import AdminTreeList from './AdminTreeList.jsx'
 import AdminUserList from './AdminUserList.jsx'
 import AdminTreePreview from './AdminTreePreview.jsx'
+import AdminPaywallPanel from './AdminPaywallPanel.jsx'
 import { fetchAllCharts } from './utils/adminStorage.js'
 
 export default function AdminDashboard() {
-  const [view,         setView]         = useState('trees') // 'trees' | 'users'
+  const [view,         setView]         = useState('trees') // 'trees' | 'users' | 'paywall'
   const [selectedTree, setSelectedTree] = useState(null)
 
   async function handleSelectDevice(deviceId, title) {
@@ -35,12 +36,18 @@ export default function AdminDashboard() {
         >
           By User
         </button>
+        <button
+          type="button"
+          className={`admin-toggle-btn${view === 'paywall' ? ' admin-toggle-btn--active' : ''}`}
+          onClick={() => setView('paywall')}
+        >
+          Paywall
+        </button>
       </div>
 
-      {view === 'trees'
-        ? <AdminTreeList onSelectTree={setSelectedTree} />
-        : <AdminUserList onSelectDevice={handleSelectDevice} />
-      }
+      {view === 'trees' && <AdminTreeList onSelectTree={setSelectedTree} />}
+      {view === 'users' && <AdminUserList onSelectDevice={handleSelectDevice} />}
+      {view === 'paywall' && <AdminPaywallPanel />}
 
       {selectedTree && (
         <AdminTreePreview tree={selectedTree} onClose={() => setSelectedTree(null)} />

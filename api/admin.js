@@ -45,7 +45,28 @@ async function handleEngagement(req, res) {
   return error ? res.status(500).json(null) : res.status(200).json(data)
 }
 
-const ROUTES = { login: handleLogin, charts: handleCharts, stats: handleStats, devices: handleDevices, 'trees-per-day': handleTreesPerDay, engagement: handleEngagement }
+async function handlePaywallConfig(req, res) {
+  if (!requireAdmin(req)) return res.status(401).json({ error: 'Unauthorized' })
+  const { data, error } = await getSupabase().from('paywall_config').select('key, value, updated_at')
+  if (error) return res.status(500).json([])
+  return res.status(200).json(data ?? [])
+}
+
+async function handlePaywallConfigSet(req, res) {
+  if (!requireAdmin(req)) return res.status(401).json({ error: 'Unauthorized' })
+  const { key, value } = req.body ?? {}
+  if (!key) return res.status(400).json({ error: 'Missing key' })
+  const { error } = await getSupabase().rpc('admin_set_paywall_config', { p_key: key, p_value: value })
+  return error ? res.status(500).json({ ok: false, error: error.message }) : res.status(200).json({ ok: true })
+}
+
+async function handlePurchases(req, res) {
+  if (!requireAdmin(req)) return res.status(401).json({ error: 'Unauthorized' })
+  const { data, error } = await getSupabase().rpc('admin_get_purchases')
+  return error ? res.status(500).json([]) : res.status(200).json(data ?? [])
+}
+
+const ROUTES = { login: handleLogin, charts: handleCharts, stats: handleStats, devices: handleDevices, 'trees-per-day': handleTreesPerDay, engagement: handleEngagement, 'paywall-config': handlePaywallConfig, 'paywall-config-set': handlePaywallConfigSet, purchases: handlePurchases }
 
 export default async function handler(req, res) {
   try {

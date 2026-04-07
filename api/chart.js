@@ -28,11 +28,39 @@ function toRow(r) {
   }
 }
 
+async function checkChartLimit(sb, deviceId, chartId) {
+  // Check if paywall is enabled
+  const { data: enabledRow } = await sb.from('paywall_config').select('value').eq('key', 'paywall_enabled').single()
+  if (enabledRow?.value !== true) return null // paywall off — no limit
+
+  // Check if this is an update to an existing chart (updates always allowed)
+  const { data: existing } = await sb.from('charts').select('id').eq('id', chartId).eq('device_id', deviceId).single()
+  if (existing) return null // updating existing chart — allowed
+
+  // Get device tier
+  const { data: device } = await sb.from('devices').select('tier').eq('id', deviceId).single()
+  const tier = device?.tier ?? 'free'
+
+  // Get limit for tier
+  const limitKey = tier === 'premium' ? 'chart_limit_premium' : 'chart_limit_free'
+  const { data: limitRow } = await sb.from('paywall_config').select('value').eq('key', limitKey).single()
+  const limit = limitRow?.value ?? (tier === 'premium' ? 50 : 3)
+
+  // Count existing charts
+  const { count } = await sb.from('charts').select('id', { count: 'exact', head: true }).eq('device_id', deviceId)
+  if (count >= limit) return { error: 'chart_limit_reached', limit }
+  return null
+}
+
 async function handleSave(req, res) {
   const deviceId = req.headers['x-device-id']
   if (!deviceId) return res.status(400).json({ error: 'Missing device ID' })
   const chart = req.body
   if (!chart?.id) return res.status(400).json({ error: 'Missing chart ID' })
+
+  const sb = getSupabase()
+  const limitErr = await checkChartLimit(sb, deviceId, chart.id)
+  if (limitErr) return res.status(403).json(limitErr)
 
   const row = {
     id: chart.id, device_id: deviceId,
@@ -44,7 +72,7 @@ async function handleSave(req, res) {
     updated_at: new Date().toISOString(),
     referrer:   chart.referrer || 'direct',
   }
-  const { error } = await getSupabase().from('charts').upsert(row, { onConflict: 'id', ignoreDuplicates: false })
+  const { error } = await sb.from('charts').upsert(row, { onConflict: 'id', ignoreDuplicates: false })
   return error ? res.status(500).json({ ok: false, error: error.message }) : res.status(200).json({ ok: true })
 }
 
