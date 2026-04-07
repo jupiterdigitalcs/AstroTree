@@ -3,6 +3,29 @@ import { DateInput } from './DateInput.jsx'
 import { PlanetSign } from './PlanetSign.jsx'
 import { checkIngressWarnings } from '../utils/astrology.js'
 
+// Convert stored 24h "HH:MM" → 12h display + AM/PM
+function to12h(time24) {
+  if (!time24 || !/^\d{2}:\d{2}$/.test(time24)) return { display: '', ampm: 'AM' }
+  let [h, m] = time24.split(':').map(Number)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  if (h === 0) h = 12
+  else if (h > 12) h -= 12
+  return { display: `${h}:${m.toString().padStart(2, '0')}`, ampm }
+}
+
+// Parse "h:mm" or raw digits + AM/PM → 24h "HH:MM", or null if invalid
+function to24h(timeStr, ampm) {
+  const digits = timeStr.replace(/\D/g, '')
+  if (digits.length < 3 || digits.length > 4) return null
+  const h   = parseInt(digits.length === 4 ? digits.slice(0, 2) : digits[0])
+  const min = parseInt(digits.length === 4 ? digits.slice(2) : digits.slice(1))
+  if (h < 1 || h > 12 || min < 0 || min > 59) return null
+  let h24 = h
+  if (ampm === 'PM' && h !== 12) h24 += 12
+  if (ampm === 'AM' && h === 12) h24 = 0
+  return `${h24.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`
+}
+
 export default function EditMemberPanel({
   node,
   allNodes,
@@ -13,11 +36,19 @@ export default function EditMemberPanel({
   onRemoveEdge,
   onCancel,
   onGoToInsights,
+  onGoToView,
+  viewLabel,
 }) {
   const [name,           setName]           = useState(node.data.name)
   const [birthdate,      setBirthdate]      = useState(node.data.birthdate)
-  const [birthTime,      setBirthTime]      = useState(node.data.birthTime ?? '')
   const [exactBirthTime, setExactBirthTime] = useState(node.data.exactBirthTime ?? false)
+
+  const { display: initDisplay, ampm: initAmPm } = to12h(node.data.birthTime ?? '')
+  const [birthTimeInput, setBirthTimeInput] = useState(initDisplay)
+  const [birthTimeAmPm,  setBirthTimeAmPm]  = useState(initAmPm)
+
+  // Derived 24h time used for ingress warnings and saving
+  const birthTime = birthTimeInput ? (to24h(birthTimeInput, birthTimeAmPm) ?? '') : ''
   const [error,          setError]          = useState('')
 
   // Warnings based on birthdate only (no birth time)
@@ -210,21 +241,51 @@ export default function EditMemberPanel({
       <div className="birthtime-field">
         <div className="birthtime-field-header">
           <span className="birthtime-field-label">Birth time <span className="birthtime-optional">(optional)</span></span>
-          {birthTime && (
+          {birthTimeInput && (
             <button
               type="button"
               className="birthtime-clear-btn"
-              onClick={() => { setBirthTime(''); setExactBirthTime(false); doSave({ birthTime: null, exactBirthTime: false }) }}
+              onClick={() => { setBirthTimeInput(''); setBirthTimeAmPm('AM'); setExactBirthTime(false); doSave({ birthTime: null, exactBirthTime: false }) }}
             >Clear</button>
           )}
         </div>
-        <input
-          type="time"
-          className="row-input birthtime-input"
-          value={birthTime}
-          onChange={e => { setBirthTime(e.target.value); setExactBirthTime(false) }}
-          onBlur={e => doSave({ birthTime: e.target.value })}
-        />
+        <div className="birthtime-row">
+          <input
+            type="text"
+            inputMode="numeric"
+            className="row-input birthtime-input"
+            placeholder="9:30"
+            value={birthTimeInput}
+            onChange={e => {
+              // Allow digits and colon only; don't auto-format while typing
+              setBirthTimeInput(e.target.value.replace(/[^\d:]/g, '').slice(0, 5))
+              setExactBirthTime(false)
+            }}
+            onBlur={() => {
+              if (!birthTimeInput) { doSave({ birthTime: null }); return }
+              const t24 = to24h(birthTimeInput, birthTimeAmPm)
+              if (!t24) { setBirthTimeInput(''); doSave({ birthTime: null }) }
+              else {
+                const { display } = to12h(t24)
+                setBirthTimeInput(display) // normalize display
+                doSave({ birthTime: t24 })
+              }
+            }}
+          />
+          <select
+            className="birthtime-ampm-select"
+            value={birthTimeAmPm}
+            onChange={e => {
+              const newAmPm = e.target.value
+              setBirthTimeAmPm(newAmPm)
+              const t24 = to24h(birthTimeInput, newAmPm)
+              if (t24) doSave({ birthTime: t24 })
+            }}
+          >
+            <option value="AM">AM</option>
+            <option value="PM">PM</option>
+          </select>
+        </div>
       </div>
 
       {/* Ingress context — only shown when astrologically relevant */}
@@ -366,13 +427,22 @@ export default function EditMemberPanel({
         </div>
       )}
 
-      {onGoToInsights && allNodes.length >= 2 && edges.length > 0 && (
-        <button type="button" className="edit-insights-cta" onClick={onGoToInsights}>
-          <span>✦</span>
-          <span>See Family Insights</span>
-          <span>→</span>
-        </button>
-      )}
+      <div className="edit-cta-row">
+        {onGoToInsights && allNodes.length >= 2 && edges.length > 0 && (
+          <button type="button" className="edit-insights-cta" onClick={onGoToInsights}>
+            <span>✦</span>
+            <span>See Insights</span>
+            <span>→</span>
+          </button>
+        )}
+        {onGoToView && (
+          <button type="button" className="edit-charts-cta" onClick={onGoToView}>
+            <span>✦</span>
+            <span>{viewLabel || 'View'}</span>
+            <span>→</span>
+          </button>
+        )}
+      </div>
 
       {!confirmDelete ? (
         <button type="button" className="delete-btn" onClick={() => setConfirmDelete(true)}>

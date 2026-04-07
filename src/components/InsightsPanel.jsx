@@ -44,6 +44,36 @@ const SIGN_FLAVOR = {
 
 const PLANET_GLYPH = { sun: '☀', moon: '☽', mercury: '☿', venus: '♀', mars: '♂' }
 
+const VENUS_SIGN_BLURB = {
+  Aries:       'Bold and direct in love — acts on attraction fast, no patience for games.',
+  Taurus:      'Sensual and devoted — values security, comfort, and lasting loyalty.',
+  Gemini:      'Charming and curious — needs mental spark and variety to stay engaged.',
+  Cancer:      'Nurturing and protective — love feels like home, driven by emotional safety.',
+  Leo:         'Romantic and generous — loves grand gestures and being adored in return.',
+  Virgo:       'Shows love through service — attentive to details, quietly devoted.',
+  Libra:       'Drawn to harmony and beauty — partnership is everything, avoids conflict.',
+  Scorpio:     'Intense and all-or-nothing — trusts slowly but loves with everything.',
+  Sagittarius: 'Free-spirited and adventurous — love needs room to breathe and explore.',
+  Capricorn:   'Reserved but reliable — shows love through commitment and practical acts.',
+  Aquarius:    'Unconventional and independent — values friendship as the foundation of love.',
+  Pisces:      'Dreamy and boundless — deeply empathetic, love without limits.',
+}
+
+const MARS_SIGN_BLURB = {
+  Aries:       'Acts first, asks later — direct, high-energy, and fiercely competitive.',
+  Taurus:      'Slow to move but unstoppable once started — patient with sudden bursts.',
+  Gemini:      'Quick and scattered energy — drives through ideas and fast pivots.',
+  Cancer:      'Driven by emotion and protection — fights hardest for those they love.',
+  Leo:         'Bold and dramatic — needs to lead and be seen doing it.',
+  Virgo:       'Precise and methodical — energy goes into doing things the right way.',
+  Libra:       'Motivated by fairness — acts through diplomacy, uncomfortable with direct conflict.',
+  Scorpio:     'Laser-focused and relentless — quiet intensity that doesn\'t quit.',
+  Sagittarius: 'Enthusiastic but scattered — big energy, needs a worthy goal to sustain it.',
+  Capricorn:   'Disciplined and strategic — long-game thinker, works hard without drama.',
+  Aquarius:    'Rebellious and unpredictable — driven by ideas and disrupting the status quo.',
+  Pisces:      'Sensitive and idealistic — energy flows toward helping, creating, or escaping.',
+}
+
 const ELEMENT_THREAD_BLURB = {
   Fire:  'A family line of passion, courage, and creative drive',
   Earth: 'A legacy of groundedness, patience, and practical wisdom',
@@ -813,15 +843,16 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   })
   // Grandparent-grandchild: parent's parent → grandchild
   const grandparentKeys = new Set()
+  const grandparentDirected = [] // preserve direction for great-grand calculation
   parentChildEdges.forEach(e => {
     ;(childrenByParent[e.target] || []).forEach(gc => {
       grandparentKeys.add([e.source, gc].sort().join('|'))
+      grandparentDirected.push({ gp: e.source, gc })
     })
   })
-  // Great-grandparent: one more level
+  // Great-grandparent: use directed pairs so gc is always the true grandchild
   const greatGrandKeys = new Set()
-  ;[...grandparentKeys].forEach(gpKey => {
-    const [gp, gc] = gpKey.split('|')
+  grandparentDirected.forEach(({ gp, gc }) => {
     ;(childrenByParent[gc] || []).forEach(ggc => {
       greatGrandKeys.add([gp, ggc].sort().join('|'))
     })
@@ -921,6 +952,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   // ── All compat pairs (Feature 2) ─────────────────────────────────────────────
   const spouseEdgeSet      = new Set(spouseEdges.map(e => [e.source, e.target].sort().join('|')))
   const parentChildEdgeSet = new Set(parentChildEdges.map(e => [e.source, e.target].sort().join('|')))
+  const friendEdgeSet      = new Set(edges.filter(e => e.data?.relationType === 'friend').map(e => [e.source, e.target].sort().join('|')))
+  const coworkerEdgeSet    = new Set(edges.filter(e => e.data?.relationType === 'coworker').map(e => [e.source, e.target].sort().join('|')))
 
   const allCompatPairs = []
   for (let i = 0; i < nodes.length; i++) {
@@ -934,6 +967,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       else if (cousinKeys.has(key))          relationLabel = 'cousins'
       else if (greatGrandKeys.has(key))      relationLabel = 'great-grandparent & great-grandchild'
       else if (grandparentKeys.has(key))     relationLabel = 'grandparent & grandchild'
+      else if (friendEdgeSet.has(key))       relationLabel = 'friends'
+      else if (coworkerEdgeSet.has(key))     relationLabel = 'coworkers'
 
       const aMoon  = a.data.moonSign && a.data.moonSign !== 'Unknown' ? a.data.moonSign : null
       const bMoon  = b.data.moonSign && b.data.moonSign !== 'Unknown' ? b.data.moonSign : null
@@ -1085,12 +1120,18 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         ))}
       </div>
 
-      {/* Compat at top when exporting */}
-      {exporting && compatDisplayPairs.length > 0 && (
-        <FullCompatPairs pairs={compatDisplayPairs} title={compatTitle} isExporting={exporting} generationLevel={generationLevel} />
-      )}
+      {/* 1. Family Signature */}
+      <FamilySignatureCard
+        dominant={dominant}
+        dominantModality={dominantModality}
+        masculine={masculine}
+        feminine={feminine}
+        total={total}
+        missingElements={missingElements}
+        isGroupOnly={isGroupOnly}
+      />
 
-      {/* 1. Sun Element Makeup */}
+      {/* 2. Sun Element Makeup */}
       <div className="insight-card">
         <h3 className="insight-heading">☀ Sun Element Makeup</h3>
 
@@ -1113,17 +1154,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           <strong style={{ color: ELEMENT_COLORS[sunDominant] }}>{ELEMENT_ENERGY[sunDominant]}</strong>
         </p>
       </div>
-
-      {/* 2. Family Signature */}
-      <FamilySignatureCard
-        dominant={dominant}
-        dominantModality={dominantModality}
-        masculine={masculine}
-        feminine={feminine}
-        total={total}
-        missingElements={missingElements}
-        isGroupOnly={isGroupOnly}
-      />
 
       {/* 3. Moon Element Makeup — only when enough moon data */}
       {moonNodes.length >= 2 && moonDominant && (
@@ -1156,7 +1186,46 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* 4. Shared Sun Signs */}
+      {/* 4. Notable Bonds */}
+      {topBonds.length > 0 && (
+        <div className="insight-card">
+          <h3 className="insight-heading">Notable Bonds</h3>
+          {topBonds.map(({ a, b, note, noteType, rel, needsTimeCheck }) => {
+            const isRare = noteType === 'cosmic-echo' || noteType === 'rare-alignment'
+            const color  = isRare                             ? 'var(--gold)'
+                         : noteType === 'soul-twins'          ? 'var(--gold)'
+                         : noteType === 'cosmic-twins'        ? 'var(--gold)'
+                         : noteType === 'lunar-bond'          ? '#9dbbd4'
+                         : noteType === 'mirror'              ? 'var(--rose)'
+                         : noteType === 'sun-moon-reflection' ? '#c4a8d4'
+                         : '#7ec845'
+            return (
+              <div
+                key={pairKey(a, b)}
+                className={`insight-couple${isRare ? ' insight-couple--rare' : ''}`}
+              >
+                {isRare && (
+                  <p className="insight-rare-badge">
+                    {noteType === 'cosmic-echo' ? '✦✦✦ Extremely Rare' : '✦✦ Rare'}
+                  </p>
+                )}
+                <p className="insight-note">
+                  <strong>{a.data.name}</strong> &amp; <strong>{b.data.name}</strong>
+                  {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> — {rel}</span>}
+                </p>
+                <p className="insight-compat" style={{ color }}>{note}</p>
+                {needsTimeCheck && (
+                  <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
+                    ⚠ Confirm with exact birth time
+                  </p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* 5. Shared Sun Signs */}
       {sharedSigns.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">☀ Shared Sun Signs</h3>
@@ -1210,16 +1279,30 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <div className="insight-card">
           <h3 className="insight-heading">♀ Venus · ♂ Mars — Shared Signs</h3>
           {sharedVenusSigns.map(({ sign, symbol, members }) => (
-            <p key={`v-${sign}`} className="insight-note">
-              <PlanetSign planet="venus" symbol={symbol} sign={sign} />
-              {' '}— {members.map(m => m.data.name).join(', ')}
-            </p>
+            <div key={`v-${sign}`} style={{ marginBottom: '0.35rem' }}>
+              <p className="insight-note">
+                <PlanetSign planet="venus" symbol={symbol} sign={sign} />
+                {' '}— {members.map(m => m.data.name).join(', ')}
+              </p>
+              {VENUS_SIGN_BLURB[sign] && (
+                <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem', marginTop: '0.1rem' }}>
+                  {VENUS_SIGN_BLURB[sign]}
+                </p>
+              )}
+            </div>
           ))}
           {sharedMarsSigns.map(({ sign, symbol, members }) => (
-            <p key={`m-${sign}`} className="insight-note">
-              <PlanetSign planet="mars" symbol={symbol} sign={sign} />
-              {' '}— {members.map(m => m.data.name).join(', ')}
-            </p>
+            <div key={`m-${sign}`} style={{ marginBottom: '0.35rem' }}>
+              <p className="insight-note">
+                <PlanetSign planet="mars" symbol={symbol} sign={sign} />
+                {' '}— {members.map(m => m.data.name).join(', ')}
+              </p>
+              {MARS_SIGN_BLURB[sign] && (
+                <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem', marginTop: '0.1rem' }}>
+                  {MARS_SIGN_BLURB[sign]}
+                </p>
+              )}
+            </div>
           ))}
           <p className="insight-note" style={{ marginTop: '0.3rem', color: 'var(--text-muted)', fontSize: '0.72rem' }}>
             ♀ Venus reflects how someone loves and what they value. ♂ Mars reflects drive and how they act.
@@ -1257,7 +1340,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* 8. Sign Threads */}
+      {/* 9. Sign Threads */}
       {signThreadList.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">Sign Threads</h3>
@@ -1313,7 +1396,17 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* 10. Family Arrivals */}
+      {/* 10. Full Compatibility Report */}
+      {compatDisplayPairs.length > 0 && (
+        <FullCompatPairs pairs={compatDisplayPairs} title={compatTitle} isExporting={exporting} generationLevel={generationLevel} />
+      )}
+
+      {/* 11. Family Roles */}
+      {memberRoles.length >= 2 && (
+        <FamilyRoles memberRoles={memberRoles} isExporting={exporting} generationLevel={generationLevel} isGroupOnly={isGroupOnly} />
+      )}
+
+      {/* 12. Family Arrivals */}
       {arrivalGroups.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">✦ Family Arrivals</h3>
@@ -1425,55 +1518,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           </div>
         )
       })()}
-
-      {/* 12. Notable Bonds */}
-      {topBonds.length > 0 && (
-        <div className="insight-card">
-          <h3 className="insight-heading">Notable Bonds</h3>
-          {topBonds.map(({ a, b, note, noteType, rel, needsTimeCheck }) => {
-            const isRare = noteType === 'cosmic-echo' || noteType === 'rare-alignment'
-            const color  = isRare                             ? 'var(--gold)'
-                         : noteType === 'soul-twins'          ? 'var(--gold)'
-                         : noteType === 'cosmic-twins'        ? 'var(--gold)'
-                         : noteType === 'lunar-bond'          ? '#9dbbd4'
-                         : noteType === 'mirror'              ? 'var(--rose)'
-                         : noteType === 'sun-moon-reflection' ? '#c4a8d4'
-                         : '#7ec845'
-            return (
-              <div
-                key={pairKey(a, b)}
-                className={`insight-couple${isRare ? ' insight-couple--rare' : ''}`}
-              >
-                {isRare && (
-                  <p className="insight-rare-badge">
-                    {noteType === 'cosmic-echo' ? '✦✦✦ Extremely Rare' : '✦✦ Rare'}
-                  </p>
-                )}
-                <p className="insight-note">
-                  <strong>{a.data.name}</strong> &amp; <strong>{b.data.name}</strong>
-                  {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> — {rel}</span>}
-                </p>
-                <p className="insight-compat" style={{ color }}>{note}</p>
-                {needsTimeCheck && (
-                  <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
-                    ⚠ Confirm with exact birth time
-                  </p>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* 11. Compatibility Report — shown here when not exporting; moved to top when exporting */}
-      {!exporting && compatDisplayPairs.length > 0 && (
-        <FullCompatPairs pairs={compatDisplayPairs} title={compatTitle} isExporting={false} generationLevel={generationLevel} />
-      )}
-
-      {/* 12. Family Roles */}
-      {memberRoles.length >= 2 && (
-        <FamilyRoles memberRoles={memberRoles} isExporting={exporting} generationLevel={generationLevel} isGroupOnly={isGroupOnly} />
-      )}
 
       {/* 13. Add more prompt */}
       {sharedSigns.length === 0 && couples.length === 0 &&

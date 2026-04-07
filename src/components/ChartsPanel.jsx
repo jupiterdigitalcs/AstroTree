@@ -176,7 +176,7 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
                       <button type="button" className="connection-add-btn" onClick={() => onLoad(c)}>Load</button>
                     )}
                     <button type="button" className="chart-action-icon" title="Rename" onClick={() => startRename(c)}>✎</button>
-                    <button type="button" className="chart-action-icon" title="Duplicate" onClick={() => onDuplicate?.(c)}>⎘</button>
+                    {onDuplicate && <button type="button" className="chart-action-icon" title="Duplicate" onClick={() => onDuplicate(c)}>⎘</button>}
                     <button type="button" className="connection-remove-btn" onClick={() => setPendingDeleteId(c.id)} aria-label="Delete">×</button>
                   </div>
                 </>

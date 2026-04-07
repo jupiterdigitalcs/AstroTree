@@ -217,6 +217,12 @@
     right: max(0.75rem, env(safe-area-inset-right) + 0.5rem);
   }
 
+  /* Lift React Flow controls above the tab bar */
+  .react-flow__controls {
+    bottom: calc(60px + env(safe-area-inset-bottom) + 0.5rem);
+    left: max(0.75rem, env(safe-area-inset-left) + 0.5rem);
+  }
+
   /* Compact view toggle on mobile so it fits one row */
   .tree-view-btn {
     padding: 0.25rem 0.5rem;

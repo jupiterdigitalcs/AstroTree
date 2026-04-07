@@ -349,3 +349,33 @@
 }
 
 .footer-external-link:hover { color: var(--gold); background: rgba(201,168,76,0.08); }
+
+/* ── How It Works section ─────────────────────────────────────────────────── */
+.about-howit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.6rem;
+}
+
+.about-howit-item {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+}
+
+.about-howit-glyph {
+  font-size: 1rem;
+  flex-shrink: 0;
+  width: 1.2rem;
+  text-align: center;
+  margin-top: 0.05rem;
+  color: var(--gold);
+}
+
+.about-howit-item > div {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  font-family: 'Raleway', sans-serif;
+  line-height: 1.55;
+}

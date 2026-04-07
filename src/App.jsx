@@ -88,7 +88,8 @@ export default function App() {
   const [viewOnly,          setViewOnly]          = useState(false)
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
   const [constellationTick, setConstellationTick] = useState(0)
-  const [treeViewedCount,   setTreeViewedCount]   = useState(0)
+  const [newMembersForChart,    setNewMembersForChart]    = useState(0)
+  const [newEdgesForInsights,   setNewEdgesForInsights]   = useState(0)
   const [savedToast,        setSavedToast]        = useState(false)
 
   const fitViewRef = useRef(null)
@@ -196,6 +197,17 @@ export default function App() {
     if (edges.length > 0 && showConnectPrompt) setShowConnectPrompt(false)
   }, [edges.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Re-layout when edges are added (e.g. spouse connected to gen 2 node) ──
+  const prevEdgeCountRef = useRef(0)
+  useEffect(() => {
+    if (edges.length > prevEdgeCountRef.current && nodes.length > 0) {
+      setNodes(prev => applyDagreLayout(prev, edges))
+      setFitTick(t => t + 1)
+      setNewEdgesForInsights(prev => prev + (edges.length - prevEdgeCountRef.current))
+    }
+    prevEdgeCountRef.current = edges.length
+  }, [edges.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
   function markUsed() {
     setHasUsedApp(prev => {
       if (prev) return prev
@@ -254,6 +266,7 @@ export default function App() {
     setCounter(nextCounter)
     setShowAddMore(false)
     setFitTick(t => t + 1)
+    setNewMembersForChart(prev => prev + members.length)
     if (wasEmpty) {
       // Open edit panel for first person so they can add relationships immediately
       setActiveTab('add')
@@ -296,6 +309,7 @@ export default function App() {
       markInsightsSeen()
       if (!insightsSeen) logEvent('insights_seen')
       setInsightsSeen(true)
+      setNewEdgesForInsights(0)
     }
   }
 
@@ -492,6 +506,14 @@ export default function App() {
                 onRemoveEdge={handleRemoveEdge}
                 onCancel={() => setEditingNodeId(null)}
                 onGoToInsights={() => { setEditingNodeId(null); goTab('insights') }}
+                onGoToView={() => {
+                  const groupOnly = edges.length > 0 && edges.every(e => { const t = e.data?.relationType; return t === 'friend' || t === 'coworker' })
+                  setEditingNodeId(null)
+                  if (groupOnly) setTreeView('constellation')
+                  else setTreeView('tree')
+                  goTab('tree')
+                }}
+                viewLabel={edges.length > 0 && edges.every(e => { const t = e.data?.relationType; return t === 'friend' || t === 'coworker' }) ? 'View Constellation' : 'View Tree'}
               />
             </>
 
@@ -513,8 +535,7 @@ export default function App() {
               savedChartId={savedChartId}
               onLoad={handleLoadChart} onNew={handleNewTreeClick}
               onDeleteCloud={deleteFromCloud}
-              onRename={handleRenameChart}
-              onDuplicate={handleDuplicateChart}
+              onRename={handleRenameChart} onDuplicate={handleDuplicateChart}
               onAddEmail={isCloudEnabled() ? () => { clearEmailAsked(); setShowEmailCapture(true) } : undefined}
               onGoToAbout={() => {
                 goTab('about')
@@ -705,12 +726,12 @@ export default function App() {
         </button>
         <button
           className={`bottom-tab${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
-          onClick={() => { setActiveTab('tree'); setEditingNodeId(null); setFitTick(t => t + 1); setTreeViewedCount(nodes.length) }}
+          onClick={() => { setActiveTab('tree'); setEditingNodeId(null); setFitTick(t => t + 1); setNewMembersForChart(0) }}
         >
           <span className="bottom-tab-icon" style={{ position: 'relative', display: 'inline-flex' }}>
             ✦
-            {nodes.length > treeViewedCount && (
-              <span className="bottom-tab-badge">{nodes.length - treeViewedCount}</span>
+            {newMembersForChart > 0 && (
+              <span className="bottom-tab-badge">{newMembersForChart}</span>
             )}
           </span>
           <span className="bottom-tab-label">Chart</span>
@@ -720,7 +741,12 @@ export default function App() {
           onClick={() => goTab('insights')}
           disabled={nodes.length < 2}
         >
-          <span className="bottom-tab-icon">☍</span>
+          <span className="bottom-tab-icon" style={{ position: 'relative', display: 'inline-flex' }}>
+            ☍
+            {newEdgesForInsights > 0 && (
+              <span className="bottom-tab-badge">{newEdgesForInsights}</span>
+            )}
+          </span>
           <span className="bottom-tab-label">Insights</span>
         </button>
         <button
@@ -941,7 +967,7 @@ export default function App() {
         >
           <FitViewOnLayout fitTick={fitTick} fitViewRef={fitViewRef} />
           <Background color="#1a1040" gap={36} size={1} />
-          {nodes.length > 0 && <Controls style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />}
+          {nodes.length > 0 && <Controls showInteractive={false} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />}
         </ReactFlow>
         )}
       </main>

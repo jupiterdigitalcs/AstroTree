@@ -1297,4 +1297,18 @@
     max-width: min(78vw, 320px);
     max-height: 38vh;
   }
+  /* Zoom buttons are redundant on mobile — gestures handle it */
+  .zodiac-zoom-controls { display: none; }
+  /* Show pan/zoom hint on mobile */
+  .zodiac-mobile-hint { display: block; }
+}
+
+.zodiac-mobile-hint {
+  display: none;
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0;
+  pointer-events: none;
 }

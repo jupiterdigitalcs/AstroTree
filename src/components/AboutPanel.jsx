@@ -107,6 +107,52 @@ export default function AboutPanel() {
         <span className="about-shop-arrow">→</span>
       </a>
 
+      {/* ── How It Works ──────────────────────────────────────────────── */}
+      <div className="about-card">
+        <h3 className="about-heading">How It Works — The Astrology</h3>
+        <p className="about-bio">
+          AstroDig uses birth dates to calculate planetary placements for each person. Here's what each planet actually tells us:
+        </p>
+        <div className="about-howit-list">
+          <div className="about-howit-item">
+            <span className="about-howit-glyph">☀</span>
+            <div>
+              <strong>Sun Sign</strong> — your core identity, the version of yourself that shows up most naturally. The sign most people know ("I'm a Scorpio").
+            </div>
+          </div>
+          <div className="about-howit-item">
+            <span className="about-howit-glyph">☽</span>
+            <div>
+              <strong>Moon Sign</strong> — your emotional inner world. How you feel, react, and what you need to feel safe. Requires birth date only — no time needed.
+            </div>
+          </div>
+          <div className="about-howit-item">
+            <span className="about-howit-glyph">☿</span>
+            <div>
+              <strong>Mercury</strong> — how you think and communicate. Quick or deliberate? Detail-focused or big-picture? Two people with the same Mercury understand each other's logic instantly.
+            </div>
+          </div>
+          <div className="about-howit-item">
+            <span className="about-howit-glyph">♀</span>
+            <div>
+              <strong>Venus</strong> — how you love and what you value. Your relationship style, what you're drawn to, and how you express affection.
+            </div>
+          </div>
+          <div className="about-howit-item">
+            <span className="about-howit-glyph">♂</span>
+            <div>
+              <strong>Mars</strong> — your drive and how you act on it. Your energy, ambition, and how you handle conflict or desire.
+            </div>
+          </div>
+        </div>
+        <p className="about-bio" style={{ marginTop: '0.75rem' }}>
+          Each sign belongs to an <strong>element</strong> (Fire, Earth, Air, Water) and a <strong>modality</strong> (Cardinal, Fixed, Mutable) — these group signs by shared personality traits and energy styles, which is why AstroDig can spot patterns across a whole family or friend group.
+        </p>
+        <p className="about-bio">
+          <strong>Compatibility</strong> is scored by how many planets two people share — same sun sign, same moon, Venus or Mars alignments, and special patterns like "mirror signs" (opposites that balance each other) or a sun-moon reflection (one person's sun falls in the other's moon sign). The more planets align, the rarer and deeper the bond.
+        </p>
+      </div>
+
       {/* ── Your Data & Privacy ───────────────────────────────────────── */}
       <div className="about-card" id="about-data">
         <h3 className="about-heading">Your Data &amp; Privacy</h3>

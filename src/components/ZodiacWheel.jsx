@@ -367,12 +367,15 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
           </svg>
         </div>
 
-        {/* Zoom controls */}
+        {/* Zoom controls — hidden on mobile, gestures handle it there */}
         <div className="zodiac-zoom-controls">
           <button className="zodiac-zoom-btn" onClick={() => setZoom(z => clampZoom(z * 1.2))} title="Zoom in">+</button>
           <button className="zodiac-zoom-btn zodiac-zoom-btn--reset" onClick={resetView} title="Reset view">↺</button>
           <button className="zodiac-zoom-btn" onClick={() => setZoom(z => clampZoom(z * 0.83))} title="Zoom out">−</button>
         </div>
+
+        {/* Mobile pan hint */}
+        <p className="zodiac-mobile-hint">drag to pan · pinch to zoom</p>
 
         {/* Hover tooltip */}
         {hoveredNode && (() => {

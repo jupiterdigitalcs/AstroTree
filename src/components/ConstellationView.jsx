@@ -120,6 +120,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
   const panStart = useRef(null)
   const svgRef = useRef(null)
   const dragMoved = useRef(false)
+  const activePointers = useRef(new Map()) // pointerId → {x, y} — for pinch detection
 
   const size = 560
 
@@ -129,6 +130,23 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
     setZoom(1)
     setPan({ x: 0, y: 0 })
   }, [nodes, edges, layoutTick])
+
+  // Prevent browser native pinch-to-zoom (non-passive) and handle wheel zoom manually
+  useEffect(() => {
+    const el = svgRef.current
+    if (!el) return
+    const onWheel = e => {
+      e.preventDefault()
+      setZoom(z => Math.max(0.3, Math.min(3, z - e.deltaY * 0.001)))
+    }
+    const preventTouch = e => { if (e.touches.length > 1) e.preventDefault() }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    el.addEventListener('touchmove', preventTouch, { passive: false })
+    return () => {
+      el.removeEventListener('wheel', onWheel)
+      el.removeEventListener('touchmove', preventTouch)
+    }
+  }, [])
 
   const nodeIndex = {}
   nodes.forEach((n, i) => { nodeIndex[n.id] = i })
@@ -150,13 +168,25 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
   const handlePointerDown = useCallback((e, nodeIdx) => {
     e.stopPropagation()
     e.preventDefault()
+    activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     dragMoved.current = false
     setDragging(nodeIdx)
     e.target.setPointerCapture?.(e.pointerId)
   }, [])
 
   const handlePointerMove = useCallback((e) => {
+    // Two-finger pinch — update zoom based on distance change
+    if (activePointers.current.size >= 2 && dragging == null) {
+      const pts = [...activePointers.current.values()]
+      const prevDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y)
+      activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      const pts2 = [...activePointers.current.values()]
+      const newDist = Math.hypot(pts2[0].x - pts2[1].x, pts2[0].y - pts2[1].y)
+      if (prevDist > 0) setZoom(z => Math.max(0.3, Math.min(3, z * (newDist / prevDist))))
+      return
+    }
     if (dragging != null) {
+      activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
       dragMoved.current = true
       const pt = getSVGPoint(e.clientX, e.clientY)
       setPositions(prev => {
@@ -171,21 +201,27 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
     }
   }, [dragging, isPanning, getSVGPoint])
 
-  const handlePointerUp = useCallback(() => {
+  const handlePointerUp = useCallback((e) => {
+    activePointers.current.delete(e?.pointerId)
     setDragging(null)
     setIsPanning(false)
     panStart.current = null
   }, [])
 
   const handleBgPointerDown = useCallback((e) => {
-    setIsPanning(true)
-    panStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y }
+    activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    // Only start panning if this is the first pointer (single touch)
+    if (activePointers.current.size === 1) {
+      setIsPanning(true)
+      panStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y }
+    } else {
+      // Second finger down — stop panning, switch to pinch mode
+      setIsPanning(false)
+      panStart.current = null
+    }
   }, [pan])
 
-  const handleWheel = useCallback((e) => {
-    e.preventDefault()
-    setZoom(z => Math.max(0.3, Math.min(3, z - e.deltaY * 0.001)))
-  }, [])
+  // wheel zoom handled by non-passive useEffect listener above
 
   // Active edge types for compact legend
   const activeEdgeTypes = [...new Set(
@@ -203,7 +239,6 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
         ref={svgRef}
         viewBox={`0 0 ${size} ${size}`}
         className="constellation-svg"
-        onWheel={handleWheel}
         onPointerDown={handleBgPointerDown}
         style={{ cursor: dragging != null ? 'grabbing' : isPanning ? 'grabbing' : 'grab' }}
       >
