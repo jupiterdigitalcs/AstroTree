@@ -118,7 +118,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed }) {
               onClick={() => setShowCode(true)}
               style={{ background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
             >
-              Have a promo code?
+              Have a gift code?
             </button>
           ) : (
             <form onSubmit={handleRedeem} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -137,7 +137,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed }) {
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <input
                   type="text"
-                  placeholder="Promo code"
+                  placeholder="Gift code"
                   value={codeValue}
                   onChange={e => setCodeValue(e.target.value)}
                   required

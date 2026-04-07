@@ -45,9 +45,12 @@ export async function uploadChart(chart) {
       }),
     })
     if (!res.ok) {
-      const text = await res.text()
-      console.error('[cloud] save failed:', res.status, text)
-      return { ok: false, error: `HTTP ${res.status}` }
+      try {
+        const body = await res.json()
+        return { ok: false, ...body }
+      } catch {
+        return { ok: false, error: `HTTP ${res.status}` }
+      }
     }
     return await res.json()
   } catch (e) {

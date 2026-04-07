@@ -47,9 +47,13 @@ export function useCloudSync({ onMergeCharts }) {
     if (result.ok) {
       setSyncStatus('synced')
       setTimeout(() => setSyncStatus('idle'), 3000)
+    } else if (result.error === 'chart_limit_reached') {
+      setSyncStatus('idle') // don't show error indicator — upgrade prompt handles it
+      return result
     } else {
       setSyncStatus('error')
     }
+    return result
   }, [])
 
   const deleteFromCloud = useCallback(async (id) => {

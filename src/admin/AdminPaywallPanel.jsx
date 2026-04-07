@@ -158,10 +158,10 @@ export default function AdminPaywallPanel() {
         </div>
       </div>
 
-      {/* ── Promo Codes ─────────────────────────────── */}
+      {/* ── Gift Codes ─────────────────────────────── */}
       <div className="admin-paywall-section">
-        <h3 className="admin-paywall-heading">Promo Codes</h3>
-        <p className="admin-paywall-hint">Users enter these in the upgrade prompt to unlock premium without paying.</p>
+        <h3 className="admin-paywall-heading">Gift Codes</h3>
+        <p className="admin-paywall-hint">Users enter these in the upgrade prompt to unlock premium. Separate from Stripe discount codes.</p>
         {promoCodes.length > 0 && (
           <table className="admin-paywall-table">
             <thead>

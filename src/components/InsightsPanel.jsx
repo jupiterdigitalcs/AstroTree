@@ -1239,72 +1239,32 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* ── Premium insights gate ───────────────────────────────────────── */}
       {!hasAdvanced && (() => {
         const rareCount = topBonds.filter(b => b.noteType === 'cosmic-echo' || b.noteType === 'rare-alignment').length
-        const venusCount = sharedVenusSigns.length
-        const marsCount  = sharedMarsSigns.length
+        const items = [
+          topBonds.length > 0 && { icon: '✦', label: `${topBonds.length} Notable Bond${topBonds.length > 1 ? 's' : ''}`, detail: rareCount > 0 ? `including ${rareCount} rare` : `between ${topBonds[0]?.a.data.name} & others` },
+          (sharedVenusSigns.length + sharedMarsSigns.length) > 0 && { icon: '♀♂', label: 'Venus & Mars Shared Signs', detail: `${sharedVenusSigns.length + sharedMarsSigns.length} match${sharedVenusSigns.length + sharedMarsSigns.length > 1 ? 'es' : ''} found` },
+          couples.length > 0 && { icon: '💕', label: 'Partner Compatibility', detail: `${couples.length} pair${couples.length > 1 ? 's' : ''} — ${couples[0]?.src.data.name} & ${couples[0]?.tgt.data.name}${couples.length > 1 ? ' + more' : ''}` },
+          signThreadList.length > 0 && { icon: '🧬', label: 'Zodiac Threads', detail: `${signThreadList.length} sign${signThreadList.length > 1 ? 's' : ''} running through generations` },
+          { icon: '🎭', label: 'Family Roles & Archetypes', detail: `${nodes.length} members analyzed` },
+          { icon: '📊', label: 'Full Compatibility Report', detail: 'deep dive for every connection' },
+          { icon: '🌸', label: 'Family Arrivals', detail: 'seasonal birth patterns' },
+          { icon: '🪐', label: 'Pluto Generations', detail: 'generational themes & shifts' },
+        ].filter(Boolean)
         return (
         <div className="insight-card" style={{ padding: '1.2rem 1rem' }}>
           <div className="insight-locked-banner" onClick={onUpgrade}>
             🔒 Unlock Premium Insights
           </div>
-          <div style={{ textAlign: 'left', fontSize: '0.78rem', color: 'var(--text-dim)', lineHeight: 1.6, marginTop: '0.6rem' }}>
-
-            {topBonds.length > 0 && (
-              <div style={{ marginBottom: '0.7rem' }}>
-                <p style={{ color: 'var(--gold)', fontWeight: 600, margin: '0 0 0.2rem' }}>
-                  ✦ {topBonds.length} Notable Bond{topBonds.length > 1 ? 's' : ''} Found
-                  {rareCount > 0 && <span style={{ fontSize: '0.7rem' }}> ({rareCount} rare)</span>}
-                </p>
-                <p style={{ margin: 0, paddingLeft: '0.8rem', fontSize: '0.75rem' }}>
-                  {topBonds.slice(0, 2).map((b, i) => (
-                    <span key={i}>{i > 0 && ' · '}<strong>{b.a.data.name}</strong> &amp; <strong>{b.b.data.name}</strong></span>
-                  ))}
-                  {topBonds.length > 2 && <span> + {topBonds.length - 2} more</span>}
-                </p>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', margin: '0.5rem 0 0.7rem', textAlign: 'center' }}>
+            We found <strong style={{ color: 'var(--gold)' }}>{items.length} insights</strong> for your {nodes.length}-member chart:
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+            {items.map((item, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', fontSize: '0.78rem' }}>
+                <span style={{ flexShrink: 0, width: '1.4rem', textAlign: 'center' }}>{item.icon}</span>
+                <span style={{ color: 'var(--text)' }}>{item.label}</span>
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>— {item.detail}</span>
               </div>
-            )}
-
-            {(venusCount > 0 || marsCount > 0) && (
-              <div style={{ marginBottom: '0.7rem' }}>
-                <p style={{ color: '#e879a8', fontWeight: 600, margin: '0 0 0.2rem' }}>
-                  ♀♂ {venusCount + marsCount} Venus/Mars Shared Sign{venusCount + marsCount > 1 ? 's' : ''}
-                </p>
-                <p style={{ margin: 0, paddingLeft: '0.8rem', fontSize: '0.75rem' }}>
-                  {[...sharedVenusSigns.slice(0, 1), ...sharedMarsSigns.slice(0, 1)].map((s, i) => (
-                    <span key={i}>{i > 0 && ' · '}{s.members.map(m => m.data.name).join(' & ')} share {s.sign}</span>
-                  ))}
-                </p>
-              </div>
-            )}
-
-            {couples.length > 0 && (
-              <div style={{ marginBottom: '0.7rem' }}>
-                <p style={{ color: 'var(--rose)', fontWeight: 600, margin: '0 0 0.2rem' }}>
-                  💕 {couples.length} Partner Compatibility Report{couples.length > 1 ? 's' : ''}
-                </p>
-                <p style={{ margin: 0, paddingLeft: '0.8rem', fontSize: '0.75rem' }}>
-                  {couples.map((c, i) => (
-                    <span key={i}>{i > 0 && ' · '}{c.src.data.name} &amp; {c.tgt.data.name}</span>
-                  ))}
-                </p>
-              </div>
-            )}
-
-            {signThreadList.length > 0 && (
-              <div style={{ marginBottom: '0.7rem' }}>
-                <p style={{ color: '#b8a0d4', fontWeight: 600, margin: '0 0 0.2rem' }}>
-                  🧬 {signThreadList.length} Zodiac Thread{signThreadList.length > 1 ? 's' : ''}
-                </p>
-                <p style={{ margin: 0, paddingLeft: '0.8rem', fontSize: '0.75rem' }}>
-                  {signThreadList.slice(0, 2).map((t, i) => (
-                    <span key={i}>{i > 0 && ' · '}{t.sign} runs through {t.chain.length} members</span>
-                  ))}
-                </p>
-              </div>
-            )}
-
-            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: '0.5rem' }}>
-              + Family Roles · Full Compatibility · Family Arrivals · Pluto Generations
-            </div>
+            ))}
           </div>
         </div>
         )

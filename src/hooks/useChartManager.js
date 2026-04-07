@@ -14,6 +14,7 @@ export function useChartManager({
   setFitTick, setViewOnly,
   syncChart,
   viewOnly,
+  onChartLimitHit,
 }) {
   const [savedChartId,       setSavedChartId]       = useState(null)
   const [showSaveDialog,     setShowSaveDialog]     = useState(false)
@@ -90,13 +91,18 @@ export function useChartManager({
     handleLoadChart(newChart)
   }, [handleLoadChart, syncChart])
 
-  function handleSaveChart(e) {
+  async function handleSaveChart(e) {
     e.preventDefault()
     if (!saveTitle.trim() || nodes.length === 0) return
     const id = Date.now().toString()
     const chart = { id, title: saveTitle.trim(), nodes, edges, counter, savedAt: new Date().toISOString() }
-    saveChart(chart)
-    syncChart(chart)
+    saveChart(chart) // save locally always
+    const result = await syncChart(chart)
+    if (result?.error === 'chart_limit_reached') {
+      onChartLimitHit?.()
+      // Still save locally but don't proceed with the normal flow
+      return
+    }
     setSavedChartId(id)
     setLastSavedAt(new Date())
     setViewOnly(false)
