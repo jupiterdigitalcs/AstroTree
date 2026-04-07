@@ -394,7 +394,7 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements }) {
+export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements, chartTitle }) {
   const hasAdvanced = canAccess('advanced_insights', entitlements?.tier, entitlements?.config)
   const [showDig, setShowDig] = useState(false)
   const isGroupOnly = edges.length > 0 && edges.every(e => {
@@ -1121,7 +1121,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* ── The DIG overlay ────────────────────────────────────────────── */}
       {showDig && (
         <Suspense fallback={null}>
-          <TheDig digData={digData} onClose={() => setShowDig(false)} />
+          <TheDig digData={digData} onClose={() => setShowDig(false)} chartTitle={chartTitle} />
         </Suspense>
       )}
 

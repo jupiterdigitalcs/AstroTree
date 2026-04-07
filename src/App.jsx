@@ -25,7 +25,7 @@ import { WelcomeScreen }  from './components/WelcomeScreen.jsx'
 import { JupiterIcon }            from './components/JupiterIcon.jsx'
 import { TablesPanel }           from './components/TablesPanel.jsx'
 import { applyDagreLayout }      from './utils/layout.js'
-import { loadDraft, saveChart }  from './utils/storage.js'
+import { loadDraft, saveChart, loadCharts }  from './utils/storage.js'
 import { useCloudSync } from './hooks/useCloudSync.js'
 import { SyncIndicator } from './components/SyncIndicator.jsx'
 import { ShareButton } from './components/ShareButton.jsx'
@@ -541,6 +541,7 @@ export default function App() {
               onEditFirst={nodes.length > 0 ? () => { setEditingNodeId(nodes[0].id); setActiveTab('add') } : undefined}
               onUpgrade={() => setShowUpgradePrompt(true)}
               entitlements={entitlements}
+              chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null}
             />
 
           /* ── Saved charts ───────────────────────────────────────────── */
