@@ -79,6 +79,14 @@ export default function AddMembersForm({ onAdd, initialRows = 2 }) {
               onChange={val => updateRow(row.id, 'birthdate', val)}
               onBlur={() => markTouched(row.id, 'birthdate')}
               hasError={dateError}
+              onComplete={() => {
+                // Focus next row's name input if one exists
+                const nextRow = rows[idx + 1]
+                if (nextRow) {
+                  const el = document.querySelector(`.member-row:nth-child(${idx + 2}) input[type="text"]`)
+                  el?.focus()
+                }
+              }}
             />
 
             <button

@@ -511,7 +511,7 @@ export default function App() {
                 onAddEdge={handleAddEdge}
                 onRemoveEdge={handleRemoveEdge}
                 onCancel={() => setEditingNodeId(null)}
-                onGoToInsights={() => { setEditingNodeId(null); goTab('insights') }}
+                onGoToInsights={() => { setEditingNodeId(null); setInsightsTab('insights'); goTab('insights') }}
                 onGoToView={() => {
                   const groupOnly = edges.length > 0 && edges.every(e => { const t = e.data?.relationType; return t === 'friend' || t === 'coworker' })
                   setEditingNodeId(null)
@@ -1084,82 +1084,18 @@ export default function App() {
             >✦</button>
           )}
 
-          {/* Bottom sheets for each tab */}
+          {/* Family + Edit member sheet (merged — no flash on transition) */}
           <BottomSheet
-            open={isCosmic && activeTab === 'add' && !editingNodeId}
-            title="★ Family"
-            onClose={() => goTab('tree')}
+            open={isCosmic && (!!editingNodeId || activeTab === 'add')}
+            title={editingNode ? 'Edit Member' : '★ Family'}
+            onClose={() => { setEditingNodeId(null); goTab('tree') }}
           >
-            <OnboardingProgress
-              nodes={nodes}
-              edges={edges}
-              onGoToTree={() => goTab('tree')}
-              onGoToInsights={() => goTab('insights')}
-            />
-            {nodes.length === 0 ? (
-              <>
-                <div className="family-welcome">
-                  <div className="family-welcome-inline">
-                    <JupiterIcon size={30} />
-                    <h2 className="family-welcome-title">{hasUsedApp ? 'Start a New Chart' : 'Welcome to AstroDig'}</h2>
-                  </div>
-                  <p className="family-welcome-sub">
-                    {hasUsedApp
-                      ? 'Add family members below to build another celestial chart.'
-                      : 'Build your family\'s celestial chart and discover the cosmic patterns woven across generations.'}
-                  </p>
-                </div>
-                <AddMembersForm onAdd={handleAdd} />
-              </>
-            ) : (
-              <>
-                <div className="member-list">
-                  <div className="member-list-header">
-                    <h3>Your Family · {nodes.length}</h3>
-                    <span className="member-list-hint">oldest first · tap to connect</span>
-                  </div>
-                  <div className="add-more-section">
-                    <button type="button" className="add-more-toggle" onClick={() => setShowAddMore(o => !o)}>
-                      {showAddMore ? '▲ Hide' : '＋ Add more people'}
-                    </button>
-                    {showAddMore && <AddMembersForm onAdd={handleAdd} initialRows={1} />}
-                  </div>
-                  {edges.length === 0 && (
-                    <p className="connect-hint-banner">Tap a name below to connect family members on the tree ↓</p>
-                  )}
-                  {[...nodes].sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999')).map(n => (
-                    <div key={n.id} className="member-pill"
-                      style={{ borderColor: `${n.data.elementColor}44`, cursor: 'pointer' }}
-                      onClick={() => setEditingNodeId(n.id)}
-                    >
-                      <span>{n.data.symbol}</span>
-                      <span>{n.data.name}</span>
-                      <span className="pill-sign" style={{ color: n.data.elementColor }}>
-                        {n.data.sign}
-                        {n.data.birthdate && <span className="pill-year"> · {n.data.birthdate.slice(0, 4)}</span>}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <div className="family-bottom-actions">
-                  <button type="button" className="family-tree-btn" onClick={handleNewTreeClick}>＋ New Chart</button>
-                </div>
-              </>
-            )}
-          </BottomSheet>
-
-          {/* Edit member sheet */}
-          <BottomSheet
-            open={isCosmic && !!editingNodeId}
-            title="Edit Member"
-            onClose={() => setEditingNodeId(null)}
-          >
-            {editingNode && (
+            {editingNode ? (
               <>
               <button
                 type="button"
                 className="back-btn"
-                onClick={() => setEditingNodeId(null)}
+                onClick={() => { setEditingNodeId(null); setActiveTab('add') }}
                 style={{ alignSelf: 'flex-start', marginBottom: '0.25rem' }}
               >← Back to Family</button>
               <EditMemberPanel
@@ -1172,7 +1108,7 @@ export default function App() {
                 onAddEdge={handleAddEdge}
                 onRemoveEdge={handleRemoveEdge}
                 onCancel={() => setEditingNodeId(null)}
-                onGoToInsights={() => { setEditingNodeId(null); goTab('insights') }}
+                onGoToInsights={() => { setEditingNodeId(null); setInsightsTab('insights'); goTab('insights') }}
                 onGoToView={() => {
                   const groupOnly = edges.length > 0 && edges.every(e => { const t = e.data?.relationType; return t === 'friend' || t === 'coworker' })
                   setEditingNodeId(null)
@@ -1182,6 +1118,79 @@ export default function App() {
                 }}
                 viewLabel={edges.length > 0 && edges.every(e => { const t = e.data?.relationType; return t === 'friend' || t === 'coworker' }) ? 'View Constellation' : 'View Tree'}
               />
+              </>
+            ) : (
+              /* ── Family member list (same sheet, no edit selected) ── */
+              <>
+                <OnboardingProgress
+                  nodes={nodes}
+                  edges={edges}
+                  onGoToTree={() => goTab('tree')}
+                  onGoToInsights={() => goTab('insights')}
+                />
+                {nodes.length === 0 ? (
+                  <>
+                    <div className="family-welcome">
+                      <div className="family-welcome-inline">
+                        <JupiterIcon size={30} />
+                        <h2 className="family-welcome-title">{hasUsedApp ? 'Start a New Chart' : 'Welcome to AstroDig'}</h2>
+                      </div>
+                      <p className="family-welcome-sub">
+                        {hasUsedApp
+                          ? 'Add family members below to build another celestial chart.'
+                          : 'Build your family\'s celestial chart and discover the cosmic patterns woven across generations.'}
+                      </p>
+                    </div>
+                    <AddMembersForm onAdd={handleAdd} />
+                  </>
+                ) : (
+                  <>
+                    <div className="member-list">
+                      <div className="member-list-header">
+                        <h3>Your Family · {nodes.length}</h3>
+                        <span className="member-list-hint">oldest first · tap to connect</span>
+                      </div>
+                      <div className="add-more-section">
+                        <button type="button" className="add-more-toggle" onClick={() => setShowAddMore(o => !o)}>
+                          {showAddMore ? '▲ Hide' : '＋ Add more people'}
+                        </button>
+                        {showAddMore && <AddMembersForm onAdd={handleAdd} initialRows={1} />}
+                      </div>
+                      {edges.length === 0 && (
+                        <p className="connect-hint-banner">Tap a name below to connect family members on the tree ↓</p>
+                      )}
+
+                      {Object.keys(nodeIngressWarnings).length > 0 && (
+                        <div className="ingress-key">
+                          <span className="ingress-key-icon">⚠</span>
+                          <span className="ingress-key-text">
+                            Sign may depend on birth time — tap the member to add it (optional)
+                          </span>
+                        </div>
+                      )}
+
+                      {[...nodes].sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999')).map(n => (
+                        <div key={n.id} className="member-pill"
+                          style={{ borderColor: `${n.data.elementColor}44`, cursor: 'pointer' }}
+                          onClick={() => setEditingNodeId(n.id)}
+                        >
+                          <span>{n.data.symbol}</span>
+                          <span>{n.data.name}</span>
+                          <span className="pill-sign" style={{ color: n.data.elementColor }}>
+                            {n.data.sign}
+                            {n.data.birthdate && <span className="pill-year"> · {n.data.birthdate.slice(0, 4)}</span>}
+                          </span>
+                          {nodeIngressWarnings[n.id] && (
+                            <span className="pill-warning" title="Tap to edit — birth time may affect sign accuracy">⚠</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="family-bottom-actions">
+                      <button type="button" className="family-tree-btn" onClick={handleNewTreeClick}>＋ New Chart</button>
+                    </div>
+                  </>
+                )}
               </>
             )}
           </BottomSheet>

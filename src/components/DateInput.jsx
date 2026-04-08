@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { expandYear, shouldAdvanceMm, shouldAdvanceDd, buildIso } from '../utils/dateInput.js'
 
-export function DateInput({ value, onChange, onBlur, hasError }) {
+export function DateInput({ value, onChange, onBlur, hasError, onComplete }) {
   const [mm,   setMm]   = useState(value ? value.slice(5, 7)  : '')
   const [dd,   setDd]   = useState(value ? value.slice(8, 10) : '')
   const [yyyy, setYyyy] = useState(value ? value.slice(0, 4)  : '')
@@ -32,6 +32,9 @@ export function DateInput({ value, onChange, onBlur, hasError }) {
     const v = e.target.value.replace(/\D/g, '').slice(0, 4)
     setYyyy(v)
     emit(mm, dd, v)
+    if (v.length === 4 && mm && dd) {
+      onComplete?.()
+    }
   }
 
   function handleYyyyBlur() {
