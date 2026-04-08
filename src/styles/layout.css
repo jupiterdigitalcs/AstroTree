@@ -214,6 +214,24 @@
   .top-nav-tab:hover:not(:disabled) { color: var(--text-soft); background: rgba(255,255,255,0.03); }
   .top-nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
   .top-nav-tab:disabled { opacity: 0.3; cursor: default; }
+  .top-nav-tab-wrap { position: relative; display: inline-flex; }
+  .tab-hint {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.2rem 0.5rem;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .top-nav-tab-wrap:hover .tab-hint { display: block; }
   .top-nav-tab svg { opacity: 0.45; transition: opacity 0.15s; }
   .top-nav-tab.active svg { opacity: 1; }
 

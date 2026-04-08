@@ -1123,7 +1123,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* ── The DIG overlay ────────────────────────────────────────────── */}
       {showDig && (
         <Suspense fallback={null}>
-          <TheDig digData={digData} onClose={() => setShowDig(false)} chartTitle={chartTitle} />
+          <TheDig digData={digData} onClose={() => setShowDig(false)} chartTitle={chartTitle} isPremium={hasAdvanced} onUpgrade={onUpgrade} />
         </Suspense>
       )}
 
@@ -1160,14 +1160,14 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           >✦ Insights</button>
           <button
             type="button"
-            className={`insights-subnav-btn${insightsTab === 'dig' ? ' active' : ''}${!hasAdvanced ? ' insights-subnav-btn--locked' : ''}`}
-            onClick={hasAdvanced ? () => onInsightsTabChange?.('dig') : onUpgrade}
-          >✦ The DIG{hasAdvanced ? <span className="pro-tag pro-tag--subtle">PRO</span> : <span className="tab-lock-icon">🔒</span>}</button>
+            className={`insights-subnav-btn${insightsTab === 'dig' ? ' active' : ''}`}
+            onClick={() => onInsightsTabChange?.('dig')}
+          >✦ The DIG{hasAdvanced && <span className="pro-tag pro-tag--subtle">PRO</span>}</button>
         </nav>
       )}
 
       {/* ── The DIG section ────────────────────────────────────────────── */}
-      {insightsTab === 'dig' && hasAdvanced && edges.length > 0 && (
+      {insightsTab === 'dig' && edges.length > 0 && (
         <div className="dig-section">
           <div className="dig-section-header">
             <h3 className="dig-section-title">✦ The DIG</h3>
@@ -1755,14 +1755,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         )}
       </div>
 
-      {/* 15. Coming Soon */}
-      <div className="insight-coming-soon">
-        <p className="insight-coming-soon-label">Coming in future updates ✨</p>
-        <p className="insight-note">⬆️ <strong>Rising Sign</strong> — add birth location for the full picture</p>
-        <p className="insight-note">🔮 <strong>Full Chart Overlays</strong> — planetary alignments across generations</p>
-      </div>
-
-      {/* 15. Brand footer — hidden normally, shown during export */}
+      {/* Brand footer — hidden normally, shown during export */}
       <div className="insights-brand-footer">
         <span className="insights-brand-name">✦ AstroDig by Jupiter Digital</span>
         <span className="insights-brand-contact">

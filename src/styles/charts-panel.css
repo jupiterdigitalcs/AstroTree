@@ -315,6 +315,13 @@
   padding: 0;
 }
 .view-only-save-btn:hover { color: var(--gold-light); }
+.view-only-cta {
+  color: var(--gold);
+  font-size: 0.75rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+.view-only-cta:hover { color: var(--gold-light); text-decoration: underline; }
 
 .chart-save-form {
   display: flex;

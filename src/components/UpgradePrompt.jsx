@@ -90,9 +90,15 @@ export function UpgradePrompt({ onClose, feature, onRedeemed }) {
           <li>☉ <strong>Zodiac Wheel</strong> — map your family across the zodiac</li>
           <li>☽ <strong>Tables View</strong> — sortable sun, moon &amp; planet grid</li>
           <li>✦ <strong>Full Insights</strong> — compatibility, roles, zodiac threads, pluto generations</li>
+          <li>✦ <strong>The Full DIG</strong> — every slide in your cosmic story</li>
           <li>🗂️ <strong>Unlimited Charts</strong> — save as many as you want</li>
           <li>🔮 <strong>Future Features</strong> — birth time reconciliation, transits &amp; more</li>
         </ul>
+
+        <div className="upgrade-price">
+          <span className="upgrade-price-amount">$9.99</span>
+          <span className="upgrade-price-label">one-time — yours forever</span>
+        </div>
 
         {error && <p className="upgrade-error">{error}</p>}
 
@@ -106,7 +112,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed }) {
             onClick={handleUpgrade}
             disabled={loading}
           >
-            {loading ? 'Redirecting to checkout...' : 'Upgrade Now'}
+            {loading ? 'Redirecting to checkout...' : 'Upgrade Now — $9.99'}
           </button>
         </div>
 

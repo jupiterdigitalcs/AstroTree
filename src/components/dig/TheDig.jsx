@@ -5,8 +5,13 @@ import { useSwipe } from '../../hooks/useSwipe.js'
 import DigProgressBar from './DigProgressBar.jsx'
 import DigSlide from './DigSlide.jsx'
 
-export default function TheDig({ digData, onClose, chartTitle }) {
-  const [slides] = useState(() => buildSlides(digData))
+export default function TheDig({ digData, onClose, chartTitle, isPremium = true, onUpgrade }) {
+  const FREE_SLIDE_LIMIT = 3
+  const [allSlides] = useState(() => buildSlides(digData))
+  const slides = isPremium ? allSlides : [
+    ...allSlides.slice(0, FREE_SLIDE_LIMIT),
+    { type: 'paywall', data: { remainingCount: allSlides.length - FREE_SLIDE_LIMIT }, mood: 'starfield' },
+  ]
   const [current, setCurrent] = useState(0)
   const [direction, setDirection] = useState('forward')
   const [transitioning, setTransitioning] = useState(false)
@@ -133,7 +138,7 @@ export default function TheDig({ digData, onClose, chartTitle }) {
         {slides.map((slide, i) => {
           const state = slideState(i)
           if (!state) return null
-          return <DigSlide key={i} slide={slide} state={state} onShare={handleShare} sharing={sharing} />
+          return <DigSlide key={i} slide={slide} state={state} onShare={handleShare} sharing={sharing} onUpgrade={onUpgrade} />
         })}
       </div>
     </div>,

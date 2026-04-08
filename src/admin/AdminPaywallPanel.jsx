@@ -7,7 +7,7 @@ export default function AdminPaywallPanel() {
   const [purchases, setPurchases] = useState([])
   const [saving,    setSaving]    = useState(null) // key being saved
   const [newProduct, setNewProduct] = useState({ key: '', name: '', stripePriceId: '', amountCents: '' })
-  const [newCode,    setNewCode]    = useState({ code: '', tier: 'premium' })
+  const [newCode,    setNewCode]    = useState({ code: '', tier: 'premium', max_uses: '', expires_at: '' })
 
   useEffect(() => {
     fetchPaywallConfig().then(c => { if (c && typeof c === 'object') setConfig(c) })
@@ -60,8 +60,11 @@ export default function AdminPaywallPanel() {
 
   function addPromoCode() {
     if (!newCode.code.trim()) return
-    save('promo_codes', [...promoCodes, { code: newCode.code.trim(), tier: newCode.tier, active: true }])
-    setNewCode({ code: '', tier: 'premium' })
+    const entry = { code: newCode.code.trim(), tier: newCode.tier, active: true, uses: 0 }
+    if (newCode.max_uses) entry.max_uses = parseInt(newCode.max_uses, 10)
+    if (newCode.expires_at) entry.expires_at = newCode.expires_at
+    save('promo_codes', [...promoCodes, entry])
+    setNewCode({ code: '', tier: 'premium', max_uses: '', expires_at: '' })
   }
 
   return (
@@ -165,13 +168,15 @@ export default function AdminPaywallPanel() {
         {promoCodes.length > 0 && (
           <table className="admin-paywall-table">
             <thead>
-              <tr><th>Code</th><th>Tier</th><th>Active</th><th></th></tr>
+              <tr><th>Code</th><th>Tier</th><th>Uses</th><th>Expires</th><th>Active</th><th></th></tr>
             </thead>
             <tbody>
               {promoCodes.map((p, i) => (
                 <tr key={i} style={{ opacity: p.active === false ? 0.4 : 1 }}>
                   <td className="admin-paywall-mono">{p.code}</td>
                   <td>{p.tier}</td>
+                  <td>{p.uses ?? 0}{p.max_uses ? `/${p.max_uses}` : ''}</td>
+                  <td style={{ fontSize: '0.65rem' }}>{p.expires_at ? new Date(p.expires_at).toLocaleDateString() : '—'}</td>
                   <td>
                     <button
                       type="button"
@@ -195,6 +200,8 @@ export default function AdminPaywallPanel() {
           <select value={newCode.tier} onChange={e => setNewCode(p => ({ ...p, tier: e.target.value }))} style={{ background: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', padding: '0.3rem' }}>
             <option value="premium">Premium</option>
           </select>
+          <input type="number" placeholder="Max uses (empty = unlimited)" min="1" value={newCode.max_uses} onChange={e => setNewCode(p => ({ ...p, max_uses: e.target.value }))} style={{ width: '120px' }} />
+          <input type="date" value={newCode.expires_at} onChange={e => setNewCode(p => ({ ...p, expires_at: e.target.value }))} title="Expiration date (optional)" style={{ background: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', padding: '0.3rem' }} />
           <button type="button" onClick={addPromoCode} disabled={!newCode.code.trim()}>Add</button>
         </div>
       </div>

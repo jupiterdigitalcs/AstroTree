@@ -453,39 +453,45 @@ export function buildDigSummaryHtml(digData, slides, chartTitle) {
   let rows = ''
   for (const s of contentSlides) {
     if (s.type === 'vibeCheck') {
-      rows += `<div style="margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.4);margin-bottom:4px">Family Vibe</div><div style="font-size:16px;color:#c9a84c">${s.data.dominant} ${s.data.dominantModality}</div></div>`
+      const missing = s.data.missingElements?.length > 0 ? ` · Missing: ${s.data.missingElements.join(', ')}` : ''
+      rows += row('Family Vibe', `${s.data.dominant} ${s.data.dominantModality}`, `Dominant element: ${s.data.dominant} · ${s.data.dominantModality} energy${missing}`)
     } else if (s.type === 'superlative') {
-      rows += `<div style="margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.4);margin-bottom:4px">${s.data.title}</div><div style="font-size:14px;color:#e8dcc8">${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}</div><div style="font-size:11px;color:rgba(255,255,255,0.35)">${s.data.sub}</div></div>`
+      rows += row(s.data.title, `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}`, `${s.data.sub} · ${s.data.score} of ${s.data.total} placements in ${s.data.node.data?.element}`)
     } else if (s.type === 'emotionalForecast') {
-      rows += `<div style="margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.4);margin-bottom:4px">The Empath</div><div style="font-size:14px;color:#e8dcc8">☽ ${s.data.node.data?.name || '—'}</div><div style="font-size:11px;color:rgba(255,255,255,0.35)">${s.data.moonVibe}</div></div>`
+      rows += row('The Empath', `☽ ${s.data.node.data?.name || '—'}`, `${s.data.node.data?.moonSign} Moon — ${s.data.moonVibe}`)
     } else if (s.type === 'cosmicDuo') {
       const b = s.data.bond
-      rows += `<div style="margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.4);margin-bottom:4px">Cosmic Duo</div><div style="font-size:14px;color:#e8dcc8">${b.nameA || '—'} + ${b.nameB || '—'}</div><div style="font-size:11px;color:rgba(255,255,255,0.35)">${b.title || ''}</div></div>`
+      rows += row('Cosmic Duo', `${b.nameA || '—'} + ${b.nameB || '—'}`, `${b.title || 'Strongest cosmic bond in the chart'}${s.data.totalBonds > 1 ? ` · ${s.data.totalBonds} total bonds found` : ''}`)
     } else if (s.type === 'wildcard') {
-      rows += `<div style="margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.4);margin-bottom:4px">The Wildcard</div><div style="font-size:14px;color:#e8dcc8">${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}</div><div style="font-size:11px;color:rgba(255,255,255,0.35)">Zero ${s.data.familyElement} energy</div></div>`
+      rows += row('The Wildcard', `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}`, `The one who breaks the mold — zero ${s.data.familyElement} energy in a ${s.data.familyElement}-dominant family`)
     } else if (s.type === 'cosmicDNA') {
       const t = s.data.thread
-      rows += `<div style="margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.4);margin-bottom:4px">Cosmic DNA</div><div style="font-size:14px;color:#e8dcc8">${SYM[t.sign] || ''} The ${t.sign} Gene</div><div style="font-size:11px;color:rgba(255,255,255,0.35)">${(t.chain || t.members || []).map(m => typeof m === 'string' ? m : m.name).join(' → ')}</div></div>`
+      const chain = (t.chain || t.members || []).map(m => typeof m === 'string' ? m : m.name).join(' → ')
+      rows += row('Cosmic DNA', `${SYM[t.sign] || ''} The ${t.sign} Gene`, `${chain}${s.data.totalThreads > 1 ? ` · ${s.data.totalThreads} zodiac threads running through the family` : ''}`)
     } else if (s.type === 'glue') {
-      rows += row('The Glue', `${s.data.node.data?.name || '—'} — ${s.data.connectionCount} connections`)
+      rows += row('The Glue', `${s.data.node.data?.name || '—'}`, `${s.data.connectionCount} connections — the person holding everyone together`)
     } else if (s.type === 'elementClash') {
-      rows += row('Element Clash', `${s.data.nodeA.data?.name} vs ${s.data.nodeB.data?.name}`, `${s.data.elementA} meets ${s.data.elementB}`)
+      rows += row('Element Clash', `${s.data.nodeA.data?.name} vs ${s.data.nodeB.data?.name}`, `${s.data.elementA} meets ${s.data.elementB} — the most cosmically opposed pair`)
     } else if (s.type === 'clone') {
-      rows += row('The Clone', `${s.data.nodeA.data?.name} & ${s.data.nodeB.data?.name}`, `${s.data.matchCount} matching placements`)
+      rows += row('The Clone', `${s.data.nodeA.data?.name} & ${s.data.nodeB.data?.name}`, `${s.data.matchCount} matching placements — ${s.data.matches.join(', ')}`)
     } else if (s.type === 'venusVibes') {
-      rows += row('Venus Vibes', `♀ ${s.data.node.data?.name}`, `Venus in ${s.data.node.data?.innerPlanets?.venus?.sign}`)
+      const venusSign = s.data.node.data?.innerPlanets?.venus?.sign
+      rows += row('Venus Vibes', `♀ ${s.data.node.data?.name}`, `Venus in ${venusSign} — how they love and what they value`)
     } else if (s.type === 'marsEnergy') {
-      rows += row('Mars Energy', `♂ ${s.data.node.data?.name}`, `Mars in ${s.data.node.data?.innerPlanets?.mars?.sign}`)
+      const marsSign = s.data.node.data?.innerPlanets?.mars?.sign
+      rows += row('Mars Energy', `♂ ${s.data.node.data?.name}`, `Mars in ${marsSign} — how they fight, chase, and get things done`)
     } else if (s.type === 'moonMirror') {
-      rows += row('Moon Mirror', `${s.data.nodeA.data?.name} & ${s.data.nodeB.data?.name}`, `Shared ${s.data.moonSign} Moon`)
+      rows += row('Moon Mirror', `${s.data.nodeA.data?.name} & ${s.data.nodeB.data?.name}`, `Both carry a ${s.data.moonSign} Moon — emotional twins`)
     } else if (s.type === 'oldSoul') {
-      rows += row('The Old Soul', `${s.data.node.data?.name}`, `${s.data.earthCount} Earth placements`)
+      rows += row('The Old Soul', `${s.data.node.data?.name}`, `${s.data.earthCount} Earth placements — the most grounded person in the chart`)
     } else if (s.type === 'rebel') {
-      rows += row('The Rebel', `${s.data.node.data?.name}`, `${s.data.airCount} Air placements`)
+      rows += row('The Rebel', `${s.data.node.data?.name}`, `${s.data.airCount} Air placements — the most independent thinker`)
     } else if (s.type === 'genBridge') {
-      rows += row('Generational Bridge', `${s.data.parent.data?.name} → ${s.data.child.data?.name}`, `${s.data.sign} passed down`)
+      rows += row('Generational Bridge', `${s.data.parent.data?.name} → ${s.data.child.data?.name}`, `${SYM[s.data.sign] || ''} ${s.data.sign} energy passed from ${s.data.parentPlanet} to ${s.data.childPlanet}`)
     } else if (s.type === 'rareOne') {
-      rows += row('The Rare One', `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name}`, `Only ${s.data.node.data?.sign} in the chart`)
+      rows += row('The Rare One', `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name}`, `The only ${s.data.node.data?.sign} in a chart of ${s.data.totalMembers}`)
+    } else if (s.type === 'paywall') {
+      // Skip paywall slide in summary export
     }
   }
   const stats = `<div style="display:flex;gap:24px;margin:16px 0"><div style="text-align:center"><span style="font-size:24px;color:#c9a84c">${digData.memberCount}</span><div style="font-size:10px;color:rgba(255,255,255,0.35)">members</div></div>${(digData.topBonds?.length ?? 0) > 0 ? `<div style="text-align:center"><span style="font-size:24px;color:#b8a0d4">${digData.topBonds.length}</span><div style="font-size:10px;color:rgba(255,255,255,0.35)">bonds</div></div>` : ''}${(digData.signThreadList?.length ?? 0) > 0 ? `<div style="text-align:center"><span style="font-size:24px;color:#5bc8f5">${digData.signThreadList.length}</span><div style="font-size:10px;color:rgba(255,255,255,0.35)">threads</div></div>` : ''}</div>`

@@ -170,6 +170,24 @@
   .bottom-tab:hover:not(:disabled):not(.active) { color: var(--text-soft); }
   .bottom-tab.active  { color: var(--gold); }
   .bottom-tab:disabled { opacity: 0.3; cursor: default; }
+  .bottom-tab-wrap { position: relative; display: inline-flex; }
+  .tab-hint--bottom {
+    display: block;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.15rem 0.4rem;
+    z-index: 20;
+    pointer-events: none;
+    margin-bottom: 4px;
+  }
   /* Jupiter SVG icon: dim when inactive, full when active */
   .bottom-tab svg        { opacity: 0.45; transition: opacity 0.15s; }
   .bottom-tab:hover svg  { opacity: 0.75; }

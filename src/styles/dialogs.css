@@ -199,6 +199,23 @@
   background: rgba(201,168,76,0.35) !important;
 }
 
+.upgrade-price {
+  text-align: center;
+  margin: 0.8rem 0 0.4rem;
+}
+.upgrade-price-amount {
+  font-family: Cinzel, serif;
+  font-size: 1.6rem;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+}
+.upgrade-price-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-top: 0.15rem;
+}
+
 .upgrade-error {
   font-size: 0.75rem;
   color: #e87070;

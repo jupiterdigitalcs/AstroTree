@@ -16,6 +16,7 @@ import SlideOldSoul from './slides/SlideOldSoul.jsx'
 import SlideRebel from './slides/SlideRebel.jsx'
 import SlideGenBridge from './slides/SlideGenBridge.jsx'
 import SlideRareOne from './slides/SlideRareOne.jsx'
+import SlidePaywall from './slides/SlidePaywall.jsx'
 
 const SLIDE_COMPONENTS = {
   intro: SlideIntro,
@@ -36,9 +37,10 @@ const SLIDE_COMPONENTS = {
   rebel: SlideRebel,
   genBridge: SlideGenBridge,
   rareOne: SlideRareOne,
+  paywall: SlidePaywall,
 }
 
-export default function DigSlide({ slide, state, onShare, sharing }) {
+export default function DigSlide({ slide, state, onShare, sharing, onUpgrade }) {
   const Component = SLIDE_COMPONENTS[slide.type]
   if (!Component) return null
 
@@ -52,8 +54,8 @@ export default function DigSlide({ slide, state, onShare, sharing }) {
   return (
     <div className={className}>
       <div className={`dig-bg dig-bg--${slide.mood}`} />
-      <Component data={slide.data} active={state === 'active'} onShare={onShare} sharing={sharing} />
-      {slide.type !== 'intro' && onShare && (
+      <Component data={slide.data} active={state === 'active'} onShare={onShare} sharing={sharing} onUpgrade={onUpgrade} />
+      {slide.type !== 'intro' && slide.type !== 'paywall' && onShare && (
         <button
           type="button"
           className="dig-slide-share"

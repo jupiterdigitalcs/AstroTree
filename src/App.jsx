@@ -197,6 +197,13 @@ export default function App() {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Show email capture after onboarding completes (insights seen) ────────
+  useEffect(() => {
+    if (insightsSeen && !viewOnly && !hasBeenAsked() && isCloudEnabled()) {
+      setShowEmailCapture(true)
+    }
+  }, [insightsSeen]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Auto-dismiss connect prompt once first edge is added ─────────────────
   useEffect(() => {
     if (edges.length > 0 && showConnectPrompt) setShowConnectPrompt(false)
@@ -285,7 +292,6 @@ export default function App() {
       setSavedChartId(id)
       setSavedToast(true)
       setTimeout(() => setSavedToast(false), 4000)
-      if (!hasBeenAsked() && isCloudEnabled()) setShowEmailCapture(true)
     }
   }
 
@@ -411,11 +417,14 @@ export default function App() {
               className={`top-nav-tab${!panelOpen ? ' active' : ''}`}
               onClick={() => goTab('tree')}
             >☽ Charts</button>
-            <button
-              className={`top-nav-tab${activeTab === 'insights' && !editingNodeId ? ' active' : ''}`}
-              onClick={() => goTab('insights')}
-              disabled={nodes.length < 2}
-            >✦ Insights{entitlements?.tier === 'premium' && <span className="pro-tag pro-tag--subtle">PRO</span>}</button>
+            <span className="top-nav-tab-wrap">
+              <button
+                className={`top-nav-tab${activeTab === 'insights' && !editingNodeId ? ' active' : ''}`}
+                onClick={() => goTab('insights')}
+                disabled={nodes.length < 2}
+              >✦ Insights{entitlements?.tier === 'premium' && <span className="pro-tag pro-tag--subtle">PRO</span>}</button>
+              {nodes.length < 2 && <span className="tab-hint">Add {2 - nodes.length} more {nodes.length === 1 ? 'person' : 'people'} to unlock</span>}
+            </span>
             <button
               className={`top-nav-tab${activeTab === 'charts' && !editingNodeId ? ' active' : ''}`}
               onClick={() => goTab('charts')}
@@ -426,7 +435,7 @@ export default function App() {
             ><JupiterIcon size={14} /> About</button>
           </nav>
           <div className="top-nav-right">
-            {nodes.length >= 3 && edges.length > 0 && canAccess('advanced_insights', entitlements?.tier, entitlements?.config) && (
+            {nodes.length >= 3 && edges.length > 0 && (
               <button
                 type="button"
                 className="top-nav-dig-cta"
@@ -440,7 +449,7 @@ export default function App() {
       {topNavMode && nodes.length > 0 && !panelOpen && (
         <nav className="top-subnav" aria-label="Chart type">
           <div className="top-subnav-brand">Cosmic Connections</div>
-          <button className={`top-subnav-btn${treeView === 'tree' ? ' active' : ''}`} onClick={() => { setTreeView('tree'); goTab('tree') }}>🌳 Tree</button>
+          <button className={`top-subnav-btn${treeView === 'tree' ? ' active' : ''}`} onClick={() => { setTreeView('tree'); goTab('tree') }}>🌳 Family Tree</button>
           <button className={`top-subnav-btn${treeView === 'constellation' ? ' active' : ''}`} onClick={() => { setTreeView('constellation'); goTab('tree') }}>✦ Constellation</button>
           <button className={`top-subnav-btn${treeView === 'zodiac' ? ' active' : ''}`} onClick={() => { setTreeView('zodiac'); goTab('tree') }}>☉ Zodiac{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">PRO</span> : !canAccess('zodiac_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
           <button className={`top-subnav-btn${treeView === 'tables' ? ' active' : ''}`} onClick={() => { setTreeView('tables'); goTab('tree') }}>☽ Tables{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">PRO</span> : !canAccess('tables_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
@@ -452,8 +461,8 @@ export default function App() {
           <button className={`top-subnav-btn${insightsTab === 'insights' ? ' active' : ''}`} onClick={() => setInsightsTab('insights')}>✦ Insights</button>
           <button
             className={`top-subnav-btn${insightsTab === 'dig' ? ' active' : ''}`}
-            onClick={() => { if (canAccess('advanced_insights', entitlements?.tier, entitlements?.config)) { setInsightsTab('dig') } else { setShowUpgradePrompt(true) } }}
-          >✦ The DIG{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">PRO</span> : <span className="tab-lock-icon">🔒</span>}</button>
+            onClick={() => setInsightsTab('dig')}
+          >✦ The DIG{entitlements?.tier === 'premium' && <span className="pro-tag pro-tag--subtle">PRO</span>}</button>
         </nav>
       )}
       {topNavMode && panelOpen && (
@@ -739,7 +748,7 @@ export default function App() {
               <button type="button" className="footer-about-link" onClick={() => goTab('about')}>About</button>
               {' · '}
               <a href="https://jupiterdigitalevents.com" className="footer-external-link" target="_blank" rel="noopener noreferrer">Events ↗</a>
-              {nodes.length >= 3 && edges.length > 0 && canAccess('advanced_insights', entitlements?.tier, entitlements?.config) && (<>
+              {nodes.length >= 3 && edges.length > 0 && (<>
                 {' · '}
                 <button type="button" className="footer-about-link footer-dig-link" onClick={() => { setInsightsTab('dig'); goTab('insights') }}>✦ The DIG</button>
               </>)}
@@ -753,9 +762,10 @@ export default function App() {
           </div>
           {entitlements && (
             <div style={{ marginTop: '0.4rem', textAlign: 'center' }}>
-              {entitlements?.tier === 'premium' ? (
+              {entitlements?.tier === 'premium' ? (<>
                 <span className="tier-badge tier-badge--premium">✦ Premium</span>
-              ) : (
+                {(() => { try { const e = localStorage.getItem('astrotree_user_email'); return e ? <span className="tier-email">{e}</span> : null } catch { return null } })()}
+              </>) : (
                 <button type="button" className="tier-badge tier-badge--free" onClick={() => setShowUpgradePrompt(true)} style={{ cursor: 'pointer', background: 'none' }}>
                   Free Plan · Upgrade
                 </button>
@@ -789,19 +799,22 @@ export default function App() {
           </span>
           <span className="bottom-tab-label">Chart</span>
         </button>
-        <button
-          className={`bottom-tab${activeTab === 'insights' && !editingNodeId ? ' active' : ''}`}
-          onClick={() => goTab('insights')}
-          disabled={nodes.length < 2}
-        >
-          <span className="bottom-tab-icon" style={{ position: 'relative', display: 'inline-flex' }}>
-            ☍
-            {newEdgesForInsights > 0 && (
-              <span className="bottom-tab-badge">{newEdgesForInsights}</span>
-            )}
-          </span>
-          <span className="bottom-tab-label">Insights</span>
-        </button>
+        <span className="bottom-tab-wrap">
+          <button
+            className={`bottom-tab${activeTab === 'insights' && !editingNodeId ? ' active' : ''}`}
+            onClick={() => goTab('insights')}
+            disabled={nodes.length < 2}
+          >
+            <span className="bottom-tab-icon" style={{ position: 'relative', display: 'inline-flex' }}>
+              ☍
+              {newEdgesForInsights > 0 && (
+                <span className="bottom-tab-badge">{newEdgesForInsights}</span>
+              )}
+            </span>
+            <span className="bottom-tab-label">Insights</span>
+          </button>
+          {nodes.length < 2 && nodes.length > 0 && <span className="tab-hint tab-hint--bottom">Add {2 - nodes.length} more to unlock</span>}
+        </span>
         <button
           className={`bottom-tab${activeTab === 'charts' && !editingNodeId ? ' active' : ''}`}
           onClick={() => goTab('charts')}
@@ -888,7 +901,7 @@ export default function App() {
               className={`tree-view-btn${treeView === 'tree' ? ' tree-view-btn--active' : ''}`}
               onClick={() => setTreeView('tree')}
             >
-              🌳 Tree
+              🌳 Family Tree
             </button>
             <button
               type="button"
@@ -979,6 +992,10 @@ export default function App() {
             >
               Save a copy
             </button>
+            {' · '}
+            <a href="/" className="view-only-cta">
+              ✦ Create Your Own Chart
+            </a>
           </div>
         )}
 

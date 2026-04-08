@@ -15,10 +15,21 @@ export async function POST(request) {
     const { data: row } = await sb.from('paywall_config').select('value').eq('key', 'promo_codes').single()
     const promoCodes = row?.value ?? []
     // Each code: { code: string, tier: string, active: boolean }
-    const match = promoCodes.find(p => p.code === code && p.active !== false)
+    const matchIdx = promoCodes.findIndex(p => p.code === code && p.active !== false)
+    const match = matchIdx >= 0 ? promoCodes[matchIdx] : null
 
     if (!match) {
       return NextResponse.json({ ok: false, error: 'Invalid code' }, { status: 400 })
+    }
+
+    // Check expiration
+    if (match.expires_at && new Date(match.expires_at) < new Date()) {
+      return NextResponse.json({ ok: false, error: 'This code has expired' }, { status: 400 })
+    }
+
+    // Check usage limit
+    if (match.max_uses && (match.uses ?? 0) >= match.max_uses) {
+      return NextResponse.json({ ok: false, error: 'This code has reached its usage limit' }, { status: 400 })
     }
 
     const tier = match.tier || 'premium'
@@ -34,6 +45,10 @@ export async function POST(request) {
     if (error) {
       return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
     }
+
+    // Increment usage counter on the promo code
+    promoCodes[matchIdx] = { ...match, uses: (match.uses ?? 0) + 1 }
+    await sb.from('paywall_config').update({ value: promoCodes }).eq('key', 'promo_codes')
 
     // Log the redemption as a purchase record for admin visibility
     await sb.from('purchases').insert({
