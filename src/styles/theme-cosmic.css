@@ -988,38 +988,56 @@
 
 /* ── Mobile overrides for cosmic bottom nav height ───────────────────────── */
 @media (max-width: 768px) {
-  .app--cosmic .canvas-panel-btns {
-    top: auto;
-    bottom: calc(64px + env(safe-area-inset-bottom) + 0.75rem);
-    right: 0.75rem;
-  }
-
-  .app--cosmic .react-flow__controls {
-    bottom: calc(64px + env(safe-area-inset-bottom) + 0.5rem) !important;
-    left: 0.75rem !important;
-  }
-
-  .app--cosmic .cosmic-dig-fab {
-    bottom: calc(64px + env(safe-area-inset-bottom) + 3.5rem);
-    left: 0.75rem;
-  }
-
-  .app--cosmic .chart-view-explain {
-    bottom: calc(64px + env(safe-area-inset-bottom) + 0.5rem);
-    max-width: min(300px, calc(100% - 6rem));
-    font-size: 0.72rem;
-    padding: 0.35rem 0.65rem;
-  }
-
+  /* Canvas fills above bottom nav */
   .app--cosmic .canvas {
     height: calc(100dvh - 64px - env(safe-area-inset-bottom)) !important;
   }
 
-  /* Show share button on mobile in cosmic mode */
+  /* Action buttons — top right corner on mobile (clear of zoom controls) */
+  .app--cosmic .canvas-panel-btns {
+    top: 3.2rem;
+    bottom: auto;
+    right: 0.6rem;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.3rem;
+  }
+
+  /* Zoom controls — bottom left */
+  .app--cosmic .react-flow__controls {
+    bottom: 0.75rem !important;
+    left: 0.6rem !important;
+  }
+
+  /* DIG FAB — bottom right, above nothing */
+  .app--cosmic .cosmic-dig-fab {
+    bottom: 0.75rem;
+    right: 0.6rem;
+    left: auto;
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+
+  /* Chart explanation — centered above bottom nav */
+  .app--cosmic .chart-view-explain {
+    bottom: auto;
+    top: 0.5rem;
+    left: 0.6rem;
+    right: auto;
+    transform: none;
+    max-width: min(220px, 50vw);
+    font-size: 0.68rem;
+    padding: 0.3rem 0.55rem;
+    text-align: left;
+  }
+
+  /* Show share/invite button on mobile */
   .app--cosmic .relayout-btn--sharelink {
     display: flex !important;
   }
 
+  /* Hide canvas brand on mobile */
   .app--cosmic .canvas-brand {
     display: none;
   }
@@ -1064,9 +1082,27 @@
   background: rgba(10, 13, 26, 0.8);
 }
 
-/* ── Hide internal insights subnav and duplicate header in sheets ─────── */
+/* ── Style insights subnav as pills in cosmic mode ───────────────────── */
 .app--cosmic .insights-subnav {
-  display: none !important;
+  display: flex !important;
+  gap: 0.3rem;
+  padding: 0.15rem;
+  background: rgba(10, 13, 26, 0.6);
+  border: 1px solid var(--a-glass-edge);
+  border-radius: var(--radius-pill);
+  margin-bottom: 0.5rem;
+}
+
+.app--cosmic .insights-subnav-btn {
+  border-radius: var(--radius-pill) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.8rem;
+}
+
+.app--cosmic .insights-subnav-btn.active {
+  background: var(--a-gold-glow);
+  color: var(--a-gold-soft);
 }
 
 /* Hide the duplicate title but keep the export button visible */

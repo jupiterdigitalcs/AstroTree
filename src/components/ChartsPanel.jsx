@@ -226,21 +226,20 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
 
       {/* ── Chart ideas ───────────────────────────────────────────────── */}
       <div className="chart-ideas">
-        <p className="chart-ideas-title">✦ Ideas for more charts</p>
-        <p className="chart-ideas-sub">
-          Each chart is its own view — duplicate an existing one and reshape it to explore a different lens.
-        </p>
-        <ul className="chart-ideas-list">
-          <li><span className="chart-ideas-icon">🌳</span><span><strong>Go back as far as you can</strong> — add grandparents, great-grandparents, ancestors — the deeper you go, the richer the generational patterns</span></li>
-          <li><span className="chart-ideas-icon">🌱</span><span><strong>One generation</strong> — just siblings &amp; cousins, or just the parents &amp; grandparents</span></li>
-          <li><span className="chart-ideas-icon">⎘</span><span><strong>Family without partners</strong> — duplicate a chart and remove partners to see a different lens on the same group</span></li>
-          <li><span className="chart-ideas-icon">👥</span><span><strong>Friend group</strong> — your closest circle, no family required</span></li>
-          <li><span className="chart-ideas-icon">🏢</span><span><strong>Work team</strong> — colleagues, co-founders, or collaborators</span></li>
-        </ul>
         {charts.length > 0 && (
           <p className="chart-ideas-hint">
             Use <strong>⎘</strong> on any chart above to duplicate it, then rename and edit from there.
           </p>
+        )}
+        {charts.length <= 1 && (
+          <>
+            <p className="chart-ideas-title">✦ Ideas for more charts</p>
+            <ul className="chart-ideas-list">
+              <li><span className="chart-ideas-icon">🌳</span><span><strong>Go back as far as you can</strong> — add grandparents, great-grandparents, ancestors</span></li>
+              <li><span className="chart-ideas-icon">👥</span><span><strong>Friend group</strong> — your closest circle, no family required</span></li>
+              <li><span className="chart-ideas-icon">🏢</span><span><strong>Work team</strong> — colleagues, co-founders, or collaborators</span></li>
+            </ul>
+          </>
         )}
         <button type="button" className="add-row-btn chart-ideas-new-btn" onClick={onNew}>
           ＋ New Chart

@@ -152,6 +152,14 @@ export default function App() {
     setFitTick, setEditingNodeId,
   })
 
+  // ── Group vs family label — all edges are friend/coworker ────────────────
+  const isGroupOnly = edges.length > 0 && edges.every(e => {
+    const t = e.data?.relationType
+    return t === 'friend' || t === 'coworker'
+  })
+  const familyLabel = isGroupOnly ? 'Group' : 'Family'
+  const familyLabelLower = isGroupOnly ? 'group' : 'family'
+
   // ── Auto-switch to constellation for friend/coworker-only groups ─────────
   useEffect(() => {
     if (edges.length === 0 || treeView !== 'tree') return
@@ -287,7 +295,7 @@ export default function App() {
 
     // Auto-save on first add when no chart exists yet
     if (wasEmpty && !viewOnly && !savedChartId) {
-      const defaultTitle = `${members[0].name}'s Family`
+      const defaultTitle = `${members[0].name}'s Chart`
       const id = Date.now().toString()
       const chart = { id, title: defaultTitle, nodes: nextNodes, edges: nextEdges, counter: nextCounter, savedAt: new Date().toISOString() }
       saveChart(chart)
@@ -365,7 +373,7 @@ export default function App() {
       {/* ── Premium welcome toast ────────────────────────────────────────── */}
       {premiumToast && (
         <div className="premium-toast">
-          <p className="premium-toast-title">✦ Welcome to Premium!</p>
+          <p className="premium-toast-title">✦ Welcome to Full Chart!</p>
           <p className="premium-toast-sub">Zodiac Wheel, Tables, full Insights, and unlimited charts are now unlocked.</p>
         </div>
       )}
@@ -413,7 +421,7 @@ export default function App() {
             <button
               className={`top-nav-tab${(activeTab === 'add' || !!editingNodeId) ? ' active' : ''}`}
               onClick={() => goTab('add')}
-            >★ Family</button>
+            >★ {familyLabel}</button>
             <button
               className={`top-nav-tab${!panelOpen ? ' active' : ''}`}
               onClick={() => goTab('tree')}
@@ -480,7 +488,7 @@ export default function App() {
               : activeTab === 'insights' ? '✦ Insights'
               : activeTab === 'charts'   ? '🗂️ Saved Charts'
               : activeTab === 'about'    ? <><JupiterIcon size={14} /> About</>
-              : '★ Family'}
+              : `★ ${familyLabel}`}
           </span>
           <button
             type="button"
@@ -615,7 +623,7 @@ export default function App() {
                   {/* Member list header + add more toggle */}
                   <div className="member-list">
                     <div className="member-list-header">
-                      <h3>Your Family · {nodes.length}</h3>
+                      <h3>Your {familyLabel} · {nodes.length}</h3>
                       <span className="member-list-hint">oldest first · tap to connect</span>
                     </div>
 
@@ -681,7 +689,7 @@ export default function App() {
                   {!insightsSeen && nodes.length >= 2 && edges.length > 0 && (
                     <button type="button" className="insights-cta-banner" onClick={() => goTab('insights')}>
                       <span className="insights-cta-icon">✦</span>
-                      <span className="insights-cta-text">Discover your family's cosmic patterns</span>
+                      <span className="insights-cta-text">Discover your {familyLabelLower}'s cosmic patterns</span>
                       <span className="insights-cta-arrow">→</span>
                     </button>
                   )}
@@ -729,7 +737,7 @@ export default function App() {
           {entitlements && (
             <div style={{ marginTop: '0.4rem', textAlign: 'center' }}>
               {entitlements?.tier === 'premium' ? (<>
-                <span className="tier-badge tier-badge--premium">✦ Premium</span>
+                <span className="tier-badge tier-badge--premium">✦ Full Chart</span>
                 {(() => { try { const e = localStorage.getItem('astrotree_user_email'); return e ? <span className="tier-email">{e}</span> : null } catch { return null } })()}
               </>) : (
                 <button type="button" className="tier-badge tier-badge--free" onClick={() => setShowUpgradePrompt(true)} style={{ cursor: 'pointer', background: 'none' }}>
@@ -750,7 +758,7 @@ export default function App() {
           onClick={() => goTab('add')}
         >
           <span className="bottom-tab-icon">★</span>
-          <span className="bottom-tab-label">Family</span>
+          <span className="bottom-tab-label">{familyLabel}</span>
         </button>
         <button
           className={`bottom-tab${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
@@ -822,12 +830,12 @@ export default function App() {
         {showConnectPrompt && edges.length === 0 && nodes.length > 0 && (
           <div className="connect-prompt">
             <span className="connect-prompt-icon">🔗</span>
-            <span>Connect your family members as parents, children, or partners</span>
+            <span>Connect your {familyLabelLower} members as parents, children, or partners</span>
             <button
               type="button"
               className="connect-prompt-action"
               onClick={() => { goTab('add'); setShowConnectPrompt(false) }}
-            >Go to Family →</button>
+            >Go to {familyLabel} →</button>
             <button
               type="button"
               className="connect-prompt-close"
@@ -1087,7 +1095,7 @@ export default function App() {
           {/* Family + Edit member sheet (merged — no flash on transition) */}
           <BottomSheet
             open={isCosmic && (!!editingNodeId || activeTab === 'add')}
-            title={editingNode ? 'Edit Member' : '★ Family'}
+            title={editingNode ? 'Edit Member' : `★ ${familyLabel}`}
             onClose={() => { setEditingNodeId(null); goTab('tree') }}
           >
             {editingNode ? (
@@ -1097,7 +1105,7 @@ export default function App() {
                 className="back-btn"
                 onClick={() => { setEditingNodeId(null); setActiveTab('add') }}
                 style={{ alignSelf: 'flex-start', marginBottom: '0.25rem' }}
-              >← Back to Family</button>
+              >← Back to {familyLabel}</button>
               <EditMemberPanel
                 key={editingNode.id}
                 node={editingNode}
@@ -1147,7 +1155,7 @@ export default function App() {
                   <>
                     <div className="member-list">
                       <div className="member-list-header">
-                        <h3>Your Family · {nodes.length}</h3>
+                        <h3>Your {familyLabel} · {nodes.length}</h3>
                         <span className="member-list-hint">oldest first · tap to connect</span>
                       </div>
                       <div className="add-more-section">
@@ -1158,15 +1166,6 @@ export default function App() {
                       </div>
                       {edges.length === 0 && (
                         <p className="connect-hint-banner">Tap a name below to connect family members on the tree ↓</p>
-                      )}
-
-                      {Object.keys(nodeIngressWarnings).length > 0 && (
-                        <div className="ingress-key">
-                          <span className="ingress-key-icon">⚠</span>
-                          <span className="ingress-key-text">
-                            Sign may depend on birth time — tap the member to add it (optional)
-                          </span>
-                        </div>
                       )}
 
                       {[...nodes].sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999')).map(n => (
@@ -1185,6 +1184,15 @@ export default function App() {
                           )}
                         </div>
                       ))}
+
+                      {Object.keys(nodeIngressWarnings).length > 0 && (
+                        <div className="ingress-key">
+                          <span className="ingress-key-icon">⚠</span>
+                          <span className="ingress-key-text">
+                            Sign may depend on birth time — tap the member to add it (optional)
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="family-bottom-actions">
                       <button type="button" className="family-tree-btn" onClick={handleNewTreeClick}>＋ New Chart</button>
@@ -1251,7 +1259,7 @@ export default function App() {
               onClick={() => goTab('add')}
             >
               <span className="cosmic-bottom-nav-icon">★</span>
-              <span className="cosmic-bottom-nav-label">Family</span>
+              <span className="cosmic-bottom-nav-label">{familyLabel}</span>
             </button>
             <button
               className={`cosmic-bottom-nav-btn${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
