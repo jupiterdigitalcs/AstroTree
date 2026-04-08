@@ -1093,23 +1093,16 @@
     font-size: 0.95rem;
   }
 
-  /* Action bar — bottom right */
+  /* Action bar — bottom right, above zodiac/chart scroll */
   .cosmic-action-bar {
     bottom: 0.6rem;
     right: 0.6rem;
+    z-index: 15;
   }
 
-  /* Chart explanation — below floating pills on mobile */
+  /* Chart explanation — hide on mobile to avoid overlaying charts */
   .app--cosmic .chart-view-explain {
-    bottom: auto;
-    top: 3rem;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    max-width: min(280px, 70vw);
-    font-size: 0.7rem;
-    padding: 0.3rem 0.6rem;
-    text-align: center;
+    display: none;
   }
 
   /* Show share/invite button on mobile */

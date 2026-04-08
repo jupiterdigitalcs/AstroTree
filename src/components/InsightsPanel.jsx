@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
+import { useState, useMemo, lazy, Suspense } from 'react'
 import {
   getElement,
   ELEMENT_COLORS, SIGN_MODALITY, POLARITY_GROUP,
@@ -394,16 +394,10 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements, chartTitle, insightsTab = 'insights', onInsightsTabChange, autoOpenDig }) {
+export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements, chartTitle, insightsTab = 'insights', onInsightsTabChange, showDig, onShowDig, onCloseDig }) {
   const hasAdvanced = canAccess('advanced_insights', entitlements?.tier, entitlements?.config)
   const hasFullDig = canAccess('full_dig', entitlements?.tier, entitlements?.config)
   const hasFullCompat = canAccess('full_compatibility', entitlements?.tier, entitlements?.config)
-  const [showDig, setShowDig] = useState(false)
-
-  // Auto-open DIG overlay when triggered from FAB
-  useEffect(() => {
-    if (autoOpenDig && insightsTab === 'dig' && !showDig) setShowDig(true)
-  }, [autoOpenDig]) // eslint-disable-line react-hooks/exhaustive-deps
   const [digExporting, setDigExporting] = useState(false)
   const isGroupOnly = edges.length > 0 && edges.every(e => {
     const t = e.data?.relationType
@@ -1132,7 +1126,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* ── The DIG overlay ────────────────────────────────────────────── */}
       {showDig && (
         <Suspense fallback={null}>
-          <TheDig digData={digData} onClose={() => setShowDig(false)} chartTitle={chartTitle} isPremium={hasFullDig} onUpgrade={onUpgrade} />
+          <TheDig digData={digData} onClose={onCloseDig} chartTitle={chartTitle} isPremium={hasFullDig} onUpgrade={onUpgrade} />
         </Suspense>
       )}
 
@@ -1161,18 +1155,28 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {/* ── Insights sub-nav (sidebar fallback — top-nav version lives in App.jsx) ── */}
       {edges.length > 0 && (
-        <nav className="insights-subnav">
-          <button
-            type="button"
-            className={`insights-subnav-btn${insightsTab === 'insights' ? ' active' : ''}`}
-            onClick={() => onInsightsTabChange?.('insights')}
-          >✦ Insights</button>
-          <button
-            type="button"
-            className={`insights-subnav-btn${insightsTab === 'dig' ? ' active' : ''}`}
-            onClick={() => onInsightsTabChange?.('dig')}
-          >✦ The DIG{hasAdvanced && <span className="pro-tag pro-tag--subtle">PRO</span>}</button>
-        </nav>
+        <div className="insights-subnav-row">
+          <nav className="insights-subnav">
+            <button
+              type="button"
+              className={`insights-subnav-btn${insightsTab === 'insights' ? ' active' : ''}`}
+              onClick={() => onInsightsTabChange?.('insights')}
+            >✦ Insights</button>
+            <button
+              type="button"
+              className={`insights-subnav-btn${insightsTab === 'dig' ? ' active' : ''}`}
+              onClick={() => onInsightsTabChange?.('dig')}
+            >✦ The DIG{hasAdvanced && <span className="pro-tag pro-tag--subtle">PRO</span>}</button>
+          </nav>
+          {onExport && insightsTab === 'insights' && (
+            <button
+              type="button"
+              className="insights-export-btn--mobile-top"
+              onClick={onExport}
+              disabled={exporting}
+            >{exporting ? '…' : '↓'}</button>
+          )}
+        </div>
       )}
 
       {/* ── The DIG section ────────────────────────────────────────────── */}
@@ -1196,7 +1200,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             <button
               type="button"
               className="dig-launch-btn"
-              onClick={() => setShowDig(true)}
+              onClick={onShowDig}
             >
               ▶ View Your DIG
             </button>

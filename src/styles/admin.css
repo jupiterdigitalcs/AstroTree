@@ -1340,9 +1340,10 @@
   .zodiac-zoom-controls {
     display: flex;
     flex-direction: row;
-    bottom: 0.5rem;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 0.5rem;
+    bottom: auto;
+    left: 0.5rem;
+    transform: none;
   }
   .zodiac-zoom-btn:not(.zodiac-zoom-btn--reset) { display: none; }
   .zodiac-zoom-btn--reset {

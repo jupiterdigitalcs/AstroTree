@@ -91,7 +91,7 @@ export default function App() {
   const [newEdgesForInsights,   setNewEdgesForInsights]   = useState(0)
   const [savedToast,        setSavedToast]        = useState(false)
   const [premiumToast,      setPremiumToast]      = useState(false)
-  const [autoOpenDig,       setAutoOpenDig]       = useState(false)
+  const [showDig,            setShowDig]            = useState(false)
   const [uxMode] = useState(getUxMode) // 'classic' | 'cosmic'
   const isCosmic = uxMode === 'cosmic'
 
@@ -320,7 +320,7 @@ export default function App() {
   function goTab(tab) {
     setActiveTab(tab)
     setEditingNodeId(null)
-    if (tab !== 'insights') setAutoOpenDig(false)
+    if (tab !== 'insights') setShowDig(false)
     if (tab === 'tree') setFitTick(t => t + 1)
     if (tab === 'insights' && edges.length > 0) {
       markInsightsSeen()
@@ -547,6 +547,9 @@ export default function App() {
               chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null}
               insightsTab={insightsTab}
               onInsightsTabChange={setInsightsTab}
+              showDig={showDig}
+              onShowDig={() => setShowDig(true)}
+              onCloseDig={() => setShowDig(false)}
             />
 
           /* ── Saved charts ───────────────────────────────────────────── */
@@ -1010,6 +1013,9 @@ export default function App() {
               chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null}
               insightsTab={insightsTab}
               onInsightsTabChange={setInsightsTab}
+              showDig={showDig}
+              onShowDig={() => setShowDig(true)}
+              onCloseDig={() => setShowDig(false)}
             />
           </div>
         ) : treeView === 'tables' && nodes.length > 0 ? (
@@ -1096,7 +1102,7 @@ export default function App() {
             <button
               type="button"
               className="cosmic-dig-fab"
-              onClick={() => { setInsightsTab('dig'); setAutoOpenDig(true); goTab('insights') }}
+              onClick={() => { setInsightsTab('dig'); setShowDig(true) }}
               title="The DIG"
             >✦</button>
           )}
@@ -1230,7 +1236,9 @@ export default function App() {
               chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null}
               insightsTab={insightsTab}
               onInsightsTabChange={setInsightsTab}
-              autoOpenDig={autoOpenDig}
+              showDig={showDig}
+              onShowDig={() => setShowDig(true)}
+              onCloseDig={() => setShowDig(false)}
             />
           </BottomSheet>
 
@@ -1308,7 +1316,7 @@ export default function App() {
             >
               <span className="cosmic-bottom-nav-icon"><JupiterIcon size={22} /></span>
               <span className="cosmic-bottom-nav-label">
-                {entitlements?.tier === 'premium' ? '✦ Full Chart' : 'About'}
+                About
               </span>
             </button>
           </nav>

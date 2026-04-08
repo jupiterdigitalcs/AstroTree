@@ -261,6 +261,37 @@
 /* Keeps the button pinned right in the header row; visual style comes from relayout-btn--share */
 .insights-export-btn { flex-shrink: 0; }
 
+/* ── Subnav row — holds subnav + mobile download button ──────────────── */
+.insights-subnav-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.insights-subnav-row .insights-subnav { flex: 1; }
+
+/* Mobile-top download button — hidden on desktop, compact circle on mobile */
+.insights-export-btn--mobile-top {
+  display: none;
+}
+@media (max-width: 768px) {
+  .insights-export-btn--mobile-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: rgba(10, 13, 26, 0.6);
+    color: var(--gold-light, #c9a84c);
+    font-size: 0.85rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+  }
+  .insights-export-btn--mobile-top:disabled { opacity: 0.4; }
+}
+
 /* Export button label switching — desktop shows download, mobile shows share */
 .export-label-mobile { display: none; }
 @media (max-width: 768px) {

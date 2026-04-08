@@ -638,13 +638,15 @@
 /* ── Watermark — visible branding ─────────────────────────────────────── */
 .dig-watermark {
   position: absolute;
-  bottom: 0.8rem;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 1rem;
+  right: 1rem;
+  left: auto;
+  bottom: auto;
+  transform: none;
   font-family: 'Plus Jakarta Sans', 'Raleway', sans-serif;
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.3);
-  letter-spacing: 0.03em;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.18);
+  letter-spacing: 0.06em;
   white-space: nowrap;
   z-index: 5;
   pointer-events: none;
