@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { updateDeviceEmail } from '../utils/cloudStorage.js'
+import { DialogBackdrop } from './DialogBackdrop.jsx'
 
 const ASKED_KEY = 'astrotree_email_asked'
 const EMAIL_KEY = 'astrotree_user_email'
@@ -53,8 +54,8 @@ export function EmailCapture({ onDismiss }) {
   }
 
   return (
-    <div className="save-dialog-backdrop" onClick={handleDismiss}>
-      <div className="email-capture" onClick={e => e.stopPropagation()}>
+    <DialogBackdrop onClose={handleDismiss}>
+      <div className="email-capture">
         <p className="email-capture-title">Want to know when new features or services ship?</p>
         <p className="email-capture-sub">
           Drop your email — no spam, just occasional updates from Jupiter Digital.
@@ -87,6 +88,6 @@ export function EmailCapture({ onDismiss }) {
           </div>
         </form>
       </div>
-    </div>
+    </DialogBackdrop>
   )
 }

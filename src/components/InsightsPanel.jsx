@@ -405,49 +405,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     return t === 'friend' || t === 'coworker'
   })
   const panelTitle = isGroupOnly ? 'Group Insights' : 'Family Insights'
-
-  if (nodes.length < 2) {
-    return (
-      <div className="insights-panel">
-        <h2 className="form-title">✦ {panelTitle}</h2>
-        <p className="bulk-hint">Add at least two members to reveal your celestial patterns.</p>
-        <div className="insight-card insight-coming-soon">
-          <h3 className="insight-heading">What you'll unlock</h3>
-          <p className="insight-note">🔥 <strong>Elemental makeup</strong> — which elements dominate your group</p>
-          <p className="insight-note">♊ <strong>Shared signs</strong> — who carries the same cosmic energy</p>
-          <p className="insight-note">💞 <strong>Partner harmony</strong> — elemental compatibility for couples</p>
-          <p className="insight-note">🔁 <strong>Sign &amp; element threads</strong> — cosmic patterns across generations</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (edges.length === 0) {
-    return (
-      <div className="insights-panel">
-        <h2 className="form-title">✦ {panelTitle}</h2>
-        <div className="insight-card insight-connect-prompt">
-          <h3 className="insight-heading">One step away</h3>
-          <p className="insight-note">
-            Your members are in — now <strong>connect them</strong> to unlock partner harmony, sign threads, compatibility scores, and more.
-          </p>
-          {(onEditFirst || onAddMore) && (
-            <button type="button" className="insights-connect-cta" onClick={onEditFirst ?? onAddMore}>
-              <span>★</span>
-              <span>Edit {nodes[0]?.data?.name ?? 'First Member'} to Add Connections</span>
-              <span>→</span>
-            </button>
-          )}
-          <div className="insights-unlock-list">
-            <span>💞 Partner harmony</span>
-            <span>🔁 Zodiac sign threads</span>
-            <span>✨ Notable bonds</span>
-            <span>🌿 Generational patterns</span>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const tooFewNodes = nodes.length < 2
+  const noEdges = !tooFewNodes && edges.length === 0
 
   // ── Sun element breakdown (display only) ─────────────────────────────────────
   const elementCounts = Object.fromEntries(ELEMENTS.map(e => [e, 0]))
@@ -1120,6 +1079,49 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     }
   }, [nodes, edges, dominant, dominantModality, masculine, feminine, total, missingElements, topBonds, signThreadList, memberRoles, couples, isGroupOnly])
 
+  if (tooFewNodes) {
+    return (
+      <div className="insights-panel">
+        <h2 className="form-title">✦ {panelTitle}</h2>
+        <p className="bulk-hint">Add at least two members to reveal your celestial patterns.</p>
+        <div className="insight-card insight-coming-soon">
+          <h3 className="insight-heading">What you'll unlock</h3>
+          <p className="insight-note">🔥 <strong>Elemental makeup</strong> — which elements dominate your group</p>
+          <p className="insight-note">♊ <strong>Shared signs</strong> — who carries the same cosmic energy</p>
+          <p className="insight-note">💞 <strong>Partner harmony</strong> — elemental compatibility for couples</p>
+          <p className="insight-note">🔁 <strong>Sign &amp; element threads</strong> — cosmic patterns across generations</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (noEdges) {
+    return (
+      <div className="insights-panel">
+        <h2 className="form-title">✦ {panelTitle}</h2>
+        <div className="insight-card insight-connect-prompt">
+          <h3 className="insight-heading">One step away</h3>
+          <p className="insight-note">
+            Your members are in — now <strong>connect them</strong> to unlock partner harmony, sign threads, compatibility scores, and more.
+          </p>
+          {(onEditFirst || onAddMore) && (
+            <button type="button" className="insights-connect-cta" onClick={onEditFirst ?? onAddMore}>
+              <span>★</span>
+              <span>Edit {nodes[0]?.data?.name ?? 'First Member'} to Add Connections</span>
+              <span>→</span>
+            </button>
+          )}
+          <div className="insights-unlock-list">
+            <span>💞 Partner harmony</span>
+            <span>🔁 Zodiac sign threads</span>
+            <span>✨ Notable bonds</span>
+            <span>🌿 Generational patterns</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="insights-panel">
       {/* ── The DIG overlay ────────────────────────────────────────────── */}
@@ -1756,6 +1758,19 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           </a>
         )}
       </div>
+
+      {/* Bottom download button */}
+      {onExport && insightsTab === 'insights' && (
+        <button
+          type="button"
+          className="relayout-btn relayout-btn--share insights-export-btn insights-export-btn--bottom"
+          onClick={onExport}
+          disabled={exporting}
+          style={{ width: '100%', marginTop: '0.5rem' }}
+        >
+          {exporting ? '…' : '↓ Download Insights'}
+        </button>
+      )}
 
       {/* Brand footer — hidden normally, shown during export */}
       <div className="insights-brand-footer">

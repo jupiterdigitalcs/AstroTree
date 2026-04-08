@@ -1,0 +1,1125 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Theme: Aurora Glass
+   Luminous glass surfaces with warm color washes. Instrument Serif headings
+   with Plus Jakarta Sans body. Deep navy base with amber, rose, and violet
+   glow-through. Everything feels softly lit from within.
+   Scoped to .app--cosmic
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Animated gradient for borders ───────────────────────────────────────── */
+@property --glow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes glow-spin {
+  to { --glow-angle: 360deg; }
+}
+
+/* ── Palette ─────────────────────────────────────────────────────────────── */
+.app--cosmic {
+  --a-deep:        #0a0d1a;
+  --a-surface:     rgba(18, 16, 36, 0.75);
+  --a-surface-solid: #12101e;
+  --a-glass:       rgba(28, 24, 52, 0.55);
+  --a-glass-edge:  rgba(255, 255, 255, 0.06);
+
+  --a-gold:        #d4a84c;
+  --a-gold-soft:   #e8c678;
+  --a-gold-glow:   rgba(212, 168, 76, 0.15);
+  --a-rose:        #d4a0bc;
+  --a-rose-glow:   rgba(212, 160, 188, 0.12);
+  --a-violet:      #9b8ec4;
+  --a-violet-glow: rgba(155, 142, 196, 0.10);
+  --a-teal:        #6ec4b8;
+
+  --a-text:        #f0eaff;
+  --a-text-soft:   #c4b8dd;
+  --a-text-muted:  #7e72a0;
+
+  --a-border:      rgba(160, 140, 220, 0.12);
+  --a-border-glow: rgba(212, 168, 76, 0.22);
+
+  --radius:      18px;
+  --radius-sm:   10px;
+  --radius-pill: 999px;
+
+  background: var(--a-deep);
+  color: var(--a-text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 400;
+}
+
+/* ── Global typography ───────────────────────────────────────────────────── */
+.app--cosmic * {
+  letter-spacing: 0.005em !important;
+}
+
+.app--cosmic input,
+.app--cosmic button,
+.app--cosmic select,
+.app--cosmic textarea {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ── Display headings — Instrument Serif ─────────────────────────────────── */
+.app--cosmic .cosmic-bottom-sheet-title,
+.app--cosmic .cosmic-onboarding h2,
+.app--cosmic .save-dialog-title,
+.app--cosmic .email-capture-title,
+.app--cosmic .family-welcome-title,
+.app--cosmic .insight-heading,
+.app--cosmic .form-title,
+.app--cosmic .return-visit-greeting,
+.app--cosmic .upgrade-price-amount,
+.app--cosmic .welcome-title {
+  font-family: 'Instrument Serif', serif;
+  font-weight: 400;
+  letter-spacing: -0.01em !important;
+}
+
+/* ── Label / caps text ───────────────────────────────────────────────────── */
+.app--cosmic .cosmic-bottom-nav-label,
+.app--cosmic .node-element,
+.app--cosmic .add-form label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+/* ── Body / descriptive ──────────────────────────────────────────────────── */
+.app--cosmic .save-dialog-sub,
+.app--cosmic .cosmic-onboarding p,
+.app--cosmic .family-welcome-sub,
+.app--cosmic .insight-note,
+.app--cosmic .connect-prompt span {
+  color: var(--a-text-soft);
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BUTTONS — warm glow fills
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.app--cosmic .connect-prompt-action,
+.app--cosmic .family-action-btn--primary,
+.app--cosmic .save-dialog-save,
+.app--cosmic .upgrade-btn,
+.app--cosmic .cosmic-onboarding-btn {
+  background: linear-gradient(135deg, var(--a-gold) 0%, #c49040 100%) !important;
+  color: var(--a-deep) !important;
+  border: none !important;
+  border-radius: var(--radius-sm);
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em !important;
+  box-shadow: 0 4px 20px rgba(212, 168, 76, 0.25), 0 1px 3px rgba(0,0,0,0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.app--cosmic .connect-prompt-action:hover,
+.app--cosmic .family-action-btn--primary:hover,
+.app--cosmic .save-dialog-save:hover:not(:disabled),
+.app--cosmic .upgrade-btn:hover:not(:disabled),
+.app--cosmic .cosmic-onboarding-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 28px rgba(212, 168, 76, 0.35), 0 2px 6px rgba(0,0,0,0.3) !important;
+  background: linear-gradient(135deg, var(--a-gold-soft) 0%, var(--a-gold) 100%) !important;
+}
+
+/* Secondary — frosted glass */
+.app--cosmic .save-dialog-cancel,
+.app--cosmic .connect-prompt-close,
+.app--cosmic .family-tree-btn,
+.app--cosmic .family-action-btn,
+.app--cosmic .cosmic-onboarding-skip {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--a-border);
+  border-radius: var(--radius-sm);
+  color: var(--a-text-soft);
+  backdrop-filter: blur(8px);
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.app--cosmic .save-dialog-cancel:hover,
+.app--cosmic .connect-prompt-close:hover,
+.app--cosmic .family-tree-btn:hover,
+.app--cosmic .family-action-btn:hover,
+.app--cosmic .cosmic-onboarding-skip:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: var(--a-border-glow);
+  color: var(--a-text);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CARDS & SURFACES — frosted glass with color glow
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.app--cosmic .save-dialog,
+.app--cosmic .email-capture,
+.app--cosmic .connect-prompt {
+  background: var(--a-surface);
+  backdrop-filter: blur(24px) saturate(1.3);
+  border: 1px solid var(--a-glass-edge);
+  border-radius: var(--radius);
+  box-shadow:
+    0 24px 80px rgba(0,0,0,0.5),
+    0 0 1px rgba(255,255,255,0.1) inset;
+}
+
+.app--cosmic .insight-card {
+  background: var(--a-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--a-glass-edge);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.1rem;
+  transition: border-color 0.25s, box-shadow 0.3s;
+}
+
+.app--cosmic .insight-card:hover {
+  border-color: var(--a-border-glow);
+  box-shadow: 0 4px 24px rgba(212,168,76,0.06);
+}
+
+.app--cosmic .insight-heading {
+  font-size: 1.1rem;
+  color: var(--a-gold-soft);
+}
+
+.app--cosmic .member-pill {
+  background: var(--a-glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--a-glass-edge) !important;
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.app--cosmic .member-pill:hover {
+  border-color: var(--a-border-glow) !important;
+  background: rgba(28, 24, 52, 0.7);
+  box-shadow: 0 2px 12px rgba(212,168,76,0.06);
+}
+
+.app--cosmic .add-form {
+  background: var(--a-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--a-glass-edge);
+  border-radius: var(--radius);
+}
+
+.app--cosmic .family-welcome {
+  background: transparent;
+  border: none;
+}
+
+/* ── Inputs — glass ──────────────────────────────────────────────────────── */
+.app--cosmic .save-dialog-input,
+.app--cosmic .row-input,
+.app--cosmic .date-input input,
+.app--cosmic .cosmic-onboarding-input,
+.app--cosmic .add-form input,
+.app--cosmic .add-form select {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--a-border);
+  border-radius: var(--radius-sm);
+  color: var(--a-text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.app--cosmic .save-dialog-input:focus,
+.app--cosmic .row-input:focus,
+.app--cosmic .date-input input:focus,
+.app--cosmic .cosmic-onboarding-input:focus,
+.app--cosmic .add-form input:focus {
+  border-color: var(--a-border-glow);
+  box-shadow: 0 0 16px rgba(212,168,76,0.08);
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ASTRO NODES — softly glowing cards
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.app--cosmic .astro-node {
+  background: var(--a-surface);
+  backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid var(--a-glass-edge);
+  border-radius: var(--radius);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 8px 32px rgba(0,0,0,0.4),
+    0 0 40px var(--a-violet-glow);
+  min-width: 175px;
+  padding: 1.1rem 1.3rem 1rem;
+  transition: border-color 0.3s, box-shadow 0.35s, transform 0.2s;
+}
+
+.app--cosmic .astro-node:hover {
+  border-color: var(--a-border-glow);
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 12px 40px rgba(0,0,0,0.4),
+    0 0 48px var(--a-gold-glow),
+    0 0 80px var(--a-violet-glow);
+}
+
+.app--cosmic .node-name {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--a-text);
+  letter-spacing: 0 !important;
+}
+
+.app--cosmic .node-sign {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--a-text-soft);
+}
+
+.app--cosmic .node-moon {
+  background: rgba(155, 142, 196, 0.08);
+  border-color: rgba(155, 142, 196, 0.15);
+}
+
+.app--cosmic .node-element {
+  color: var(--a-text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BOTTOM SHEET — aurora glass panel
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cosmic-bottom-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 150;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 64px - env(safe-area-inset-bottom));
+  background: var(--a-surface);
+  backdrop-filter: blur(32px) saturate(1.4);
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  box-shadow:
+    0 -16px 64px rgba(0,0,0,0.5),
+    0 -2px 24px var(--a-violet-glow);
+
+  /* Animated gradient top border */
+  border-top: none;
+  --glow-angle: 0deg;
+  animation: glow-spin 8s linear infinite;
+}
+
+/* Animated gradient border line */
+.cosmic-bottom-sheet::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: conic-gradient(
+    from var(--glow-angle),
+    var(--a-gold) 0deg,
+    var(--a-rose) 120deg,
+    var(--a-violet) 240deg,
+    var(--a-gold) 360deg
+  );
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Warm glow beneath the border */
+.cosmic-bottom-sheet::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 5%;
+  right: 5%;
+  height: 80px;
+  background: radial-gradient(
+    ellipse at center top,
+    rgba(212, 168, 76, 0.06) 0%,
+    rgba(155, 142, 196, 0.03) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+}
+
+.cosmic-bottom-sheet.open {
+  transform: translateY(0);
+}
+
+.cosmic-bottom-sheet-drag {
+  display: flex;
+  justify-content: center;
+  padding: 0.7rem 0 0.3rem;
+  cursor: grab;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+.cosmic-bottom-sheet-handle {
+  width: 32px;
+  height: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+  transition: background 0.2s, width 0.2s;
+}
+
+.cosmic-bottom-sheet-drag:hover .cosmic-bottom-sheet-handle {
+  background: rgba(255,255,255,0.3);
+  width: 44px;
+}
+
+.cosmic-bottom-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.4rem 0.6rem;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  border-bottom: 1px solid var(--a-border);
+  margin-bottom: 0.4rem;
+}
+
+.cosmic-bottom-sheet-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.72rem;
+  color: var(--a-text-muted);
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase;
+}
+
+.cosmic-bottom-sheet-close {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--a-border);
+  color: var(--a-text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  line-height: 1;
+  backdrop-filter: blur(8px);
+}
+
+.cosmic-bottom-sheet-close:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: var(--a-border-glow);
+  color: var(--a-text);
+}
+
+.cosmic-bottom-sheet-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.25rem 1.4rem 4.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  position: relative;
+  z-index: 1;
+}
+
+.cosmic-bottom-sheet-content::-webkit-scrollbar { width: 4px; }
+.cosmic-bottom-sheet-content::-webkit-scrollbar-track { background: transparent; }
+.cosmic-bottom-sheet-content::-webkit-scrollbar-thumb {
+  background: rgba(155, 142, 196, 0.25);
+  border-radius: 2px;
+}
+
+/* Desktop: constrain sheet width, hide drag handle */
+@media (min-width: 769px) {
+  .cosmic-bottom-sheet {
+    left: 50%;
+    right: auto;
+    width: min(520px, 90vw);
+    transform: translateX(-50%) translateY(100%);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .cosmic-bottom-sheet.open {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .cosmic-bottom-sheet-drag {
+    display: none;
+  }
+
+  .cosmic-bottom-sheet-header {
+    padding-top: 0.75rem;
+  }
+}
+
+/* Keyboard open */
+.cosmic-bottom-sheet.keyboard-open {
+  transition: none;
+  border-radius: 0;
+}
+.cosmic-bottom-sheet.keyboard-open::before,
+.cosmic-bottom-sheet.keyboard-open::after {
+  display: none;
+}
+
+/* Sheet backdrop */
+.cosmic-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  background: rgba(6, 6, 16, 0.55);
+  backdrop-filter: blur(6px) saturate(0.8);
+  animation: aurora-fade 0.35s ease;
+}
+
+@keyframes aurora-fade {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to   { opacity: 1; backdrop-filter: blur(6px) saturate(0.8); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BOTTOM NAV — frosted glass bar with glow indicator
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cosmic-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  height: calc(64px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(10, 13, 26, 0.92);
+  border-top: 1px solid var(--a-glass-edge);
+  z-index: 200;
+  backdrop-filter: blur(24px) saturate(1.3);
+}
+
+.cosmic-bottom-nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  background: none;
+  border: none;
+  color: var(--a-text-muted);
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: color 0.25s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Active glow dot indicator */
+.cosmic-bottom-nav-btn::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--a-gold);
+  box-shadow: 0 0 8px rgba(212, 168, 76, 0.5);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cosmic-bottom-nav-btn.active::after {
+  transform: translateX(-50%) scale(1);
+}
+
+.cosmic-bottom-nav-btn:hover:not(:disabled):not(.active) {
+  color: var(--a-text-soft);
+}
+
+.cosmic-bottom-nav-btn.active {
+  color: var(--a-gold-soft);
+}
+
+.cosmic-bottom-nav-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.cosmic-bottom-nav-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cosmic-bottom-nav-btn.active .cosmic-bottom-nav-icon {
+  transform: scale(1.15);
+}
+
+.cosmic-bottom-nav-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em !important;
+}
+
+.cosmic-bottom-nav-badge {
+  position: absolute;
+  top: 0.2rem;
+  right: calc(50% - 1rem);
+  min-width: 15px;
+  height: 15px;
+  background: linear-gradient(135deg, var(--a-gold) 0%, #c49040 100%);
+  color: var(--a-deep);
+  font-size: 0.6rem;
+  font-weight: 700;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  box-shadow: 0 2px 6px rgba(212, 168, 76, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FLOATING PILLS — frosted capsule
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cosmic-floating-pills {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: rgba(10, 13, 26, 0.8);
+  border: 1px solid var(--a-glass-edge);
+  border-radius: var(--radius-pill);
+  backdrop-filter: blur(20px) saturate(1.3);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 40px var(--a-violet-glow);
+}
+
+.cosmic-pill-btn {
+  background: none;
+  border: none;
+  border-radius: var(--radius-pill);
+  color: var(--a-text-muted);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.cosmic-pill-btn:hover {
+  color: var(--a-text-soft);
+  background: rgba(255,255,255,0.04);
+}
+
+.cosmic-pill-btn.active {
+  color: var(--a-gold-soft);
+  background: var(--a-gold-glow);
+  box-shadow: 0 0 12px rgba(212,168,76,0.08);
+}
+
+.cosmic-pill-lock {
+  font-size: 0.65rem;
+  margin-left: 0.15rem;
+  opacity: 0.45;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CANVAS ONBOARDING — glowing welcome card
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes onboarding-breathe {
+  0%, 100% { box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 80px var(--a-gold-glow), 0 0 120px var(--a-violet-glow); }
+  50%      { box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 100px rgba(212,168,76,0.12), 0 0 140px rgba(155,142,196,0.08); }
+}
+
+.cosmic-onboarding {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 12;
+  width: min(400px, calc(100% - 2rem));
+  background: var(--a-surface);
+  backdrop-filter: blur(28px) saturate(1.4);
+  border: 1px solid var(--a-glass-edge);
+  border-radius: var(--radius);
+  padding: 2.2rem 1.8rem 1.8rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  align-items: center;
+  animation: onboarding-breathe 4s ease-in-out infinite;
+}
+
+/* Animated top border */
+.cosmic-onboarding::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  --glow-angle: 0deg;
+  animation: glow-spin 6s linear infinite;
+  background: conic-gradient(
+    from var(--glow-angle),
+    var(--a-gold) 0deg,
+    var(--a-rose) 120deg,
+    var(--a-violet) 240deg,
+    var(--a-gold) 360deg
+  );
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.cosmic-onboarding-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.cosmic-onboarding h2 {
+  font-family: 'Instrument Serif', serif;
+  font-weight: 400;
+  font-size: 1.5rem;
+  color: var(--a-text);
+  margin: 0;
+  letter-spacing: -0.01em !important;
+}
+
+.cosmic-onboarding p {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--a-text-soft);
+  margin: 0;
+  line-height: 1.65;
+}
+
+.cosmic-onboarding-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.cosmic-onboarding-row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.cosmic-onboarding-input {
+  flex: 1;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--a-border);
+  border-radius: var(--radius-sm);
+  color: var(--a-text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.cosmic-onboarding-input:focus {
+  border-color: var(--a-border-glow);
+  box-shadow: 0 0 16px rgba(212,168,76,0.08);
+}
+
+.cosmic-onboarding-input::placeholder {
+  color: var(--a-text-muted);
+}
+
+.cosmic-onboarding-btn {
+  background: linear-gradient(135deg, var(--a-gold) 0%, #c49040 100%);
+  color: var(--a-deep);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.7rem 1.2rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  margin-top: 0.2rem;
+  box-shadow: 0 4px 20px rgba(212,168,76,0.25);
+}
+
+.cosmic-onboarding-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 28px rgba(212,168,76,0.35);
+}
+
+.cosmic-onboarding-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  transform: none;
+}
+
+.cosmic-onboarding-skip {
+  background: none;
+  border: none;
+  color: var(--a-text-muted);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0.4rem 0;
+  transition: color 0.2s;
+}
+
+.cosmic-onboarding-skip:hover {
+  color: var(--a-text-soft);
+}
+
+.cosmic-onboarding-demos {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+}
+
+.cosmic-onboarding-demo {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--a-border);
+  border-radius: var(--radius-sm);
+  color: var(--a-text-muted);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.72rem;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  backdrop-filter: blur(6px);
+}
+
+.cosmic-onboarding-demo:hover {
+  border-color: var(--a-border-glow);
+  color: var(--a-text-soft);
+  background: rgba(255,255,255,0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DIG FAB — glowing orb
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes fab-glow {
+  0%, 100% { box-shadow: 0 4px 16px rgba(212,168,76,0.2), 0 0 24px var(--a-gold-glow); }
+  50%      { box-shadow: 0 4px 20px rgba(212,168,76,0.3), 0 0 40px rgba(212,168,76,0.12); }
+}
+
+.cosmic-dig-fab {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  left: 1rem;
+  right: auto;
+  z-index: 130;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--a-gold) 0%, #c49040 100%);
+  color: var(--a-deep);
+  border: none;
+  font-size: 1.15rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+  animation: fab-glow 3s ease-in-out infinite;
+}
+
+.cosmic-dig-fab:hover {
+  transform: scale(1.08);
+  animation: none;
+  box-shadow: 0 6px 28px rgba(212,168,76,0.4), 0 0 48px rgba(212,168,76,0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYOUT OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hide classic nav elements */
+.app--cosmic .top-nav { display: none !important; }
+.app--cosmic .top-subnav { display: none !important; }
+.app--cosmic .top-nav-backdrop { display: none !important; }
+.app--cosmic .bottom-tab-bar { display: none !important; }
+.app--cosmic .sidebar { display: none !important; }
+.app--cosmic .split-drag-handle { display: none !important; }
+.app--cosmic .tree-view-toggle { display: none !important; }
+
+/* Canvas fills viewport above bottom nav */
+.app--cosmic .canvas {
+  width: 100% !important;
+  height: calc(100dvh - 64px - env(safe-area-inset-bottom)) !important;
+  background: var(--a-deep);
+}
+
+@media (min-width: 769px) {
+  .app--cosmic .canvas {
+    height: calc(100dvh - 64px) !important;
+  }
+}
+
+/* Controls */
+.app--cosmic .react-flow__controls {
+  bottom: 1rem !important;
+  left: 1rem !important;
+}
+
+.app--cosmic .canvas-panel-btns {
+  top: auto;
+  bottom: 1rem;
+  right: 1rem;
+}
+
+.app--cosmic .chart-view-explain {
+  top: auto;
+  bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  right: auto;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--a-text-soft);
+  font-weight: 400;
+  font-size: 0.8rem;
+  max-width: 380px;
+  padding: 0.45rem 0.85rem;
+  line-height: 1.5;
+  background: rgba(10, 13, 26, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--a-glass-edge);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  z-index: 5;
+}
+
+/* ── Toasts ──────────────────────────────────────────────────────────────── */
+.app--cosmic .saved-toast {
+  top: auto;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--a-surface);
+  backdrop-filter: blur(16px);
+  border-color: rgba(126,200,69,0.3);
+  animation: toast-up 0.3s ease;
+}
+
+@keyframes toast-up {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.app--cosmic .premium-toast {
+  top: auto;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* ── Insights ────────────────────────────────────────────────────────────── */
+.app--cosmic .insights-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.app--cosmic .insights-panel .form-title {
+  font-family: 'Instrument Serif', serif;
+  font-weight: 400;
+  font-size: 1.3rem;
+  color: var(--a-text);
+  letter-spacing: -0.01em !important;
+  text-align: left;
+}
+
+.app--cosmic .insight-card {
+  max-width: none;
+}
+
+/* ── Starfield ───────────────────────────────────────────────────────────── */
+.app--cosmic .star {
+  background: var(--a-text) !important;
+}
+
+/* ── Planet signs ────────────────────────────────────────────────────────── */
+.app--cosmic .planet-sign {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ── Canvas branding above bottom nav ────────────────────────────────────── */
+.app--cosmic .canvas-brand {
+  bottom: 0.75rem;
+}
+
+/* ── View-only banner (shared chart links) ───────────────────────────────── */
+.app--cosmic .view-only-banner {
+  top: auto;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
+  transform: none;
+  border-radius: 0;
+  white-space: normal;
+  text-align: center;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.82rem;
+  background: rgba(10, 13, 26, 0.92);
+  backdrop-filter: blur(16px);
+  border: none;
+  border-top: 1px solid var(--a-border);
+  border-bottom: 1px solid var(--a-border);
+}
+
+.app--cosmic .view-only-save-btn,
+.app--cosmic .view-only-cta {
+  font-size: 0.82rem;
+}
+
+/* ── Action buttons on canvas ────────────────────────────────────────────── */
+.app--cosmic .relayout-btn {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  border-color: var(--a-border);
+  color: var(--a-text-muted);
+  backdrop-filter: blur(8px);
+  background: rgba(10, 13, 26, 0.6);
+}
+
+.app--cosmic .relayout-btn:hover {
+  border-color: var(--a-border-glow);
+  color: var(--a-text);
+  background: rgba(10, 13, 26, 0.8);
+}
+
+/* ── Hide internal insights subnav and duplicate header in sheets ─────── */
+.app--cosmic .insights-subnav {
+  display: none !important;
+}
+
+/* Hide the duplicate title but keep the export button visible */
+.app--cosmic .insights-header .form-title {
+  display: none !important;
+}
+
+.app--cosmic .insights-header {
+  justify-content: flex-end;
+}
+
+/* ── Edit member panel — tighter layout, action buttons visible ────────── */
+.app--cosmic .edit-panel {
+  gap: 0.65rem;
+}
+
+.app--cosmic .edit-panel .edit-panel-title-row {
+  display: none; /* sheet header serves as title */
+}
+
+.app--cosmic .edit-panel .name-date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.app--cosmic .edit-panel .birthtime-field {
+  padding: 0.4rem 0;
+  border-top: 1px solid var(--a-border);
+  border-bottom: 1px solid var(--a-border);
+}
+
+/* Compact birthtime: label + input + AM/PM all on one row */
+.app--cosmic .edit-panel .birthtime-field-header {
+  display: inline;
+}
+
+.app--cosmic .edit-panel .birthtime-row {
+  display: inline-flex;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.app--cosmic .edit-panel .birthtime-input {
+  width: 4.5rem;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.82rem;
+}
+
+.app--cosmic .edit-cta-row {
+  display: flex;
+  gap: 0.4rem;
+  position: sticky;
+  bottom: 0;
+  padding: 0.6rem 0;
+  background: var(--a-surface-solid, #12101e);
+  z-index: 2;
+  margin-top: auto;
+}
+
+.app--cosmic .edit-insights-cta,
+.app--cosmic .edit-charts-cta {
+  flex: 1;
+}
+
+/* ── Chart action icons (saved panel) ─────────────────────────────────── */
+.app--cosmic .chart-action-icon {
+  background: none;
+  border: 1px solid var(--a-border);
+  border-radius: 6px;
+  color: var(--a-text-muted);
+  font-size: 1rem;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  line-height: 1;
+}
+
+.app--cosmic .chart-action-icon:hover {
+  border-color: var(--a-border-glow);
+  color: var(--a-text);
+}
+
+/* ── Form title ──────────────────────────────────────────────────────────── */
+.app--cosmic .form-title {
+  color: var(--a-gold-soft);
+  font-family: 'Instrument Serif', serif;
+}
+
+/* ── Connect prompt ──────────────────────────────────────────────────────── */
+.app--cosmic .connect-prompt {
+  border-color: var(--a-border-glow);
+}
+
+/* ── Welcome screen ──────────────────────────────────────────────────────── */
+.app--cosmic .welcome-title {
+  font-family: 'Instrument Serif', serif;
+  font-weight: 400;
+}

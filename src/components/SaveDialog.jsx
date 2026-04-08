@@ -1,3 +1,5 @@
+import { DialogBackdrop } from './DialogBackdrop.jsx'
+
 export function SaveDialog({
   saveTitle, setSaveTitle,
   pendingNewTree,
@@ -6,11 +8,10 @@ export function SaveDialog({
   onSubmit,
 }) {
   return (
-    <div className="save-dialog-backdrop" onClick={onClose}>
+    <DialogBackdrop onClose={onClose}>
       <form
         className={`save-dialog${pendingNewTree ? ' save-dialog--warning' : ''}`}
         onSubmit={onSubmit}
-        onClick={e => e.stopPropagation()}
       >
         <p className="save-dialog-title">
           {pendingNewTree ? '⚠ Save before starting a new chart?' : '💾 Name this chart'}
@@ -44,6 +45,6 @@ export function SaveDialog({
           </button>
         </div>
       </form>
-    </div>
+    </DialogBackdrop>
   )
 }

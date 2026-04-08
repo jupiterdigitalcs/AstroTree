@@ -27,6 +27,12 @@
   --red:         #ff6b7a;
   --radius:      14px;
   --sidebar-w:   345px;
+
+  /* ── Letter-spacing tokens ── */
+  --ls-heading:  0.1em;
+  --ls-label:    0.06em;
+  --ls-body:     0.03em;
+  --ls-caps:     0.12em;
 }
 
 html, body, #root { height: 100%; }

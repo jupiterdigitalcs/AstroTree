@@ -26,8 +26,7 @@
   50%       { opacity: 0.65; }
 }
 
-/* ══ TEMP C: resizable split pane — delete block to revert ════════════════ */
-
+/* ── Resizable split pane handle ──────────────────────────────────────────── */
 .split-drag-handle {
   width: 5px;
   flex-shrink: 0;
@@ -49,11 +48,7 @@
 @media (max-width: 768px) {
   .split-drag-handle { display: none; }
 }
-/* ══ END TEMP C ═════════════════════════════════════════════════════════════ */
-
-/* ══ TEMP E: top nav full-screen layout — delete block to revert ══════════ */
-
-/* Base: top nav elements hidden by default */
+/* ── Top navigation bar ──────────────────────────────────────────────────── */
 .top-nav          { display: none; }
 .top-subnav       { display: none; }
 .top-nav-backdrop { display: none; }
@@ -299,9 +294,7 @@
     flex: 1;
   }
 
-  /* ── Hide things superseded by top nav ── */
-  .app--topnav .brand-header    { display: none !important; }
-  .app--topnav .sidebar-tabs    { display: none !important; }
+  /* ── Hide elements superseded by top nav ── */
   .app--topnav .bottom-tab-bar  { display: none !important; }
   /* ── Wider panel: roomier content layout ── */
   .app--topnav .sidebar-content {
@@ -365,4 +358,3 @@
   .app--insights-main .sidebar       { transform: translateX(-100%) !important; }
   .app--insights-main .top-nav-backdrop { display: none !important; }
 }
-/* ══ END TEMP E ══════════════════════════════════════════════════════════════ */

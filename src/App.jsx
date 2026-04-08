@@ -44,9 +44,16 @@ import { useOnboardingState } from './hooks/useOnboardingState.js'
 import { useHistoryNav } from './hooks/useHistoryNav.js'
 import { canAccess } from './utils/entitlements.js'
 import { LockedOverlay } from './components/LockedOverlay.jsx'
+import { BottomSheet } from './components/BottomSheet.jsx'
+import { FloatingPills } from './components/FloatingPills.jsx'
+import { CanvasOnboarding } from './components/CanvasOnboarding.jsx'
 
 const NODE_TYPES = { astro: AstroNode }
 
+// UX mode — cosmic is the default layout (bottom-nav + sheets)
+function getUxMode() {
+  try { return localStorage.getItem('astrodig_ux') || 'cosmic' } catch { return 'cosmic' }
+}
 
 // ── Fit the view whenever fitTick increments ──────────────────────────────────
 function FitViewOnLayout({ fitTick, fitViewRef }) {
@@ -68,7 +75,8 @@ export default function App() {
   const [editingNodeId,     setEditingNodeId]     = useState(null)
   // 'tree' | 'add' | 'insights' | 'charts' | 'about'
   const [activeTab,         setActiveTab]         = useState(() => {
-    try { const draft = loadDraft(); return (draft?.nodes?.length > 0) ? 'add' : 'tree' } catch { return 'add' }
+    const cosmic = getUxMode() === 'cosmic'
+    try { const draft = loadDraft(); return (draft?.nodes?.length > 0) ? (cosmic ? 'tree' : 'add') : 'tree' } catch { return cosmic ? 'tree' : 'add' }
   })
   const [showAddMore,       setShowAddMore]       = useState(false)
   const [showConnectPrompt, setShowConnectPrompt] = useState(false)
@@ -83,15 +91,13 @@ export default function App() {
   const [newEdgesForInsights,   setNewEdgesForInsights]   = useState(0)
   const [savedToast,        setSavedToast]        = useState(false)
   const [premiumToast,      setPremiumToast]      = useState(false)
+  const [uxMode] = useState(getUxMode) // 'classic' | 'cosmic'
+  const isCosmic = uxMode === 'cosmic'
 
   const fitViewRef = useRef(null)
 
-  // ── TEMP C: resizable sidebar pane — delete this block to revert ─────────────
   const [sidebarWidth, setSidebarWidth] = useState(345)
   const isDraggingRef = useRef(false)
-  // ── TEMP E: top nav full-screen layout — delete this line to revert ───────────
-  const topNavMode = true
-  // ── END TEMP ──────────────────────────────────────────────────────────────────
 
   // ── Browser history integration (back button) ──────────────────────────────
   useHistoryNav({ activeTab, treeView, editingNodeId, setActiveTab, setTreeView, setEditingNodeId })
@@ -220,7 +226,6 @@ export default function App() {
     prevEdgeCountRef.current = edges.length
   }, [edges.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── TEMP C: drag-to-resize sidebar — delete to revert ────────────────────────
   function startDrag(e) {
     e.preventDefault()
     isDraggingRef.current = true
@@ -243,8 +248,6 @@ export default function App() {
     window.addEventListener('touchmove', onMove, { passive: false })
     window.addEventListener('touchend', onUp)
   }
-  // ── END TEMP C ────────────────────────────────────────────────────────────────
-
   // ── Add (atomic, supports multiple members) ───────────────────────────────
   async function handleAdd({ members, relationships = {} }) {
     const { parentIds = [], childIds = [], spouseIds = [] } = relationships
@@ -345,7 +348,7 @@ export default function App() {
   const editingNode = editingNodeId ? nodes.find(n => n.id === editingNodeId) : null
 
   return (
-    <div className={`app${topNavMode ? ' app--topnav' : ''}${topNavMode && nodes.length > 0 && (!panelOpen || activeTab === 'insights') ? ' app--subnav' : ''}${topNavMode && activeTab === 'insights' ? ' app--insights-main' : ''}`}> {/* TEMP E */}
+    <div className={`app${isCosmic ? ' app--cosmic' : ' app--topnav'}${!isCosmic && nodes.length > 0 && (!panelOpen || activeTab === 'insights') ? ' app--subnav' : ''}${activeTab === 'insights' ? ' app--insights-main' : ''}`}>
       {/* ── Email capture — shown once after first named save ───────────── */}
       {showEmailCapture && (
         <EmailCapture onDismiss={() => setShowEmailCapture(false)} />
@@ -398,9 +401,7 @@ export default function App() {
         )), [])}
       </div>
 
-      {/* ── TEMP E: top nav bar — delete block to revert ───────────────────── */}
-      {topNavMode && (
-        <header className="top-nav">
+      <header className="top-nav">
           <div className="top-nav-brand">
             <JupiterIcon size={26} />
             <div className="top-nav-brand-text">
@@ -444,9 +445,8 @@ export default function App() {
             )}
             {lastSavedAt && <SyncIndicator status={syncStatus === 'idle' ? 'synced' : syncStatus} />}
           </div>
-        </header>
-      )}
-      {topNavMode && nodes.length > 0 && !panelOpen && (
+      </header>
+      {nodes.length > 0 && !panelOpen && (
         <nav className="top-subnav" aria-label="Chart type">
           <div className="top-subnav-brand">Cosmic Connections</div>
           <button className={`top-subnav-btn${treeView === 'tree' ? ' active' : ''}`} onClick={() => { setTreeView('tree'); goTab('tree') }}>🌳 Family Tree</button>
@@ -455,7 +455,7 @@ export default function App() {
           <button className={`top-subnav-btn${treeView === 'tables' ? ' active' : ''}`} onClick={() => { setTreeView('tables'); goTab('tree') }}>☽ Tables{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">PRO</span> : !canAccess('tables_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
         </nav>
       )}
-      {topNavMode && activeTab === 'insights' && edges.length > 0 && (
+      {activeTab === 'insights' && edges.length > 0 && (
         <nav className="top-subnav" aria-label="Insights sections">
           <div className="top-subnav-brand">Insights</div>
           <button className={`top-subnav-btn${insightsTab === 'insights' ? ' active' : ''}`} onClick={() => setInsightsTab('insights')}>✦ Insights</button>
@@ -465,16 +465,13 @@ export default function App() {
           >✦ The DIG{entitlements?.tier === 'premium' && <span className="pro-tag pro-tag--subtle">PRO</span>}</button>
         </nav>
       )}
-      {topNavMode && panelOpen && (
+      {panelOpen && (
         <div
           className="top-nav-backdrop"
           onClick={() => { setActiveTab('tree'); setEditingNodeId(null) }}
         />
       )}
-      {/* ── END TEMP E ────────────────────────────────────────────────────── */}
-
       {/* ── Sidebar / Panel ─────────────────────────────────────────────── */}
-      {/* TEMP C: inline width drives resize — delete style prop to revert */}
       <aside className={`sidebar${panelOpen ? ' open' : ''}`} style={window.innerWidth > 768 ? { width: sidebarWidth } : undefined}>
         {/* Mobile panel header — shows tab name and close button */}
         <div className="mobile-panel-header">
@@ -491,37 +488,6 @@ export default function App() {
             onClick={() => { setActiveTab('tree'); setEditingNodeId(null) }}
             aria-label="Back to tree"
           >✕</button>
-        </div>
-
-        {/* Brand */}
-        <div className="brand-header">
-          <div className="brand-logo"><JupiterIcon size={40} /></div>
-          <div className="brand-text">
-            <p className="brand-name">Jupiter Digital</p>
-            <h1 className="brand-app">AstroDig</h1>
-            <p className="brand-sub">Cosmic Connections</p>
-          </div>
-        </div>
-
-        {/* ── Desktop tab strip (hidden on mobile) ────────────────────── */}
-        <div className="sidebar-tabs">
-          <button
-            className={`sidebar-tab${activeTab === 'add' || activeTab === 'tree' ? ' active' : ''}`}
-            onClick={() => goTab('add')}
-          >★ Family</button>
-          <button
-            className={`sidebar-tab${activeTab === 'insights' && !editingNode ? ' active' : ''}`}
-            onClick={() => goTab('insights')}
-            disabled={nodes.length < 2}
-          >✦ Insights</button>
-          <button
-            className={`sidebar-tab${activeTab === 'charts' && !editingNode ? ' active' : ''}`}
-            onClick={() => goTab('charts')}
-          >🗂️ Saved</button>
-          <button
-            className={`sidebar-tab${activeTab === 'about' && !editingNode ? ' active' : ''}`}
-            onClick={() => goTab('about')}
-          ><JupiterIcon size={14} /> About</button>
         </div>
 
         {/* ── Scrollable content ──────────────────────────────────────── */}
@@ -775,7 +741,6 @@ export default function App() {
         </footer>
       </aside>
 
-      {/* TEMP C: drag handle between sidebar and canvas — delete to revert */}
       <div className="split-drag-handle" onMouseDown={startDrag} onTouchStart={startDrag} title="Drag to resize" />
 
       {/* ── Mobile bottom tab bar ────────────────────────────────────────── */}
@@ -1013,8 +978,8 @@ export default function App() {
           </div>
         )}
 
-        {/* ── Insights in main area (topnav mode) ──────────────────── */}
-        {topNavMode && activeTab === 'insights' ? (
+        {/* ── Insights in main area (classic mode only; cosmic uses bottom sheet) */}
+        {!isCosmic && activeTab === 'insights' ? (
           <div className="insights-main-area">
             <InsightsPanel
               nodes={nodes} edges={edges}
@@ -1039,7 +1004,7 @@ export default function App() {
                 onUpgrade={() => setShowUpgradePrompt(true)}
               />
             )}
-            <TablesPanel nodes={nodes} />
+            <TablesPanel nodes={nodes} chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null} />
           </div>
         ) : treeView === 'zodiac' && nodes.length > 0 ? (
           <div style={{ position: 'relative', flex: 1 }}>
@@ -1085,6 +1050,241 @@ export default function App() {
         )}
       </main>
 
+      {/* ── Cosmic mode: bottom nav, floating pills, bottom sheets ────── */}
+      {isCosmic && (
+        <>
+          {/* Floating pills — chart type switcher on canvas */}
+          {nodes.length > 0 && activeTab === 'tree' && !editingNodeId && (
+            <FloatingPills
+              treeView={treeView}
+              setTreeView={setTreeView}
+              entitlements={entitlements}
+            />
+          )}
+
+          {/* Canvas onboarding — replaces welcome screen */}
+          {nodes.length === 0 && (
+            <CanvasOnboarding
+              onAdd={handleAdd}
+              onDemo={handleLoadDemo}
+              onDemoCrew={handleLoadDemoCrew}
+              onLoadCharts={() => goTab('charts')}
+              onNewChart={() => goTab('add')}
+              hasUsedApp={hasUsedApp}
+            />
+          )}
+
+          {/* DIG FAB */}
+          {nodes.length >= 3 && edges.length > 0 && activeTab === 'tree' && (
+            <button
+              type="button"
+              className="cosmic-dig-fab"
+              onClick={() => { setInsightsTab('dig'); goTab('insights') }}
+              title="The DIG"
+            >✦</button>
+          )}
+
+          {/* Bottom sheets for each tab */}
+          <BottomSheet
+            open={isCosmic && activeTab === 'add' && !editingNodeId}
+            title="★ Family"
+            onClose={() => goTab('tree')}
+          >
+            <OnboardingProgress
+              nodes={nodes}
+              edges={edges}
+              onGoToTree={() => goTab('tree')}
+              onGoToInsights={() => goTab('insights')}
+            />
+            {nodes.length === 0 ? (
+              <>
+                <div className="family-welcome">
+                  <div className="family-welcome-inline">
+                    <JupiterIcon size={30} />
+                    <h2 className="family-welcome-title">{hasUsedApp ? 'Start a New Chart' : 'Welcome to AstroDig'}</h2>
+                  </div>
+                  <p className="family-welcome-sub">
+                    {hasUsedApp
+                      ? 'Add family members below to build another celestial chart.'
+                      : 'Build your family\'s celestial chart and discover the cosmic patterns woven across generations.'}
+                  </p>
+                </div>
+                <AddMembersForm onAdd={handleAdd} />
+              </>
+            ) : (
+              <>
+                <div className="member-list">
+                  <div className="member-list-header">
+                    <h3>Your Family · {nodes.length}</h3>
+                    <span className="member-list-hint">oldest first · tap to connect</span>
+                  </div>
+                  <div className="add-more-section">
+                    <button type="button" className="add-more-toggle" onClick={() => setShowAddMore(o => !o)}>
+                      {showAddMore ? '▲ Hide' : '＋ Add more people'}
+                    </button>
+                    {showAddMore && <AddMembersForm onAdd={handleAdd} initialRows={1} />}
+                  </div>
+                  {edges.length === 0 && (
+                    <p className="connect-hint-banner">Tap a name below to connect family members on the tree ↓</p>
+                  )}
+                  {[...nodes].sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999')).map(n => (
+                    <div key={n.id} className="member-pill"
+                      style={{ borderColor: `${n.data.elementColor}44`, cursor: 'pointer' }}
+                      onClick={() => setEditingNodeId(n.id)}
+                    >
+                      <span>{n.data.symbol}</span>
+                      <span>{n.data.name}</span>
+                      <span className="pill-sign" style={{ color: n.data.elementColor }}>
+                        {n.data.sign}
+                        {n.data.birthdate && <span className="pill-year"> · {n.data.birthdate.slice(0, 4)}</span>}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="family-bottom-actions">
+                  <button type="button" className="family-tree-btn" onClick={handleNewTreeClick}>＋ New Chart</button>
+                </div>
+              </>
+            )}
+          </BottomSheet>
+
+          {/* Edit member sheet */}
+          <BottomSheet
+            open={isCosmic && !!editingNodeId}
+            title="Edit Member"
+            onClose={() => setEditingNodeId(null)}
+          >
+            {editingNode && (
+              <>
+              <button
+                type="button"
+                className="back-btn"
+                onClick={() => setEditingNodeId(null)}
+                style={{ alignSelf: 'flex-start', marginBottom: '0.25rem' }}
+              >← Back to Family</button>
+              <EditMemberPanel
+                key={editingNode.id}
+                node={editingNode}
+                allNodes={nodes}
+                edges={edges}
+                onUpdate={handleUpdate}
+                onDelete={handleDelete}
+                onAddEdge={handleAddEdge}
+                onRemoveEdge={handleRemoveEdge}
+                onCancel={() => setEditingNodeId(null)}
+                onGoToInsights={() => { setEditingNodeId(null); goTab('insights') }}
+                onGoToView={() => {
+                  const groupOnly = edges.length > 0 && edges.every(e => { const t = e.data?.relationType; return t === 'friend' || t === 'coworker' })
+                  setEditingNodeId(null)
+                  if (groupOnly) setTreeView('constellation')
+                  else setTreeView('tree')
+                  goTab('tree')
+                }}
+                viewLabel={edges.length > 0 && edges.every(e => { const t = e.data?.relationType; return t === 'friend' || t === 'coworker' }) ? 'View Constellation' : 'View Tree'}
+              />
+              </>
+            )}
+          </BottomSheet>
+
+          {/* Insights sheet */}
+          <BottomSheet
+            open={isCosmic && activeTab === 'insights'}
+            title="✦ Insights"
+            onClose={() => goTab('tree')}
+          >
+            <InsightsPanel
+              nodes={nodes} edges={edges}
+              onExport={nodes.length >= 2 ? () => { logEvent('export'); handleInsightsExport() } : undefined}
+              exporting={exporting}
+              onAddMore={() => goTab('add')}
+              onGoToTree={() => goTab('tree')}
+              onEditFirst={nodes.length > 0 ? () => { setEditingNodeId(nodes[0].id); setActiveTab('add') } : undefined}
+              onUpgrade={() => setShowUpgradePrompt(true)}
+              entitlements={entitlements}
+              chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null}
+              insightsTab={insightsTab}
+              onInsightsTabChange={setInsightsTab}
+            />
+          </BottomSheet>
+
+          {/* Charts sheet */}
+          <BottomSheet
+            open={isCosmic && activeTab === 'charts'}
+            title="🗂️ Saved Charts"
+            onClose={() => goTab('tree')}
+          >
+            <ChartsPanel
+              nodes={nodes} edges={edges} counter={counter}
+              savedChartId={savedChartId}
+              onLoad={handleLoadChart} onNew={handleNewTreeClick}
+              onDeleteCloud={deleteFromCloud}
+              onRename={handleRenameChart} onDuplicate={handleDuplicateChart}
+              onAddEmail={isCloudEnabled() ? () => { clearEmailAsked(); setShowEmailCapture(true) } : undefined}
+              onGoToAbout={() => goTab('about')}
+              entitlements={entitlements}
+              onUpgrade={() => setShowUpgradePrompt(true)}
+            />
+          </BottomSheet>
+
+          {/* About sheet */}
+          <BottomSheet
+            open={isCosmic && activeTab === 'about'}
+            title="About"
+            onClose={() => goTab('tree')}
+          >
+            <AboutPanel />
+          </BottomSheet>
+
+          {/* Cosmic bottom nav */}
+          <nav className="cosmic-bottom-nav" aria-label="Main navigation">
+            <button
+              className={`cosmic-bottom-nav-btn${activeTab === 'add' || !!editingNodeId ? ' active' : ''}`}
+              onClick={() => goTab('add')}
+            >
+              <span className="cosmic-bottom-nav-icon">★</span>
+              <span className="cosmic-bottom-nav-label">Family</span>
+            </button>
+            <button
+              className={`cosmic-bottom-nav-btn${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
+              onClick={() => { goTab('tree'); setNewMembersForChart(0) }}
+            >
+              <span className="cosmic-bottom-nav-icon" style={{ position: 'relative', display: 'inline-flex' }}>
+                ✦
+                {newMembersForChart > 0 && <span className="cosmic-bottom-nav-badge">{newMembersForChart}</span>}
+              </span>
+              <span className="cosmic-bottom-nav-label">Chart</span>
+            </button>
+            <span style={{ flex: 1, display: 'inline-flex', position: 'relative' }}>
+              <button
+                className={`cosmic-bottom-nav-btn${activeTab === 'insights' && !editingNodeId ? ' active' : ''}`}
+                onClick={() => goTab('insights')}
+                disabled={nodes.length < 2}
+                style={{ flex: 1 }}
+              >
+                <span className="cosmic-bottom-nav-icon" style={{ position: 'relative', display: 'inline-flex' }}>
+                  ☍
+                  {newEdgesForInsights > 0 && <span className="cosmic-bottom-nav-badge">{newEdgesForInsights}</span>}
+                </span>
+                <span className="cosmic-bottom-nav-label">Insights</span>
+              </button>
+            </span>
+            <button
+              className={`cosmic-bottom-nav-btn${activeTab === 'charts' && !editingNodeId ? ' active' : ''}`}
+              onClick={() => goTab('charts')}
+            >
+              <span className="cosmic-bottom-nav-icon">📚</span>
+              <span className="cosmic-bottom-nav-label">Saved</span>
+            </button>
+            <button
+              className={`cosmic-bottom-nav-btn${activeTab === 'about' && !editingNodeId ? ' active' : ''}`}
+              onClick={() => goTab('about')}
+            >
+              <span className="cosmic-bottom-nav-icon"><JupiterIcon size={22} /></span>
+              <span className="cosmic-bottom-nav-label">About</span>
+            </button>
+          </nav>
+        </>
+      )}
 
     </div>
   )

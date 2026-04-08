@@ -317,7 +317,6 @@ export function useExport({ savedChartId, fitViewRef }) {
           const c = node.classList
           if (!c) return true
           if (c.contains('tables-col-toggles')) return false
-          if (c.contains('tables-title'))       return false
           return true
         },
       })

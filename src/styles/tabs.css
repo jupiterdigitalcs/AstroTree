@@ -7,40 +7,6 @@
   .react-flow__controls, .react-flow__minimap { display: none !important; }
 }
 
-/* ────────────────────────── Desktop sidebar tabs ────────────────────────── */
-.sidebar-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-  padding: 0 0.6rem;
-  flex-shrink: 0;
-  background: rgba(255,255,255,0.01);
-}
-
-.sidebar-tab {
-  flex: 1;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--text-muted);
-  font-family: 'Raleway', sans-serif;
-  font-size: 0.74rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  padding: 0.65rem 0.25rem;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-  margin-bottom: -1px;
-  white-space: nowrap;
-}
-
-.sidebar-tab:hover:not(:disabled) { color: var(--text-soft); }
-.sidebar-tab.active  { color: var(--gold); border-bottom-color: var(--gold); }
-.sidebar-tab:disabled { opacity: 0.3; cursor: default; }
-/* Jupiter SVG icon: dim when inactive, full when active, mid on hover */
-.sidebar-tab svg         { opacity: 0.45; transition: opacity 0.15s; }
-.sidebar-tab:hover svg   { opacity: 0.7; }
-.sidebar-tab.active svg  { opacity: 1; }
-
 /* ─────────────────────────── Mobile bottom tab bar ─────────────────────── */
 .bottom-tab-bar { display: none; }
 
@@ -104,9 +70,6 @@
 
   /* Hide brand header on mobile — panel header takes its role */
   .brand-header { display: none; }
-
-  /* Hide desktop tab strip on mobile — navigation is via bottom tab bar */
-  .sidebar-tabs { display: none; }
 
   .sidebar-content {
     padding-left: max(1.15rem, env(safe-area-inset-left));

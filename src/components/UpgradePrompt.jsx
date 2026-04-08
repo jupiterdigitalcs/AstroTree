@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { startCheckout } from '../utils/checkout.js'
 import { getDeviceId } from '../utils/identity.js'
+import { DialogBackdrop } from './DialogBackdrop.jsx'
 
 export function UpgradePrompt({ onClose, feature, onRedeemed }) {
   const [loading, setLoading] = useState(false)
@@ -56,8 +57,8 @@ export function UpgradePrompt({ onClose, feature, onRedeemed }) {
 
   if (codeSuccess) {
     return (
-      <div className="save-dialog-backdrop" onClick={onClose}>
-        <div className="save-dialog upgrade-prompt" onClick={e => e.stopPropagation()}>
+      <DialogBackdrop onClose={onClose}>
+        <div className="save-dialog upgrade-prompt">
           <p className="save-dialog-title">✦ Premium Unlocked!</p>
           <p className="save-dialog-sub">
             All features are now available. Enjoy your full AstroDig experience.
@@ -68,13 +69,13 @@ export function UpgradePrompt({ onClose, feature, onRedeemed }) {
             </button>
           </div>
         </div>
-      </div>
+      </DialogBackdrop>
     )
   }
 
   return (
-    <div className="save-dialog-backdrop" onClick={onClose}>
-      <div className="save-dialog upgrade-prompt" onClick={e => e.stopPropagation()}>
+    <DialogBackdrop onClose={onClose}>
+      <div className="save-dialog upgrade-prompt">
         <p className="save-dialog-title">✦ Unlock Premium</p>
         {feature ? (
           <p className="save-dialog-sub">
@@ -172,6 +173,6 @@ export function UpgradePrompt({ onClose, feature, onRedeemed }) {
           )}
         </div>
       </div>
-    </div>
+    </DialogBackdrop>
   )
 }
