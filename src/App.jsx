@@ -919,16 +919,25 @@ export default function App() {
           </div>
         )}
 
-        {/* ── Shared action buttons (visible on both views) ──────────── */}
-        {nodes.length > 0 && (
-          <div className="canvas-panel-btns">
+        {/* ── Canvas action bar — single horizontal strip ────────────── */}
+        {nodes.length > 0 && isCosmic && (
+          <div className="cosmic-action-bar">
+            {(treeView === 'tree' || treeView === 'constellation') && (
+              <button type="button" className="cosmic-action-btn" onClick={handleRelayout} title="Re-layout">⟳</button>
+            )}
             <button
               type="button"
-              className="relayout-btn relayout-btn--insights"
-              onClick={() => goTab('insights')}
-            >
-              ✦ Insights
-            </button>
+              className="cosmic-action-btn"
+              onClick={() => { logEvent('export'); (treeView === 'zodiac' ? handleZodiacExport : treeView === 'constellation' ? handleConstellationExport : treeView === 'tables' ? handleTablesExport : handleExport)() }}
+              disabled={exporting}
+            >{exporting ? '…' : '↓'}</button>
+            <ShareButton savedChartId={savedChartId} syncStatus={syncStatus} />
+          </div>
+        )}
+        {/* Classic mode action buttons */}
+        {nodes.length > 0 && !isCosmic && (
+          <div className="canvas-panel-btns">
+            <button type="button" className="relayout-btn relayout-btn--insights" onClick={() => goTab('insights')}>✦ Insights</button>
             <ShareButton savedChartId={savedChartId} syncStatus={syncStatus} />
             <button
               type="button"
@@ -948,9 +957,7 @@ export default function App() {
               </>)}
             </button>
             {(treeView === 'tree' || treeView === 'constellation') && (
-              <button type="button" className="relayout-btn" onClick={handleRelayout} title="Re-layout">
-                ⟳
-              </button>
+              <button type="button" className="relayout-btn" onClick={handleRelayout} title="Re-layout">⟳ Re-layout</button>
             )}
           </div>
         )}
