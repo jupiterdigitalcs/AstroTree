@@ -91,6 +91,7 @@ export default function App() {
   const [newEdgesForInsights,   setNewEdgesForInsights]   = useState(0)
   const [savedToast,        setSavedToast]        = useState(false)
   const [premiumToast,      setPremiumToast]      = useState(false)
+  const [autoOpenDig,       setAutoOpenDig]       = useState(false)
   const [uxMode] = useState(getUxMode) // 'classic' | 'cosmic'
   const isCosmic = uxMode === 'cosmic'
 
@@ -319,6 +320,7 @@ export default function App() {
   function goTab(tab) {
     setActiveTab(tab)
     setEditingNodeId(null)
+    if (tab !== 'insights') setAutoOpenDig(false)
     if (tab === 'tree') setFitTick(t => t + 1)
     if (tab === 'insights' && edges.length > 0) {
       markInsightsSeen()
@@ -806,7 +808,7 @@ export default function App() {
 
       {/* ── Canvas ──────────────────────────────────────────────────────── */}
       <main className="canvas">
-        {nodes.length === 0 && (
+        {nodes.length === 0 && !isCosmic && (
           <WelcomeScreen
             hasUsedApp={hasUsedApp}
             onBegin={() => {
@@ -1087,7 +1089,7 @@ export default function App() {
             <button
               type="button"
               className="cosmic-dig-fab"
-              onClick={() => { setInsightsTab('dig'); goTab('insights') }}
+              onClick={() => { setInsightsTab('dig'); setAutoOpenDig(true); goTab('insights') }}
               title="The DIG"
             >✦</button>
           )}
@@ -1221,6 +1223,7 @@ export default function App() {
               chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null}
               insightsTab={insightsTab}
               onInsightsTabChange={setInsightsTab}
+              autoOpenDig={autoOpenDig}
             />
           </BottomSheet>
 
@@ -1297,7 +1300,9 @@ export default function App() {
               onClick={() => goTab('about')}
             >
               <span className="cosmic-bottom-nav-icon"><JupiterIcon size={22} /></span>
-              <span className="cosmic-bottom-nav-label">About</span>
+              <span className="cosmic-bottom-nav-label">
+                {entitlements?.tier === 'premium' ? '✦ Full Chart' : 'About'}
+              </span>
             </button>
           </nav>
         </>

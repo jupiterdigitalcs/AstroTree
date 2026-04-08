@@ -229,7 +229,13 @@ export function useExport({ savedChartId, fitViewRef }) {
   }, [exporting, savedChartId])
 
   const handleInsightsExport = useCallback(async () => {
-    const el = document.querySelector('.insights-panel')
+    // Find the visible insights panel (cosmic mode may have one in hidden sidebar + one in sheet)
+    const panels = document.querySelectorAll('.insights-panel')
+    let el = null
+    for (const p of panels) {
+      if (p.offsetParent !== null || p.offsetWidth > 0) { el = p; break }
+    }
+    if (!el) el = panels[0] // fallback
     if (!el || exporting) return
     setExportError(null)
     setExporting(true)

@@ -33,7 +33,9 @@ export function useChartManager({
       setEdges(draft.edges)
       setCounter(draft.counter ?? 1)
       if (draft.savedChartId) setSavedChartId(draft.savedChartId)
-      setActiveTab('add')
+      // In cosmic mode, stay on canvas; in classic mode, open family tab
+      const ux = typeof localStorage !== 'undefined' && localStorage.getItem('astrodig_ux')
+      if (ux !== 'cosmic') setActiveTab('add')
       hydrateNodes(draft.nodes).then(hydrated => setNodes(hydrated))
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps

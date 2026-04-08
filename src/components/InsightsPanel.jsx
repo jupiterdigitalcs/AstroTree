@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react'
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
 import {
   getElement,
   ELEMENT_COLORS, SIGN_MODALITY, POLARITY_GROUP,
@@ -394,11 +394,16 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements, chartTitle, insightsTab = 'insights', onInsightsTabChange }) {
+export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements, chartTitle, insightsTab = 'insights', onInsightsTabChange, autoOpenDig }) {
   const hasAdvanced = canAccess('advanced_insights', entitlements?.tier, entitlements?.config)
   const hasFullDig = canAccess('full_dig', entitlements?.tier, entitlements?.config)
   const hasFullCompat = canAccess('full_compatibility', entitlements?.tier, entitlements?.config)
   const [showDig, setShowDig] = useState(false)
+
+  // Auto-open DIG overlay when triggered from FAB
+  useEffect(() => {
+    if (autoOpenDig && insightsTab === 'dig' && !showDig) setShowDig(true)
+  }, [autoOpenDig]) // eslint-disable-line react-hooks/exhaustive-deps
   const [digExporting, setDigExporting] = useState(false)
   const isGroupOnly = edges.length > 0 && edges.every(e => {
     const t = e.data?.relationType
