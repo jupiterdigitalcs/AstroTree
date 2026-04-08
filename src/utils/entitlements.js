@@ -37,14 +37,20 @@ export function getChartLimit(tier, config) {
 }
 
 // Well-known gatable feature keys (used in admin panel checkboxes)
+// Grouped by category for the admin UI
 export const FEATURE_KEYS = [
-  { key: 'zodiac_view',        label: 'Zodiac Wheel View' },
-  { key: 'tables_view',        label: 'Tables View' },
-  { key: 'advanced_insights',  label: 'Advanced Insights' },
-  { key: 'constellation_view', label: 'Constellation View' },
-  { key: 'zodiac_export',      label: 'Zodiac Wheel Export' },
-  { key: 'pdf_export',         label: 'PDF Export' },
-  { key: 'unlimited_charts',   label: 'Unlimited Charts' },
+  // Views
+  { key: 'zodiac_view',        label: 'Zodiac Wheel View', group: 'Views' },
+  { key: 'tables_view',        label: 'Tables View — sortable planet grid', group: 'Views' },
+  { key: 'constellation_view', label: 'Constellation View', group: 'Views' },
+  // Insights
+  { key: 'advanced_insights',  label: 'Premium Insights — Notable Bonds, Venus/Mars, Partner Compatibility, Sign Threads, Zodiac Threads, Family Roles, Arrivals, Sign Concentration, Pluto Generations', group: 'Insights' },
+  { key: 'full_dig',           label: 'The Full DIG — all slides (free users see first 3)', group: 'Insights' },
+  { key: 'full_compatibility', label: 'Full Compatibility Report — all pair breakdowns', group: 'Insights' },
+  // Export & Limits
+  { key: 'zodiac_export',      label: 'Zodiac Wheel Export — PNG download', group: 'Export & Limits' },
+  { key: 'pdf_export',         label: 'PDF Export', group: 'Export & Limits' },
+  { key: 'unlimited_charts',   label: 'Unlimited Charts — beyond free tier limit', group: 'Export & Limits' },
 ]
 
 // Helper: quick check using cached entitlements

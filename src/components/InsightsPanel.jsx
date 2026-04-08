@@ -396,6 +396,8 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
 
 export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements, chartTitle, insightsTab = 'insights', onInsightsTabChange }) {
   const hasAdvanced = canAccess('advanced_insights', entitlements?.tier, entitlements?.config)
+  const hasFullDig = canAccess('full_dig', entitlements?.tier, entitlements?.config)
+  const hasFullCompat = canAccess('full_compatibility', entitlements?.tier, entitlements?.config)
   const [showDig, setShowDig] = useState(false)
   const [digExporting, setDigExporting] = useState(false)
   const isGroupOnly = edges.length > 0 && edges.every(e => {
@@ -1123,7 +1125,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* ── The DIG overlay ────────────────────────────────────────────── */}
       {showDig && (
         <Suspense fallback={null}>
-          <TheDig digData={digData} onClose={() => setShowDig(false)} chartTitle={chartTitle} isPremium={hasAdvanced} onUpgrade={onUpgrade} />
+          <TheDig digData={digData} onClose={() => setShowDig(false)} chartTitle={chartTitle} isPremium={hasFullDig} onUpgrade={onUpgrade} />
         </Suspense>
       )}
 
@@ -1584,7 +1586,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       )}
 
       {/* 10. Full Compatibility Report */}
-      {compatDisplayPairs.length > 0 && (
+      {compatDisplayPairs.length > 0 && hasFullCompat && (
         <FullCompatPairs pairs={compatDisplayPairs} title={compatTitle} isExporting={exporting} generationLevel={generationLevel} />
       )}
 
