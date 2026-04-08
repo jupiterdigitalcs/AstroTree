@@ -946,8 +946,8 @@ export default function App() {
               </>)}
             </button>
             {(treeView === 'tree' || treeView === 'constellation') && (
-              <button type="button" className="relayout-btn" onClick={handleRelayout}>
-                ⟳ Re-layout
+              <button type="button" className="relayout-btn" onClick={handleRelayout} title="Re-layout">
+                ⟳
               </button>
             )}
           </div>

@@ -140,6 +140,7 @@ export default function TheDig({ digData, onClose, chartTitle, isPremium = true,
           if (!state) return null
           return <DigSlide key={i} slide={slide} state={state} onShare={handleShare} sharing={sharing} onUpgrade={onUpgrade} />
         })}
+        <div className="dig-watermark">astrodig.com · ♃ Jupiter Digital · @jupreturn</div>
       </div>
     </div>,
     document.body

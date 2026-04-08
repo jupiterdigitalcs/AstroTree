@@ -495,6 +495,11 @@ export function buildDigSummaryHtml(digData, slides, chartTitle) {
     }
   }
   const stats = `<div style="display:flex;gap:24px;margin:16px 0"><div style="text-align:center"><span style="font-size:24px;color:#c9a84c">${digData.memberCount}</span><div style="font-size:10px;color:rgba(255,255,255,0.35)">members</div></div>${(digData.topBonds?.length ?? 0) > 0 ? `<div style="text-align:center"><span style="font-size:24px;color:#b8a0d4">${digData.topBonds.length}</span><div style="font-size:10px;color:rgba(255,255,255,0.35)">bonds</div></div>` : ''}${(digData.signThreadList?.length ?? 0) > 0 ? `<div style="text-align:center"><span style="font-size:24px;color:#5bc8f5">${digData.signThreadList.length}</span><div style="font-size:10px;color:rgba(255,255,255,0.35)">threads</div></div>` : ''}</div>`
-  const brand = `<div style="border-top:1px solid rgba(201,168,76,0.15);padding-top:12px;margin-top:16px;display:flex;justify-content:space-between;align-items:center"><div style="font-size:10px;font-family:Cinzel,serif;color:#c9a84c;letter-spacing:0.06em">✦ AstroDig · Jupiter Digital</div><div style="font-size:9px;color:rgba(255,255,255,0.25)">astrodig.com · @jupreturn</div></div>`
-  return `<div style="padding:32px;font-family:Raleway,sans-serif;color:#e8dcc8;max-width:420px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:rgba(255,255,255,0.3);margin-bottom:4px">The DIG</div><div style="font-size:22px;font-family:Cinzel,serif;color:#c9a84c;margin-bottom:20px">${name}</div>${rows}${stats}${brand}</div>`
+  // Member names list
+  const members = (digData.nodes || []).map(n => n.data?.name).filter(Boolean)
+  const memberLine = members.length > 0
+    ? `<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:16px;line-height:1.5">${members.join(' · ')}</div>`
+    : ''
+  const brand = `<div style="border-top:1px solid rgba(201,168,76,0.2);padding-top:14px;margin-top:20px;display:flex;align-items:center;gap:10px"><div style="font-size:20px;line-height:1;filter:drop-shadow(0 0 6px rgba(201,168,76,0.4))">♃</div><div><div style="font-size:12px;font-family:Cinzel,serif;color:#c9a84c;letter-spacing:0.06em">AstroDig · Jupiter Digital</div><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px">astrodig.com · IG @jupreturn</div></div></div>`
+  return `<div style="padding:32px;font-family:Raleway,sans-serif;color:#e8dcc8;max-width:420px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:rgba(255,255,255,0.3);margin-bottom:4px">The DIG</div><div style="font-size:22px;font-family:Cinzel,serif;color:#c9a84c;margin-bottom:6px">${name}</div>${memberLine}${rows}${stats}${brand}</div>`
 }

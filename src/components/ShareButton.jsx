@@ -76,8 +76,8 @@ export function ShareButton({ savedChartId, syncStatus }) {
               <path d="M8 3H9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               <path d="M6 1v6M4 3l2-2 2 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            <span className="export-label-desktop">Invite to View</span>
-            <span className="export-label-mobile">Invite</span>
+            <span className="export-label-desktop">Send Chart</span>
+            <span className="export-label-mobile">Send</span>
           </>
         )}
       </button>
