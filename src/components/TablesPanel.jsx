@@ -95,7 +95,7 @@ export function TablesPanel({ nodes, chartTitle }) {
 
   return (
     <div className="tables-panel">
-      <h3 className="tables-title">{chartTitle ? `${chartTitle} — Astrology Data` : 'Astrology Data'}</h3>
+      <h3 className="tables-title">{chartTitle || 'Astrology Data'}</h3>
 
       {/* Column visibility toggles — all columns */}
       <div className="tables-col-toggles">

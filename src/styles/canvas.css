@@ -35,11 +35,11 @@
 }
 
 .node-name {
-  font-family: 'Cinzel', serif;
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
   color: var(--text);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
 }
 
 .node-sign {

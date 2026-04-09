@@ -1030,12 +1030,12 @@
   white-space: nowrap;
 }
 
-/* Desktop: pin tooltip to right side to avoid top nav overlap */
+/* Desktop: pin tooltip to left side to avoid nav/branding overlap */
 @media (min-width: 769px) {
   .zodiac-tooltip {
     top: 1rem;
-    right: 1rem;
-    left: auto;
+    left: 1rem;
+    right: auto;
     transform: none;
   }
 }
@@ -1048,8 +1048,8 @@
 @media (min-width: 769px) {
   .constellation-tooltip {
     top: 1rem;
-    right: 1rem;
-    left: auto;
+    left: 4.5rem;
+    right: auto;
     transform: none;
   }
 }

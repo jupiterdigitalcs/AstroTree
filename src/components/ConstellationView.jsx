@@ -82,8 +82,9 @@ function runForceLayout(nodes, edges, width, height) {
   }
 
   // Post-process: separate any remaining overlaps (min distance between nodes)
-  const minDist = 50
-  for (let pass = 0; pass < 20; pass++) {
+  // Use larger minDist to account for node radius + name label below
+  const minDist = 65
+  for (let pass = 0; pass < 30; pass++) {
     let moved = false
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {
@@ -99,14 +100,13 @@ function runForceLayout(nodes, edges, width, height) {
         }
       }
     }
+    // Clamp after each pass so pushes don't escape the safe area
+    positions.forEach(p => {
+      p.x = Math.max(pad, Math.min(width - pad, p.x))
+      p.y = Math.max(pad, Math.min(height - padBottom, p.y))
+    })
     if (!moved) break
   }
-
-  // Clamp final positions
-  positions.forEach(p => {
-    p.x = Math.max(pad, Math.min(width - pad, p.x))
-    p.y = Math.max(pad, Math.min(height - padBottom, p.y))
-  })
 
   return positions
 }

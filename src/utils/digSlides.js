@@ -461,7 +461,7 @@ export function buildDigSummaryHtml(digData, slides, chartTitle) {
       rows += row('The Empath', `☽ ${s.data.node.data?.name || '—'}`, `${s.data.node.data?.moonSign} Moon — ${s.data.moonVibe}`)
     } else if (s.type === 'cosmicDuo') {
       const b = s.data.bond
-      rows += row('Cosmic Duo', `${b.nameA || '—'} + ${b.nameB || '—'}`, `${b.title || 'Strongest cosmic bond in the chart'}${s.data.totalBonds > 1 ? ` · ${s.data.totalBonds} total bonds found` : ''}`)
+      rows += row('Cosmic Duo', `${b.a?.data?.name || '—'} + ${b.b?.data?.name || '—'}`, `${b.title || 'Strongest cosmic bond in the chart'}${s.data.totalBonds > 1 ? ` · ${s.data.totalBonds} total bonds found` : ''}`)
     } else if (s.type === 'wildcard') {
       rows += row('The Wildcard', `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}`, `The one who breaks the mold — zero ${s.data.familyElement} energy in a ${s.data.familyElement}-dominant family`)
     } else if (s.type === 'cosmicDNA') {
