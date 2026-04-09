@@ -14,7 +14,7 @@ export function LockedOverlay({ feature, description, onUpgrade }) {
           className="locked-overlay-btn"
           onClick={onUpgrade}
         >
-          Unlock with Premium
+          ✦ Unlock with Celestial
         </button>
       </div>
     </div>

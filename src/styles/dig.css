@@ -160,20 +160,57 @@
   width: 100%;
 }
 
-/* ── Brand watermark on every slide ────────────────────────────────────── */
+/* ── Brand bar on every slide (designed to look good in screenshots) ──── */
 .dig-slide-brand {
   position: absolute;
-  bottom: 1.2rem;
+  bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
-  font-family: 'Cinzel', serif;
-  font-size: 0.55rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: rgba(201, 168, 76, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(9, 7, 26, 0.55);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  border-radius: 16px;
+  padding: 0.3rem 0.9rem;
+  backdrop-filter: blur(8px);
   white-space: nowrap;
   pointer-events: none;
+}
+
+.dig-slide-brand-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: rgba(201, 168, 76, 0.7);
+}
+
+.dig-slide-brand-sep {
+  color: rgba(255, 255, 255, 0.15);
+  font-size: 0.5rem;
+}
+
+.dig-slide-brand-studio {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.dig-slide-brand-ig {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.dig-slide-brand-ig svg {
+  opacity: 0.5;
 }
 
 /* ── Per-slide share button (mobile) ───────────────────────────────────── */
@@ -405,6 +442,8 @@
 /* ── DIG section ───────────────────────────────────────────────────────── */
 .dig-section {
   padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .dig-section-header {
@@ -438,6 +477,34 @@
   margin: 0;
   opacity: 0.7;
 }
+
+/* Full-width download summary button */
+.dig-download-full {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, rgba(91, 200, 245, 0.10) 0%, rgba(160, 80, 160, 0.06) 100%);
+  border: 1px solid rgba(91, 200, 245, 0.25);
+  border-radius: 12px;
+  color: #8cc8e8;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dig-download-full:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(91, 200, 245, 0.18) 0%, rgba(160, 80, 160, 0.10) 100%);
+  border-color: rgba(91, 200, 245, 0.4);
+}
+
+.dig-download-full:disabled { opacity: 0.4; cursor: default; }
 
 /* ── DIG summary card (rendered for export capture) ────────────────────── */
 .dig-summary-card {
@@ -622,6 +689,36 @@
   border-color: rgba(201, 168, 76, 0.5);
 }
 
+/* ── Tier indicator in top nav (desktop) ────────────────────────────────── */
+.top-nav-tier {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  padding: 0.25rem 0.7rem;
+  border-radius: 14px;
+  white-space: nowrap;
+}
+
+.top-nav-tier--celestial {
+  color: var(--gold);
+  background: rgba(201, 168, 76, 0.1);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  text-shadow: 0 0 10px rgba(201, 168, 76, 0.3);
+}
+
+.top-nav-tier--free {
+  color: var(--gold);
+  background: none;
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.top-nav-tier--free:hover {
+  background: rgba(201, 168, 76, 0.08);
+  border-color: rgba(201, 168, 76, 0.4);
+}
+
 /* ── Mobile adjustments ──────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .dig-slide { padding: 2rem 1.5rem; }
@@ -638,19 +735,36 @@
 /* ── Watermark — visible branding ─────────────────────────────────────── */
 .dig-watermark {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  left: auto;
-  bottom: auto;
-  transform: none;
+  bottom: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-family: 'Plus Jakarta Sans', 'Raleway', sans-serif;
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.18);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.35);
   letter-spacing: 0.06em;
   white-space: nowrap;
   z-index: 5;
   pointer-events: none;
   text-shadow: 0 0 8px rgba(0,0,0,0.5);
+}
+
+.dig-watermark-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  color: rgba(201, 168, 76, 0.45);
+  letter-spacing: 0.1em;
+}
+
+.dig-watermark-sep {
+  opacity: 0.3;
+}
+
+.dig-watermark-brand {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
 }
 
 /* ── Starfield background — scattered dots with twinkling ────────────── */

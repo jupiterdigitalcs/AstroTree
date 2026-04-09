@@ -197,7 +197,8 @@
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-.tier-badge--premium {
+.tier-badge--premium,
+.tier-badge--celestial {
   color: var(--gold);
   border-color: rgba(201, 168, 76, 0.3);
   background: rgba(201, 168, 76, 0.08);
@@ -210,6 +211,67 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
+}
+
+/* ──────────────────── Tier status bar (above bottom navs) ──────────────── */
+.tier-bar {
+  display: none;
+}
+
+/* Classic layout: show only on mobile (desktop has top-nav-right) */
+@media (max-width: 768px) {
+  .tier-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    bottom: calc(60px + env(safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+    z-index: 199;
+    padding: 0.35rem 0;
+    background: rgba(11, 8, 26, 0.92);
+    border-top: 1px solid rgba(201, 168, 76, 0.12);
+    backdrop-filter: blur(12px);
+  }
+}
+
+.tier-bar-status {
+  font-family: 'Cinzel', serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.tier-bar-status--celestial {
+  color: var(--gold);
+  text-shadow: 0 0 12px rgba(201, 168, 76, 0.35);
+}
+
+.tier-bar-status--celestial:hover {
+  text-shadow: 0 0 16px rgba(201, 168, 76, 0.5);
+}
+
+.tier-bar-upgrade {
+  background: none;
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 14px;
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.tier-bar-upgrade:hover {
+  background: rgba(201, 168, 76, 0.1);
+  border-color: rgba(201, 168, 76, 0.45);
 }
 
 /* ──────────────────── Locked view tab hint ──────────────────────────────── */
@@ -281,7 +343,7 @@
   background: rgba(201, 168, 76, 0.1);
 }
 
-/* ──────────────────── Premium welcome toast ─────────────────────────────── */
+/* ──────────────────── Celestial welcome toast ───────────────────────────── */
 .premium-toast {
   position: fixed;
   top: 1.2rem;

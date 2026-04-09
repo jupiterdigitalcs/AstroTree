@@ -1014,8 +1014,9 @@
 /* Tooltip */
 .zodiac-tooltip {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1025,6 +1026,32 @@
   padding: 0.5rem 0.85rem;
   pointer-events: none;
   backdrop-filter: blur(8px);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+/* Desktop: pin tooltip to right side to avoid top nav overlap */
+@media (min-width: 769px) {
+  .zodiac-tooltip {
+    top: 1rem;
+    right: 1rem;
+    left: auto;
+    transform: none;
+  }
+}
+
+/* Constellation tooltip — column layout for connections list */
+.constellation-tooltip {
+  flex-direction: column;
+  align-items: flex-start;
+}
+@media (min-width: 769px) {
+  .constellation-tooltip {
+    top: 1rem;
+    right: 1rem;
+    left: auto;
+    transform: none;
+  }
 }
 
 .zodiac-tooltip-symbol { font-size: 1.1rem; }

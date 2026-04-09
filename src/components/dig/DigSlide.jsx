@@ -64,7 +64,14 @@ export default function DigSlide({ slide, state, onShare, sharing, onUpgrade }) 
         >{sharing ? '...' : '↑ Share This Slide'}</button>
       )}
       <div className="dig-slide-brand">
-        ✦ AstroDig · Jupiter Digital
+        <span className="dig-slide-brand-name">✦ astrodig.com</span>
+        <span className="dig-slide-brand-sep">·</span>
+        <span className="dig-slide-brand-studio">Jupiter Digital LLC</span>
+        <span className="dig-slide-brand-sep">·</span>
+        <span className="dig-slide-brand-ig">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          @jupreturns
+        </span>
       </div>
     </div>
   )

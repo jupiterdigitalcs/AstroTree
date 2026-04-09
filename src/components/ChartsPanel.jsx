@@ -98,7 +98,7 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
           const limit = getChartLimit(entitlements.tier, entitlements.config)
           const count = charts.filter(c => !c.isSample).length
           return count >= limit && entitlements.tier !== 'premium' ? (
-            <button type="button" className="chart-limit-upgrade" onClick={onUpgrade}>Upgrade</button>
+            <button type="button" className="chart-limit-upgrade" onClick={onUpgrade}>✦ Unlock Celestial</button>
           ) : (
             <button type="button" className="add-row-btn" onClick={onNew}>+ New Chart</button>
           )
@@ -106,6 +106,30 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         {(!entitlements || !isPaywallEnabled(entitlements?.config)) && (
           <button type="button" className="add-row-btn" onClick={onNew}>+ New Chart</button>
         )}
+      </div>
+
+      {/* ── Celestial explainer — prominent, right after header ─────────── */}
+      <div className="celestial-explainer" id="celestial-info">
+        <h3 className="celestial-explainer-title">✦ What is Celestial?</h3>
+        {entitlements?.tier === 'premium' ? (
+          <p className="celestial-explainer-text">
+            You have <strong>Celestial</strong> — the full AstroDig experience. All views, insights, The DIG, and unlimited charts are yours.
+          </p>
+        ) : (<>
+          <p className="celestial-explainer-text">
+            <strong>Celestial</strong> is a one-time $9.99 upgrade that unlocks the full cosmos:
+          </p>
+          <ul className="celestial-explainer-list">
+            <li>☉ Zodiac Wheel + Constellation views</li>
+            <li>☽ Tables — sortable sun, moon &amp; planet grid</li>
+            <li>✦ Full Insights — compatibility, roles, zodiac threads</li>
+            <li>✦ The Full DIG — every slide in your cosmic story</li>
+            <li>📚 Unlimited charts — save as many as you want</li>
+          </ul>
+          <button type="button" className="celestial-explainer-btn" onClick={onUpgrade}>
+            ✦ Unlock Celestial — $9.99
+          </button>
+        </>)}
       </div>
 
       {/* Email indicator / opt-in */}

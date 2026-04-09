@@ -59,9 +59,9 @@ export function UpgradePrompt({ onClose, feature, onRedeemed }) {
     return (
       <DialogBackdrop onClose={onClose}>
         <div className="save-dialog upgrade-prompt">
-          <p className="save-dialog-title">✦ Premium Unlocked!</p>
+          <p className="save-dialog-title">✦ Celestial Unlocked!</p>
           <p className="save-dialog-sub">
-            All features are now available. Enjoy your full AstroDig experience.
+            All features are now yours. Welcome to the full cosmos.
           </p>
           <div className="save-dialog-btns">
             <button type="button" className="save-dialog-save upgrade-btn" onClick={onClose}>
@@ -76,14 +76,14 @@ export function UpgradePrompt({ onClose, feature, onRedeemed }) {
   return (
     <DialogBackdrop onClose={onClose}>
       <div className="save-dialog upgrade-prompt">
-        <p className="save-dialog-title">✦ Unlock Premium</p>
+        <p className="save-dialog-title">✦ Unlock Celestial</p>
         {feature ? (
           <p className="save-dialog-sub">
-            <strong>{feature}</strong> is a premium feature. Upgrade to unlock it plus everything below.
+            <strong>{feature}</strong> is a Celestial feature. Upgrade to unlock it plus everything below.
           </p>
         ) : (
           <p className="save-dialog-sub">
-            One upgrade, everything unlocked — for all your charts, forever.
+            One upgrade, the full cosmos unlocked — for all your charts, forever.
           </p>
         )}
 
@@ -113,7 +113,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed }) {
             onClick={handleUpgrade}
             disabled={loading}
           >
-            {loading ? 'Redirecting to checkout...' : 'Upgrade Now — $9.99'}
+            {loading ? 'Redirecting to checkout...' : '✦ Unlock Celestial — $9.99'}
           </button>
         </div>
 

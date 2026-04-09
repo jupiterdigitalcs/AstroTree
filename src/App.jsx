@@ -375,8 +375,8 @@ export default function App() {
       {/* ── Premium welcome toast ────────────────────────────────────────── */}
       {premiumToast && (
         <div className="premium-toast">
-          <p className="premium-toast-title">✦ Welcome to Full Chart!</p>
-          <p className="premium-toast-sub">Zodiac Wheel, Tables, full Insights, and unlimited charts are now unlocked.</p>
+          <p className="premium-toast-title">✦ Welcome to Celestial</p>
+          <p className="premium-toast-sub">The full cosmos is yours — all views, insights, and unlimited charts unlocked.</p>
         </div>
       )}
 
@@ -433,7 +433,7 @@ export default function App() {
                 className={`top-nav-tab${activeTab === 'insights' && !editingNodeId ? ' active' : ''}`}
                 onClick={() => goTab('insights')}
                 disabled={nodes.length < 2}
-              >✦ Insights{entitlements?.tier === 'premium' && <span className="pro-tag pro-tag--subtle">PRO</span>}</button>
+              >✦ Insights{entitlements?.tier === 'premium' && <span className="pro-tag pro-tag--subtle">✦</span>}</button>
               {nodes.length < 2 && <span className="tab-hint">Add {2 - nodes.length} more {nodes.length === 1 ? 'person' : 'people'} to unlock</span>}
             </span>
             <button
@@ -454,6 +454,15 @@ export default function App() {
               >✦ The DIG</button>
             )}
             {lastSavedAt && <SyncIndicator status={syncStatus === 'idle' ? 'synced' : syncStatus} />}
+            {entitlements && (
+              entitlements.tier === 'premium' ? (
+                <button type="button" className="top-nav-tier top-nav-tier--celestial" onClick={() => goTab('charts')}>✦ Celestial</button>
+              ) : (
+                <button type="button" className="top-nav-tier top-nav-tier--free" onClick={() => goTab('charts')}>
+                  ✦ Unlock Celestial
+                </button>
+              )
+            )}
           </div>
       </header>
       {nodes.length > 0 && !panelOpen && (
@@ -461,8 +470,8 @@ export default function App() {
           <div className="top-subnav-brand">Cosmic Connections</div>
           <button className={`top-subnav-btn${treeView === 'tree' ? ' active' : ''}`} onClick={() => { setTreeView('tree'); goTab('tree') }}>🌳 Family Tree</button>
           <button className={`top-subnav-btn${treeView === 'constellation' ? ' active' : ''}`} onClick={() => { setTreeView('constellation'); goTab('tree') }}>✦ Constellation</button>
-          <button className={`top-subnav-btn${treeView === 'zodiac' ? ' active' : ''}`} onClick={() => { setTreeView('zodiac'); goTab('tree') }}>☉ Zodiac{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">PRO</span> : !canAccess('zodiac_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
-          <button className={`top-subnav-btn${treeView === 'tables' ? ' active' : ''}`} onClick={() => { setTreeView('tables'); goTab('tree') }}>☽ Tables{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">PRO</span> : !canAccess('tables_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
+          <button className={`top-subnav-btn${treeView === 'zodiac' ? ' active' : ''}`} onClick={() => { setTreeView('zodiac'); goTab('tree') }}>☉ Zodiac{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">✦</span> : !canAccess('zodiac_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
+          <button className={`top-subnav-btn${treeView === 'tables' ? ' active' : ''}`} onClick={() => { setTreeView('tables'); goTab('tree') }}>☽ Tables{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">✦</span> : !canAccess('tables_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
         </nav>
       )}
       {activeTab === 'insights' && edges.length > 0 && (
@@ -472,7 +481,7 @@ export default function App() {
           <button
             className={`top-subnav-btn${insightsTab === 'dig' ? ' active' : ''}`}
             onClick={() => setInsightsTab('dig')}
-          >✦ The DIG{entitlements?.tier === 'premium' && <span className="pro-tag pro-tag--subtle">PRO</span>}</button>
+          >✦ The DIG{entitlements?.tier === 'premium' && <span className="pro-tag pro-tag--subtle">✦</span>}</button>
         </nav>
       )}
       {panelOpen && (
@@ -742,11 +751,11 @@ export default function App() {
           {entitlements && (
             <div style={{ marginTop: '0.4rem', textAlign: 'center' }}>
               {entitlements?.tier === 'premium' ? (<>
-                <span className="tier-badge tier-badge--premium">✦ Full Chart</span>
+                <span className="tier-badge tier-badge--celestial">✦ Celestial</span>
                 {(() => { try { const e = localStorage.getItem('astrotree_user_email'); return e ? <span className="tier-email">{e}</span> : null } catch { return null } })()}
               </>) : (
                 <button type="button" className="tier-badge tier-badge--free" onClick={() => setShowUpgradePrompt(true)} style={{ cursor: 'pointer', background: 'none' }}>
-                  Free Plan · Upgrade
+                  ✦ Unlock Celestial
                 </button>
               )}
             </div>
@@ -757,6 +766,18 @@ export default function App() {
       <div className="split-drag-handle" onMouseDown={startDrag} onTouchStart={startDrag} title="Drag to resize" />
 
       {/* ── Mobile bottom tab bar ────────────────────────────────────────── */}
+      {/* ── Tier status bar (classic mobile) ────────────────────────────── */}
+      {entitlements && (
+        <div className="tier-bar">
+          {entitlements.tier === 'premium' ? (
+            <span className="tier-bar-status tier-bar-status--celestial">✦ Celestial</span>
+          ) : (
+            <button type="button" className="tier-bar-upgrade" onClick={() => setShowUpgradePrompt(true)}>
+              ✦ Unlock Celestial
+            </button>
+          )}
+        </div>
+      )}
       <nav className="bottom-tab-bar" aria-label="Main navigation">
         <button
           className={`bottom-tab${activeTab === 'add' || !!editingNodeId ? ' active' : ''}`}
@@ -1103,8 +1124,11 @@ export default function App() {
               type="button"
               className="cosmic-dig-fab"
               onClick={() => { setInsightsTab('dig'); setShowDig(true) }}
-              title="The DIG"
-            >✦</button>
+              title="The DIG — your cosmic story"
+            >
+              <span className="cosmic-dig-fab-icon">✦</span>
+              <span className="cosmic-dig-fab-label">The DIG</span>
+            </button>
           )}
 
           {/* Family + Edit member sheet (merged — no flash on transition) */}
@@ -1272,53 +1296,66 @@ export default function App() {
 
           {/* Cosmic bottom nav */}
           <nav className="cosmic-bottom-nav" aria-label="Main navigation">
-            <button
-              className={`cosmic-bottom-nav-btn${activeTab === 'add' || !!editingNodeId ? ' active' : ''}`}
-              onClick={() => goTab('add')}
-            >
-              <span className="cosmic-bottom-nav-icon">★</span>
-              <span className="cosmic-bottom-nav-label">{familyLabel}</span>
-            </button>
-            <button
-              className={`cosmic-bottom-nav-btn${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
-              onClick={() => { goTab('tree'); setNewMembersForChart(0) }}
-            >
-              <span className="cosmic-bottom-nav-icon" style={{ position: 'relative', display: 'inline-flex' }}>
-                ✦
-                {newMembersForChart > 0 && <span className="cosmic-bottom-nav-badge">{newMembersForChart}</span>}
-              </span>
-              <span className="cosmic-bottom-nav-label">Chart</span>
-            </button>
-            <span style={{ flex: 1, display: 'inline-flex', position: 'relative' }}>
+            {/* Tier + sync row */}
+            {entitlements && (
+              <div className="cosmic-nav-tier-row">
+                {lastSavedAt && <SyncIndicator status={syncStatus === 'idle' ? 'synced' : syncStatus} />}
+                {entitlements.tier === 'premium' ? (
+                  <button type="button" className="tier-bar-status tier-bar-status--celestial" onClick={() => goTab('charts')}>✦ Celestial</button>
+                ) : (
+                  <button type="button" className="tier-bar-upgrade" onClick={() => goTab('charts')}>
+                    ✦ Unlock Celestial
+                  </button>
+                )}
+              </div>
+            )}
+            <div className="cosmic-bottom-nav-buttons">
               <button
-                className={`cosmic-bottom-nav-btn${activeTab === 'insights' && !editingNodeId ? ' active' : ''}`}
-                onClick={() => goTab('insights')}
-                disabled={nodes.length < 2}
-                style={{ flex: 1 }}
+                className={`cosmic-bottom-nav-btn${activeTab === 'add' || !!editingNodeId ? ' active' : ''}`}
+                onClick={() => goTab('add')}
+              >
+                <span className="cosmic-bottom-nav-icon">★</span>
+                <span className="cosmic-bottom-nav-label">{familyLabel}</span>
+              </button>
+              <button
+                className={`cosmic-bottom-nav-btn${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
+                onClick={() => { goTab('tree'); setNewMembersForChart(0) }}
               >
                 <span className="cosmic-bottom-nav-icon" style={{ position: 'relative', display: 'inline-flex' }}>
-                  ☍
-                  {newEdgesForInsights > 0 && <span className="cosmic-bottom-nav-badge">{newEdgesForInsights}</span>}
+                  ✦
+                  {newMembersForChart > 0 && <span className="cosmic-bottom-nav-badge">{newMembersForChart}</span>}
                 </span>
-                <span className="cosmic-bottom-nav-label">Insights</span>
+                <span className="cosmic-bottom-nav-label">Chart</span>
               </button>
-            </span>
-            <button
-              className={`cosmic-bottom-nav-btn${activeTab === 'charts' && !editingNodeId ? ' active' : ''}`}
-              onClick={() => goTab('charts')}
-            >
-              <span className="cosmic-bottom-nav-icon">📚</span>
-              <span className="cosmic-bottom-nav-label">Saved</span>
-            </button>
-            <button
-              className={`cosmic-bottom-nav-btn${activeTab === 'about' && !editingNodeId ? ' active' : ''}`}
-              onClick={() => goTab('about')}
-            >
-              <span className="cosmic-bottom-nav-icon"><JupiterIcon size={22} /></span>
-              <span className="cosmic-bottom-nav-label">
-                About
+              <span style={{ flex: 1, display: 'inline-flex', position: 'relative' }}>
+                <button
+                  className={`cosmic-bottom-nav-btn${activeTab === 'insights' && !editingNodeId ? ' active' : ''}`}
+                  onClick={() => goTab('insights')}
+                  disabled={nodes.length < 2}
+                  style={{ flex: 1 }}
+                >
+                  <span className="cosmic-bottom-nav-icon" style={{ position: 'relative', display: 'inline-flex' }}>
+                    ☍
+                    {newEdgesForInsights > 0 && <span className="cosmic-bottom-nav-badge">{newEdgesForInsights}</span>}
+                  </span>
+                  <span className="cosmic-bottom-nav-label">Insights</span>
+                </button>
               </span>
-            </button>
+              <button
+                className={`cosmic-bottom-nav-btn${activeTab === 'charts' && !editingNodeId ? ' active' : ''}`}
+                onClick={() => goTab('charts')}
+              >
+                <span className="cosmic-bottom-nav-icon">📚</span>
+                <span className="cosmic-bottom-nav-label">Saved</span>
+              </button>
+              <button
+                className={`cosmic-bottom-nav-btn${activeTab === 'about' && !editingNodeId ? ' active' : ''}`}
+                onClick={() => goTab('about')}
+              >
+                <span className="cosmic-bottom-nav-icon"><JupiterIcon size={22} /></span>
+                <span className="cosmic-bottom-nav-label">About</span>
+              </button>
+            </div>
           </nav>
         </>
       )}

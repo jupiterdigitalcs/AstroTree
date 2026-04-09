@@ -20,7 +20,7 @@ export default function SlidePaywall({ data, onUpgrade }) {
           style={{ '--i': 4, background: 'rgba(201,168,76,0.2)', borderColor: 'var(--gold)' }}
           onClick={(e) => { e.stopPropagation(); onUpgrade() }}
         >
-          Unlock Premium
+          ✦ Unlock Celestial
         </button>
       )}
     </div>

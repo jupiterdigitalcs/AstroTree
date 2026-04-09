@@ -31,6 +31,7 @@ function runForceLayout(nodes, edges, width, height) {
   })
 
   const pad = 50
+  const padBottom = 160 // extra bottom padding to avoid legend overlap
 
   for (let iter = 0; iter < iterations; iter++) {
     const alpha = Math.pow(1 - iter / iterations, 1.5) // ease-out cooling
@@ -76,7 +77,7 @@ function runForceLayout(nodes, edges, width, height) {
       p.vx *= damping; p.vy *= damping
       p.x += p.vx; p.y += p.vy
       p.x = Math.max(pad, Math.min(width - pad, p.x))
-      p.y = Math.max(pad, Math.min(height - pad, p.y))
+      p.y = Math.max(pad, Math.min(height - padBottom, p.y))
     })
   }
 
@@ -104,7 +105,7 @@ function runForceLayout(nodes, edges, width, height) {
   // Clamp final positions
   positions.forEach(p => {
     p.x = Math.max(pad, Math.min(width - pad, p.x))
-    p.y = Math.max(pad, Math.min(height - pad, p.y))
+    p.y = Math.max(pad, Math.min(height - padBottom, p.y))
   })
 
   return positions
