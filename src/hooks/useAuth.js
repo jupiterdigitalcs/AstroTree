@@ -89,6 +89,12 @@ export function useAuth() {
   const signOut = useCallback(async () => {
     const supabase = getSupabaseBrowser()
     if (supabase) await supabase.auth.signOut()
+    // Clear local data so next user doesn't see this user's charts
+    try {
+      localStorage.removeItem('astrotree_charts')
+      localStorage.removeItem('astrotree_draft')
+      localStorage.removeItem('astrotree_user_email')
+    } catch {}
     setUser(null)
   }, [])
 

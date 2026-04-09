@@ -75,9 +75,14 @@ export function useCloudSync({ onMergeCharts }) {
     setCachedEntitlements(ent)
   }, [])
 
-  // Called after auth sign-in: re-fetch everything with the new session cookies
+  // Called after auth sign-in: clear local data, then load only this user's charts
   const refreshAfterAuth = useCallback(async () => {
     if (!isCloudEnabled()) return
+    // Clear local charts + draft so a different user doesn't see the previous user's data
+    try {
+      localStorage.removeItem('astrotree_charts')
+      localStorage.removeItem('astrotree_draft')
+    } catch {}
     const ent = await fetchEntitlements()
     setEntitlements(ent)
     setCachedEntitlements(ent)
