@@ -157,8 +157,8 @@ export default function AboutPanel() {
       <div className="about-card" id="about-data">
         <h3 className="about-heading">Your Data &amp; Privacy</h3>
         <p className="about-bio">
-          AstroDig saves your charts locally in your browser and, if you enable cloud sync, on our servers.
-          Each browser gets a random anonymous ID — no account required.
+          AstroDig saves your charts locally in your browser and syncs them to our servers.
+          You can sign in with Google to protect your charts across devices, or use the app anonymously.
         </p>
 
         <p className="about-data-subhead">What we collect</p>

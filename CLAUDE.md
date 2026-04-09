@@ -31,6 +31,7 @@ Live at astrodig.com:
 - Four visualization modes: tree (React Flow), zodiac wheel, constellation (force-directed), tables (sortable grid)
 - The DIG: Wrapped-style personality story with swipeable slides (free users see 3, celestial see all)
 - Insights panel with 11 cards (see card order below)
+- Optional auth via Supabase magic links — users start anonymous, prompted to add email after first save
 - Chart save/load/rename/duplicate with cloud sync
 - Shared chart links via `?view=token`
 - PNG export with brand bar (all views + insights)
@@ -68,6 +69,7 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
 - Always use named exports, not default exports, for utility functions
 - When adding new features, add them in isolation before wiring into the main tree
 - **Never add `VITE_` prefixed secrets** — all Supabase/admin/Stripe keys stay server-side in `/src/app/api/` route handlers
+- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are the only client-exposed env vars (public anon key, safe)
 - Environment variables (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `ADMIN_PASSWORD`, Stripe keys) are set in Vercel dashboard, not committed to code
 
 ---

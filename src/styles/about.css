@@ -38,6 +38,92 @@
   padding: 0.9rem 1rem;
 }
 
+/* ── Account card ──────────────────────────────────────────────────────── */
+.about-account-card {
+  border-color: rgba(201, 168, 76, 0.2);
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.04) 0%, rgba(140, 80, 200, 0.03) 100%);
+}
+
+.about-account-signed-in {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.about-account-check {
+  font-size: 1.1rem;
+  color: #7ec845;
+  flex-shrink: 0;
+}
+
+.about-account-label {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.about-account-email {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.about-account-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.about-signin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  color: #3c4043;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.about-signin-btn:hover {
+  background: #f7f8f8;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.about-signout-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.about-signout-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-soft);
+}
+
+.about-signout-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .about-heading {
   font-family: 'Cinzel', serif;
   font-size: 0.7rem;

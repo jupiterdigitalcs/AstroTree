@@ -30,7 +30,8 @@ import { useCloudSync } from './hooks/useCloudSync.js'
 import { SyncIndicator } from './components/SyncIndicator.jsx'
 import { ShareButton } from './components/ShareButton.jsx'
 import { fetchChartByToken, isCloudEnabled, pingVisit, logEvent } from './utils/cloudStorage.js'
-import { EmailCapture, hasBeenAsked, clearEmailAsked } from './components/EmailCapture.jsx'
+import { EmailCapture, hasBeenAsked, clearEmailAsked, shouldForcePrompt } from './components/EmailCapture.jsx'
+import { useAuth } from './hooks/useAuth.js'
 import { UpgradePrompt } from './components/UpgradePrompt.jsx'
 import { checkPurchaseReturn } from './utils/checkout.js'
 import { OnboardingProgress, markInsightsSeen } from './components/OnboardingProgress.jsx'
@@ -69,6 +70,7 @@ function FitViewOnLayout({ fitTick, fitViewRef }) {
 
 
 export default function App() {
+  const { user: authUser, signInWithGoogle, signInWithEmail, signOut: authSignOut } = useAuth()
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const [counter,           setCounter]           = useState(1)
@@ -116,8 +118,9 @@ export default function App() {
   // Mobile panel is open when not on the tree tab, or when editing a node
   const panelOpen = activeTab !== 'tree' || !!editingNodeId
 
-  const { syncStatus, syncChart, deleteFromCloud, entitlements, refreshEntitlements } = useCloudSync({
-    onMergeCharts: () => {/* ChartsPanel will re-read localStorage on its own mount */},
+  const [chartRefreshTick, setChartRefreshTick] = useState(0)
+  const { syncStatus, syncChart, deleteFromCloud, entitlements, refreshEntitlements, refreshAfterAuth } = useCloudSync({
+    onMergeCharts: () => setChartRefreshTick(t => t + 1),
   })
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
 
@@ -203,18 +206,45 @@ export default function App() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Handle ?purchase=success return from Stripe ────────────────────────────
+  const [postPurchaseCapture, setPostPurchaseCapture] = useState(false)
   useEffect(() => {
     const status = checkPurchaseReturn()
     if (status === 'success') {
       refreshEntitlements()
       setPremiumToast(true)
       setTimeout(() => setPremiumToast(false), 5000)
+      // Prompt for email/auth if not signed in — protect their purchase
+      if (!authUser && shouldForcePrompt()) {
+        setTimeout(() => setPostPurchaseCapture(true), 2000)
+      }
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Show email capture after onboarding completes (insights seen) ────────
+  // ── Re-fetch charts + entitlements after auth sign-in ───────────────────
   useEffect(() => {
-    if (insightsSeen && !viewOnly && !hasBeenAsked() && isCloudEnabled()) {
+    if (authUser) {
+      refreshAfterAuth().then(() => {
+        // Navigate to charts tab so user sees their synced charts
+        setActiveTab('charts')
+      })
+    }
+  }, [authUser]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Clean up ?auth= param after OAuth redirect ──────────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const authStatus = params.get('auth')
+    if (authStatus) {
+      const url = new URL(window.location)
+      url.searchParams.delete('auth')
+      window.history.replaceState({}, '', url)
+    }
+  }, [])
+
+  // ── Show email capture after onboarding completes (insights seen) ────────
+  // Skip if already signed in via Google/magic link
+  useEffect(() => {
+    if (insightsSeen && !viewOnly && !authUser && !hasBeenAsked() && isCloudEnabled()) {
       setShowEmailCapture(true)
     }
   }, [insightsSeen]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -285,9 +315,8 @@ export default function App() {
     setFitTick(t => t + 1)
     setNewMembersForChart(prev => prev + members.length)
     if (wasEmpty) {
-      // Open edit panel for first person so they can add relationships immediately
+      // Stay on the add tab so they can add more members
       setActiveTab('add')
-      setEditingNodeId(primaryId)
     } else {
       setActiveTab('tree')
       setEditingNodeId(null)
@@ -359,9 +388,21 @@ export default function App() {
 
   return (
     <div className={`app${isCosmic ? ' app--cosmic' : ' app--topnav'}${!isCosmic && nodes.length > 0 && (!panelOpen || activeTab === 'insights') ? ' app--subnav' : ''}${activeTab === 'insights' ? ' app--insights-main' : ''}`}>
-      {/* ── Email capture — shown once after first named save ───────────── */}
-      {showEmailCapture && (
-        <EmailCapture onDismiss={() => setShowEmailCapture(false)} />
+      {/* ── Email / auth capture ────────────────────────────────────────── */}
+      {showEmailCapture && !authUser && (
+        <EmailCapture
+          onDismiss={() => setShowEmailCapture(false)}
+          signInWithGoogle={signInWithGoogle}
+          signInWithEmail={signInWithEmail}
+        />
+      )}
+      {postPurchaseCapture && !authUser && (
+        <EmailCapture
+          onDismiss={() => setPostPurchaseCapture(false)}
+          signInWithGoogle={signInWithGoogle}
+          signInWithEmail={signInWithEmail}
+          variant="post-purchase"
+        />
       )}
 
       {/* ── Upgrade prompt ──────────────────────────────────────────────── */}
@@ -454,6 +495,7 @@ export default function App() {
               >✦ The DIG</button>
             )}
             {lastSavedAt && <SyncIndicator status={syncStatus === 'idle' ? 'synced' : syncStatus} />}
+            {authUser && <span className="tier-bar-auth-dot" title={`Signed in as ${authUser.email}`}>✓</span>}
             {entitlements && (
               entitlements.tier === 'premium' ? (
                 <button type="button" className="top-nav-tier top-nav-tier--celestial" onClick={() => goTab('charts')}>✦ Celestial</button>
@@ -463,6 +505,7 @@ export default function App() {
                 </button>
               )
             )}
+            {!authUser && <button type="button" className="tier-bar-signin" onClick={() => setShowEmailCapture(true)}>Sign in</button>}
           </div>
       </header>
       {nodes.length > 0 && !panelOpen && (
@@ -579,6 +622,10 @@ export default function App() {
               }}
               entitlements={entitlements}
               onUpgrade={() => setShowUpgradePrompt(true)}
+              authUser={authUser}
+              onSignIn={() => setShowEmailCapture(true)}
+              onSignOut={authSignOut}
+              refreshTick={chartRefreshTick}
             />
 
           /* ── About ──────────────────────────────────────────────────── */
@@ -1282,6 +1329,10 @@ export default function App() {
               onGoToAbout={() => goTab('about')}
               entitlements={entitlements}
               onUpgrade={() => setShowUpgradePrompt(true)}
+              authUser={authUser}
+              onSignIn={() => setShowEmailCapture(true)}
+              onSignOut={authSignOut}
+              refreshTick={chartRefreshTick}
             />
           </BottomSheet>
 
@@ -1300,6 +1351,7 @@ export default function App() {
             {entitlements && (
               <div className="cosmic-nav-tier-row">
                 {lastSavedAt && <SyncIndicator status={syncStatus === 'idle' ? 'synced' : syncStatus} />}
+                {authUser && <span className="tier-bar-auth-dot" title={`Signed in as ${authUser.email}`}>✓</span>}
                 {entitlements.tier === 'premium' ? (
                   <button type="button" className="tier-bar-status tier-bar-status--celestial" onClick={() => goTab('charts')}>✦ Celestial</button>
                 ) : (
@@ -1307,6 +1359,7 @@ export default function App() {
                     ✦ Unlock Celestial
                   </button>
                 )}
+                {!authUser && <button type="button" className="tier-bar-signin" onClick={() => setShowEmailCapture(true)}>Sign in</button>}
               </div>
             )}
             <div className="cosmic-bottom-nav-buttons">

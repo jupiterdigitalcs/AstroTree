@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { loadCharts, deleteChart, saveChart, renameChart } from '../utils/storage.js'
-import { fetchCharts, fetchPublicCharts, isCloudEnabled, restoreChartsByEmail } from '../utils/cloudStorage.js'
+import { fetchPublicCharts, isCloudEnabled } from '../utils/cloudStorage.js'
 import { getSavedEmail } from './EmailCapture.jsx'
 import { buildDemoChart, buildDemoCrewChart } from '../utils/demoData.js'
 
@@ -11,15 +11,10 @@ const SAMPLE_CHARTS = [
 ]
 import { isPaywallEnabled, getChartLimit } from '../utils/entitlements.js'
 
-export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout, onRename, onDuplicate, entitlements, onUpgrade }) {
+export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout, onRename, onDuplicate, entitlements, onUpgrade, authUser, onSignIn, onSignOut, refreshTick }) {
   const [charts,          setCharts]          = useState(() => loadCharts())
   const [publicCharts,    setPublicCharts]    = useState([])
-  const [restoring,       setRestoring]       = useState(false)
   const [pendingDeleteId, setPendingDeleteId] = useState(null)
-  const [showRestore,     setShowRestore]     = useState(false)
-  const [restoreEmail,    setRestoreEmail]    = useState('')
-  const [restoreStatus,   setRestoreStatus]   = useState('idle')
-  const [restoreCount,    setRestoreCount]    = useState(0)
   const [renamingId,      setRenamingId]      = useState(null)
   const [renameValue,     setRenameValue]     = useState('')
   const savedEmail = getSavedEmail()
@@ -28,6 +23,11 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
     if (!isCloudEnabled()) return
     fetchPublicCharts().then(rows => { if (rows.length) setPublicCharts(rows) })
   }, [])
+
+  // Reload charts when cloud sync merges new data (e.g. after sign-in)
+  useEffect(() => {
+    if (refreshTick > 0) reloadLocal()
+  }, [refreshTick]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function reloadLocal() { setCharts(loadCharts()) }
 
@@ -50,28 +50,6 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
     if (updated) onRename?.(updated)
     reloadLocal()
     setRenamingId(null)
-  }
-
-  async function handleEmailRestore(e) {
-    e.preventDefault()
-    if (!restoreEmail.trim() || restoring) return
-    setRestoreStatus('loading')
-    const { restoreChartsByEmail } = await import('../utils/cloudStorage.js')
-    const result = await restoreChartsByEmail(restoreEmail)
-    if (!result.ok) {
-      setRestoreStatus(result.error?.includes('No account') ? 'not_found' : 'error')
-      return
-    }
-    const cloudCharts = await fetchCharts()
-    const local = loadCharts()
-    const localIds = new Set(local.map(c => c.id))
-    for (const cc of cloudCharts) {
-      if (!localIds.has(cc.id)) saveChart(cc)
-    }
-    reloadLocal()
-    setRestoreCount(result.count ?? 0)
-    setRestoreStatus('success')
-    try { localStorage.setItem('astrotree_user_email', restoreEmail.trim()) } catch {}
   }
 
   const sorted = [...charts].sort((a, b) => {
@@ -108,81 +86,60 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         )}
       </div>
 
-      {/* ── Celestial explainer — prominent, right after header ─────────── */}
-      <div className="celestial-explainer" id="celestial-info">
-        <h3 className="celestial-explainer-title">✦ What is Celestial?</h3>
-        {entitlements?.tier === 'premium' ? (
+      {/* ── Account status + Celestial explainer ─────────────────────────── */}
+      {authUser ? (
+        <div className="celestial-explainer" id="celestial-info">
+          <h3 className="celestial-explainer-title">✓ Your charts are protected</h3>
           <p className="celestial-explainer-text">
-            You have <strong>Celestial</strong> — the full AstroDig experience. All views, insights, The DIG, and unlimited charts are yours.
+            Signed in as <strong>{authUser.email}</strong>. Your charts and {entitlements?.tier === 'premium' ? 'Celestial access' : 'account'} will follow you to any device.
           </p>
-        ) : (<>
-          <p className="celestial-explainer-text">
-            <strong>Celestial</strong> is a one-time $9.99 upgrade that unlocks the full cosmos:
-          </p>
-          <ul className="celestial-explainer-list">
-            <li>☉ Zodiac Wheel + Constellation views</li>
-            <li>☽ Tables — sortable sun, moon &amp; planet grid</li>
-            <li>✦ Full Insights — compatibility, roles, zodiac threads</li>
-            <li>✦ The Full DIG — every slide in your cosmic story</li>
-            <li>📚 Unlimited charts — save as many as you want</li>
-          </ul>
-          <button type="button" className="celestial-explainer-btn" onClick={onUpgrade}>
-            ✦ Unlock Celestial — $9.99
-          </button>
-        </>)}
-      </div>
-
-      {/* Email indicator / opt-in */}
-      {savedEmail ? (
-        <div className="charts-email-indicator">
-          <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style={{flexShrink:0}}>
-            <path d="M1 3h10v7H1z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M1 3l5 4 5-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          {savedEmail}
-        </div>
-      ) : onAddEmail ? (
-        <button type="button" className="charts-add-email-btn" onClick={onAddEmail}>
-          ☁ Back up &amp; sync your charts
-        </button>
-      ) : null}
-
-      {isCloudEnabled() && (
-        <div className="restore-section restore-section--top">
-          {!showRestore ? (
-            <button type="button" className="restore-cloud-btn" onClick={() => { setShowRestore(true); setRestoreStatus('idle') }}>
-              ☁ Restore from another device
+          {entitlements?.tier !== 'premium' && (
+            <button type="button" className="celestial-explainer-btn" onClick={onUpgrade}>
+              ✦ Unlock Celestial — $9.99
             </button>
-          ) : restoreStatus === 'success' ? (
-            <div className="restore-result restore-result--ok">
-              {restoreCount > 0
-                ? `✓ ${restoreCount} chart${restoreCount !== 1 ? 's' : ''} restored!`
-                : '✓ All up to date — no new charts to restore.'}
-              <button type="button" className="restore-dismiss" onClick={() => { setShowRestore(false); setRestoreStatus('idle') }}>×</button>
-            </div>
-          ) : (
-            <form className="restore-form" onSubmit={handleEmailRestore}>
-              <p className="restore-form-label">Enter the email you used on your other device:</p>
-              <input
-                type="email"
-                className="save-dialog-input"
-                placeholder="your@email.com"
-                value={restoreEmail}
-                onChange={e => { setRestoreEmail(e.target.value); setRestoreStatus('idle') }}
-                disabled={restoreStatus === 'loading'}
-              />
-              {restoreStatus === 'not_found' && <p className="restore-error">No account found with that email.</p>}
-              {restoreStatus === 'error'     && <p className="restore-error">Something went wrong — try again.</p>}
-              <div className="restore-form-btns">
-                <button type="button" className="save-dialog-cancel" onClick={() => { setShowRestore(false); setRestoreStatus('idle') }}>Cancel</button>
-                <button type="submit" className="save-dialog-save" disabled={restoreStatus === 'loading' || !restoreEmail.trim()}>
-                  {restoreStatus === 'loading' ? 'Restoring…' : 'Restore'}
-                </button>
-              </div>
-            </form>
+          )}
+        </div>
+      ) : (
+        <div className="celestial-explainer celestial-explainer--at-risk" id="celestial-info">
+          <h3 className="celestial-explainer-title">
+            {entitlements?.tier === 'premium' ? '⚠ Your Celestial upgrade isn\'t protected' : '✦ What is Celestial?'}
+          </h3>
+          {entitlements?.tier === 'premium' ? (
+            <p className="celestial-explainer-text">
+              Add your email so you can restore your charts and Celestial access on any device.
+            </p>
+          ) : (<>
+            <p className="celestial-explainer-text">
+              <strong>Celestial</strong> is a one-time $9.99 upgrade that unlocks the full cosmos:
+            </p>
+            <ul className="celestial-explainer-list">
+              <li>☉ Zodiac Wheel + Constellation views</li>
+              <li>☽ Tables — sortable sun, moon &amp; planet grid</li>
+              <li>✦ Full Insights — compatibility, roles, zodiac threads</li>
+              <li>✦ The Full DIG — every slide in your cosmic story</li>
+              <li>📚 Unlimited charts — save as many as you want</li>
+            </ul>
+          </>)}
+          {onSignIn && (
+            <button type="button" className="celestial-explainer-btn" onClick={onSignIn}>
+              {entitlements?.tier === 'premium' ? '✦ Protect my account' : '✦ Unlock Celestial — $9.99'}
+            </button>
           )}
         </div>
       )}
+
+      {/* ── Account status ────────────────────────────────────────────── */}
+      {authUser ? (
+        <div className="charts-account-row">
+          <span className="charts-account-check">✓</span>
+          <span className="charts-account-email">{authUser.email}</span>
+          <button type="button" className="charts-signout-btn" onClick={onSignOut}>Sign out</button>
+        </div>
+      ) : isCloudEnabled() ? (
+        <button type="button" className="restore-cloud-btn" onClick={onSignIn}>
+          Sign in to protect your charts
+        </button>
+      ) : null}
 
       {sorted.length > 0 ? (() => {
         const chartLimit = entitlements && isPaywallEnabled(entitlements.config) && entitlements.tier !== 'premium'

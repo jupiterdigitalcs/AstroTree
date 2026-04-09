@@ -70,7 +70,7 @@ export default function DigSlide({ slide, state, onShare, sharing, onUpgrade }) 
         <span className="dig-slide-brand-sep">·</span>
         <span className="dig-slide-brand-ig">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-          @jupreturns
+          @jupreturn
         </span>
       </div>
     </div>

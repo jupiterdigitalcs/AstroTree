@@ -41,6 +41,20 @@ async function handleEntitlements(request) {
   return NextResponse.json(data ?? { tier: 'free', config: {} })
 }
 
+async function handleLinkAuth(request) {
+  const { deviceId, authUserId, email } = await request.json()
+  if (!deviceId || !authUserId || !email) {
+    return NextResponse.json({ ok: false, error: 'Missing fields' }, { status: 400 })
+  }
+  const { data, error } = await getSupabase().rpc('link_device_to_user', {
+    p_device_id: deviceId,
+    p_auth_user_id: authUserId,
+    p_email: email.trim().slice(0, 254),
+  })
+  if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+  return NextResponse.json(data ?? { ok: true })
+}
+
 async function handleEvent(request) {
   const { deviceId, eventName } = await request.json()
   if (!deviceId || !eventName) return NextResponse.json({ ok: false }, { status: 400 })
@@ -51,7 +65,7 @@ async function handleEvent(request) {
 
 // ── Route handlers ──────────────────────────────────────────────────────────
 
-const POST_ROUTES = { register: handleRegister, email: handleEmail, ping: handlePing, event: handleEvent }
+const POST_ROUTES = { register: handleRegister, email: handleEmail, ping: handlePing, event: handleEvent, 'link-auth': handleLinkAuth }
 
 export async function GET(request) {
   try {

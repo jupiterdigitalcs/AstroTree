@@ -10,34 +10,41 @@ export function useCloudSync({ onMergeCharts }) {
   const [syncStatus, setSyncStatus] = useState('idle')
   const [entitlements, setEntitlements] = useState({ tier: 'free', config: {} })
 
-  // On mount: register/update device row, fetch entitlements, then merge cloud charts
+  // Merge cloud charts into local storage
+  const mergeCloudCharts = useCallback(async () => {
+    const cloudCharts = await fetchCharts()
+    if (!cloudCharts.length) return
+    const local = loadCharts()
+    const localIds = new Set(local.map(c => c.id))
+    let merged = false
+    for (const cc of cloudCharts) {
+      if (!localIds.has(cc.id)) {
+        saveChart(cc)
+        merged = true
+      } else {
+        const lc = local.find(c => c.id === cc.id)
+        if (lc && new Date(cc.savedAt) > new Date(lc.savedAt)) {
+          saveChart(cc)
+          merged = true
+        }
+      }
+    }
+    if (merged && onMergeCharts) onMergeCharts()
+  }, [onMergeCharts])
+
+  // On mount: register device, fetch entitlements + charts
   useEffect(() => {
     if (!isCloudEnabled()) return
     upsertDevice()
     fetchEntitlements().then(ent => {
       setEntitlements(ent)
       setCachedEntitlements(ent)
-    })
-    fetchCharts().then(cloudCharts => {
-      if (!cloudCharts.length) return
-      const local = loadCharts()
-      const localIds = new Set(local.map(c => c.id))
-      let merged = false
-      for (const cc of cloudCharts) {
-        if (!localIds.has(cc.id)) {
-          saveChart(cc)
-          merged = true
-        } else {
-          // If cloud version is newer, update local
-          const lc = local.find(c => c.id === cc.id)
-          if (lc && new Date(cc.savedAt) > new Date(lc.savedAt)) {
-            saveChart(cc)
-            merged = true
-          }
-        }
+      if (ent.email && !localStorage.getItem('astrotree_user_email')) {
+        localStorage.setItem('astrotree_user_email', ent.email)
+        localStorage.setItem('astrotree_email_asked', '1')
       }
-      if (merged && onMergeCharts) onMergeCharts()
     })
+    mergeCloudCharts()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const syncChart = useCallback(async (chart) => {
@@ -48,7 +55,7 @@ export function useCloudSync({ onMergeCharts }) {
       setSyncStatus('synced')
       setTimeout(() => setSyncStatus('idle'), 3000)
     } else if (result.error === 'chart_limit_reached') {
-      setSyncStatus('idle') // don't show error indicator — upgrade prompt handles it
+      setSyncStatus('idle')
       return result
     } else {
       setSyncStatus('error')
@@ -68,5 +75,14 @@ export function useCloudSync({ onMergeCharts }) {
     setCachedEntitlements(ent)
   }, [])
 
-  return { syncStatus, syncChart, deleteFromCloud, entitlements, refreshEntitlements }
+  // Called after auth sign-in: re-fetch everything with the new session cookies
+  const refreshAfterAuth = useCallback(async () => {
+    if (!isCloudEnabled()) return
+    const ent = await fetchEntitlements()
+    setEntitlements(ent)
+    setCachedEntitlements(ent)
+    await mergeCloudCharts()
+  }, [mergeCloudCharts])
+
+  return { syncStatus, syncChart, deleteFromCloud, entitlements, refreshEntitlements, refreshAfterAuth }
 }

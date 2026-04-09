@@ -47,6 +47,54 @@
 }
 .charts-data-link:hover { opacity: 0.85; }
 
+/* ── Account row ──────────────────────────────────────────────────────── */
+.charts-account-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.7rem;
+  background: rgba(126, 200, 69, 0.05);
+  border: 1px solid rgba(126, 200, 69, 0.15);
+  border-radius: 8px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+}
+
+.charts-account-check {
+  color: #7ec845;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.charts-account-email {
+  flex: 1;
+  color: var(--text-soft);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.charts-signout-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.68rem;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.charts-signout-btn:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-soft);
+}
+
 /* ── Celestial explainer ──────────────────────────────────────────────── */
 .celestial-explainer {
   background: linear-gradient(135deg, rgba(201, 168, 76, 0.06) 0%, rgba(140, 80, 200, 0.04) 100%);
@@ -104,6 +152,11 @@
 .celestial-explainer-btn:hover {
   background: rgba(201, 168, 76, 0.2);
   border-color: rgba(201, 168, 76, 0.5);
+}
+
+/* At-risk warning variant */
+.celestial-explainer--at-risk .celestial-explainer-title {
+  color: var(--text-soft);
 }
 
 /* Email opt-in on saved screen */

@@ -34,6 +34,88 @@
   color: #e87070;
   margin: -0.3rem 0 0;
 }
+.email-capture-note {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0.2rem 0 0;
+  opacity: 0.7;
+}
+
+/* ── Google Sign-In button ──────────────────────────────────────────────── */
+.auth-google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  color: #3c4043;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.auth-google-btn:hover:not(:disabled) {
+  background: #f7f8f8;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.auth-google-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ── Email fallback toggle ──────────────────────────────────────────────── */
+.auth-email-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0.2rem 0;
+  text-align: center;
+  width: 100%;
+  transition: color 0.15s;
+}
+
+.auth-email-toggle:hover {
+  color: var(--text-soft);
+}
+
+/* ── Email form (when expanded) ─────────────────────────────────────────── */
+.auth-email-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ── Skip/dismiss button ────────────────────────────────────────────────── */
+.auth-skip-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  cursor: pointer;
+  text-align: center;
+  width: 100%;
+  padding: 0.3rem 0;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.auth-skip-btn:hover {
+  opacity: 1;
+}
 .input--error {
   border-color: rgba(232,112,112,0.6) !important;
 }

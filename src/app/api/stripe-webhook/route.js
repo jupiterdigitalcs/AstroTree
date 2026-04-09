@@ -46,6 +46,34 @@ export async function POST(request) {
           await sb.from('devices').update(updates).eq('id', deviceId)
         }
 
+        // Write tier to user_profiles if user has an auth account
+        const purchaseEmail = session.customer_details?.email
+        if (productKey === 'premium_upgrade') {
+          // Check if this device is linked to an auth user
+          const { data: device } = await sb.from('devices').select('auth_user_id').eq('id', deviceId).single()
+          let authUserId = device?.auth_user_id
+
+          // If not linked, try to find auth user by email
+          if (!authUserId && purchaseEmail) {
+            const { data: { users } } = await sb.auth.admin.listUsers({ filter: purchaseEmail })
+            const matched = users?.find(u => u.email === purchaseEmail)
+            if (matched) {
+              authUserId = matched.id
+              await sb.from('devices').update({ auth_user_id: matched.id }).eq('id', deviceId)
+            }
+          }
+
+          // Write premium to user_profiles (the source of truth for auth users)
+          if (authUserId) {
+            await sb.from('user_profiles').upsert({
+              auth_user_id: authUserId,
+              tier: 'premium',
+              stripe_customer_id: session.customer || null,
+              tier_updated_at: new Date().toISOString(),
+            }, { onConflict: 'auth_user_id' })
+          }
+        }
+
         // Send purchase confirmation email with chart data
         const email = session.customer_details?.email
         if (email && productKey === 'premium_upgrade') {
@@ -91,6 +119,15 @@ export async function POST(request) {
           tier: 'free',
           tier_updated_at: new Date().toISOString(),
         }).eq('id', purchase.device_id)
+
+        // Also downgrade user_profiles if this device is linked to an auth user
+        const { data: dev } = await sb.from('devices').select('auth_user_id').eq('id', purchase.device_id).single()
+        if (dev?.auth_user_id) {
+          await sb.from('user_profiles').update({
+            tier: 'free',
+            tier_updated_at: new Date().toISOString(),
+          }).eq('auth_user_id', dev.auth_user_id)
+        }
 
         console.log(`[stripe] refund processed — device ${purchase.device_id} downgraded to free`)
       }

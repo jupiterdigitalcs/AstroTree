@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSupabase } from '../_lib/supabase.js'
+import { getAuthUser } from '../_lib/authUser.js'
 
 const MAX_TITLE_LEN  = 200
 const MAX_NODE_COUNT = 200
@@ -51,8 +52,9 @@ async function checkChartLimit(sb, deviceId, chartId) {
 // ── Action handlers ─────────────────────────────────────────────────────────
 
 async function handleSave(request) {
+  const authUser = await getAuthUser(request)
   const deviceId = request.headers.get('x-device-id')
-  if (!deviceId) return NextResponse.json({ error: 'Missing device ID' }, { status: 400 })
+  if (!deviceId && !authUser) return NextResponse.json({ error: 'Missing identity' }, { status: 400 })
   const chart = await request.json()
   if (!chart?.id) return NextResponse.json({ error: 'Missing chart ID' }, { status: 400 })
 
@@ -70,6 +72,8 @@ async function handleSave(request) {
     updated_at: new Date().toISOString(),
     referrer:   chart.referrer || 'direct',
   }
+  // If signed in, tag chart with auth_user_id
+  if (authUser) row.auth_user_id = authUser.id
   const { error } = await sb.from('charts').upsert(row, { onConflict: 'id', ignoreDuplicates: false })
   return error
     ? NextResponse.json({ ok: false, error: error.message }, { status: 500 })
@@ -88,21 +92,45 @@ async function handleLoad(searchParams) {
 }
 
 async function handleList(request) {
+  const authUser = await getAuthUser(request)
   const deviceId = request.headers.get('x-device-id')
-  if (!deviceId) return NextResponse.json([])
-  const { data, error } = await getSupabase()
+
+  let query = getSupabase()
     .from('charts')
     .select('id,title,nodes,edges,counter,saved_at,share_token,is_public,is_sample')
-    .eq('device_id', deviceId).order('updated_at', { ascending: false })
+    .order('updated_at', { ascending: false })
+
+  // Signed in: get all charts for this auth user (across all devices)
+  if (authUser) {
+    query = query.eq('auth_user_id', authUser.id)
+  } else if (deviceId) {
+    query = query.eq('device_id', deviceId)
+  } else {
+    return NextResponse.json([])
+  }
+
+  const { data, error } = await query
   if (error || !data) return NextResponse.json([])
   return NextResponse.json(data.map(toRow))
 }
 
 async function handleDelete(request) {
+  const authUser = await getAuthUser(request)
   const deviceId = request.headers.get('x-device-id')
   const body = await request.json()
-  if (!deviceId || !body?.id) return NextResponse.json({ ok: false }, { status: 400 })
-  const { error } = await getSupabase().from('charts').delete().eq('id', body.id).eq('device_id', deviceId)
+  if (!body?.id) return NextResponse.json({ ok: false }, { status: 400 })
+
+  let query = getSupabase().from('charts').delete().eq('id', body.id)
+  // Scope delete to the user's own charts
+  if (authUser) {
+    query = query.eq('auth_user_id', authUser.id)
+  } else if (deviceId) {
+    query = query.eq('device_id', deviceId)
+  } else {
+    return NextResponse.json({ ok: false }, { status: 400 })
+  }
+
+  const { error } = await query
   return error
     ? NextResponse.json({ ok: false }, { status: 500 })
     : NextResponse.json({ ok: true })

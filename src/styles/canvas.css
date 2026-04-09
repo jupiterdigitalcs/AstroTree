@@ -256,6 +256,31 @@
   text-shadow: 0 0 16px rgba(201, 168, 76, 0.5);
 }
 
+.tier-bar-auth-dot {
+  font-size: 0.6rem;
+  color: #7ec845;
+  line-height: 1;
+}
+
+.tier-bar-signin {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  padding: 0.15rem 0.5rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.tier-bar-signin:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-soft);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
 .tier-bar-upgrade {
   background: none;
   border: 1px solid rgba(201, 168, 76, 0.25);
