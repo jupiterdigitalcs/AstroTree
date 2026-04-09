@@ -29,11 +29,25 @@
   overflow: hidden;
 }
 
+.dig-progress-seg--locked {
+  opacity: 0.3;
+}
+
 .dig-progress-fill {
   height: 100%;
   border-radius: 2px;
   background: var(--gold);
   transition: width 0.4s ease;
+}
+
+.dig-progress-free-label {
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-left: 6px;
+  white-space: nowrap;
 }
 
 /* ── Close button ────────────────────────────────────────────────────────── */
@@ -358,6 +372,30 @@
 .dig-share-btn:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+}
+
+/* ── Paywall teaser list ─────────────────────────────────────────────────── */
+.dig-paywall-teasers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0.8rem auto 0;
+  max-width: 260px;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+.dig-paywall-teaser-item {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.03em;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+}
+
+.dig-paywall-teaser-item:last-child {
+  border-bottom: none;
 }
 
 /* ── DIG button in Insights panel ────────────────────────────────────────── */

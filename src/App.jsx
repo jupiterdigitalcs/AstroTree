@@ -70,7 +70,7 @@ function FitViewOnLayout({ fitTick, fitViewRef }) {
 
 
 export default function App() {
-  const { user: authUser, signInWithGoogle, signInWithEmail, signOut: authSignOut } = useAuth()
+  const { user: authUser, loading: authLoading, signInWithGoogle, signInWithEmail, signOut: rawSignOut } = useAuth()
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const [counter,           setCounter]           = useState(1)
@@ -119,9 +119,18 @@ export default function App() {
   const panelOpen = activeTab !== 'tree' || !!editingNodeId
 
   const [chartRefreshTick, setChartRefreshTick] = useState(0)
-  const { syncStatus, syncChart, deleteFromCloud, entitlements, refreshEntitlements, refreshAfterAuth } = useCloudSync({
+  const { syncStatus, syncChart, deleteFromCloud, entitlements, refreshEntitlements, refreshAfterAuth, resetEntitlements } = useCloudSync({
     onMergeCharts: () => setChartRefreshTick(t => t + 1),
+    authUser,
   })
+  const handleSignOut = useCallback(async () => {
+    resetEntitlements()
+    await rawSignOut()
+    // Re-fetch from server to confirm free tier (unlink-auth resets DB)
+    await refreshEntitlements()
+    setChartRefreshTick(t => t + 1)
+    setActiveTab('tree')
+  }, [resetEntitlements, rawSignOut, refreshEntitlements])
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
 
   const {
@@ -505,7 +514,6 @@ export default function App() {
                 </button>
               )
             )}
-            {!authUser && <button type="button" className="tier-bar-signin" onClick={() => setShowEmailCapture(true)}>Sign in</button>}
           </div>
       </header>
       {nodes.length > 0 && !panelOpen && (
@@ -623,8 +631,9 @@ export default function App() {
               entitlements={entitlements}
               onUpgrade={() => setShowUpgradePrompt(true)}
               authUser={authUser}
+              authLoading={authLoading}
               onSignIn={() => setShowEmailCapture(true)}
-              onSignOut={authSignOut}
+              onSignOut={handleSignOut}
               refreshTick={chartRefreshTick}
             />
 
@@ -1330,8 +1339,9 @@ export default function App() {
               entitlements={entitlements}
               onUpgrade={() => setShowUpgradePrompt(true)}
               authUser={authUser}
+              authLoading={authLoading}
               onSignIn={() => setShowEmailCapture(true)}
-              onSignOut={authSignOut}
+              onSignOut={handleSignOut}
               refreshTick={chartRefreshTick}
             />
           </BottomSheet>
@@ -1359,7 +1369,6 @@ export default function App() {
                     ✦ Unlock Celestial
                   </button>
                 )}
-                {!authUser && <button type="button" className="tier-bar-signin" onClick={() => setShowEmailCapture(true)}>Sign in</button>}
               </div>
             )}
             <div className="cosmic-bottom-nav-buttons">

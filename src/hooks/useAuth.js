@@ -87,6 +87,18 @@ export function useAuth() {
   }, [])
 
   const signOut = useCallback(async () => {
+    // Unlink device from auth user so entitlements reset to free
+    try {
+      const res = await fetch('/api/device?action=unlink-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: getDeviceId() }),
+      })
+      const result = await res.json()
+      console.log('[auth] unlink-auth response:', result)
+    } catch (e) {
+      console.error('[auth] unlink-auth failed:', e)
+    }
     const supabase = getSupabaseBrowser()
     if (supabase) await supabase.auth.signOut()
     // Clear local data so next user doesn't see this user's charts

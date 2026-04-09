@@ -5,12 +5,20 @@ import { useSwipe } from '../../hooks/useSwipe.js'
 import DigProgressBar from './DigProgressBar.jsx'
 import DigSlide from './DigSlide.jsx'
 
-export default function TheDig({ digData, onClose, chartTitle, isPremium = true, onUpgrade }) {
+export default function TheDig({ digData, onClose, chartTitle, isPremium = true, onUpgrade: rawUpgrade }) {
+  const onUpgrade = rawUpgrade ? () => { onClose(); rawUpgrade() } : undefined
   const FREE_SLIDE_LIMIT = 3
   const [allSlides] = useState(() => buildSlides(digData))
   const slides = isPremium ? allSlides : [
     ...allSlides.slice(0, FREE_SLIDE_LIMIT),
-    { type: 'paywall', data: { remainingCount: allSlides.length - FREE_SLIDE_LIMIT }, mood: 'starfield' },
+    {
+      type: 'paywall',
+      data: {
+        remainingCount: allSlides.length - FREE_SLIDE_LIMIT,
+        lockedSlides: allSlides.slice(FREE_SLIDE_LIMIT).map(s => s.type),
+      },
+      mood: 'starfield',
+    },
   ]
   const [current, setCurrent] = useState(0)
   const [direction, setDirection] = useState('forward')
@@ -122,7 +130,7 @@ export default function TheDig({ digData, onClose, chartTitle, isPremium = true,
 
   return createPortal(
     <div className="dig-overlay" {...swipeHandlers}>
-      <DigProgressBar total={slides.length} current={current} />
+      <DigProgressBar total={slides.length} current={current} freeLimit={isPremium ? 0 : FREE_SLIDE_LIMIT} />
       <button type="button" className="dig-close" onClick={onClose} aria-label="Close">✕</button>
       {/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) && (
         <button

@@ -36,7 +36,21 @@ async function handlePing(request) {
 async function handleEntitlements(request) {
   const deviceId = request.headers.get('x-device-id')
   if (!deviceId) return NextResponse.json({ error: 'Missing device ID' }, { status: 400 })
-  const { data, error } = await getSupabase().rpc('get_device_entitlements', { p_device_id: deviceId })
+  const authStatus = request.headers.get('x-auth-status')
+  const sb = getSupabase()
+  const { data: device } = await sb.from('devices').select('tier, auth_user_id').eq('id', deviceId).single()
+
+  // If client says signed-out but device still has premium, reset tier
+  // (covers stale device state from sign-outs before unlink-auth existed)
+  if (device?.tier === 'premium' && authStatus === 'signed-out') {
+    await sb.from('devices').update({ auth_user_id: null, tier: 'free', tier_updated_at: new Date().toISOString() }).eq('id', deviceId)
+    const { data: config } = await sb.from('paywall_config').select('key, value')
+    const configObj = {}
+    if (config) config.forEach(r => { configObj[r.key] = r.value })
+    return NextResponse.json({ tier: 'free', config: configObj })
+  }
+
+  const { data, error } = await sb.rpc('get_device_entitlements', { p_device_id: deviceId })
   if (error) return NextResponse.json({ tier: 'free', config: {} }, { status: 500 })
   return NextResponse.json(data ?? { tier: 'free', config: {} })
 }
@@ -46,13 +60,32 @@ async function handleLinkAuth(request) {
   if (!deviceId || !authUserId || !email) {
     return NextResponse.json({ ok: false, error: 'Missing fields' }, { status: 400 })
   }
-  const { data, error } = await getSupabase().rpc('link_device_to_user', {
+  const sb = getSupabase()
+  const { data, error } = await sb.rpc('link_device_to_user', {
     p_device_id: deviceId,
     p_auth_user_id: authUserId,
     p_email: email.trim().slice(0, 254),
   })
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+
+  // Restore tier from user_profiles (source of truth for auth users)
+  const { data: profile } = await sb.from('user_profiles').select('tier').eq('auth_user_id', authUserId).single()
+  if (profile?.tier) {
+    await sb.from('devices').update({ tier: profile.tier, tier_updated_at: new Date().toISOString() }).eq('id', deviceId)
+  }
+
   return NextResponse.json(data ?? { ok: true })
+}
+
+async function handleUnlinkAuth(request) {
+  const { deviceId } = await request.json()
+  if (!deviceId) return NextResponse.json({ ok: false, error: 'Missing device ID' }, { status: 400 })
+  const { error } = await getSupabase()
+    .from('devices')
+    .update({ auth_user_id: null, tier: 'free', tier_updated_at: new Date().toISOString() })
+    .eq('id', deviceId)
+  console.log('[unlink-auth]', deviceId, error ? `ERROR: ${error.message}` : 'OK — tier reset to free')
+  return NextResponse.json({ ok: !error })
 }
 
 async function handleEvent(request) {
@@ -65,7 +98,7 @@ async function handleEvent(request) {
 
 // ── Route handlers ──────────────────────────────────────────────────────────
 
-const POST_ROUTES = { register: handleRegister, email: handleEmail, ping: handlePing, event: handleEvent, 'link-auth': handleLinkAuth }
+const POST_ROUTES = { register: handleRegister, email: handleEmail, ping: handlePing, event: handleEvent, 'link-auth': handleLinkAuth, 'unlink-auth': handleUnlinkAuth }
 
 export async function GET(request) {
   try {

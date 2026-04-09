@@ -137,10 +137,13 @@ export async function restoreChartsByEmail(email) {
 
 // ── Entitlements ─────────────────────────────────────────────────────────────
 
-export async function fetchEntitlements() {
+export async function fetchEntitlements({ isSignedIn = false } = {}) {
   try {
     const res = await fetch('/api/device?action=entitlements', {
-      headers: { 'x-device-id': getDeviceId() },
+      headers: {
+        'x-device-id': getDeviceId(),
+        'x-auth-status': isSignedIn ? 'signed-in' : 'signed-out',
+      },
     })
     if (!res.ok) return { tier: 'free', config: {} }
     return await res.json()

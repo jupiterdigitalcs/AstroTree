@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { uploadChart, deleteChartCloud as _deleteCloud, fetchCharts, isCloudEnabled, upsertDevice, fetchEntitlements } from '../utils/cloudStorage.js'
 import { saveChart, loadCharts } from '../utils/storage.js'
 import { setCachedEntitlements } from '../utils/entitlements.js'
 
 // syncStatus: 'idle' | 'syncing' | 'synced' | 'error'
-export function useCloudSync({ onMergeCharts }) {
+export function useCloudSync({ onMergeCharts, authUser }) {
   const [syncStatus, setSyncStatus] = useState('idle')
   const [entitlements, setEntitlements] = useState({ tier: 'free', config: {} })
 
@@ -36,7 +36,7 @@ export function useCloudSync({ onMergeCharts }) {
   useEffect(() => {
     if (!isCloudEnabled()) return
     upsertDevice()
-    fetchEntitlements().then(ent => {
+    fetchEntitlements({ isSignedIn: !!authUser }).then(ent => {
       setEntitlements(ent)
       setCachedEntitlements(ent)
       if (ent.email && !localStorage.getItem('astrotree_user_email')) {
@@ -46,6 +46,18 @@ export function useCloudSync({ onMergeCharts }) {
     })
     mergeCloudCharts()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-fetch entitlements when auth state settles (covers sign-out with stale device tier)
+  const authResolved = useRef(false)
+  useEffect(() => {
+    if (!isCloudEnabled()) return
+    // Skip the initial render — mount effect already handles it
+    if (!authResolved.current) { authResolved.current = true; return }
+    fetchEntitlements({ isSignedIn: !!authUser }).then(ent => {
+      setEntitlements(ent)
+      setCachedEntitlements(ent)
+    })
+  }, [authUser]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const syncChart = useCallback(async (chart) => {
     if (!isCloudEnabled()) return
@@ -70,10 +82,10 @@ export function useCloudSync({ onMergeCharts }) {
 
   const refreshEntitlements = useCallback(async () => {
     if (!isCloudEnabled()) return
-    const ent = await fetchEntitlements()
+    const ent = await fetchEntitlements({ isSignedIn: !!authUser })
     setEntitlements(ent)
     setCachedEntitlements(ent)
-  }, [])
+  }, [authUser])
 
   // Called after auth sign-in: clear local data, then load only this user's charts
   const refreshAfterAuth = useCallback(async () => {
@@ -83,11 +95,17 @@ export function useCloudSync({ onMergeCharts }) {
       localStorage.removeItem('astrotree_charts')
       localStorage.removeItem('astrotree_draft')
     } catch {}
-    const ent = await fetchEntitlements()
+    const ent = await fetchEntitlements({ isSignedIn: true })
     setEntitlements(ent)
     setCachedEntitlements(ent)
     await mergeCloudCharts()
   }, [mergeCloudCharts])
 
-  return { syncStatus, syncChart, deleteFromCloud, entitlements, refreshEntitlements, refreshAfterAuth }
+  const resetEntitlements = useCallback(() => {
+    const free = { tier: 'free', config: {} }
+    setEntitlements(free)
+    setCachedEntitlements(free)
+  }, [])
+
+  return { syncStatus, syncChart, deleteFromCloud, entitlements, refreshEntitlements, refreshAfterAuth, resetEntitlements }
 }

@@ -11,7 +11,7 @@ const SAMPLE_CHARTS = [
 ]
 import { isPaywallEnabled, getChartLimit } from '../utils/entitlements.js'
 
-export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout, onRename, onDuplicate, entitlements, onUpgrade, authUser, onSignIn, onSignOut, refreshTick }) {
+export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout, onRename, onDuplicate, entitlements, onUpgrade, authUser, authLoading, onSignIn, onSignOut, refreshTick }) {
   const [charts,          setCharts]          = useState(() => loadCharts())
   const [publicCharts,    setPublicCharts]    = useState([])
   const [pendingDeleteId, setPendingDeleteId] = useState(null)
@@ -99,7 +99,7 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
             </button>
           )}
         </div>
-      ) : (
+      ) : !authLoading && (
         <div className="celestial-explainer celestial-explainer--at-risk" id="celestial-info">
           <h3 className="celestial-explainer-title">
             {entitlements?.tier === 'premium' ? '⚠ Your Celestial upgrade isn\'t protected' : '✦ What is Celestial?'}
@@ -135,10 +135,6 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
           <span className="charts-account-email">{authUser.email}</span>
           <button type="button" className="charts-signout-btn" onClick={onSignOut}>Sign out</button>
         </div>
-      ) : isCloudEnabled() ? (
-        <button type="button" className="restore-cloud-btn" onClick={onSignIn}>
-          Sign in to protect your charts
-        </button>
       ) : null}
 
       {sorted.length > 0 ? (() => {
