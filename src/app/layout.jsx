@@ -108,6 +108,7 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <script src="https://accounts.google.com/gsi/client" async defer />
       </head>
       <body>
         {children}

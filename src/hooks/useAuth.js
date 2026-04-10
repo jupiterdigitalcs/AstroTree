@@ -58,16 +58,49 @@ export function useAuth() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Primary: Google OAuth sign-in (redirects to Google → callback → back)
+  // Initialize GSI and render Google's sign-in button into a container element.
+  // Called by EmailCapture to place the button in the dialog.
+  const initGoogleButton = useCallback((containerEl, onResult) => {
+    const supabase = getSupabaseBrowser()
+    if (!supabase || !containerEl) return
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    if (!clientId) { onResult?.({ ok: false, error: 'Google client ID not configured' }); return }
+
+    function tryInit() {
+      if (!window.google?.accounts?.id) return false
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: async (response) => {
+          const { error } = await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: response.credential,
+          })
+          onResult?.({ ok: !error, error: error?.message })
+        },
+      })
+      window.google.accounts.id.renderButton(containerEl, {
+        type: 'standard',
+        theme: 'filled_black',
+        size: 'large',
+        text: 'continue_with',
+        width: containerEl.offsetWidth || 280,
+      })
+      return true
+    }
+
+    if (!tryInit()) {
+      // GSI script still loading — poll briefly
+      let attempts = 0
+      const interval = setInterval(() => {
+        if (tryInit() || ++attempts > 20) clearInterval(interval)
+      }, 200)
+    }
+  }, [])
+
+  // Keep the old signInWithGoogle for backwards compat (falls back to OAuth redirect)
   const signInWithGoogle = useCallback(async () => {
     const supabase = getSupabaseBrowser()
     if (!supabase) return { ok: false, error: 'Auth not configured' }
-    // Force-save draft before redirect so user data survives the round-trip
-    try {
-      const { saveDraft } = await import('../utils/storage.js')
-      const draft = JSON.parse(localStorage.getItem('astrotree_draft') || 'null')
-      if (draft) saveDraft(draft.nodes, draft.edges, draft.counter, draft.savedChartId)
-    } catch {}
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback` },
@@ -110,5 +143,5 @@ export function useAuth() {
     setUser(null)
   }, [])
 
-  return { user, loading, signInWithGoogle, signInWithEmail, signOut }
+  return { user, loading, signInWithGoogle, signInWithEmail, signOut, initGoogleButton }
 }

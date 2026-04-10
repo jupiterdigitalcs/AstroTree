@@ -3,7 +3,7 @@ import { startCheckout } from '../utils/checkout.js'
 import { getDeviceId } from '../utils/identity.js'
 import { DialogBackdrop } from './DialogBackdrop.jsx'
 
-export function UpgradePrompt({ onClose, feature, onRedeemed }) {
+export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn }) {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState(null)
 
@@ -107,15 +107,30 @@ export function UpgradePrompt({ onClose, feature, onRedeemed }) {
           <button type="button" className="save-dialog-cancel" onClick={onClose}>
             Maybe Later
           </button>
-          <button
-            type="button"
-            className="save-dialog-save upgrade-btn"
-            onClick={handleUpgrade}
-            disabled={loading}
-          >
-            {loading ? 'Redirecting to checkout...' : '✦ Unlock Celestial — $9.99'}
-          </button>
+          {authUser ? (
+            <button
+              type="button"
+              className="save-dialog-save upgrade-btn"
+              onClick={handleUpgrade}
+              disabled={loading}
+            >
+              {loading ? 'Redirecting to checkout...' : '✦ Unlock Celestial — $9.99'}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="save-dialog-save upgrade-btn"
+              onClick={onSignIn}
+            >
+              Sign in to Unlock
+            </button>
+          )}
         </div>
+        {!authUser && (
+          <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: '0.5rem', textAlign: 'center' }}>
+            Sign in first so your purchase is tied to your account
+          </p>
+        )}
 
         {/* Promo code section */}
         <div style={{ marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.8rem' }}>

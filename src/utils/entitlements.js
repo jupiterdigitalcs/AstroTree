@@ -44,7 +44,7 @@ export const FEATURE_KEYS = [
   { key: 'tables_view',        label: 'Tables View — sortable planet grid', group: 'Views' },
   { key: 'constellation_view', label: 'Constellation View', group: 'Views' },
   // Insights
-  { key: 'advanced_insights',  label: 'Premium Insights — Notable Bonds, Venus/Mars, Partner Compatibility, Sign Threads, Zodiac Threads, Family Roles, Arrivals, Sign Concentration, Pluto Generations', group: 'Insights' },
+  { key: 'advanced_insights',  label: 'Celestial Insights — Notable Bonds, Venus/Mars, Partner Compatibility, Sign Threads, Zodiac Threads, Family Roles, Arrivals, Sign Concentration, Pluto Generations', group: 'Insights' },
   { key: 'full_dig',           label: 'The Full DIG — all slides (free users see first 3)', group: 'Insights' },
   { key: 'full_compatibility', label: 'Full Compatibility Report — all pair breakdowns', group: 'Insights' },
   // Export & Limits

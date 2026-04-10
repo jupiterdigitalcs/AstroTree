@@ -16,8 +16,8 @@ export async function startCheckout(productKey, metadata = {}) {
     return { ok: false, error: data.error ?? 'Failed to start checkout' }
   }
 
-  // Redirect to Stripe Checkout
-  window.location.href = data.url
+  // Redirect to Stripe Checkout (replace so back button returns to AstroDig, not a blank redirect page)
+  window.location.replace(data.url)
   return { ok: true }
 }
 

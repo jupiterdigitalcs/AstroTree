@@ -133,7 +133,7 @@ export default function AdminPaywallPanel() {
             />
           </label>
           <label className="admin-paywall-limit-field">
-            <span>Premium tier</span>
+            <span>Celestial tier</span>
             <input
               type="number" min="1" max="1000"
               value={chartLimitPremium}
@@ -146,7 +146,7 @@ export default function AdminPaywallPanel() {
       {/* ── Gated Features ────────────────────────────── */}
       <div className="admin-paywall-section">
         <h3 className="admin-paywall-heading">Gated Features</h3>
-        <p className="admin-paywall-hint">Checked features require premium to access.</p>
+        <p className="admin-paywall-hint">Checked features require Celestial to access.</p>
         <div className="admin-paywall-features">
           {(() => {
             const groups = []
@@ -208,7 +208,7 @@ export default function AdminPaywallPanel() {
       {/* ── Gift Codes ─────────────────────────────── */}
       <div className="admin-paywall-section">
         <h3 className="admin-paywall-heading">Gift Codes</h3>
-        <p className="admin-paywall-hint">Users enter these in the upgrade prompt to unlock premium. Separate from Stripe discount codes.</p>
+        <p className="admin-paywall-hint">Users enter these in the upgrade prompt to unlock Celestial. Separate from Stripe discount codes.</p>
         {promoCodes.length > 0 && (
           <table className="admin-paywall-table">
             <thead>
@@ -221,7 +221,7 @@ export default function AdminPaywallPanel() {
                     <td><input value={editDraft.code} onChange={e => setEditDraft(d => ({ ...d, code: e.target.value }))} style={{ width: '80px', background: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', padding: '0.2rem 0.4rem', fontSize: '0.75rem' }} /></td>
                     <td>
                       <select value={editDraft.tier} onChange={e => setEditDraft(d => ({ ...d, tier: e.target.value }))} style={{ background: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', padding: '0.2rem', fontSize: '0.7rem' }}>
-                        <option value="premium">Premium</option>
+                        <option value="premium">Celestial</option>
                       </select>
                     </td>
                     <td><input type="number" min="0" value={editDraft.max_uses} onChange={e => setEditDraft(d => ({ ...d, max_uses: e.target.value }))} placeholder="—" style={{ width: '50px', background: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', padding: '0.2rem 0.4rem', fontSize: '0.75rem' }} /></td>
@@ -260,7 +260,7 @@ export default function AdminPaywallPanel() {
         <div className="admin-paywall-add-product">
           <input placeholder="Code (case-sensitive)" value={newCode.code} onChange={e => setNewCode(p => ({ ...p, code: e.target.value }))} />
           <select value={newCode.tier} onChange={e => setNewCode(p => ({ ...p, tier: e.target.value }))} style={{ background: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', padding: '0.3rem' }}>
-            <option value="premium">Premium</option>
+            <option value="premium">Celestial</option>
           </select>
           <input type="number" placeholder="Max uses (empty = unlimited)" min="1" value={newCode.max_uses} onChange={e => setNewCode(p => ({ ...p, max_uses: e.target.value }))} style={{ width: '120px' }} />
           <input type="date" value={newCode.expires_at} onChange={e => setNewCode(p => ({ ...p, expires_at: e.target.value }))} title="Expiration date (optional)" style={{ background: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', padding: '0.3rem' }} />

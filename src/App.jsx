@@ -70,7 +70,7 @@ function FitViewOnLayout({ fitTick, fitViewRef }) {
 
 
 export default function App() {
-  const { user: authUser, loading: authLoading, signInWithGoogle, signInWithEmail, signOut: rawSignOut } = useAuth()
+  const { user: authUser, loading: authLoading, signInWithGoogle, signInWithEmail, signOut: rawSignOut, initGoogleButton } = useAuth()
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const [counter,           setCounter]           = useState(1)
@@ -132,6 +132,10 @@ export default function App() {
     setActiveTab('tree')
   }, [resetEntitlements, rawSignOut, refreshEntitlements])
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
+  const [pendingUpgrade, setPendingUpgrade] = useState(() => {
+    try { const v = localStorage.getItem('astrotree_pending_upgrade'); if (v) { localStorage.removeItem('astrotree_pending_upgrade'); return true } } catch {}
+    return false
+  })
 
   const {
     savedChartId, setSavedChartId,
@@ -233,8 +237,12 @@ export default function App() {
   useEffect(() => {
     if (authUser) {
       refreshAfterAuth().then(() => {
-        // Navigate to charts tab so user sees their synced charts
-        setActiveTab('charts')
+        if (pendingUpgrade) {
+          setPendingUpgrade(false)
+          setShowUpgradePrompt(true)
+        } else {
+          setActiveTab('charts')
+        }
       })
     }
   }, [authUser]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -403,6 +411,7 @@ export default function App() {
           onDismiss={() => setShowEmailCapture(false)}
           signInWithGoogle={signInWithGoogle}
           signInWithEmail={signInWithEmail}
+          initGoogleButton={initGoogleButton}
         />
       )}
       {postPurchaseCapture && !authUser && (
@@ -410,6 +419,7 @@ export default function App() {
           onDismiss={() => setPostPurchaseCapture(false)}
           signInWithGoogle={signInWithGoogle}
           signInWithEmail={signInWithEmail}
+          initGoogleButton={initGoogleButton}
           variant="post-purchase"
         />
       )}
@@ -419,6 +429,8 @@ export default function App() {
         <UpgradePrompt
           onClose={() => setShowUpgradePrompt(false)}
           onRedeemed={() => { refreshEntitlements(); setPremiumToast(true); setTimeout(() => setPremiumToast(false), 5000) }}
+          authUser={authUser}
+          onSignIn={() => { setShowUpgradePrompt(false); setPendingUpgrade(true); try { localStorage.setItem('astrotree_pending_upgrade', '1') } catch {}; setShowEmailCapture(true) }}
         />
       )}
 

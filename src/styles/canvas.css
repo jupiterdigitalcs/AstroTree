@@ -318,7 +318,7 @@
 }
 
 .chart-item--locked::after {
-  content: '🔒 Unlock with Premium';
+  content: '🔒 Unlock with Celestial';
   position: absolute;
   inset: 0;
   display: flex;

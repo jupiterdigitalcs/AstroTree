@@ -47,7 +47,7 @@ export async function sendPremiumConfirmation({ to, charts }) {
   const html = `
     <div style="background:#09071a;padding:32px;font-family:'Raleway',Helvetica,Arial,sans-serif;color:#e8dcc8;max-width:600px;margin:0 auto">
       <div style="text-align:center;margin-bottom:24px">
-        <h1 style="font-family:Cinzel,Georgia,serif;color:#c9a84c;font-size:22px;margin:0">✦ Welcome to AstroDig Premium</h1>
+        <h1 style="font-family:Cinzel,Georgia,serif;color:#c9a84c;font-size:22px;margin:0">✦ Welcome to AstroDig Celestial</h1>
         <p style="color:rgba(255,255,255,0.5);font-size:14px;margin:8px 0 0">Your cosmic connections, fully unlocked.</p>
       </div>
 
@@ -84,7 +84,7 @@ export async function sendPremiumConfirmation({ to, charts }) {
     await resend.emails.send({
       from: FROM,
       to,
-      subject: '✦ Welcome to AstroDig Premium — Your Charts Inside',
+      subject: '✦ Welcome to AstroDig Celestial — Your Charts Inside',
       html,
     })
     return { ok: true }
