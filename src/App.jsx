@@ -32,6 +32,7 @@ import { ShareButton } from './components/ShareButton.jsx'
 import { fetchChartByToken, isCloudEnabled, pingVisit, logEvent } from './utils/cloudStorage.js'
 import { EmailCapture, hasBeenAsked, clearEmailAsked, shouldForcePrompt } from './components/EmailCapture.jsx'
 import { useAuth } from './hooks/useAuth.js'
+import { DraggableFab } from './components/DraggableFab.jsx'
 import { UpgradePrompt } from './components/UpgradePrompt.jsx'
 import { checkPurchaseReturn } from './utils/checkout.js'
 import { OnboardingProgress, markInsightsSeen } from './components/OnboardingProgress.jsx'
@@ -1182,17 +1183,9 @@ export default function App() {
             />
           )}
 
-          {/* DIG FAB */}
+          {/* DIG FAB — draggable */}
           {nodes.length >= 3 && edges.length > 0 && activeTab === 'tree' && (
-            <button
-              type="button"
-              className="cosmic-dig-fab"
-              onClick={() => { setInsightsTab('dig'); setShowDig(true) }}
-              title="The DIG — your cosmic story"
-            >
-              <span className="cosmic-dig-fab-icon">✦</span>
-              <span className="cosmic-dig-fab-label">The DIG</span>
-            </button>
+            <DraggableFab onClick={() => { setInsightsTab('dig'); setShowDig(true) }} />
           )}
 
           {/* Family + Edit member sheet (merged — no flash on transition) */}

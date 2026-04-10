@@ -869,13 +869,16 @@
   color: var(--a-deep);
   border: none;
   font-size: 0.95rem;
-  cursor: pointer;
+  cursor: grab;
   display: flex;
   align-items: center;
   gap: 0.35rem;
   padding: 0 0.9rem;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
   animation: fab-glow 3s ease-in-out infinite;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .cosmic-dig-fab-icon {
