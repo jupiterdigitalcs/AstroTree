@@ -1,41 +1,84 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, asPremium } from './fixtures.js'
 
 /**
- * Paywall checks.
- *
- * NOTE: Real paywall coverage requires intercepting the /api/chart and
- * /api/device entitlements responses to inject a config with gated features
- * (since locally the server returns an empty config and free tier behaves
- * as if nothing is gated). That's a follow-up.
- *
- * For now, just verify the demo flow works and free-tier UI elements render.
+ * Paywall checks — uses the fixtures file to inject a paywall_enabled config
+ * with all celestial features gated. Without this mock, free tier behaves
+ * as if nothing is gated.
  */
 
-test.describe('paywall (free tier)', () => {
-  test('clicking "Try: Family Tree" loads the demo chart', async ({ page }) => {
+test.describe('paywall (free tier — default mocks)', () => {
+  test('demo loads and FloatingPills shows lock on Zodiac + Tables', async ({ page }) => {
     await page.goto('/')
-    const onboarding = page.locator('.cosmic-onboarding')
-    await expect(onboarding).toBeVisible({ timeout: 10_000 })
+    await page.locator('.cosmic-onboarding')
+      .getByRole('button', { name: /family tree/i })
+      .click()
+    await expect(page.locator('.astro-node').first()).toBeVisible({ timeout: 10_000 })
 
-    await onboarding.getByRole('button', { name: /family tree/i }).click()
-
-    // Demo chart should render at least one astro-node
-    // Demo loads 9 members in parallel — astrology API calls take time
-    await expect(page.locator('.astro-node').first())
-      .toBeVisible({ timeout: 30_000 })
-  })
-
-  test('view switcher pills (FloatingPills) render in cosmic mode after demo', async ({ page }) => {
-    await page.goto('/')
-    await page.locator('.cosmic-onboarding').getByRole('button', { name: /family tree/i }).click()
-    await expect(page.locator('.astro-node').first()).toBeVisible({ timeout: 30_000 })
-
-    // FloatingPills should show all 4 view options
     const pills = page.locator('.cosmic-pill-btn')
     await expect(pills).toHaveCount(4)
-    await expect(pills.filter({ hasText: /tree/i }).first()).toBeVisible()
-    await expect(pills.filter({ hasText: /constellation/i }).first()).toBeVisible()
-    await expect(pills.filter({ hasText: /zodiac/i }).first()).toBeVisible()
-    await expect(pills.filter({ hasText: /tables/i }).first()).toBeVisible()
+
+    // Tree + Constellation: no lock
+    await expect(pills.filter({ hasText: 'Tree' }).first()).not.toContainText('🔒')
+    await expect(pills.filter({ hasText: 'Constellation' }).first()).not.toContainText('🔒')
+
+    // Zodiac + Tables: locked for free tier
+    await expect(pills.filter({ hasText: 'Zodiac' }).first()).toContainText('🔒')
+    await expect(pills.filter({ hasText: 'Tables' }).first()).toContainText('🔒')
+  })
+
+  test('clicking locked Zodiac pill shows LockedOverlay', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.cosmic-onboarding')
+      .getByRole('button', { name: /family tree/i })
+      .click()
+    await expect(page.locator('.astro-node').first()).toBeVisible({ timeout: 10_000 })
+
+    await page.locator('.cosmic-pill-btn').filter({ hasText: 'Zodiac' }).first().click()
+
+    await expect(page.locator('.locked-overlay')).toBeVisible({ timeout: 10_000 })
+  })
+
+  test('LockedOverlay has Unlock Celestial CTA', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.cosmic-onboarding')
+      .getByRole('button', { name: /family tree/i })
+      .click()
+    await expect(page.locator('.astro-node').first()).toBeVisible({ timeout: 10_000 })
+
+    await page.locator('.cosmic-pill-btn').filter({ hasText: 'Tables' }).first().click()
+
+    const overlay = page.locator('.locked-overlay')
+    await expect(overlay).toBeVisible()
+    await expect(overlay.getByRole('button', { name: /unlock|celestial|upgrade/i }).first())
+      .toBeVisible()
+  })
+})
+
+test.describe('paywall (premium — overridden mocks)', () => {
+  test('premium user sees no locks on any view pill', async ({ page }) => {
+    await asPremium(page)
+    await page.goto('/')
+    await page.locator('.cosmic-onboarding')
+      .getByRole('button', { name: /family tree/i })
+      .click()
+    await expect(page.locator('.astro-node').first()).toBeVisible({ timeout: 10_000 })
+
+    const pills = page.locator('.cosmic-pill-btn')
+    await expect(pills).toHaveCount(4)
+    for (const view of ['Tree', 'Constellation', 'Zodiac', 'Tables']) {
+      await expect(pills.filter({ hasText: view }).first()).not.toContainText('🔒')
+    }
+  })
+
+  test('premium user can switch to Zodiac without LockedOverlay', async ({ page }) => {
+    await asPremium(page)
+    await page.goto('/')
+    await page.locator('.cosmic-onboarding')
+      .getByRole('button', { name: /family tree/i })
+      .click()
+    await expect(page.locator('.astro-node').first()).toBeVisible({ timeout: 10_000 })
+
+    await page.locator('.cosmic-pill-btn').filter({ hasText: 'Zodiac' }).first().click()
+    await expect(page.locator('.locked-overlay')).not.toBeVisible()
   })
 })
