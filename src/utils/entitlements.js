@@ -11,15 +11,35 @@ export function setCachedEntitlements(ent) {
   _cached = ent
 }
 
-// Is the paywall globally enabled?
+// Default gated feature list — used when the server config is missing,
+// empty, or hasn't loaded yet. The system FAILS CLOSED: celestial features
+// are always gated unless an admin has explicitly turned the paywall off
+// via paywall_enabled: false in paywall_config. Without this default, a
+// missing config row meant free users could access everything.
+const DEFAULT_GATED_FEATURES = [
+  'zodiac_view',
+  'tables_view',
+  'constellation_view',
+  'advanced_insights',
+  'full_dig',
+  'full_compatibility',
+  'zodiac_export',
+  'pdf_export',
+  'unlimited_charts',
+]
+
+// Is the paywall in effect? True unless an admin explicitly disabled it.
+// (Old behavior was the inverse — required explicit paywall_enabled: true,
+// which silently broke gating any time the config row wasn't loaded.)
 export function isPaywallEnabled(config) {
-  return config?.paywall_enabled === true
+  return config?.paywall_enabled !== false
 }
 
 // Is a specific feature gated (requires premium)?
 export function isFeatureGated(featureKey, config) {
   if (!isPaywallEnabled(config)) return false
-  const gated = config?.gated_features ?? []
+  // Use server-configured list if present, otherwise the baked-in default.
+  const gated = config?.gated_features ?? DEFAULT_GATED_FEATURES
   return gated.includes(featureKey)
 }
 

@@ -1,4 +1,4 @@
-import { test, expect, asPremium } from './fixtures.js'
+import { test, expect, asPremium, asFreeWithEmptyConfig } from './fixtures.js'
 
 /**
  * Paywall checks — uses the fixtures file to inject a paywall_enabled config
@@ -51,6 +51,35 @@ test.describe('paywall (free tier — default mocks)', () => {
     await expect(overlay).toBeVisible()
     await expect(overlay.getByRole('button', { name: /unlock|celestial|upgrade/i }).first())
       .toBeVisible()
+  })
+})
+
+test.describe('paywall (fail-closed when server config is missing)', () => {
+  test('empty server config still locks Zodiac for free users', async ({ page }) => {
+    await asFreeWithEmptyConfig(page)
+    await page.goto('/')
+    await page.locator('.cosmic-onboarding')
+      .getByRole('button', { name: /family tree/i })
+      .click()
+    await expect(page.locator('.astro-node').first()).toBeVisible({ timeout: 10_000 })
+
+    // Even with config={}, the client falls back to DEFAULT_GATED_FEATURES
+    // and the lock icon should still appear on Zodiac/Tables.
+    const pills = page.locator('.cosmic-pill-btn')
+    await expect(pills.filter({ hasText: 'Zodiac' }).first()).toContainText('🔒')
+    await expect(pills.filter({ hasText: 'Tables' }).first()).toContainText('🔒')
+  })
+
+  test('empty server config: clicking Zodiac shows LockedOverlay', async ({ page }) => {
+    await asFreeWithEmptyConfig(page)
+    await page.goto('/')
+    await page.locator('.cosmic-onboarding')
+      .getByRole('button', { name: /family tree/i })
+      .click()
+    await expect(page.locator('.astro-node').first()).toBeVisible({ timeout: 10_000 })
+
+    await page.locator('.cosmic-pill-btn').filter({ hasText: 'Zodiac' }).first().click()
+    await expect(page.locator('.locked-overlay')).toBeVisible({ timeout: 10_000 })
   })
 })
 

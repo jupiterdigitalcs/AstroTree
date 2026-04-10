@@ -1117,6 +1117,10 @@ export default function App() {
           onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
           onConnect={onConnect} onNodeClick={onNodeClick}
           onNodeDragStart={onNodeDragStart} onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}
+          // 6px threshold so finger taps with natural jitter on touch screens
+          // aren't treated as drags. Without this, mobile taps fired onNodeDrag
+          // and the click handler suppressed itself thinking it was a drag.
+          nodeDragThreshold={6}
           nodeTypes={NODE_TYPES}
           fitView fitViewOptions={{ padding: 0.25 }}
           minZoom={0.3} colorMode="dark"

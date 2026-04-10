@@ -151,6 +151,15 @@ export async function asFree(page, { gated = FREE_CONFIG.gated_features } = {}) 
   })
 }
 
+/**
+ * Re-mock /api/device with an EMPTY config — simulates the production bug
+ * where the paywall_config row is missing from the DB. The client should
+ * still gate celestial features (fail-closed default in entitlements.js).
+ */
+export async function asFreeWithEmptyConfig(page) {
+  await mockDevice(page, { tier: 'free', config: {} })
+}
+
 /** Re-mock /api/chart?action=list to return seeded charts. */
 export async function mockSavedCharts(page, charts) {
   await mockChart(page, { savedCharts: charts })
