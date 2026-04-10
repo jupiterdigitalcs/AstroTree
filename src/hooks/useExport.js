@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { loadCharts } from '../utils/storage.js'
 
 export let _toPng = null
@@ -108,10 +108,14 @@ export function combineImagesVertically(url1, url2) {
 export function useExport({ savedChartId, fitViewRef }) {
   const [exporting,    setExporting]    = useState(false)
   const [exportError,  setExportError]  = useState(null)
+  // Ref guard against double-fire — state updates are batched, so a rapid
+  // double-click could pass `if (exporting)` twice before setExporting flushes.
+  const exportingRef = useRef(false)
 
   const handleExport = useCallback(async () => {
     const el = document.querySelector('.react-flow')
-    if (!el || exporting) return
+    if (!el || exportingRef.current) return
+    exportingRef.current = true
     setExportError(null)
     setExporting(true)
 
@@ -150,12 +154,14 @@ export function useExport({ savedChartId, fitViewRef }) {
     } finally {
       el.classList.remove('exporting')
       setExporting(false)
+      exportingRef.current = false
     }
-  }, [exporting, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleZodiacExport = useCallback(async () => {
     const el = document.querySelector('.zodiac-wheel-wrap')
-    if (!el || exporting) return
+    if (!el || exportingRef.current) return
+    exportingRef.current = true
     setExportError(null)
     setExporting(true)
 
@@ -189,12 +195,14 @@ export function useExport({ savedChartId, fitViewRef }) {
       setExportError('Export failed — please try again.')
     } finally {
       setExporting(false)
+      exportingRef.current = false
     }
-  }, [exporting, savedChartId])
+  }, [savedChartId])
 
   const handleConstellationExport = useCallback(async () => {
     const el = document.querySelector('.constellation-wrap')
-    if (!el || exporting) return
+    if (!el || exportingRef.current) return
+    exportingRef.current = true
     setExportError(null)
     setExporting(true)
 
@@ -225,8 +233,9 @@ export function useExport({ savedChartId, fitViewRef }) {
       setExportError('Export failed — please try again.')
     } finally {
       setExporting(false)
+      exportingRef.current = false
     }
-  }, [exporting, savedChartId])
+  }, [savedChartId])
 
   const handleInsightsExport = useCallback(async () => {
     // Find the visible insights panel (cosmic mode may have one in hidden sidebar + one in sheet)
@@ -236,7 +245,8 @@ export function useExport({ savedChartId, fitViewRef }) {
       if (p.offsetParent !== null || p.offsetWidth > 0) { el = p; break }
     }
     if (!el) el = panels[0] // fallback
-    if (!el || exporting) return
+    if (!el || exportingRef.current) return
+    exportingRef.current = true
     setExportError(null)
     setExporting(true)
 
@@ -302,18 +312,21 @@ export function useExport({ savedChartId, fitViewRef }) {
       el.classList.remove('insights-panel--exporting', 'insights-panel--exporting--wide', 'insights-panel--exporting--xl')
       if (brandEl) brandEl.style.display = ''
       setExporting(false)
+      exportingRef.current = false
     }
-  }, [exporting, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTablesExport = useCallback(async () => {
     const el = document.querySelector('.tables-canvas-wrap')
-    if (!el || exporting) return
+    if (!el || exportingRef.current) return
+    exportingRef.current = true
     setExportError(null)
     setExporting(true)
 
     const { chartTitle, slug } = getChartSlug(savedChartId)
     const filename = `${slug}-tables.png`
 
+    el.classList.add('tables-canvas-wrap--exporting')
     try {
       const url = await (await getToPng())(el, {
         backgroundColor: '#09071a',
@@ -336,9 +349,11 @@ export function useExport({ savedChartId, fitViewRef }) {
       if (err?.name === 'AbortError') return
       setExportError('Export failed — please try again.')
     } finally {
+      el.classList.remove('tables-canvas-wrap--exporting')
       setExporting(false)
+      exportingRef.current = false
     }
-  }, [exporting, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [savedChartId])
 
   return { exporting, exportError, handleExport, handleZodiacExport, handleConstellationExport, handleInsightsExport, handleTablesExport }
 }

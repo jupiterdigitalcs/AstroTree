@@ -15,7 +15,7 @@ export function useOnboardingState() {
     try { return localStorage.getItem('astrotree_insights_seen') === '1' } catch { return false }
   })
 
-  const [returnVisit] = useState(() => {
+  const [returnVisit, setReturnVisit] = useState(() => {
     try {
       const last = localStorage.getItem('astrotree_last_visit')
       const now  = Date.now()
@@ -33,5 +33,5 @@ export function useOnboardingState() {
     })
   }
 
-  return { hasUsedApp, insightsSeen, setInsightsSeen, returnVisit, markUsed }
+  return { hasUsedApp, insightsSeen, setInsightsSeen, returnVisit, setReturnVisit, markUsed }
 }

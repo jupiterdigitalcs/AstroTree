@@ -33,17 +33,43 @@ export async function POST(request) {
     }
 
     const tier = match.tier || 'premium'
+    const cleanEmail = email.trim().slice(0, 254)
 
     // Update device: set tier, save email
     const { error } = await sb.from('devices').update({
       tier,
       tier_updated_at: new Date().toISOString(),
-      email: email.trim().slice(0, 254),
+      email: cleanEmail,
       email_opt_in: true,
     }).eq('id', deviceId)
 
     if (error) {
       return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+    }
+
+    // Mirror tier to user_profiles if device is linked to (or matches) an auth user.
+    // Without this, signing out + signing back in would downgrade the device because
+    // handleLinkAuth reads from user_profiles as the source of truth.
+    const { data: device } = await sb.from('devices').select('auth_user_id').eq('id', deviceId).single()
+    let authUserId = device?.auth_user_id
+    if (!authUserId && cleanEmail) {
+      try {
+        const { data: { users } } = await sb.auth.admin.listUsers({ filter: cleanEmail })
+        const matched = users?.find(u => u.email === cleanEmail)
+        if (matched) {
+          authUserId = matched.id
+          await sb.from('devices').update({ auth_user_id: matched.id }).eq('id', deviceId)
+        }
+      } catch (e) {
+        console.error('[redeem] listUsers failed:', e)
+      }
+    }
+    if (authUserId) {
+      await sb.from('user_profiles').upsert({
+        auth_user_id: authUserId,
+        tier,
+        tier_updated_at: new Date().toISOString(),
+      }, { onConflict: 'auth_user_id' })
     }
 
     // Increment usage counter on the promo code

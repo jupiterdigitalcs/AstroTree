@@ -84,7 +84,7 @@ export default function App() {
   const [showAddMore,       setShowAddMore]       = useState(false)
   const [showConnectPrompt, setShowConnectPrompt] = useState(false)
   const [fitTick,           setFitTick]           = useState(0)
-  const { hasUsedApp, insightsSeen, setInsightsSeen, returnVisit, markUsed } = useOnboardingState()
+  const { hasUsedApp, insightsSeen, setInsightsSeen, returnVisit, setReturnVisit, markUsed } = useOnboardingState()
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
@@ -220,19 +220,23 @@ export default function App() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Handle ?purchase=success return from Stripe ────────────────────────────
+  // Wait for auth to settle so we don't show "save your purchase" to a user
+  // who's actually already signed in (authUser starts null while loading).
   const [postPurchaseCapture, setPostPurchaseCapture] = useState(false)
+  const purchaseReturnHandled = useRef(false)
   useEffect(() => {
+    if (authLoading || purchaseReturnHandled.current) return
+    purchaseReturnHandled.current = true
     const status = checkPurchaseReturn()
-    if (status === 'success') {
-      refreshEntitlements()
-      setPremiumToast(true)
-      setTimeout(() => setPremiumToast(false), 5000)
-      // Prompt for email/auth if not signed in — protect their purchase
-      if (!authUser && shouldForcePrompt()) {
-        setTimeout(() => setPostPurchaseCapture(true), 2000)
-      }
+    if (status !== 'success') return
+    refreshEntitlements()
+    setPremiumToast(true)
+    setTimeout(() => setPremiumToast(false), 5000)
+    // Prompt for email/auth if not signed in — protect their purchase
+    if (!authUser && shouldForcePrompt()) {
+      setTimeout(() => setPostPurchaseCapture(true), 2000)
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [authLoading, authUser, refreshEntitlements])
 
   // ── Re-fetch charts + entitlements after auth sign-in ───────────────────
   useEffect(() => {
@@ -863,7 +867,7 @@ export default function App() {
         </button>
         <button
           className={`bottom-tab${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
-          onClick={() => { setActiveTab('tree'); setEditingNodeId(null); setFitTick(t => t + 1); setNewMembersForChart(0) }}
+          onClick={() => { goTab('tree'); setNewMembersForChart(0) }}
         >
           <span className="bottom-tab-icon">✦</span>
           <span className="bottom-tab-label">Chart</span>
@@ -955,40 +959,6 @@ export default function App() {
               >Add Relationships →</button>
             </div>
           </>
-        )}
-
-        {/* View toggle (tree vs zodiac vs constellation) */}
-        {nodes.length > 0 && (
-          <div className="tree-view-toggle">
-            <button
-              type="button"
-              className={`tree-view-btn${treeView === 'tree' ? ' tree-view-btn--active' : ''}`}
-              onClick={() => setTreeView('tree')}
-            >
-              🌳 Family Tree
-            </button>
-            <button
-              type="button"
-              className={`tree-view-btn${treeView === 'constellation' ? ' tree-view-btn--active' : ''}`}
-              onClick={() => setTreeView('constellation')}
-            >
-              ✦ Constellation
-            </button>
-            <button
-              type="button"
-              className={`tree-view-btn${treeView === 'zodiac' ? ' tree-view-btn--active' : ''}`}
-              onClick={() => setTreeView('zodiac')}
-            >
-              ☉ Zodiac
-            </button>
-            <button
-              type="button"
-              className={`tree-view-btn${treeView === 'tables' ? ' tree-view-btn--active' : ''}`}
-              onClick={() => setTreeView('tables')}
-            >
-              ☽ Tables
-            </button>
-          </div>
         )}
 
         {/* ── Chart view explanation ─────────────────────────────────── */}

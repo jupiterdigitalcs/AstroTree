@@ -167,12 +167,6 @@
     letter-spacing: 0.08em;
   }
 
-  /* Push ReactFlow controls above the tab bar */
-  .react-flow__controls {
-    bottom: max(0.75rem, 0.75rem) !important;
-    left: max(0.75rem, env(safe-area-inset-left)) !important;
-  }
-
   .mode-tab { font-size: 0.7rem; }
   .insights-tab-btn { font-size: 0.72rem; }
   .astro-node { min-width: 130px; padding: 0.8rem 0.9rem; }

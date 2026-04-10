@@ -99,7 +99,12 @@ export function useAuth() {
     }
   }, [])
 
-  // Keep the old signInWithGoogle for backwards compat (falls back to OAuth redirect)
+  // INTENTIONAL FALLBACK — do not delete.
+  // The primary sign-in path is GSI popup via initGoogleButton (above).
+  // This OAuth redirect flow is the belt-and-suspenders fallback used when
+  // GSI fails to load (script blocked, third-party cookies disabled in some
+  // older Safari builds, network race). EmailCapture wires this in as a backup
+  // button so we never strand a user who can't get the GSI button to render.
   const signInWithGoogle = useCallback(async () => {
     const supabase = getSupabaseBrowser()
     if (!supabase) return { ok: false, error: 'Auth not configured' }
