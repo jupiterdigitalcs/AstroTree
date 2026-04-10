@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { loadCharts, deleteChart, saveChart, renameChart } from '../utils/storage.js'
+import { loadCharts, deleteChart, saveChart, renameChart, CHARTS_CHANGED_EVENT } from '../utils/storage.js'
 import { fetchPublicCharts, isCloudEnabled } from '../utils/cloudStorage.js'
 import { getSavedEmail } from './EmailCapture.jsx'
 import { buildDemoChart, buildDemoCrewChart } from '../utils/demoData.js'
@@ -28,6 +28,16 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
   useEffect(() => {
     if (refreshTick > 0) reloadLocal()
   }, [refreshTick]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reload when any code path writes to localStorage via storage.js helpers.
+  // Needed because in cosmic mode this panel is pre-mounted in a BottomSheet,
+  // so loadCharts() at mount time misses charts saved later by handleAdd's
+  // auto-save or the periodic auto-save in useChartManager.
+  useEffect(() => {
+    const handler = () => reloadLocal()
+    window.addEventListener(CHARTS_CHANGED_EVENT, handler)
+    return () => window.removeEventListener(CHARTS_CHANGED_EVENT, handler)
+  }, [])
 
   function reloadLocal() { setCharts(loadCharts()) }
 

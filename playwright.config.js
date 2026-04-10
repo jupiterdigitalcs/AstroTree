@@ -24,7 +24,11 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  // 2 workers — `next dev` chokes when more than 2-3 concurrent test pages
+  // hammer it (chunks fail to compile in time, tests time out waiting on
+  // /_next/ requests). Sequential single-worker takes ~27s for 19 tests,
+  // 2 workers takes ~15s. Don't go higher without switching to next start.
+  workers: 2,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
 
   use: {

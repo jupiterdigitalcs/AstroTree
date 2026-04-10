@@ -86,23 +86,33 @@ async function mockDevice(page, { tier = 'free', config = FREE_CONFIG } = {}) {
 async function mockChart(page, { savedCharts = [] } = {}) {
   await page.route('**/api/chart**', async (route) => {
     const url = route.request().url()
+    // /api/chart?action=list returns a JSON array directly (see route.js)
     if (url.includes('action=list')) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ ok: true, charts: savedCharts }),
+        body: JSON.stringify(savedCharts),
       })
       return
     }
-    if (url.includes('action=public') || url.includes('action=share')) {
+    // /api/chart?action=public also returns an array
+    if (url.includes('action=public')) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ ok: true, token: 'mock-token' }),
+        body: JSON.stringify([]),
       })
       return
     }
-    // save, delete, restore — generic ok
+    if (url.includes('action=share')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'mock-token' }),
+      })
+      return
+    }
+    // save, delete, restore — generic { ok: true }
     await route.fulfill({
       status: 200,
       contentType: 'application/json',

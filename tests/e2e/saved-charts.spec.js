@@ -30,9 +30,6 @@ test.describe('saved charts', () => {
     await page.goto('/')
     await addOneMember(page, 'Persisted Chart')
 
-    // Verify the chart was written to localStorage by handleAdd's auto-save.
-    // (Note: ChartsPanel's UI may not reflect this until the next mount —
-    // there's a known refreshTick bug where handleAdd doesn't bump the tick.)
     const stored = await page.evaluate(() =>
       localStorage.getItem('astrotree_charts')
     )
@@ -42,18 +39,14 @@ test.describe('saved charts', () => {
     expect(charts[0].title).toMatch(/persisted chart/i)
   })
 
-  test('after reload, chart appears in Saved panel', async ({ page }) => {
+  test('auto-saved chart appears in Saved panel without reload', async ({ page }) => {
     await page.goto('/')
-    await addOneMember(page, 'Reload Test')
+    await addOneMember(page, 'Live Save')
 
-    // Reload — ChartsPanel will re-mount and read the saved chart from
-    // localStorage. This is the only path that currently works around the
-    // refreshTick bug.
-    await page.reload()
+    // After first add, the Family bottom sheet is auto-opened. Close it so
+    // the Saved nav button isn't covered.
+    await openSheet(page).locator('.cosmic-bottom-sheet-close').click()
 
-    // After reload, since astrotree_used is set, CanvasOnboarding shows the
-    // "Welcome Back" screen instead of the add form. Skip past it via the
-    // bottom-nav Saved button (which doesn't require loading the chart first).
     await page.locator('.cosmic-bottom-nav')
       .getByRole('button', { name: /saved/i })
       .click()
@@ -61,7 +54,10 @@ test.describe('saved charts', () => {
     const sheet = openSheet(page)
     await expect(sheet.locator('.cosmic-bottom-sheet-title'))
       .toContainText(/saved/i, { timeout: 5_000 })
-    await expect(sheet.locator('.charts-panel').getByText(/reload test/i).first())
+
+    // ChartsPanel listens for the storage CHARTS_CHANGED_EVENT, so the new
+    // chart appears immediately even though it was added after panel mount.
+    await expect(sheet.locator('.charts-panel').getByText(/live save/i).first())
       .toBeVisible({ timeout: 5_000 })
   })
 })
