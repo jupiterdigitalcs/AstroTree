@@ -83,7 +83,15 @@ export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, ini
         setStatus('idle')
       }
     })
-    setGsiReady(true)
+    // Check if GSI actually rendered a button (may take a moment)
+    const check = setInterval(() => {
+      if (googleBtnRef.current?.querySelector('iframe, div[role="button"]')) {
+        setGsiReady(true)
+        clearInterval(check)
+      }
+    }, 200)
+    const timeout = setTimeout(() => { clearInterval(check) }, 5000)
+    return () => { clearInterval(check); clearTimeout(timeout) }
   }, [initGoogleButton])
 
   function handleDismiss() {

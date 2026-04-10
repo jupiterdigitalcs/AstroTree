@@ -70,6 +70,7 @@ export function useAuth() {
       if (!window.google?.accounts?.id) return false
       window.google.accounts.id.initialize({
         client_id: clientId,
+        ux_mode: 'popup',
         callback: async (response) => {
           const { error } = await supabase.auth.signInWithIdToken({
             provider: 'google',
@@ -77,13 +78,14 @@ export function useAuth() {
           })
           onResult?.({ ok: !error, error: error?.message })
         },
+        itp_support: true,
       })
       window.google.accounts.id.renderButton(containerEl, {
         type: 'standard',
         theme: 'filled_black',
         size: 'large',
         text: 'continue_with',
-        width: containerEl.offsetWidth || 280,
+        width: Math.min(containerEl.offsetWidth || 280, 400),
       })
       return true
     }
