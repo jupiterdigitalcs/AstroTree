@@ -103,7 +103,7 @@ export default function App() {
   const isDraggingRef = useRef(false)
 
   // ── Browser history integration (back button) ──────────────────────────────
-  useHistoryNav({ activeTab, treeView, editingNodeId, setActiveTab, setTreeView, setEditingNodeId })
+  useHistoryNav({ activeTab, treeView, editingNodeId, setActiveTab, setTreeView, setEditingNodeId, showDig, setShowDig, insightsTab, setInsightsTab })
 
   // Ingress warnings per node — read from precomputed node.data.ingressWarnings
   const nodeIngressWarnings = useMemo(() => {
@@ -162,7 +162,7 @@ export default function App() {
     edgesForDisplay,
     handleUpdate, handleDelete,
     handleAddEdge, handleRemoveEdge,
-    onNodeClick, onNodeDragStart, onNodeDrag, onConnect,
+    onNodeClick, onNodeDragStart, onNodeDrag, onNodeDragStop, onConnect,
   } = useTreeState({
     nodes, edges,
     setNodes, setEdges,
@@ -373,6 +373,12 @@ export default function App() {
       if (!insightsSeen) logEvent('insights_seen')
       setInsightsSeen(true)
       setNewEdgesForInsights(0)
+    }
+    // Scroll to top so Celestial info / panel header is visible
+    if (tab === 'charts') {
+      setTimeout(() => {
+        document.querySelectorAll('.sidebar-content, .cosmic-bottom-sheet-content, .charts-panel').forEach(el => { el.scrollTop = 0 })
+      }, 100)
     }
   }
 
@@ -621,7 +627,7 @@ export default function App() {
               onInsightsTabChange={setInsightsTab}
               showDig={showDig}
               onShowDig={() => setShowDig(true)}
-              onCloseDig={() => setShowDig(false)}
+              onCloseDig={() => { setShowDig(false); setInsightsTab('insights') }}
             />
 
           /* ── Saved charts ───────────────────────────────────────────── */
@@ -858,12 +864,7 @@ export default function App() {
           className={`bottom-tab${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
           onClick={() => { setActiveTab('tree'); setEditingNodeId(null); setFitTick(t => t + 1); setNewMembersForChart(0) }}
         >
-          <span className="bottom-tab-icon" style={{ position: 'relative', display: 'inline-flex' }}>
-            ✦
-            {newMembersForChart > 0 && (
-              <span className="bottom-tab-badge">{newMembersForChart}</span>
-            )}
-          </span>
+          <span className="bottom-tab-icon">✦</span>
           <span className="bottom-tab-label">Chart</span>
         </button>
         <span className="bottom-tab-wrap">
@@ -872,12 +873,7 @@ export default function App() {
             onClick={() => goTab('insights')}
             disabled={nodes.length < 2}
           >
-            <span className="bottom-tab-icon" style={{ position: 'relative', display: 'inline-flex' }}>
-              ☍
-              {newEdgesForInsights > 0 && (
-                <span className="bottom-tab-badge">{newEdgesForInsights}</span>
-              )}
-            </span>
+            <span className="bottom-tab-icon">☍</span>
             <span className="bottom-tab-label">Insights</span>
           </button>
           {nodes.length < 2 && nodes.length > 0 && <span className="tab-hint tab-hint--bottom">Add {2 - nodes.length} more to unlock</span>}
@@ -1104,7 +1100,7 @@ export default function App() {
               onInsightsTabChange={setInsightsTab}
               showDig={showDig}
               onShowDig={() => setShowDig(true)}
-              onCloseDig={() => setShowDig(false)}
+              onCloseDig={() => { setShowDig(false); setInsightsTab('insights') }}
             />
           </div>
         ) : treeView === 'tables' && nodes.length > 0 ? (
@@ -1149,7 +1145,7 @@ export default function App() {
           nodes={nodes} edges={edgesForDisplay}
           onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
           onConnect={onConnect} onNodeClick={onNodeClick}
-          onNodeDragStart={onNodeDragStart} onNodeDrag={onNodeDrag}
+          onNodeDragStart={onNodeDragStart} onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}
           nodeTypes={NODE_TYPES}
           fitView fitViewOptions={{ padding: 0.25 }}
           minZoom={0.3} colorMode="dark"
@@ -1330,7 +1326,7 @@ export default function App() {
               onInsightsTabChange={setInsightsTab}
               showDig={showDig}
               onShowDig={() => setShowDig(true)}
-              onCloseDig={() => setShowDig(false)}
+              onCloseDig={() => { setShowDig(false); setInsightsTab('insights') }}
             />
           </BottomSheet>
 
@@ -1395,10 +1391,7 @@ export default function App() {
                 className={`cosmic-bottom-nav-btn${activeTab === 'tree' && !editingNodeId ? ' active' : ''}`}
                 onClick={() => { goTab('tree'); setNewMembersForChart(0) }}
               >
-                <span className="cosmic-bottom-nav-icon" style={{ position: 'relative', display: 'inline-flex' }}>
-                  ✦
-                  {newMembersForChart > 0 && <span className="cosmic-bottom-nav-badge">{newMembersForChart}</span>}
-                </span>
+                <span className="cosmic-bottom-nav-icon">✦</span>
                 <span className="cosmic-bottom-nav-label">Chart</span>
               </button>
               <span style={{ flex: 1, display: 'inline-flex', position: 'relative' }}>
@@ -1408,10 +1401,7 @@ export default function App() {
                   disabled={nodes.length < 2}
                   style={{ flex: 1 }}
                 >
-                  <span className="cosmic-bottom-nav-icon" style={{ position: 'relative', display: 'inline-flex' }}>
-                    ☍
-                    {newEdgesForInsights > 0 && <span className="cosmic-bottom-nav-badge">{newEdgesForInsights}</span>}
-                  </span>
+                  <span className="cosmic-bottom-nav-icon">☍</span>
                   <span className="cosmic-bottom-nav-label">Insights</span>
                 </button>
               </span>

@@ -29,13 +29,15 @@ export function useChartManager({
     if (new URLSearchParams(window.location.search).get('view')) return
     const draft = loadDraft()
     if (draft?.nodes?.length > 0) {
-      // Set nodes immediately (may have cached astro data), then hydrate async
+      // Set nodes immediately from cache to prevent welcome screen flash
+      setNodes(draft.nodes)
       setEdges(draft.edges)
       setCounter(draft.counter ?? 1)
       if (draft.savedChartId) setSavedChartId(draft.savedChartId)
       // In cosmic mode, stay on canvas; in classic mode, open family tab
       const ux = (typeof localStorage !== 'undefined' && localStorage.getItem('astrodig_ux')) || 'cosmic'
       if (ux === 'classic') setActiveTab('add')
+      // Then hydrate async (fetches fresh astro data)
       hydrateNodes(draft.nodes).then(hydrated => setNodes(hydrated))
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps

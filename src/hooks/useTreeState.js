@@ -128,6 +128,11 @@ export function useTreeState({
     nodeDragMoved.current = true
   }, [])
 
+  const onNodeDragStop = useCallback(() => {
+    // Reset after a short delay so the click event fires first
+    setTimeout(() => { nodeDragMoved.current = false }, 200)
+  }, [])
+
   const onNodeClick = useCallback((_e, node) => {
     if (nodeDragMoved.current) return
     setEditingNodeId(id => id === node.id ? null : node.id)
@@ -142,6 +147,6 @@ export function useTreeState({
     edgesForDisplay,
     handleUpdate, handleDelete,
     handleAddEdge, handleRemoveEdge,
-    onNodeClick, onNodeDragStart, onNodeDrag, onConnect,
+    onNodeClick, onNodeDragStart, onNodeDrag, onNodeDragStop, onConnect,
   }
 }
