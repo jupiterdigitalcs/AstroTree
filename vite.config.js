@@ -4,5 +4,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   test: {
     environment: 'node',
+    // Exclude Playwright e2e tests — they're run via `npm run test:e2e`
+    exclude: ['node_modules/**', 'tests/e2e/**'],
   },
 })
