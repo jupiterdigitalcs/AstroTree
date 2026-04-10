@@ -33,6 +33,10 @@ const PLANET_RINGS = [
   { key: 'moon',    label: 'Moon',    glyph: '☽', color: '#9dbbd4', r: 208, markerR: 9,  hoverR: 11, defaultOn: true,  hardCap: null },
 ]
 
+// Display order for toggles and legends: Sun, Moon, Mercury, Venus, Mars
+const PLANET_DISPLAY_ORDER = ['sun', 'moon', 'mercury', 'venus', 'mars']
+const PLANET_RINGS_DISPLAY = PLANET_DISPLAY_ORDER.map(key => PLANET_RINGS.find(r => r.key === key))
+
 // Separator dashed circles drawn between adjacent active rings
 const SEP_RADII = [
   { r: 135.5, keys: ['mercury', 'venus'] },
@@ -118,7 +122,8 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
     return nodes.filter(n => selectedGens.has(genLevels[n.id] ?? 0))
   }, [nodes, selectedGens, genLevels])
 
-  const clampZoom = z => Math.max(0.35, Math.min(4, z))
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 640
+  const clampZoom = z => Math.max(0.5, Math.min(isMobile ? 2.5 : 4, z))
 
   // Attach wheel listener with { passive: false } so preventDefault works
   useEffect(() => {
@@ -170,17 +175,32 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
       const dy = t[0].clientY - t[1].clientY
       return Math.sqrt(dx * dx + dy * dy)
     }
+    function midpoint(t) {
+      return { x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2 }
+    }
     function onTouchStart(e) {
       if (e.touches.length === 2) {
         e.preventDefault()
-        pinchRef.current = { dist: dist(e.touches), zoom, panX: pan.x, panY: pan.y }
+        const mid = midpoint(e.touches)
+        pinchRef.current = { dist: dist(e.touches), zoom, panX: pan.x, panY: pan.y, midX: mid.x, midY: mid.y }
       }
     }
     function onTouchMove(e) {
       if (e.touches.length === 2 && pinchRef.current) {
         e.preventDefault()
         const scale = dist(e.touches) / pinchRef.current.dist
-        setZoom(clampZoom(pinchRef.current.zoom * scale))
+        const newZoom = clampZoom(pinchRef.current.zoom * scale)
+        // Pan so zoom centers on pinch midpoint
+        const mid = midpoint(e.touches)
+        const rect = el.getBoundingClientRect()
+        const cx = mid.x - rect.left - rect.width / 2
+        const cy = mid.y - rect.top - rect.height / 2
+        const ratio = newZoom / pinchRef.current.zoom
+        setPan({
+          x: pinchRef.current.panX + (mid.x - pinchRef.current.midX) + cx * (1 - ratio),
+          y: pinchRef.current.panY + (mid.y - pinchRef.current.midY) + cy * (1 - ratio),
+        })
+        setZoom(newZoom)
       }
     }
     function onTouchEnd() { pinchRef.current = null }
@@ -415,7 +435,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
         {/* Zoom controls inside the zoom area so they sit on top */}
         <div className="zodiac-zoom-controls">
           <button className="zodiac-zoom-btn" onClick={(e) => { e.stopPropagation(); setZoom(z => clampZoom(z * 1.2)) }} title="Zoom in">+</button>
-          <button className="zodiac-zoom-btn zodiac-zoom-btn--reset" onClick={(e) => { e.stopPropagation(); resetView() }} title="Reset view">↺</button>
+          <button className="zodiac-zoom-btn zodiac-zoom-btn--reset" onClick={(e) => { e.stopPropagation(); resetView() }} title="Reset view"><span className="zodiac-reset-icon">↺</span><span className="zodiac-reset-label"> Reset</span></button>
           <button className="zodiac-zoom-btn" onClick={(e) => { e.stopPropagation(); setZoom(z => clampZoom(z * 0.83)) }} title="Zoom out">−</button>
         </div>
       </div>
@@ -459,7 +479,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
       {/* ── Side panel: ring toggles + legend ─────────────────────────────── */}
       <div className="zodiac-side-panel">
       <div className="zodiac-ring-toggles">
-        {PLANET_RINGS.map(ring => {
+        {PLANET_RINGS_DISPLAY.map(ring => {
           const isOn      = activeRings[ring.key]
           const maxSeg    = maxPerSegment(ring.key)
           const isCrowded = maxSeg > 4
@@ -501,7 +521,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
       {(() => {
         const z = selectedSign ? ZODIAC_ORDER.find(z => z.sign === selectedSign) : null
         const color = z ? (ELEMENT_COLORS[z.element] ?? '#c9a84c') : '#c9a84c'
-        const groups = z ? PLANET_RINGS.filter(r => activeRings[r.key]).map(ring => ({
+        const groups = z ? PLANET_RINGS_DISPLAY.filter(r => activeRings[r.key]).map(ring => ({
           ring,
           members: nodesForRing(ring.key)[selectedSign] ?? [],
         })).filter(g => g.members.length > 0) : []
@@ -548,7 +568,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
       <div className="zodiac-legend" style={{ display: selectedSign ? 'none' : undefined }}>
         <div className="zodiac-legend-header">
           <span>
-            {PLANET_RINGS.filter(r => activeRings[r.key]).map(r => r.glyph).join(' · ')}
+            {PLANET_RINGS_DISPLAY.filter(r => activeRings[r.key]).map(r => r.glyph).join(' · ')}
           </span>
         </div>
         {sortedNodes.map(n => {

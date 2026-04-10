@@ -1,26 +1,39 @@
 import { useState } from 'react'
 import { PlanetSign } from './PlanetSign.jsx'
+import { getElement, ELEMENT_COLORS } from '../utils/astrology/elements.js'
 
 const ELEMENT_ORDER = ['Fire', 'Earth', 'Air', 'Water']
+const ELEMENT_EMOJI = { Fire: '🔥', Earth: '🌿', Air: '💨', Water: '💧' }
 
 // defaultOn controls initial visibility; all columns appear in the toggle strip
 const COLUMNS = [
-  { key: 'name',     label: 'Name',      defaultOn: true  },
-  { key: 'birthday', label: 'Birthday',  defaultOn: true  },
-  { key: 'sun',      label: '☀ Sun',     defaultOn: true  },
-  { key: 'moon',     label: '☽ Moon',    defaultOn: true  },
-  { key: 'element',  label: 'Element',   defaultOn: false },
-  { key: 'mercury',  label: '☿ Mercury', defaultOn: false },
-  { key: 'venus',    label: '♀ Venus',   defaultOn: false },
-  { key: 'mars',     label: '♂ Mars',    defaultOn: false },
+  { key: 'name',     label: 'Name',          defaultOn: true  },
+  { key: 'birthday', label: 'Birthday',      defaultOn: true  },
+  { key: 'sun',      label: '☀ Sun',         defaultOn: true  },
+  { key: 'moon',     label: '☽ Moon',        defaultOn: true  },
+  { key: 'mercury',  label: '☿ Mercury',     defaultOn: false },
+  { key: 'venus',    label: '♀ Venus',       defaultOn: false },
+  { key: 'mars',     label: '♂ Mars',        defaultOn: false },
 ]
 
 const DEFAULT_VISIBLE = Object.fromEntries(COLUMNS.map(c => [c.key, c.defaultOn]))
+
+function ElementTag({ sign }) {
+  if (!sign) return null
+  const { element, color } = getElement(sign)
+  if (!element || element === 'Unknown') return null
+  return (
+    <span className="tables-element-tag" style={{ color }} title={element}>
+      {ELEMENT_EMOJI[element]}
+    </span>
+  )
+}
 
 export function TablesPanel({ nodes, chartTitle }) {
   const [sortBy,  setSortBy]  = useState('name')
   const [sortDir, setSortDir] = useState('asc')
   const [visible, setVisible] = useState(DEFAULT_VISIBLE)
+  const [showElements, setShowElements] = useState(false)
 
   if (!nodes?.length) {
     return (
@@ -61,6 +74,12 @@ export function TablesPanel({ nodes, chartTitle }) {
     }
   }
 
+  // Get element for any sign
+  function elementOf(sign) {
+    if (!sign || sign === 'Unknown') return 'ZZZ'
+    return getElement(sign).element || 'ZZZ'
+  }
+
   function toggleCol(key) {
     setVisible(v => ({ ...v, [key]: !v[key] }))
   }
@@ -72,10 +91,14 @@ export function TablesPanel({ nodes, chartTitle }) {
       case 'birthday': cmp = (a.birthdate || '').localeCompare(b.birthdate || ''); break
       case 'sun':      cmp = (a.sunSign || '').localeCompare(b.sunSign || ''); break
       case 'moon':     cmp = (a.moonSign || 'ZZZ').localeCompare(b.moonSign || 'ZZZ'); break
-      case 'element':  cmp = ELEMENT_ORDER.indexOf(a.element) - ELEMENT_ORDER.indexOf(b.element); break
       case 'mercury':  cmp = (a.mercury?.sign || 'ZZZ').localeCompare(b.mercury?.sign || 'ZZZ'); break
       case 'venus':    cmp = (a.venus?.sign   || 'ZZZ').localeCompare(b.venus?.sign   || 'ZZZ'); break
       case 'mars':     cmp = (a.mars?.sign    || 'ZZZ').localeCompare(b.mars?.sign    || 'ZZZ'); break
+      case 'sun_el':     cmp = ELEMENT_ORDER.indexOf(elementOf(a.sunSign)) - ELEMENT_ORDER.indexOf(elementOf(b.sunSign)); break
+      case 'moon_el':    cmp = ELEMENT_ORDER.indexOf(elementOf(a.moonSign)) - ELEMENT_ORDER.indexOf(elementOf(b.moonSign)); break
+      case 'mercury_el': cmp = ELEMENT_ORDER.indexOf(elementOf(a.mercury?.sign)) - ELEMENT_ORDER.indexOf(elementOf(b.mercury?.sign)); break
+      case 'venus_el':   cmp = ELEMENT_ORDER.indexOf(elementOf(a.venus?.sign)) - ELEMENT_ORDER.indexOf(elementOf(b.venus?.sign)); break
+      case 'mars_el':    cmp = ELEMENT_ORDER.indexOf(elementOf(a.mars?.sign)) - ELEMENT_ORDER.indexOf(elementOf(b.mars?.sign)); break
       default:         cmp = (a.name || '').localeCompare(b.name || ''); break
     }
     return sortDir === 'asc' ? cmp : -cmp
@@ -93,11 +116,28 @@ export function TablesPanel({ nodes, chartTitle }) {
     return <span className="tables-sort-arrow tables-sort-arrow--dim"> ↕</span>
   }
 
+  // Element sort button shown in planet headers when elements toggle is on
+  function ElementSort({ planet }) {
+    if (!showElements) return null
+    const elCol = `${planet}_el`
+    const isActive = sortBy === elCol
+    return (
+      <button
+        type="button"
+        className={`tables-el-sort${isActive ? ' tables-el-sort--active' : ''}`}
+        onClick={(e) => { e.stopPropagation(); handleSort(elCol) }}
+        title={`Sort by ${planet} element`}
+      >
+        🔥{isActive && <span className="tables-sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+      </button>
+    )
+  }
+
   return (
     <div className="tables-panel">
       <h3 className="tables-title">{chartTitle || 'Astrology Data'}</h3>
 
-      {/* Column visibility toggles — all columns */}
+      {/* Column visibility toggles */}
       <div className="tables-col-toggles">
         {COLUMNS.map(c => (
           <button
@@ -109,6 +149,13 @@ export function TablesPanel({ nodes, chartTitle }) {
             {visible[c.key] ? c.label : `+ ${c.label}`}
           </button>
         ))}
+        <button
+          className={`tables-col-btn tables-col-btn--optional${showElements ? ' tables-col-btn--on' : ''}`}
+          onClick={() => setShowElements(v => !v)}
+          title={showElements ? 'Hide element indicators' : 'Show element next to each sign'}
+        >
+          {showElements ? '🔥 Elements' : '+ 🔥 Elements'}
+        </button>
       </div>
 
       <div className="tables-scroll">
@@ -127,32 +174,27 @@ export function TablesPanel({ nodes, chartTitle }) {
               )}
               {visible.sun && (
                 <th className={thClass('sun')} onClick={() => handleSort('sun')}>
-                  ☀ Sun<SortArrow col="sun" />
+                  ☀ Sun<SortArrow col="sun" /><ElementSort planet="sun" />
                 </th>
               )}
               {visible.moon && (
                 <th className={thClass('moon')} onClick={() => handleSort('moon')}>
-                  ☽ Moon<SortArrow col="moon" />
+                  ☽ Moon<SortArrow col="moon" /><ElementSort planet="moon" />
                 </th>
               )}
               {visible.mercury && (
                 <th className={thClass('mercury')} onClick={() => handleSort('mercury')}>
-                  ☿ Mercury<SortArrow col="mercury" />
+                  ☿ Mercury<SortArrow col="mercury" /><ElementSort planet="mercury" />
                 </th>
               )}
               {visible.venus && (
                 <th className={thClass('venus')} onClick={() => handleSort('venus')}>
-                  ♀ Venus<SortArrow col="venus" />
+                  ♀ Venus<SortArrow col="venus" /><ElementSort planet="venus" />
                 </th>
               )}
               {visible.mars && (
                 <th className={thClass('mars')} onClick={() => handleSort('mars')}>
-                  ♂ Mars<SortArrow col="mars" />
-                </th>
-              )}
-              {visible.element && (
-                <th className={thClass('element')} onClick={() => handleSort('element')}>
-                  Element<SortArrow col="element" />
+                  ♂ Mars<SortArrow col="mars" /><ElementSort planet="mars" />
                 </th>
               )}
             </tr>
@@ -162,36 +204,40 @@ export function TablesPanel({ nodes, chartTitle }) {
               <tr key={r.id}>
                 {visible.name    && <td className="tables-name">{r.name}</td>}
                 {visible.birthday && <td className="tables-date">{r.birthdate}</td>}
-                {visible.sun     && <td className="tables-sign">{r.sunSymbol} {r.sunSign}</td>}
+                {visible.sun     && (
+                  <td className="tables-sign">
+                    {r.sunSymbol} {r.sunSign}
+                    {showElements && <ElementTag sign={r.sunSign} />}
+                  </td>
+                )}
                 {visible.moon    && (
                   <td className="tables-sign">
                     {r.moonSign && r.moonSign !== 'Unknown'
-                      ? <PlanetSign planet="moon" symbol={r.moonSymbol} sign={r.moonSign} />
+                      ? <><PlanetSign planet="moon" symbol={r.moonSymbol} sign={r.moonSign} />{showElements && <ElementTag sign={r.moonSign} />}</>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                   </td>
                 )}
                 {visible.mercury && (
                   <td className="tables-sign">
                     {r.mercury?.sign
-                      ? <PlanetSign planet="mercury" symbol={r.mercury.symbol} sign={r.mercury.sign} />
+                      ? <><PlanetSign planet="mercury" symbol={r.mercury.symbol} sign={r.mercury.sign} />{showElements && <ElementTag sign={r.mercury.sign} />}</>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                   </td>
                 )}
                 {visible.venus && (
                   <td className="tables-sign">
                     {r.venus?.sign
-                      ? <PlanetSign planet="venus" symbol={r.venus.symbol} sign={r.venus.sign} />
+                      ? <><PlanetSign planet="venus" symbol={r.venus.symbol} sign={r.venus.sign} />{showElements && <ElementTag sign={r.venus.sign} />}</>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                   </td>
                 )}
                 {visible.mars && (
                   <td className="tables-sign">
                     {r.mars?.sign
-                      ? <PlanetSign planet="mars" symbol={r.mars.symbol} sign={r.mars.sign} />
+                      ? <><PlanetSign planet="mars" symbol={r.mars.symbol} sign={r.mars.sign} />{showElements && <ElementTag sign={r.mars.sign} />}</>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                   </td>
                 )}
-                {visible.element && <td className="tables-element">{r.element}</td>}
               </tr>
             ))}
           </tbody>

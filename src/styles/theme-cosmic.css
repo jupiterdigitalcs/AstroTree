@@ -1128,11 +1128,12 @@
     font-size: 0.85rem;
   }
 
-  /* Action bar — bottom right, above zodiac/chart scroll */
+  /* Action bar — bottom right, fixed so it's always visible */
   .cosmic-action-bar {
-    bottom: 0.6rem;
+    position: fixed;
+    bottom: calc(80px + env(safe-area-inset-bottom) + 0.6rem);
     right: 0.6rem;
-    z-index: 15;
+    z-index: 140;
   }
 
   /* Chart explanation — hide on mobile to avoid overlaying charts */

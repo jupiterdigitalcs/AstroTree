@@ -932,6 +932,10 @@
   color: var(--text-muted);
 }
 
+.zodiac-reset-label {
+  display: none;
+}
+
 .zodiac-zoom-area {
   position: relative;
   overflow: hidden;
@@ -1375,9 +1379,14 @@
   .zodiac-zoom-btn:not(.zodiac-zoom-btn--reset) { display: none; }
   .zodiac-zoom-btn--reset {
     width: auto;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.7rem;
+    padding: 0.45rem 1rem;
+    font-size: 0.8rem;
+    border-radius: 20px;
+    background: rgba(201, 168, 76, 0.2);
+    border: 1px solid rgba(201, 168, 76, 0.4);
+    color: var(--gold, #c9a84c);
   }
+  .zodiac-reset-label { display: inline; }
   /* Show pan/zoom hint on mobile */
   .zodiac-mobile-hint { display: block; }
 }

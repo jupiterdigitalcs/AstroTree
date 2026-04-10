@@ -103,11 +103,30 @@
   color: var(--gold-light);
 }
 
-.tables-element {
-  color: var(--text-soft);
+.tables-element-tag {
+  margin-left: 0.3rem;
   font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+}
+
+.tables-el-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: 0.3rem;
+  padding: 0.1rem 0.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-size: 0.6rem;
+  cursor: pointer;
+  vertical-align: middle;
+  color: var(--text-muted);
+}
+
+.tables-el-sort--active {
+  background: rgba(201, 168, 76, 0.15);
+  border-color: rgba(201, 168, 76, 0.3);
+  color: var(--gold, #c9a84c);
 }
 
 .tables-note {

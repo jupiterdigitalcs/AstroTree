@@ -30,8 +30,8 @@ function runForceLayout(nodes, edges, width, height) {
     if (si != null && ti != null) { adj[si].add(ti); adj[ti].add(si) }
   })
 
-  const pad = 50
-  const padBottom = 160 // extra bottom padding to avoid legend overlap
+  const pad = 60
+  const padBottom = 180 // extra bottom padding to avoid legend overlap
 
   for (let iter = 0; iter < iterations; iter++) {
     const alpha = Math.pow(1 - iter / iterations, 1.5) // ease-out cooling
@@ -123,7 +123,8 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
   const dragMoved = useRef(false)
   const activePointers = useRef(new Map()) // pointerId → {x, y} — for pinch detection
 
-  const size = 560
+  const isMobileConst = typeof window !== 'undefined' && window.innerWidth <= 640
+  const size = isMobileConst ? 640 : 560
 
   useEffect(() => {
     const pos = runForceLayout(nodes, edges, size, size)

@@ -136,11 +136,17 @@
 
 @media (max-width: 768px) {
   .constellation-legend {
-    bottom: calc(0.6rem + 60px + env(safe-area-inset-bottom));
+    bottom: calc(0.6rem + 85px + env(safe-area-inset-bottom));
     max-width: calc(100% - 2rem);
+    font-size: 0.6rem;
+  }
+  .constellation-legend-chip {
+    max-width: 100px;
+    font-size: 0.6rem;
+    padding: 0.15rem 0.45rem;
   }
   .constellation-controls {
-    bottom: calc(5.5rem + 60px + env(safe-area-inset-bottom));
+    bottom: calc(5.5rem + 85px + env(safe-area-inset-bottom));
   }
 }
 
