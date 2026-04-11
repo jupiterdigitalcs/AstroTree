@@ -110,29 +110,25 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
           )}
         </div>
       ) : !authLoading && (
-        <div className="celestial-explainer celestial-explainer--at-risk" id="celestial-info">
-          <h3 className="celestial-explainer-title">
-            {entitlements?.tier === 'premium' ? '⚠ Your Celestial upgrade isn\'t protected' : '✦ What is Celestial?'}
-          </h3>
-          {entitlements?.tier === 'premium' ? (
-            <p className="celestial-explainer-text">
-              Add your email so you can restore your charts and Celestial access on any device.
-            </p>
-          ) : (<>
-            <p className="celestial-explainer-text">
-              <strong>Celestial</strong> is a one-time $9.99 upgrade that unlocks the full cosmos:
-            </p>
-            <ul className="celestial-explainer-list">
-              <li>☉ Zodiac Wheel + Constellation views</li>
-              <li>☽ Tables — sortable sun, moon &amp; planet grid</li>
-              <li>✦ Full Insights — compatibility, roles, zodiac threads</li>
-              <li>✦ The Full DIG — every slide in your cosmic story</li>
-              <li>📚 Unlimited charts — save as many as you want</li>
-            </ul>
-          </>)}
+        // Not signed in — Celestial is account-bound, so the only state here
+        // is "explain Celestial + sign in to unlock". The previous "isn't
+        // protected" branch is dead now that tier is always 'free' when no
+        // auth user.
+        <div className="celestial-explainer" id="celestial-info">
+          <h3 className="celestial-explainer-title">✦ What is Celestial?</h3>
+          <p className="celestial-explainer-text">
+            <strong>Celestial</strong> is a one-time $9.99 upgrade that unlocks the full cosmos:
+          </p>
+          <ul className="celestial-explainer-list">
+            <li>☉ Zodiac Wheel + Constellation views</li>
+            <li>☽ Tables — sortable sun, moon &amp; planet grid</li>
+            <li>✦ Full Insights — compatibility, roles, zodiac threads</li>
+            <li>✦ The Full DIG — every slide in your cosmic story</li>
+            <li>📚 Unlimited charts — save as many as you want</li>
+          </ul>
           {onSignIn && (
             <button type="button" className="celestial-explainer-btn" onClick={onSignIn}>
-              {entitlements?.tier === 'premium' ? '✦ Protect my account' : '✦ Unlock Celestial — $9.99'}
+              ✦ Sign in to Unlock Celestial
             </button>
           )}
         </div>

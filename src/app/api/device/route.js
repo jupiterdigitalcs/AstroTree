@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSupabase } from '../_lib/supabase.js'
+import { getAuthUser } from '../_lib/authUser.js'
 
 async function handleRegister(request) {
   const { deviceId, referrer, timezone, userAgent, country, city } = await request.json()
@@ -34,25 +35,30 @@ async function handlePing(request) {
 }
 
 async function handleEntitlements(request) {
-  const deviceId = request.headers.get('x-device-id')
-  if (!deviceId) return NextResponse.json({ error: 'Missing device ID' }, { status: 400 })
-  const authStatus = request.headers.get('x-auth-status')
   const sb = getSupabase()
-  const { data: device } = await sb.from('devices').select('tier, auth_user_id').eq('id', deviceId).single()
 
-  // If client says signed-out but device still has premium, reset tier
-  // (covers stale device state from sign-outs before unlink-auth existed)
-  if (device?.tier === 'premium' && authStatus === 'signed-out') {
-    await sb.from('devices').update({ auth_user_id: null, tier: 'free', tier_updated_at: new Date().toISOString() }).eq('id', deviceId)
-    const { data: config } = await sb.from('paywall_config').select('key, value')
-    const configObj = {}
-    if (config) config.forEach(r => { configObj[r.key] = r.value })
-    return NextResponse.json({ tier: 'free', config: configObj })
+  // Always load paywall config (used by client gating logic)
+  const { data: configRows } = await sb.from('paywall_config').select('key, value')
+  const config = {}
+  if (configRows) configRows.forEach(r => { config[r.key] = r.value })
+
+  // Tier is account-bound. Premium follows the auth user, NOT the device.
+  // A device alone never has effective premium — even if devices.tier='premium'
+  // (legacy data, Stripe webhook write, etc), the server doesn't read it here.
+  // Sign in is required to access premium.
+  const authUser = await getAuthUser(request)
+  if (!authUser) {
+    return NextResponse.json({ tier: 'free', config })
   }
 
-  const { data, error } = await sb.rpc('get_device_entitlements', { p_device_id: deviceId })
-  if (error) return NextResponse.json({ tier: 'free', config: {} }, { status: 500 })
-  return NextResponse.json(data ?? { tier: 'free', config: {} })
+  // Source of truth for auth users: user_profiles.tier
+  const { data: profile } = await sb
+    .from('user_profiles')
+    .select('tier')
+    .eq('auth_user_id', authUser.id)
+    .maybeSingle()
+
+  return NextResponse.json({ tier: profile?.tier ?? 'free', config })
 }
 
 async function handleLinkAuth(request) {
