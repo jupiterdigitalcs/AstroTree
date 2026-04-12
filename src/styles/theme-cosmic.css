@@ -705,6 +705,16 @@
   animation: onboarding-breathe 4s ease-in-out infinite;
 }
 
+/* Pause ancestor animations while typing — mobile Safari repositions the
+   text caret each frame when inputs live inside a backdrop-filtered,
+   constantly-repainting parent, causing a "floating cursor" effect. */
+.cosmic-onboarding:focus-within {
+  animation: none;
+}
+.cosmic-onboarding:focus-within::before {
+  animation: none;
+}
+
 /* Animated top border */
 .cosmic-onboarding::before {
   content: '';
@@ -788,15 +798,27 @@
   border-radius: var(--radius-sm);
   color: var(--a-text);
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.85rem;
+  font-size: 16px; /* >=16px prevents iOS auto-zoom on focus */
   padding: 0.65rem 0.85rem;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+  /* Force own compositing layer so mobile Safari doesn't drag the caret
+     along with the parent's backdrop-filter / box-shadow repaints. */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .cosmic-onboarding-input:focus {
   border-color: var(--a-border-glow);
   box-shadow: 0 0 16px rgba(212,168,76,0.08);
+}
+
+/* Same caret-stabilization treatment for the MM/DD/YYYY inputs inside
+   the onboarding card. */
+.cosmic-onboarding .date-input input {
+  font-size: 16px;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .cosmic-onboarding-input::placeholder {
