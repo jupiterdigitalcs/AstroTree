@@ -160,6 +160,12 @@ export default function App() {
     onChartLimitHit: () => setShowUpgradePrompt(true),
   })
 
+  // Wrap handleLoadChart to set isDemoChart when loading a sample chart
+  async function loadChart(chart) {
+    await handleLoadChart(chart)
+    setIsDemoChart(!!chart.isSample)
+  }
+
   // Clear the "sample chart" flag the moment the chart stops being a demo:
   // either the user saved it (savedChartId set), cleared it (nodes empty),
   // or replaced the demo with a loaded chart (which resets savedChartId to
@@ -424,14 +430,15 @@ export default function App() {
     markUsed()
   }
 
-  // Exit sample chart: load saved charts if user has any, else start fresh
+  // Exit sample chart: load saved charts if user has any, else start fresh.
+  // Always skip the save dialog — demo charts shouldn't prompt to save.
   function handleExitDemo() {
     setIsDemoChart(false)
     const saved = loadCharts()
     if (saved.length > 0) {
       goTab('charts')
     } else {
-      handleNewTreeClick()
+      handleNewChart()
     }
   }
 
@@ -663,7 +670,7 @@ export default function App() {
             <ChartsPanel
               nodes={nodes} edges={edges} counter={counter}
               savedChartId={savedChartId}
-              onLoad={handleLoadChart} onNew={handleNewTreeClick}
+              onLoad={loadChart} onNew={handleNewTreeClick}
               onDeleteCloud={deleteFromCloud}
               onRename={handleRenameChart} onDuplicate={handleDuplicateChart}
               onAddEmail={isCloudEnabled() ? () => { clearEmailAsked(); setShowEmailCapture(true) } : undefined}
@@ -1063,6 +1070,23 @@ export default function App() {
           </div>
         )}
 
+        {/* Sample-chart banner — prominent way to exit the demo tree */}
+        {isDemoChart && !editingNodeId && (
+          <div className="sample-chart-banner" role="status">
+            <span className="sample-chart-banner-label">★ Sample Chart</span>
+            <span className="sample-chart-banner-text">
+              You're exploring a demo. Ready for your own?
+            </span>
+            <button
+              type="button"
+              className="sample-chart-banner-btn"
+              onClick={handleExitDemo}
+            >
+              Back to My Chart →
+            </button>
+          </div>
+        )}
+
         {/* Bottom-right: Jupiter Digital watermark (both views) */}
         {nodes.length > 0 && (
           <div className="canvas-brand">
@@ -1166,23 +1190,6 @@ export default function App() {
               setTreeView={setTreeView}
               entitlements={entitlements}
             />
-          )}
-
-          {/* Sample-chart banner — prominent way to exit the demo tree */}
-          {isDemoChart && activeTab === 'tree' && !editingNodeId && (
-            <div className="sample-chart-banner" role="status">
-              <span className="sample-chart-banner-label">★ Sample Chart</span>
-              <span className="sample-chart-banner-text">
-                You're exploring a demo. Ready for your own?
-              </span>
-              <button
-                type="button"
-                className="sample-chart-banner-btn"
-                onClick={handleExitDemo}
-              >
-                Back to My Chart →
-              </button>
-            </div>
           )}
 
           {/* On-tree reminder when the user has members but no relationships yet */}
@@ -1362,7 +1369,7 @@ export default function App() {
             <ChartsPanel
               nodes={nodes} edges={edges} counter={counter}
               savedChartId={savedChartId}
-              onLoad={handleLoadChart} onNew={handleNewTreeClick}
+              onLoad={loadChart} onNew={handleNewTreeClick}
               onDeleteCloud={deleteFromCloud}
               onRename={handleRenameChart} onDuplicate={handleDuplicateChart}
               onAddEmail={isCloudEnabled() ? () => { clearEmailAsked(); setShowEmailCapture(true) } : undefined}

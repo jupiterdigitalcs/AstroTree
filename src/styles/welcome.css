@@ -68,6 +68,16 @@
   font-weight: 300;
 }
 
+.welcome-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 300px;
+  font-weight: 300;
+  opacity: 0.75;
+  margin: -0.2rem 0 0;
+}
+
 .welcome-steps {
   display: flex;
   flex-direction: column;

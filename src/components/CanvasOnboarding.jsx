@@ -17,7 +17,11 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNe
   if (hasUsedApp) {
     return (
       <div className="cosmic-onboarding">
-        <JupiterIcon size={36} />
+        <div className="cosmic-onboarding-brand">
+          <JupiterIcon size={36} />
+          <span className="cosmic-onboarding-brand-name">AstroDig</span>
+          <span className="cosmic-onboarding-brand-by">by Jupiter Digital</span>
+        </div>
         <h2>Welcome Back</h2>
         <p>Your charts are waiting — pick up where you left off.</p>
         <button type="button" className="cosmic-onboarding-btn" onClick={onLoadCharts}>
@@ -35,9 +39,14 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNe
 
   return (
     <div className="cosmic-onboarding">
-      <JupiterIcon size={36} />
+      <div className="cosmic-onboarding-brand">
+        <JupiterIcon size={36} />
+        <span className="cosmic-onboarding-brand-name">AstroDig</span>
+        <span className="cosmic-onboarding-brand-by">by Jupiter Digital</span>
+      </div>
       <h2>Start Your Chart</h2>
-      <p>Add the first person — yourself, a family member, or a friend. We'll reveal their sun sign, moon sign, and inner planets.</p>
+      <p className="cosmic-onboarding-tagline">See how the stars connect the people in your life — sun signs, moon signs, elements, and compatibility all in one place.</p>
+      <p>Add the first person to get started.</p>
       <form className="cosmic-onboarding-form" onSubmit={handleSubmit}>
         <label className="cosmic-onboarding-label">
           <span className="cosmic-onboarding-label-text">Full name</span>

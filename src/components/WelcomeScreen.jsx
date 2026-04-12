@@ -10,8 +10,13 @@ export function WelcomeScreen({ onBegin, onDemo, onDemoCrew, hasUsedApp, onLoadC
         <p className="welcome-tagline">
           {hasUsedApp
             ? <>Welcome back —<br />your charts are waiting</>
-            : <>Map the astrology of your people<br />— family, friends, or anyone you know</>}
+            : <>See how the stars connect<br />the people in your life</>}
         </p>
+        {!hasUsedApp && (
+          <p className="welcome-subtitle">
+            Map sun signs, moon signs, elements, and compatibility across your family, friends, and coworkers.
+          </p>
+        )}
 
         {/* Desktop CTA */}
         {hasUsedApp ? (
