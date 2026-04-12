@@ -30,30 +30,38 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNe
     )
   }
 
+  const trimmedName = name.trim()
+  const canSubmit = trimmedName && birthdate
+
   return (
     <div className="cosmic-onboarding">
       <JupiterIcon size={36} />
-      <h2>Add Your First Person</h2>
-      <p>Enter a name and birthday — we'll show you their cosmic profile.</p>
+      <h2>Start Your Chart</h2>
+      <p>Add the first person — yourself, a family member, or a friend. We'll reveal their sun sign, moon sign, and inner planets.</p>
       <form className="cosmic-onboarding-form" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          className="cosmic-onboarding-input"
-          placeholder="Name"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          autoFocus
-        />
-        <DateInput
-          value={birthdate}
-          onChange={setBirthdate}
-        />
+        <label className="cosmic-onboarding-label">
+          <span className="cosmic-onboarding-label-text">Full name</span>
+          <input
+            type="text"
+            className="cosmic-onboarding-input"
+            placeholder="e.g. Alex Rivera"
+            value={name}
+            onChange={e => setName(e.target.value)}
+          />
+        </label>
+        <label className="cosmic-onboarding-label">
+          <span className="cosmic-onboarding-label-text">Birthday (MM / DD / YYYY)</span>
+          <DateInput
+            value={birthdate}
+            onChange={setBirthdate}
+          />
+        </label>
         <button
           type="submit"
           className="cosmic-onboarding-btn"
-          disabled={!name.trim() || !birthdate}
+          disabled={!canSubmit}
         >
-          Add to Chart
+          {canSubmit ? `Add ${trimmedName} to Chart` : 'Add to Chart'}
         </button>
       </form>
       <div className="cosmic-onboarding-demos">
