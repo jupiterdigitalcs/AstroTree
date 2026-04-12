@@ -37,9 +37,9 @@ export default function AboutPanel() {
       <div className="about-card">
         <h3 className="about-heading">What is AstroDig?</h3>
         <p className="about-bio">
-          Like an archaeologist uncovers hidden layers beneath the surface,
-          AstroDig lets you dig into the astrological patterns woven through
-          your relationships — all in digital form. 
+          AstroDig is a tool to learn astrological connections for your family or group. 
+          You can uncover hidden layers beneath the surface and patterns woven through
+          your relationships. 
         </p>
       </div>
 
@@ -48,7 +48,7 @@ export default function AboutPanel() {
         <h3 className="about-heading">Meet the Astrologer</h3>
         <p className="about-bio">
           Hi, I'm Christina — astrologer and creator behind Jupiter Digital.
-          I believe mirror the patterns of our lives, allowing for special insights and a form of connection to the universe. AstroDig is my way of making that visible.
+          I believe the planets mirror the patterns of our lives, allowing for special insights and a form of connection to the universe. AstroDig is my way of making that visible.
         </p>
       </div>
 
