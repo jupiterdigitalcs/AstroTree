@@ -1,7 +1,11 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
+import { getNodesBounds } from '@xyflow/react'
 import { loadCharts } from '../utils/storage.js'
+
+// Cap export pixel count so very large trees/tables don't OOM mobile browsers
+const MAX_EXPORT_DIM = 4096
 
 export let _toPng = null
 export async function getToPng() {
@@ -82,6 +86,32 @@ function getChartSlug(savedChartId) {
   return { chartTitle, slug }
 }
 
+// ── Compute html-to-image options that capture an element's full scroll size ─
+// Forces the element to render at its natural content width/height with overflow
+// visible so nothing is clipped, regardless of how the visible viewport sized it.
+function fullSizeCaptureOpts(el, baseOpts) {
+  // Force a layout reflow so scrollWidth/scrollHeight reflect current content
+  void el.offsetWidth
+  let w = Math.max(el.scrollWidth,  el.clientWidth)
+  let h = Math.max(el.scrollHeight, el.clientHeight)
+  const scale = Math.min(1, MAX_EXPORT_DIM / Math.max(w, h))
+  w = Math.round(w * scale)
+  h = Math.round(h * scale)
+  return {
+    ...baseOpts,
+    width:  w,
+    height: h,
+    style: {
+      ...(baseOpts.style || {}),
+      width:    `${w}px`,
+      height:   `${h}px`,
+      overflow: 'visible',
+      transform: scale < 1 ? `scale(${scale})` : undefined,
+      transformOrigin: '0 0',
+    },
+  }
+}
+
 // ── Combine two PNG data-URLs vertically on a canvas ────────────────────────
 export function combineImagesVertically(url1, url2) {
   return new Promise(resolve => {
@@ -119,7 +149,9 @@ export function useExport({ savedChartId, fitViewRef }) {
     setExportError(null)
     setExporting(true)
 
-    fitViewRef.current?.({ padding: 0.12, duration: 0 })
+    // Fit so layout is fresh, then we'll override with our own transform sized to content
+    const rf = fitViewRef.current
+    rf?.fitView?.({ padding: 0.12, duration: 0 })
     await new Promise(r => setTimeout(r, 120))
 
     el.classList.add('exporting')
@@ -127,7 +159,11 @@ export function useExport({ savedChartId, fitViewRef }) {
     const filename = `${slug}-tree.png`
 
     try {
-      const url = await (await getToPng())(el, {
+      // Compute the full bounds of all nodes so the export captures the entire
+      // tree (not just what's currently visible in the viewport).
+      const nodes = rf?.getNodes?.() || []
+      const viewportEl = el.querySelector('.react-flow__viewport')
+      let toPngOpts = {
         backgroundColor: '#09071a',
         pixelRatio: 2,
         skipFonts: true,
@@ -141,7 +177,33 @@ export function useExport({ savedChartId, fitViewRef }) {
           if (c.contains('canvas-brand'))           return false
           return true
         },
-      })
+      }
+      let captureEl = el
+      if (nodes.length > 0 && viewportEl) {
+        const bounds = getNodesBounds(nodes)
+        const pad = 60
+        let w = Math.ceil(bounds.width  + pad * 2)
+        let h = Math.ceil(bounds.height + pad * 2)
+        // Scale down if either dimension exceeds the safety cap
+        const scale = Math.min(1, MAX_EXPORT_DIM / Math.max(w, h))
+        w = Math.round(w * scale)
+        h = Math.round(h * scale)
+        const tx = (-bounds.x + pad) * scale
+        const ty = (-bounds.y + pad) * scale
+        captureEl = viewportEl
+        toPngOpts = {
+          ...toPngOpts,
+          width:  w,
+          height: h,
+          style: {
+            width:  `${w}px`,
+            height: `${h}px`,
+            transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
+            transformOrigin: '0 0',
+          },
+        }
+      }
+      const url = await (await getToPng())(captureEl, toPngOpts)
       const finalUrl = await appendBrandBar(url, 2)
       await shareOrDownload(
         finalUrl, filename,
@@ -168,8 +230,9 @@ export function useExport({ savedChartId, fitViewRef }) {
     const { chartTitle, slug } = getChartSlug(savedChartId)
     const filename = `${slug}-zodiac.png`
 
+    el.classList.add('zodiac-wheel-wrap--exporting')
     try {
-      const url = await (await getToPng())(el, {
+      const baseOpts = {
         backgroundColor: '#09071a',
         pixelRatio: 2,
         skipFonts: true,
@@ -183,7 +246,8 @@ export function useExport({ savedChartId, fitViewRef }) {
           if (c.contains('zodiac-zoom-controls')) return false
           return true
         },
-      })
+      }
+      const url = await (await getToPng())(el, fullSizeCaptureOpts(el, baseOpts))
       const finalUrl = await appendBrandBar(url, 2)
       await shareOrDownload(
         finalUrl, filename,
@@ -194,6 +258,7 @@ export function useExport({ savedChartId, fitViewRef }) {
       if (err?.name === 'AbortError') return
       setExportError('Export failed — please try again.')
     } finally {
+      el.classList.remove('zodiac-wheel-wrap--exporting')
       setExporting(false)
       exportingRef.current = false
     }
@@ -210,7 +275,7 @@ export function useExport({ savedChartId, fitViewRef }) {
     const filename = `${slug}-constellation.png`
 
     try {
-      const url = await (await getToPng())(el, {
+      const baseOpts = {
         backgroundColor: '#09071a',
         pixelRatio: 2,
         skipFonts: true,
@@ -221,7 +286,8 @@ export function useExport({ savedChartId, fitViewRef }) {
           if (c.contains('constellation-controls')) return false
           return true
         },
-      })
+      }
+      const url = await (await getToPng())(el, fullSizeCaptureOpts(el, baseOpts))
       const finalUrl = await appendBrandBar(url, 2)
       await shareOrDownload(
         finalUrl, filename,
@@ -327,8 +393,10 @@ export function useExport({ savedChartId, fitViewRef }) {
     const filename = `${slug}-tables.png`
 
     el.classList.add('tables-canvas-wrap--exporting')
+    // Force layout to recompute now that overflow constraints are removed
+    await new Promise(r => requestAnimationFrame(r))
     try {
-      const url = await (await getToPng())(el, {
+      const baseOpts = {
         backgroundColor: '#09071a',
         pixelRatio: 2,
         skipFonts: true,
@@ -338,7 +406,8 @@ export function useExport({ savedChartId, fitViewRef }) {
           if (c.contains('tables-col-toggles')) return false
           return true
         },
-      })
+      }
+      const url = await (await getToPng())(el, fullSizeCaptureOpts(el, baseOpts))
       const finalUrl = await appendBrandBar(url, 2)
       await shareOrDownload(
         finalUrl, filename,

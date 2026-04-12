@@ -59,13 +59,13 @@ function getUxMode() {
 
 // ── Fit the view whenever fitTick increments ──────────────────────────────────
 function FitViewOnLayout({ fitTick, fitViewRef }) {
-  const { fitView } = useReactFlow()
-  fitViewRef.current = fitView
+  const rf = useReactFlow()
+  fitViewRef.current = rf
   useEffect(() => {
     if (fitTick === 0) return
-    const t = setTimeout(() => fitView({ padding: 0.25, duration: 400 }), 80)
+    const t = setTimeout(() => rf.fitView({ padding: 0.25, duration: 400 }), 80)
     return () => clearTimeout(t)
-  }, [fitTick, fitView])
+  }, [fitTick, rf])
   return null
 }
 

@@ -30,6 +30,63 @@
   display: block;
 }
 
+/* Transposed (export-only) layout — hidden by default. */
+.tables-scroll--transposed { display: none; }
+
+.tables-table--transposed .tables-th--field {
+  background: rgba(201,168,76,0.06);
+}
+.tables-table--transposed .tables-th--member {
+  text-align: center;
+  color: var(--gold-light);
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+.tables-table--transposed td {
+  text-align: center;
+}
+.tables-table--transposed td.tables-name {
+  text-align: left;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-weight: 500;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(201,168,76,0.04);
+}
+
+/* Export mode: swap to transposed (fields-as-rows) layout so wide planet sets
+   don't blow out the page width on mobile. */
+.tables-canvas-wrap--exporting {
+  position: relative;
+  inset: auto;
+  overflow: visible;
+  width: max-content;
+  min-width: 100%;
+  height: auto;
+  padding: 2rem 2rem 2rem;
+}
+.tables-canvas-wrap--exporting .tables-panel {
+  max-width: none;
+  width: max-content;
+  min-width: 100%;
+}
+.tables-canvas-wrap--exporting .tables-scroll:not(.tables-scroll--transposed) {
+  display: none;
+}
+.tables-canvas-wrap--exporting .tables-scroll--transposed {
+  display: block;
+  overflow: visible;
+  margin: 0;
+  padding: 0;
+}
+.tables-canvas-wrap--exporting .tables-table--transposed {
+  width: max-content;
+}
+
 .tables-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;

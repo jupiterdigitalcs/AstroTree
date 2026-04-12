@@ -244,6 +244,89 @@ export function TablesPanel({ nodes, chartTitle }) {
         </table>
       </div>
 
+      {/* Export-only transposed view: fields as rows, members as columns. Always
+          rendered but hidden by default; CSS reveals it (and hides the standard
+          table) inside .tables-canvas-wrap--exporting. */}
+      <div className="tables-scroll tables-scroll--transposed" aria-hidden="true">
+        <table className="tables-table tables-table--transposed">
+          <thead>
+            <tr>
+              <th className="tables-th tables-th--field">Field</th>
+              {rows.map(r => (
+                <th key={r.id} className="tables-th tables-th--member">{r.name}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {visible.birthday && (
+              <tr>
+                <td className="tables-name">Birthday</td>
+                {rows.map(r => <td key={r.id} className="tables-date">{r.birthdate}</td>)}
+              </tr>
+            )}
+            {visible.sun && (
+              <tr>
+                <td className="tables-name">☀ Sun</td>
+                {rows.map(r => (
+                  <td key={r.id} className="tables-sign">
+                    {r.sunSymbol} {r.sunSign}
+                    {showElements && <ElementTag sign={r.sunSign} />}
+                  </td>
+                ))}
+              </tr>
+            )}
+            {visible.moon && (
+              <tr>
+                <td className="tables-name">☽ Moon</td>
+                {rows.map(r => (
+                  <td key={r.id} className="tables-sign">
+                    {r.moonSign && r.moonSign !== 'Unknown'
+                      ? <><PlanetSign planet="moon" symbol={r.moonSymbol} sign={r.moonSign} />{showElements && <ElementTag sign={r.moonSign} />}</>
+                      : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                  </td>
+                ))}
+              </tr>
+            )}
+            {visible.mercury && (
+              <tr>
+                <td className="tables-name">☿ Mercury</td>
+                {rows.map(r => (
+                  <td key={r.id} className="tables-sign">
+                    {r.mercury?.sign
+                      ? <><PlanetSign planet="mercury" symbol={r.mercury.symbol} sign={r.mercury.sign} />{showElements && <ElementTag sign={r.mercury.sign} />}</>
+                      : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                  </td>
+                ))}
+              </tr>
+            )}
+            {visible.venus && (
+              <tr>
+                <td className="tables-name">♀ Venus</td>
+                {rows.map(r => (
+                  <td key={r.id} className="tables-sign">
+                    {r.venus?.sign
+                      ? <><PlanetSign planet="venus" symbol={r.venus.symbol} sign={r.venus.sign} />{showElements && <ElementTag sign={r.venus.sign} />}</>
+                      : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                  </td>
+                ))}
+              </tr>
+            )}
+            {visible.mars && (
+              <tr>
+                <td className="tables-name">♂ Mars</td>
+                {rows.map(r => (
+                  <td key={r.id} className="tables-sign">
+                    {r.mars?.sign
+                      ? <><PlanetSign planet="mars" symbol={r.mars.symbol} sign={r.mars.sign} />{showElements && <ElementTag sign={r.mars.sign} />}</>
+                      : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                  </td>
+                ))}
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
     </div>
   )
 }

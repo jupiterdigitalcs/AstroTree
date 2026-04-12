@@ -893,6 +893,14 @@
   padding: 3rem 1.5rem 1.5rem;
 }
 
+/* Export mode: let the wheel + side legend render at full content height
+   so nothing is clipped by the scroll container. */
+.zodiac-wheel-wrap--exporting {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+
 .zodiac-zoom-controls {
   position: absolute;
   bottom: 0.75rem;
