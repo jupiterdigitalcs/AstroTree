@@ -18,6 +18,55 @@ const ELEMENT_ENERGY = {
   Water: 'intuitive and emotional',
 }
 
+// Richer per-element language for the Sun / Moon Element Makeup cards.
+// Sun = identity, outward self. Moon = inner world, emotional needs.
+const SUN_ELEMENT_DESC = {
+  Fire:  'bold, driven identities that lead with action and spark',
+  Earth: 'steady, practical identities that build through patience and effort',
+  Air:   'curious, social identities that lead with ideas and conversation',
+  Water: 'sensitive, intuitive identities that lead with feeling and empathy',
+}
+const MOON_ELEMENT_DESC = {
+  Fire:  'big, expressive emotions that ignite fast and need room to burn',
+  Earth: 'steady emotional needs rooted in routine, safety, and physical comfort',
+  Air:   'inner worlds that process feeling through words — needing space to talk it out',
+  Water: 'deep emotional lives shaped by intuition, empathy, and what they sense in others',
+}
+
+function describeElementMix({ counts, total, kind, groupLabel }) {
+  const present = ELEMENTS.filter(e => counts[e] > 0)
+    .sort((a, b) => counts[b] - counts[a])
+  const missing = ELEMENTS.filter(e => counts[e] === 0)
+  const desc = kind === 'moon' ? MOON_ELEMENT_DESC : SUN_ELEMENT_DESC
+
+  const perElement = present.map(el => ({
+    element: el,
+    count: counts[el],
+    blurb: desc[el],
+  }))
+
+  let summary
+  if (present.length === 1) {
+    summary = `Everyone shares the same element — that consistency amplifies, but the ${groupLabel} may feel the absence of the other three.`
+  } else if (present.length === 4) {
+    summary = `All four elements are represented — a rare full spread, and a naturally balanced ${groupLabel}.`
+  } else {
+    const top = present[0]
+    const topPct = counts[top] / total
+    if (topPct >= 0.6) {
+      summary = `${top} clearly leads the ${groupLabel}, with ${present.slice(1).join(' and ')} offering counterweight.`
+    } else {
+      summary = `A mix of ${present.join(', ')} — no single element dominates.`
+    }
+  }
+
+  const missingNote = missing.length > 0 && missing.length < 4
+    ? `Missing ${missing.join(' and ')} — those qualities may be sought outside the ${groupLabel}.`
+    : null
+
+  return { perElement, summary, missingNote }
+}
+
 function fmtBirthdate(d) {
   if (!d) return '—'
   const [y, mo, day] = d.split('-')
@@ -1372,9 +1421,29 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           )
         })}
 
-        <p className="insight-note" style={{ marginTop: '0.5rem' }}>
-          <strong style={{ color: ELEMENT_COLORS[sunDominant] }}>{ELEMENT_ENERGY[sunDominant]}</strong>
-        </p>
+        {(() => {
+          const mix = describeElementMix({
+            counts: elementCounts,
+            total: nodes.length,
+            kind: 'sun',
+            groupLabel: isGroupOnly ? 'group' : 'family',
+          })
+          return (
+            <div style={{ marginTop: '0.55rem' }}>
+              {mix.perElement.map(({ element, count, blurb }) => (
+                <p key={element} className="insight-note" style={{ margin: '0.15rem 0' }}>
+                  <strong style={{ color: ELEMENT_COLORS[element] }}>{count} {element}</strong> — {blurb}.
+                </p>
+              ))}
+              <p className="insight-note" style={{ marginTop: '0.4rem' }}>{mix.summary}</p>
+              {mix.missingNote && (
+                <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.2rem' }}>
+                  {mix.missingNote}
+                </p>
+              )}
+            </div>
+          )
+        })()}
       </div>
 
       {/* 3. Moon Element Makeup — only when enough moon data */}
@@ -1396,15 +1465,34 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               </div>
             )
           })}
-          <p className="insight-note" style={{ marginTop: '0.4rem' }}>
-            Emotionally, your {isGroupOnly ? 'group' : 'family'} is{' '}
-            <strong style={{ color: ELEMENT_COLORS[moonDominant] }}>{ELEMENT_ENERGY[moonDominant]}</strong>.
-            {moonNodes.length < nodes.length && (
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
-                {' '}({nodes.length - moonNodes.length} member{nodes.length - moonNodes.length > 1 ? 's' : ''} without moon data)
-              </span>
-            )}
-          </p>
+          {(() => {
+            const mix = describeElementMix({
+              counts: moonElementCounts,
+              total: moonNodes.length,
+              kind: 'moon',
+              groupLabel: isGroupOnly ? 'group' : 'family',
+            })
+            return (
+              <div style={{ marginTop: '0.55rem' }}>
+                {mix.perElement.map(({ element, count, blurb }) => (
+                  <p key={element} className="insight-note" style={{ margin: '0.15rem 0' }}>
+                    <strong style={{ color: ELEMENT_COLORS[element] }}>{count} {element}</strong> — {blurb}.
+                  </p>
+                ))}
+                <p className="insight-note" style={{ marginTop: '0.4rem' }}>{mix.summary}</p>
+                {mix.missingNote && (
+                  <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.2rem' }}>
+                    {mix.missingNote}
+                  </p>
+                )}
+                {moonNodes.length < nodes.length && (
+                  <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '0.2rem' }}>
+                    ({nodes.length - moonNodes.length} member{nodes.length - moonNodes.length > 1 ? 's' : ''} without moon data)
+                  </p>
+                )}
+              </div>
+            )
+          })()}
         </div>
       )}
 

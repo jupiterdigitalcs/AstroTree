@@ -150,10 +150,7 @@ export default function AboutPanel() {
           </div>
         </div>
         <p className="about-bio" style={{ marginTop: '0.75rem' }}>
-          Each sign belongs to an <strong>element</strong> (Fire, Earth, Air, Water) and a <strong>modality</strong> (Cardinal, Fixed, Mutable) — these group signs by shared personality traits and energy styles, which is why AstroDig can spot patterns across a whole family or friend group.
-        </p>
-        <p className="about-bio">
-          <strong>Compatibility</strong> is scored by how many planets two people share — same sun sign, same moon, Venus or Mars alignments, and special patterns like "mirror signs" (opposites that balance each other) or a sun-moon reflection (one person's sun falls in the other's moon sign). The more planets align, the rarer and deeper the bond.
+          Each sign belongs to an <strong>element</strong> (Fire, Earth, Air, Water) and a <strong>modality</strong> (Cardinal, Fixed, Mutable), which is how AstroDig spots patterns across a whole group. <strong>Compatibility</strong> scores how many of these placements two people share — the more align, the deeper the bond.
         </p>
       </div>
 
@@ -212,8 +209,8 @@ export default function AboutPanel() {
 
       {/* ── App note ──────────────────────────────────────────────────── */}
       <p className="about-app-note">
-        AstroDig is a free tool — if it brings you joy,
-        a site, social or shop visit means the world. ✨
+        If AstroDig brings you joy, a site, social, or shop visit
+        means the world. ✨
       </p>
 
     </div>
