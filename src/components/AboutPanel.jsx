@@ -48,7 +48,11 @@ export default function AboutPanel() {
         <h3 className="about-heading">Meet the Astrologer</h3>
         <p className="about-bio">
           Hi, I'm Christina — astrologer and creator behind Jupiter Digital.
-          I believe the planets mirror the patterns of our lives, allowing for special insights and a form of connection to the universe. AstroDig is my way of making that visible.
+          I believe the planets mirror the patterns of our lives, and that
+          the signs we share with the people around us reveal something
+          real about how we connect. AstroDig is my way of making those
+          patterns visible — so you can see your family, friends, and
+          partners through a cosmic lens.
         </p>
       </div>
 

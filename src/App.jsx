@@ -95,6 +95,7 @@ export default function App() {
   const [savedToast,        setSavedToast]        = useState(false)
   const [premiumToast,      setPremiumToast]      = useState(false)
   const [showDig,            setShowDig]            = useState(false)
+  const [isDemoChart,        setIsDemoChart]        = useState(false)
   const [uxMode] = useState(getUxMode) // 'classic' | 'cosmic'
   const isCosmic = uxMode === 'cosmic'
 
@@ -158,6 +159,15 @@ export default function App() {
     viewOnly,
     onChartLimitHit: () => setShowUpgradePrompt(true),
   })
+
+  // Clear the "sample chart" flag the moment the chart stops being a demo:
+  // either the user saved it (savedChartId set), cleared it (nodes empty),
+  // or replaced the demo with a loaded chart (which resets savedChartId to
+  // the loaded chart's id). We only force-exit demo on empty + save.
+  useEffect(() => {
+    if (!isDemoChart) return
+    if (nodes.length === 0 || savedChartId) setIsDemoChart(false)
+  }, [isDemoChart, nodes.length, savedChartId])
   const { exporting, exportError, handleExport, handleZodiacExport, handleConstellationExport, handleInsightsExport, handleTablesExport } = useExport({ savedChartId, fitViewRef })
   const {
     edgesForDisplay,
@@ -395,6 +405,7 @@ export default function App() {
     setCounter(demo.counter)
     setSavedChartId(null)
     setViewOnly(false)
+    setIsDemoChart(true)
     setActiveTab('tree')
     setFitTick(t => t + 1)
     markUsed()
@@ -407,9 +418,21 @@ export default function App() {
     setCounter(demo.counter)
     setSavedChartId(null)
     setViewOnly(false)
+    setIsDemoChart(true)
     setActiveTab('tree')
     setFitTick(t => t + 1)
     markUsed()
+  }
+
+  // Exit sample chart: load saved charts if user has any, else start fresh
+  function handleExitDemo() {
+    setIsDemoChart(false)
+    const saved = loadCharts()
+    if (saved.length > 0) {
+      goTab('charts')
+    } else {
+      handleNewTreeClick()
+    }
   }
 
   const editingNode = editingNodeId ? nodes.find(n => n.id === editingNodeId) : null
@@ -1143,6 +1166,23 @@ export default function App() {
               setTreeView={setTreeView}
               entitlements={entitlements}
             />
+          )}
+
+          {/* Sample-chart banner — prominent way to exit the demo tree */}
+          {isDemoChart && activeTab === 'tree' && !editingNodeId && (
+            <div className="sample-chart-banner" role="status">
+              <span className="sample-chart-banner-label">★ Sample Chart</span>
+              <span className="sample-chart-banner-text">
+                You're exploring a demo. Ready for your own?
+              </span>
+              <button
+                type="button"
+                className="sample-chart-banner-btn"
+                onClick={handleExitDemo}
+              >
+                Back to My Chart →
+              </button>
+            </div>
           )}
 
           {/* On-tree reminder when the user has members but no relationships yet */}
