@@ -1145,6 +1145,22 @@ export default function App() {
             />
           )}
 
+          {/* On-tree reminder when the user has members but no relationships yet */}
+          {activeTab === 'tree' && treeView === 'tree' && nodes.length >= 2 && edges.length === 0 && !editingNodeId && (
+            <button
+              type="button"
+              className="tree-connect-reminder"
+              onClick={() => goTab('add')}
+            >
+              <span className="tree-connect-reminder-icon">✦</span>
+              <span className="tree-connect-reminder-text">
+                <strong>No relationships yet</strong>
+                <span>Tap a person here to add parents, partners, or friends</span>
+              </span>
+              <span className="tree-connect-reminder-arrow">→</span>
+            </button>
+          )}
+
           {/* Canvas onboarding — replaces welcome screen */}
           {nodes.length === 0 && (
             <CanvasOnboarding

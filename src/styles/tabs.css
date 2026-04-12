@@ -443,25 +443,36 @@
 }
 
 .add-more-section {
-  margin-top: 0.4rem;
-  margin-bottom: 0.2rem;
+  margin-top: 0.7rem;
+  margin-bottom: 0.3rem;
 }
 
 .add-more-toggle {
-  background: none;
-  border: none;
-  color: var(--text-muted);
+  background: linear-gradient(135deg, rgba(212,168,76,0.18) 0%, rgba(212,168,76,0.08) 100%);
+  border: 1px solid rgba(212,168,76,0.45);
+  border-radius: 10px;
+  color: var(--gold-light, #e7c881);
   cursor: pointer;
   font-family: 'Raleway', sans-serif;
-  font-size: 0.78rem;
-  letter-spacing: 0.05em;
-  padding: 0.25rem 0;
-  transition: color 0.15s;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1rem;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
   width: 100%;
-  text-align: left;
+  text-align: center;
+  box-shadow: 0 2px 14px rgba(212,168,76,0.12);
 }
 
-.add-more-toggle:hover { color: var(--text-soft); }
+.add-more-toggle:hover {
+  background: linear-gradient(135deg, rgba(212,168,76,0.26) 0%, rgba(212,168,76,0.14) 100%);
+  border-color: rgba(212,168,76,0.65);
+  box-shadow: 0 4px 20px rgba(212,168,76,0.22);
+}
+
+.add-more-toggle:active {
+  transform: translateY(1px);
+}
 
 /* ── Family tab — save status strip ─────────────────────────────────────── */
 .family-save-status {
