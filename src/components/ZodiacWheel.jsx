@@ -52,7 +52,22 @@ const outerR = 235
 const innerR = 118
 const labelR = 84
 
-function nameInitial(name) { return (name || '?')[0].toUpperCase() }
+function nameLabel(name, allNames) {
+  const initial = (name || '?')[0].toUpperCase()
+  // If another person shares the same initial, show first 2 chars
+  const dupes = (allNames || []).filter(n => n && n[0]?.toUpperCase() === initial)
+  if (dupes.length > 1) {
+    return (name || '??').slice(0, 2).toUpperCase()
+  }
+  return initial
+}
+
+// Generate a consistent hue from a name string for per-person differentiation
+function nameHue(name) {
+  let hash = 0
+  for (let i = 0; i < (name || '').length; i++) hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0
+  return Math.abs(hash) % 360
+}
 
 function polarToXY(radius, angleDeg) {
   const rad = (angleDeg - 90) * Math.PI / 180
@@ -82,6 +97,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
   const zoomAreaRef = useRef(null)
   const [selectedGens, setSelectedGens] = useState(new Set()) // empty = all generations
   const [selectedSign, setSelectedSign] = useState(null)
+  const allNames = useMemo(() => nodes.map(n => n.data?.name).filter(Boolean), [nodes])
 
   const [activeRings, setActiveRings] = useState(() =>
     Object.fromEntries(PLANET_RINGS.map(ring => [ring.key, ring.defaultOn]))
@@ -340,10 +356,22 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
             })}
 
             {/* Planet markers — render each active ring */}
+            {(() => {
+              // Scale up markers when fewer people or fewer rings active
+              const activeCount = PLANET_RINGS.filter(r => activeRings[r.key]).length
+              const sizeScale = nodes.length <= 3 ? 1.5 : nodes.length <= 5 ? 1.3 : nodes.length <= 8 ? 1.15 : 1
+              const ringScale = activeCount <= 2 ? Math.max(sizeScale, 1.2) : sizeScale
+              return null // just computing, actual rendering below
+            })()}
             {PLANET_RINGS.map(ring => {
               if (!activeRings[ring.key]) return null
               const bySign = nodesForRing(ring.key)
-              const large  = ring.markerR >= 9   // sun / moon get initials
+              const activeCount = PLANET_RINGS.filter(r => activeRings[r.key]).length
+              const sizeScale = nodes.length <= 3 ? 1.5 : nodes.length <= 5 ? 1.3 : nodes.length <= 8 ? 1.15 : 1
+              const scale = activeCount <= 2 ? Math.max(sizeScale, 1.2) : sizeScale
+              const scaledMarkerR = Math.round(ring.markerR * scale)
+              const scaledHoverR = Math.round(ring.hoverR * scale)
+              const large  = scaledMarkerR >= 9   // sun / moon get initials
               return ZODIAC_ORDER.map((z, si) => {
                 const members = bySign[z.sign]
                 if (!members.length) return null
@@ -351,11 +379,14 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
                 return members.map((n, mi) => {
                   const pos   = polarToXY(ring.r, angles[mi])
                   const isHov = hoveredNode === n.id
-                  const r     = isHov ? ring.hoverR : ring.markerR
-                  // Sun uses element color; all others use planet color
+                  const r     = isHov ? scaledHoverR : scaledMarkerR
+                  // Sun uses element color; others use planet color with per-person hue shift
+                  const hue = nameHue(n.data.name)
                   const strokeColor = ring.key === 'sun'
                     ? (ELEMENT_COLORS[n.data.element] ?? '#c9a84c')
-                    : ring.color
+                    : ring.key === 'moon'
+                    ? `hsl(${210 + (hue % 40) - 20}, 55%, ${65 + (hue % 15)}%)`
+                    : `hsl(${hue}, 50%, 65%)`
                   const glyphFill = ring.key === 'sun'
                     ? 'rgba(201,168,76,0.7)'
                     : `${ring.color}cc`
@@ -382,43 +413,43 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
                           transition: 'all 0.15s ease',
                         }}
                       />
-                      {large ? (
-                        <>
-                          {/* Initial centered in circle */}
-                          <text x={pos.x} y={pos.y}
-                            textAnchor="middle" dominantBaseline="central"
-                            fontSize={9} fontWeight={700}
-                            fontFamily="Cinzel, Georgia, serif"
-                            fill={strokeColor}>
-                            {nameInitial(n.data.name)}
-                          </text>
-                          {/* Glyph just below the circle */}
-                          <text x={pos.x} y={pos.y + ring.markerR + 6}
-                            textAnchor="middle" dominantBaseline="central"
-                            fontSize={8} style={{ pointerEvents: 'none' }}
-                            fill={glyphFill}>
-                            {ring.glyph}
-                          </text>
-                        </>
-                      ) : (
-                        <>
-                          {/* Initial centered in small circle */}
-                          <text x={pos.x} y={pos.y}
-                            textAnchor="middle" dominantBaseline="central"
-                            fontSize={6} fontWeight={600}
-                            style={{ pointerEvents: 'none' }}
-                            fill={strokeColor}>
-                            {nameInitial(n.data.name)}
-                          </text>
-                          {/* Planet glyph outside, below the circle */}
-                          <text x={pos.x} y={pos.y + ring.markerR + 5}
-                            textAnchor="middle" dominantBaseline="central"
-                            fontSize={7} style={{ pointerEvents: 'none' }}
-                            fill={glyphFill}>
-                            {ring.glyph}
-                          </text>
-                        </>
-                      )}
+                      {(() => {
+                        const label = nameLabel(n.data.name, allNames)
+                        const shrink = label.length > 1 ? 0.78 : 1
+                        return large ? (
+                          <>
+                            <text x={pos.x} y={pos.y}
+                              textAnchor="middle" dominantBaseline="central"
+                              fontSize={Math.round(9 * scale * shrink)} fontWeight={700}
+                              fontFamily="Cinzel, Georgia, serif"
+                              fill={strokeColor}>
+                              {label}
+                            </text>
+                            <text x={pos.x} y={pos.y + scaledMarkerR + 7}
+                              textAnchor="middle" dominantBaseline="central"
+                              fontSize={Math.round(9 * scale)} style={{ pointerEvents: 'none' }}
+                              fill={glyphFill}>
+                              {ring.glyph}
+                            </text>
+                          </>
+                        ) : (
+                          <>
+                            <text x={pos.x} y={pos.y}
+                              textAnchor="middle" dominantBaseline="central"
+                              fontSize={Math.round(6 * scale * shrink)} fontWeight={600}
+                              style={{ pointerEvents: 'none' }}
+                              fill={strokeColor}>
+                              {label}
+                            </text>
+                            <text x={pos.x} y={pos.y + scaledMarkerR + 6}
+                              textAnchor="middle" dominantBaseline="central"
+                              fontSize={Math.round(8 * scale)} style={{ pointerEvents: 'none' }}
+                              fill={glyphFill}>
+                              {ring.glyph}
+                            </text>
+                          </>
+                        )
+                      })()}
                     </g>
                   )
                 })
@@ -583,7 +614,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
               onClick={() => onSelectNode?.(n.id)}
             >
               <span className="zodiac-legend-num" style={{ borderColor: color, color }}>
-                {nameInitial(n.data.name)}
+                {nameLabel(n.data.name, allNames)}
               </span>
               <div className="zodiac-legend-info">
                 <span className="zodiac-legend-name">{n.data.name}</span>

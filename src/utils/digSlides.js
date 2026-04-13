@@ -1,13 +1,24 @@
 /**
- * Dynamically selects 5-7 slides for The DIG based on chart data.
- * Slides are fun personality superlatives, NOT repeats of the Insights panel.
+ * Dynamically selects slides for The DIG based on chart data.
+ * Group-level insights — earned from chart math, not sign lookups.
  */
+
+import {
+  collectiveElementMap, findHotspots, findBridgePerson,
+} from './groupChartCalc.js'
 
 const ELEMENT_MOOD = { Fire: 'fire', Earth: 'earth', Air: 'air', Water: 'water' }
 
 // ── Superlative generators ──────────────────────────────────────────────────
 
+// Set of uncertain planets for a node (ingress warning + no birth time)
+function uncertainPlanets(node) {
+  if (node.data?.birthTime) return new Set()
+  return new Set((node.data?.ingressWarnings || []).map(w => w.planet))
+}
+
 // Count how many personal planet placements are in a given element for a node
+// Skips planets that are uncertain (ingress warning without birth time)
 function elementWeight(node, element) {
   const signs = {
     Fire: ['Aries', 'Leo', 'Sagittarius'],
@@ -16,57 +27,51 @@ function elementWeight(node, element) {
     Water: ['Cancer', 'Scorpio', 'Pisces'],
   }
   const elSigns = signs[element] ?? []
+  const skip = uncertainPlanets(node)
   let count = 0
-  if (elSigns.includes(node.data?.sign)) count++
-  if (elSigns.includes(node.data?.moonSign)) count++
+  if (!skip.has('sun') && elSigns.includes(node.data?.sign)) count++
+  if (!skip.has('moon') && elSigns.includes(node.data?.moonSign)) count++
   const ip = node.data?.innerPlanets
-  if (ip?.mercury?.sign && elSigns.includes(ip.mercury.sign)) count++
-  if (ip?.venus?.sign && elSigns.includes(ip.venus.sign)) count++
-  if (ip?.mars?.sign && elSigns.includes(ip.mars.sign)) count++
+  if (!skip.has('mercury') && ip?.mercury?.sign && elSigns.includes(ip.mercury.sign)) count++
+  if (!skip.has('venus') && ip?.venus?.sign && elSigns.includes(ip.venus.sign)) count++
+  if (!skip.has('mars') && ip?.mars?.sign && elSigns.includes(ip.mars.sign)) count++
   return count
 }
 
 function totalPlanetCount(node) {
+  const skip = uncertainPlanets(node)
   let count = 0
-  if (node.data?.sign) count++
-  if (node.data?.moonSign && node.data.moonSign !== 'Unknown') count++
+  if (!skip.has('sun') && node.data?.sign) count++
+  if (!skip.has('moon') && node.data?.moonSign && node.data.moonSign !== 'Unknown') count++
   const ip = node.data?.innerPlanets
-  if (ip?.mercury?.sign) count++
-  if (ip?.venus?.sign) count++
-  if (ip?.mars?.sign) count++
+  if (!skip.has('mercury') && ip?.mercury?.sign) count++
+  if (!skip.has('venus') && ip?.venus?.sign) count++
+  if (!skip.has('mars') && ip?.mars?.sign) count++
   return count
 }
 
-// Sign-based superlatives
-const SIGN_SUPERLATIVES = {
-  Aries:       { title: 'Most Likely to Send It', sub: 'No hesitation. All gas, no brakes.' },
-  Taurus:      { title: 'Most Likely to Skip Plans for a Nap', sub: 'Comfort is a lifestyle, not a choice.' },
-  Gemini:      { title: 'Most Likely to Have 47 Tabs Open', sub: 'Their brain never stops multitasking.' },
-  Cancer:      { title: 'Most Likely to Cry at a Commercial', sub: 'Big feelings. Bigger heart.' },
-  Leo:         { title: 'Main Character Energy', sub: 'Born to be the center of attention.' },
-  Virgo:       { title: 'Most Likely to Fix Everyone\'s Life', sub: 'Quietly holding everything together.' },
-  Libra:       { title: 'Most Likely to Take 3 Hours to Decide', sub: 'But they\'ll look amazing doing it.' },
-  Scorpio:     { title: 'Most Likely to Know Your Secret', sub: 'They see everything. They forget nothing.' },
-  Sagittarius: { title: 'Most Likely to Book a One-Way Flight', sub: 'Freedom is the whole personality.' },
-  Capricorn:   { title: 'Most Likely to Already Have a 5-Year Plan', sub: 'While everyone else is figuring it out.' },
-  Aquarius:    { title: 'Most Likely to Start a Revolution', sub: 'The future lives rent-free in their head.' },
-  Pisces:      { title: 'Most Likely to Live in a Daydream', sub: 'Reality is just one of their worlds.' },
+// Data-derived superlatives — titles earned from chart math, not sign lookups
+const ELEMENT_SUPERLATIVES = {
+  Fire:  { title: 'The Spark', sub: 'The most Fire energy in the group — tends to be the one who gets things started.' },
+  Earth: { title: 'The Anchor', sub: 'The most Earth energy in the group — often the steadying presence others rely on.' },
+  Air:   { title: 'The Connector', sub: 'The most Air energy in the group — tends to be the one linking people and ideas.' },
+  Water: { title: 'The Empath', sub: 'The most Water energy in the group — often the first to sense what others are feeling.' },
 }
 
-// Moon-based emotional superlatives
+// Moon-based emotional processing styles — genuine, hedging
 const MOON_VIBES = {
-  Aries:       'catches feelings fast and moves on faster',
-  Taurus:      'processes everything at their own pace — don\'t rush them',
-  Gemini:      'talks through every feeling (to literally everyone)',
-  Cancer:      'feels everything for everyone, always',
-  Leo:         'needs to be celebrated when they\'re feeling things',
-  Virgo:       'overthinks their feelings, then overthinks the overthinking',
-  Libra:       'can\'t feel anything until they\'ve talked it through with someone',
-  Scorpio:     'feels DEEPLY but will never let you see it',
-  Sagittarius: 'deals with hard feelings by booking a trip',
-  Capricorn:   'compartmentalizes feelings into a very neat box',
-  Aquarius:    'intellectualizes emotions instead of feeling them',
-  Pisces:      'absorbs everyone else\'s emotions like a sponge',
+  Aries:       'tends to process emotions quickly — may need action or movement to work through feelings',
+  Taurus:      'takes time to open up — may need comfort, routine, and physical reassurance to feel safe',
+  Gemini:      'tends to process feeling through conversation — often needs a sounding board to make sense of things',
+  Cancer:      'deeply attuned to emotional undercurrents — may carry feelings for others without realizing it',
+  Leo:         'often needs to feel seen and valued — may express emotions more openly than most',
+  Virgo:       'tends to analyze feelings before expressing them — may show care through practical gestures',
+  Libra:       'often processes emotions in relationship to others — may need dialogue to find their own center',
+  Scorpio:     'feels things with unusual intensity — tends to hold emotions close and process privately',
+  Sagittarius: 'may need space and perspective to process — tends to look for meaning in difficult feelings',
+  Capricorn:   'often keeps emotions contained — may process through structure, work, or taking responsibility',
+  Aquarius:    'tends to step back and observe emotions before engaging — may need intellectual space to process',
+  Pisces:      'highly permeable to the feelings of others — may need solitude to distinguish their own emotions',
 }
 
 // ── Helpers for new slides ──────────────────────────────────────────────────
@@ -82,12 +87,13 @@ const OPPOSING_ELEMENTS = [['Fire', 'Water'], ['Earth', 'Air']]
 
 function getNodePlacements(node) {
   const p = []
-  if (node.data?.sign) p.push({ planet: 'sun', sign: node.data.sign })
-  if (node.data?.moonSign && node.data.moonSign !== 'Unknown') p.push({ planet: 'moon', sign: node.data.moonSign })
+  const skip = uncertainPlanets(node)
+  if (!skip.has('sun') && node.data?.sign) p.push({ planet: 'sun', sign: node.data.sign })
+  if (!skip.has('moon') && node.data?.moonSign && node.data.moonSign !== 'Unknown') p.push({ planet: 'moon', sign: node.data.moonSign })
   const ip = node.data?.innerPlanets
-  if (ip?.mercury?.sign) p.push({ planet: 'mercury', sign: ip.mercury.sign })
-  if (ip?.venus?.sign) p.push({ planet: 'venus', sign: ip.venus.sign })
-  if (ip?.mars?.sign) p.push({ planet: 'mars', sign: ip.mars.sign })
+  if (!skip.has('mercury') && ip?.mercury?.sign) p.push({ planet: 'mercury', sign: ip.mercury.sign })
+  if (!skip.has('venus') && ip?.venus?.sign) p.push({ planet: 'venus', sign: ip.venus.sign })
+  if (!skip.has('mars') && ip?.mars?.sign) p.push({ planet: 'mars', sign: ip.mars.sign })
   return p
 }
 
@@ -120,37 +126,48 @@ export function buildSlides(digData) {
     mood: 'starfield',
   })
 
-  // 2. Family Vibe Check
+  // 2. The Collective Chart (replaces Family Vibe Check)
+  const collectiveMap = collectiveElementMap(nodes)
   slides.push({
     type: 'vibeCheck',
     data: {
-      dominant: digData.dominant,
+      dominant: collectiveMap.dominant,
       dominantModality: digData.dominantModality,
       masculine: digData.masculine,
       feminine: digData.feminine,
       total: digData.total,
-      missingElements: digData.missingElements,
+      collectiveTotal: collectiveMap.total,
+      elementCounts: { Fire: collectiveMap.Fire, Earth: collectiveMap.Earth, Air: collectiveMap.Air, Water: collectiveMap.Water },
+      missingElements: collectiveMap.missing,
     },
-    mood: ELEMENT_MOOD[digData.dominant] || 'starfield',
+    mood: ELEMENT_MOOD[collectiveMap.dominant] || 'starfield',
   })
 
   // Pool of candidate slides — we'll pick the best ones
   const candidates = []
 
-  // Superlative — strongest sign personality
+  // Superlative — strongest element concentration (data-derived, not sign lookup)
   if (nodes.length >= 2) {
-    const ranked = nodes
-      .filter(n => n.data?.element)
-      .map(n => ({ node: n, score: elementWeight(n, n.data.element) }))
-      .filter(r => r.score >= 2)
-      .sort((a, b) => b.score - a.score)
-    if (ranked[0]) {
-      const best = ranked[0]
-      const sup = SIGN_SUPERLATIVES[best.node.data.sign]
+    const elements = ['Fire', 'Earth', 'Air', 'Water']
+    let bestEl = null, bestNode = null, bestScore = 0
+    for (const el of elements) {
+      const ranked = nodes
+        .filter(n => n.data?.element)
+        .map(n => ({ node: n, score: elementWeight(n, el) }))
+        .filter(r => r.score >= 2)
+        .sort((a, b) => b.score - a.score)
+      if (ranked[0] && ranked[0].score > bestScore) {
+        bestScore = ranked[0].score
+        bestNode = ranked[0].node
+        bestEl = el
+      }
+    }
+    if (bestNode && bestEl) {
+      const sup = ELEMENT_SUPERLATIVES[bestEl]
       if (sup) {
         candidates.push(() => {
-          featured.add(best.node.id)
-          return { type: 'superlative', data: { node: best.node, title: sup.title, sub: sup.sub, score: best.score, total: totalPlanetCount(best.node) }, mood: ELEMENT_MOOD[best.node.data.element] || 'starfield' }
+          featured.add(bestNode.id)
+          return { type: 'superlative', data: { node: bestNode, title: sup.title, sub: sup.sub, score: bestScore, total: totalPlanetCount(bestNode) }, mood: ELEMENT_MOOD[bestEl] || 'starfield' }
         })
       }
     }
@@ -205,20 +222,30 @@ export function buildSlides(digData) {
 
   // ── NEW SLIDES ────────────────────────────────────────────────────────────
 
-  // The Glue — most connections
-  if (edges && edges.length > 0 && nodes.length >= 3) {
-    const connCount = {}
-    nodes.forEach(n => { connCount[n.id] = 0 })
+  // The Glue — most diverse connections (not just raw count, which favors parents)
+  if (edges && edges.length > 0 && nodes.length >= 4) {
+    const connData = {}
+    nodes.forEach(n => { connData[n.id] = { total: 0, types: new Set() } })
     edges.forEach(e => {
-      if (connCount[e.source] !== undefined) connCount[e.source]++
-      if (connCount[e.target] !== undefined) connCount[e.target]++
+      const rel = e.data?.relationType || 'parent-child'
+      if (connData[e.source]) { connData[e.source].total++; connData[e.source].types.add(rel) }
+      if (connData[e.target]) { connData[e.target].total++; connData[e.target].types.add(rel) }
     })
-    const sorted = nodes.slice().sort((a, b) => (connCount[b.id] || 0) - (connCount[a.id] || 0))
-    if (sorted[0] && connCount[sorted[0].id] >= 2) {
+    // Score: number of different relationship types × connections
+    // This favors people who bridge across friend/family/coworker groups
+    const scored = nodes.map(n => ({
+      node: n,
+      score: connData[n.id].total * connData[n.id].types.size,
+      total: connData[n.id].total,
+      typeCount: connData[n.id].types.size,
+    })).sort((a, b) => b.score - a.score)
+    // Only show if someone has 3+ connections or bridges multiple relationship types
+    const best = scored[0]
+    if (best && (best.typeCount >= 2 || best.total >= 3)) {
       candidates.push(() => {
-        const pick = sorted.find(n => !featured.has(n.id)) || sorted[0]
-        featured.add(pick.id)
-        return { type: 'glue', data: { node: pick, connectionCount: connCount[pick.id] }, mood: 'orbits' }
+        const pick = scored.find(s => !featured.has(s.node.id)) || scored[0]
+        featured.add(pick.node.id)
+        return { type: 'glue', data: { node: pick.node, connectionCount: pick.total, typeCount: pick.typeCount }, mood: 'orbits' }
       })
     }
   }
@@ -286,36 +313,46 @@ export function buildSlides(digData) {
     }
   }
 
-  // Venus Vibes — person with Venus data, prefer unfeatured
+  // Venus Vibes — group Venus patterns
   {
     const withVenus = nodes.filter(n => n.data?.innerPlanets?.venus?.sign)
-    if (withVenus.length > 0) {
+    if (withVenus.length >= 2) {
+      const venusElements = { Fire: [], Earth: [], Air: [], Water: [] }
+      withVenus.forEach(n => {
+        const el = signElement(n.data.innerPlanets.venus.sign)
+        if (el) venusElements[el].push(n)
+      })
+      const topEl = Object.entries(venusElements).sort((a, b) => b[1].length - a[1].length)[0]
       candidates.push(() => {
-        const pick = withVenus.find(n => !featured.has(n.id)) || withVenus[0]
-        featured.add(pick.id)
-        return { type: 'venusVibes', data: { node: pick }, mood: 'water' }
+        return { type: 'venusVibes', data: { nodes: withVenus, topElement: topEl[0], topCount: topEl[1].length, topNames: topEl[1].map(n => n.data?.name) }, mood: 'water' }
       })
     }
   }
 
-  // Mars Energy — person with Mars data, prefer unfeatured
+  // Mars Energy — group Mars patterns
   {
     const withMars = nodes.filter(n => n.data?.innerPlanets?.mars?.sign)
-    if (withMars.length > 0) {
+    if (withMars.length >= 2) {
+      const marsElements = { Fire: [], Earth: [], Air: [], Water: [] }
+      withMars.forEach(n => {
+        const el = signElement(n.data.innerPlanets.mars.sign)
+        if (el) marsElements[el].push(n)
+      })
+      const topEl = Object.entries(marsElements).sort((a, b) => b[1].length - a[1].length)[0]
       candidates.push(() => {
-        const pick = withMars.find(n => !featured.has(n.id)) || withMars[0]
-        featured.add(pick.id)
-        return { type: 'marsEnergy', data: { node: pick }, mood: 'fire' }
+        return { type: 'marsEnergy', data: { nodes: withMars, topElement: topEl[0], topCount: topEl[1].length, topNames: topEl[1].map(n => n.data?.name) }, mood: 'fire' }
       })
     }
   }
 
-  // Moon Mirror — two people with the same moon sign
+  // Moon Mirror — two people with the same moon sign, or "no shared moons"
   if (nodes.length >= 2) {
+    const moonNodes = nodes.filter(n => n.data?.moonSign && n.data.moonSign !== 'Unknown')
     const moonGroups = {}
-    nodes.forEach(n => {
-      const ms = n.data?.moonSign
-      if (ms && ms !== 'Unknown') { if (!moonGroups[ms]) moonGroups[ms] = []; moonGroups[ms].push(n) }
+    moonNodes.forEach(n => {
+      const ms = n.data.moonSign
+      if (!moonGroups[ms]) moonGroups[ms] = []
+      moonGroups[ms].push(n)
     })
     const pairs = Object.entries(moonGroups).filter(([, g]) => g.length >= 2)
     if (pairs.length > 0) {
@@ -325,9 +362,14 @@ export function buildSlides(digData) {
         const b = group.find(n => n.id !== a.id && !featured.has(n.id)) || group.find(n => n.id !== a.id)
         if (a && b) {
           featured.add(a.id); featured.add(b.id)
-          return { type: 'moonMirror', data: { nodeA: a, nodeB: b, moonSign }, mood: 'water' }
+          return { type: 'moonMirror', data: { nodeA: a, nodeB: b, moonSign, noSharedMoons: false }, mood: 'water' }
         }
         return null
+      })
+    } else if (moonNodes.length >= 4) {
+      // No shared moons — that's also meaningful
+      candidates.push(() => {
+        return { type: 'moonMirror', data: { noSharedMoons: true, moonCount: moonNodes.length }, mood: 'water' }
       })
     }
   }
@@ -402,6 +444,28 @@ export function buildSlides(digData) {
         const pick = unique.find(n => !featured.has(n.id)) || unique[0]
         featured.add(pick.id)
         return { type: 'rareOne', data: { node: pick, totalMembers: nodes.length }, mood: ELEMENT_MOOD[pick.data?.element] || 'starfield' }
+      })
+    }
+  }
+
+  // Hotspot — group's strongest degree cluster
+  {
+    const hotspots = findHotspots(nodes)
+    if (hotspots.length > 0) {
+      candidates.push(() => {
+        const spot = hotspots[0]
+        return { type: 'hotspot', data: { spot }, mood: ELEMENT_MOOD[signElement(spot.sign)] || 'starfield' }
+      })
+    }
+  }
+
+  // Bridge — person whose chart touches the most others
+  if (nodes.length >= 4) {
+    const bridge = findBridgePerson(nodes)
+    if (bridge) {
+      candidates.push(() => {
+        featured.add(bridge.node.id)
+        return { type: 'bridge', data: bridge, mood: 'orbits' }
       })
     }
   }

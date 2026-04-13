@@ -140,6 +140,15 @@
 
 .insight-note strong { color: var(--text); font-weight: 500; }
 
+.insight-whisper {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  font-style: italic;
+  opacity: 0.7;
+  margin: 0.15rem 0;
+}
+
 .insight-couple { border-top: 1px solid var(--border); padding-top: 0.35rem; display: flex; flex-direction: column; gap: 0.1rem; }
 .insight-couple:first-of-type { border-top: none; padding-top: 0; }
 .insight-compat { font-size: 0.7rem; letter-spacing: 0.04em; font-weight: 500; }
@@ -331,8 +340,17 @@
 .insights-panel--exporting > * {
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.6rem;
   display: block;
+}
+/* Tighter card text in export */
+.insights-panel--exporting .insight-note {
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+.insights-panel--exporting .insight-heading {
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
 }
 /* Full-width items span all columns */
 .insights-panel--exporting .insights-header,
@@ -342,12 +360,12 @@
   column-span: all;
 }
 
-/* 3 columns for medium families (9–13 insight cards) */
+/* 3 columns for medium charts (9–15 insight cards) */
 .insights-panel--exporting--wide {
   columns: 3 !important;
   width: 1020px !important;
 }
-/* 4 columns for large families (14+ insight cards) */
+/* 4 columns for large charts (16+ insight cards) */
 .insights-panel--exporting--xl {
   columns: 4 !important;
   width: 1300px !important;

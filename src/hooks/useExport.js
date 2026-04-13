@@ -320,9 +320,24 @@ export function useExport({ savedChartId, fitViewRef }) {
     if (brandEl) brandEl.style.display = 'flex'
     el.classList.add('insights-panel--exporting')
 
+    // Temporarily unclip parent containers so html-to-image captures full content
+    const ancestors = []
+    let parent = el.parentElement
+    while (parent && parent !== document.body) {
+      const style = getComputedStyle(parent)
+      if (style.overflow !== 'visible' || style.overflowY !== 'visible' || style.maxHeight !== 'none') {
+        ancestors.push({ el: parent, overflow: parent.style.overflow, overflowY: parent.style.overflowY, maxHeight: parent.style.maxHeight, height: parent.style.height })
+        parent.style.overflow = 'visible'
+        parent.style.overflowY = 'visible'
+        parent.style.maxHeight = 'none'
+        parent.style.height = 'auto'
+      }
+      parent = parent.parentElement
+    }
+
     // Auto-size to 3 or 4 columns for families with many insight cards
     const cardCount = el.querySelectorAll('.insight-card').length
-    const sizeClass = cardCount >= 14 ? 'insights-panel--exporting--xl'
+    const sizeClass = cardCount >= 16 ? 'insights-panel--exporting--xl'
                     : cardCount >= 9  ? 'insights-panel--exporting--wide'
                     : ''
     if (sizeClass) el.classList.add(sizeClass)
@@ -346,6 +361,8 @@ export function useExport({ savedChartId, fitViewRef }) {
           if (c.contains('insights-subnav'))        return false
           if (c.contains('insight-pro-tag'))        return false
           if (c.contains('dig-teaser-card'))       return false
+          if (c.contains('insight-whisper--standalone')) return false
+          if (c.contains('insight-locked-banner'))  return false
           return true
         },
       })
@@ -377,6 +394,13 @@ export function useExport({ savedChartId, fitViewRef }) {
     } finally {
       el.classList.remove('insights-panel--exporting', 'insights-panel--exporting--wide', 'insights-panel--exporting--xl')
       if (brandEl) brandEl.style.display = ''
+      // Restore parent container overflow
+      for (const a of ancestors) {
+        a.el.style.overflow = a.overflow
+        a.el.style.overflowY = a.overflowY
+        a.el.style.maxHeight = a.maxHeight
+        a.el.style.height = a.height
+      }
       setExporting(false)
       exportingRef.current = false
     }

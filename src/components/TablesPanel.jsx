@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { PlanetSign } from './PlanetSign.jsx'
+// Planet colors now handled by zodiac symbol + sign name directly (no per-planet coloring)
 import { getElement, ELEMENT_COLORS } from '../utils/astrology/elements.js'
 
 const ELEMENT_ORDER = ['Fire', 'Earth', 'Air', 'Water']
@@ -213,28 +213,28 @@ export function TablesPanel({ nodes, chartTitle }) {
                 {visible.moon    && (
                   <td className="tables-sign">
                     {r.moonSign && r.moonSign !== 'Unknown'
-                      ? <><PlanetSign planet="moon" symbol={r.moonSymbol} sign={r.moonSign} />{showElements && <ElementTag sign={r.moonSign} />}</>
+                      ? <>{r.moonSymbol} {r.moonSign}{showElements && <ElementTag sign={r.moonSign} />}</>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                   </td>
                 )}
                 {visible.mercury && (
                   <td className="tables-sign">
                     {r.mercury?.sign
-                      ? <><PlanetSign planet="mercury" symbol={r.mercury.symbol} sign={r.mercury.sign} />{showElements && <ElementTag sign={r.mercury.sign} />}</>
+                      ? <>{r.mercury.symbol} {r.mercury.sign}{showElements && <ElementTag sign={r.mercury.sign} />}</>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                   </td>
                 )}
                 {visible.venus && (
                   <td className="tables-sign">
                     {r.venus?.sign
-                      ? <><PlanetSign planet="venus" symbol={r.venus.symbol} sign={r.venus.sign} />{showElements && <ElementTag sign={r.venus.sign} />}</>
+                      ? <>{r.venus.symbol} {r.venus.sign}{showElements && <ElementTag sign={r.venus.sign} />}</>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                   </td>
                 )}
                 {visible.mars && (
                   <td className="tables-sign">
                     {r.mars?.sign
-                      ? <><PlanetSign planet="mars" symbol={r.mars.symbol} sign={r.mars.sign} />{showElements && <ElementTag sign={r.mars.sign} />}</>
+                      ? <>{r.mars.symbol} {r.mars.sign}{showElements && <ElementTag sign={r.mars.sign} />}</>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                   </td>
                 )}
@@ -281,7 +281,7 @@ export function TablesPanel({ nodes, chartTitle }) {
                 {rows.map(r => (
                   <td key={r.id} className="tables-sign">
                     {r.moonSign && r.moonSign !== 'Unknown'
-                      ? <><PlanetSign planet="moon" symbol={r.moonSymbol} sign={r.moonSign} />{showElements && <ElementTag sign={r.moonSign} />}</>
+                      ? <>{r.moonSymbol} {r.moonSign}{showElements && <ElementTag sign={r.moonSign} />}</>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                   </td>
                 ))}
@@ -293,7 +293,7 @@ export function TablesPanel({ nodes, chartTitle }) {
                 {rows.map(r => (
                   <td key={r.id} className="tables-sign">
                     {r.mercury?.sign
-                      ? <><PlanetSign planet="mercury" symbol={r.mercury.symbol} sign={r.mercury.sign} />{showElements && <ElementTag sign={r.mercury.sign} />}</>
+                      ? <>{r.mercury.symbol} {r.mercury.sign}{showElements && <ElementTag sign={r.mercury.sign} />}</>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                   </td>
                 ))}
@@ -305,7 +305,7 @@ export function TablesPanel({ nodes, chartTitle }) {
                 {rows.map(r => (
                   <td key={r.id} className="tables-sign">
                     {r.venus?.sign
-                      ? <><PlanetSign planet="venus" symbol={r.venus.symbol} sign={r.venus.sign} />{showElements && <ElementTag sign={r.venus.sign} />}</>
+                      ? <>{r.venus.symbol} {r.venus.sign}{showElements && <ElementTag sign={r.venus.sign} />}</>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                   </td>
                 ))}
@@ -317,7 +317,7 @@ export function TablesPanel({ nodes, chartTitle }) {
                 {rows.map(r => (
                   <td key={r.id} className="tables-sign">
                     {r.mars?.sign
-                      ? <><PlanetSign planet="mars" symbol={r.mars.symbol} sign={r.mars.sign} />{showElements && <ElementTag sign={r.mars.sign} />}</>
+                      ? <>{r.mars.symbol} {r.mars.sign}{showElements && <ElementTag sign={r.mars.sign} />}</>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                   </td>
                 ))}

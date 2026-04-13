@@ -1,6 +1,24 @@
 import { Handle, Position } from '@xyflow/react'
 import { PlanetSign } from './PlanetSign.jsx'
 
+const EL_COLORS = { Fire: '#e8634a', Earth: '#7ab648', Air: '#5bc8f5', Water: '#6b8dd6' }
+
+function elementCounts(d) {
+  const signs = { Fire: ['Aries','Leo','Sagittarius'], Earth: ['Taurus','Virgo','Capricorn'], Air: ['Gemini','Libra','Aquarius'], Water: ['Cancer','Scorpio','Pisces'] }
+  const counts = { Fire: 0, Earth: 0, Air: 0, Water: 0 }
+  const check = s => { for (const [el, ss] of Object.entries(signs)) if (ss.includes(s)) counts[el]++ }
+  if (d.sign) check(d.sign)
+  if (d.moonSign && d.moonSign !== 'Unknown') check(d.moonSign)
+  const ip = d.innerPlanets
+  if (ip?.mercury?.sign) check(ip.mercury.sign)
+  if (ip?.venus?.sign) check(ip.venus.sign)
+  if (ip?.mars?.sign) check(ip.mars.sign)
+  const op = d.outerPlanets
+  if (op?.jupiter?.sign) check(op.jupiter.sign)
+  if (op?.saturn?.sign) check(op.saturn.sign)
+  return counts
+}
+
 export default function AstroNode({ data, selected }) {
   const { name, sign, symbol, element, elementColor, moonSign, moonSymbol } = data
 
@@ -43,6 +61,16 @@ export default function AstroNode({ data, selected }) {
       )}
       {element && (
         <div className="node-element" style={{ color: `${glow}99` }}>{element}</div>
+      )}
+      {data.innerPlanets && (
+        <div className="node-element-dots">
+          {['Fire', 'Earth', 'Air', 'Water'].map(el => {
+            const c = elementCounts(data)[el]
+            return c > 0 ? (
+              <span key={el} className="node-el-dot" style={{ background: EL_COLORS[el], opacity: c >= 3 ? 1 : c === 2 ? 0.7 : 0.4 }} title={`${el}: ${c}`} />
+            ) : null
+          })}
+        </div>
       )}
     </div>
   )

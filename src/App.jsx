@@ -85,6 +85,12 @@ export default function App() {
   const [showConnectPrompt, setShowConnectPrompt] = useState(false)
   const [fitTick,           setFitTick]           = useState(0)
   const { hasUsedApp, insightsSeen, setInsightsSeen, returnVisit, setReturnVisit, markUsed } = useOnboardingState()
+  // Auto-dismiss return visit card after 6 seconds
+  useEffect(() => {
+    if (!returnVisit) return
+    const t = setTimeout(() => setReturnVisit(false), 6000)
+    return () => clearTimeout(t)
+  }, [returnVisit, setReturnVisit])
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
@@ -369,8 +375,11 @@ export default function App() {
       saveChart(chart)
       syncChart(chart)
       setSavedChartId(id)
-      setSavedToast(true)
-      setTimeout(() => setSavedToast(false), 4000)
+      // Only show saved toast for first-time users — returning users know it auto-saves
+      if (!hasUsedApp) {
+        setSavedToast(true)
+        setTimeout(() => setSavedToast(false), 4000)
+      }
     }
   }
 

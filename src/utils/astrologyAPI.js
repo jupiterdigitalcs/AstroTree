@@ -12,7 +12,7 @@ export async function computeAstrology(birthdate, birthTime = null) {
       body: JSON.stringify({
         birthdate,
         birthTime,
-        calculations: ['moon', 'innerPlanets', 'sunAtTime', 'ingressWarnings'],
+        calculations: ['moon', 'innerPlanets', 'outerPlanets', 'sunAtTime', 'ingressWarnings'],
       }),
     })
     if (!res.ok) return null
@@ -30,7 +30,7 @@ export async function computeAstrologyBatch(members) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         members,
-        calculations: ['moon', 'innerPlanets', 'ingressWarnings'],
+        calculations: ['moon', 'innerPlanets', 'outerPlanets', 'ingressWarnings'],
       }),
     })
     if (!res.ok) return {}

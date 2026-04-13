@@ -17,6 +17,8 @@ import SlideRebel from './slides/SlideRebel.jsx'
 import SlideGenBridge from './slides/SlideGenBridge.jsx'
 import SlideRareOne from './slides/SlideRareOne.jsx'
 import SlidePaywall from './slides/SlidePaywall.jsx'
+import SlideHotspot from './slides/SlideHotspot.jsx'
+import SlideBridge from './slides/SlideBridge.jsx'
 
 const SLIDE_COMPONENTS = {
   intro: SlideIntro,
@@ -38,6 +40,8 @@ const SLIDE_COMPONENTS = {
   genBridge: SlideGenBridge,
   rareOne: SlideRareOne,
   paywall: SlidePaywall,
+  hotspot: SlideHotspot,
+  bridge: SlideBridge,
 }
 
 export default function DigSlide({ slide, state, onShare, sharing, onUpgrade }) {

@@ -74,6 +74,20 @@
   opacity: 0.75;
 }
 
+.node-element-dots {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  margin-top: 0.2rem;
+}
+
+.node-el-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
 /* ──────────────────────── React Flow handles ────────────────────────────── */
 .node-handle.react-flow__handle {
   background: var(--gold-dim);

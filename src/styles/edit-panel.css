@@ -395,6 +395,15 @@
   font-family: 'Raleway', sans-serif;
 }
 
+.outer-planets-row {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  padding: 0.4rem 0;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+
 .ingress-context {
   display: flex;
   flex-direction: column;

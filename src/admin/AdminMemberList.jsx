@@ -22,12 +22,13 @@ export default function AdminMemberList({ nodes, expanded = false }) {
 
         return (
           <div key={n.id} className="admin-member-card">
-            <div className="admin-member-row">
+            <div className="admin-member-row admin-member-row--compact">
               <span className="admin-member-symbol">{d?.symbol ?? '✦'}</span>
               <span className="admin-member-name">{d?.name || '—'}</span>
               <span className="admin-member-sign">{d?.sign || ''}</span>
-              <span className="admin-member-moon">☽ {moonSymbol} {moonSign}</span>
-              <span className="admin-member-birth">{d?.birthdate || ''}</span>
+            </div>
+            <div className="admin-member-detail">
+              ☽ {moonSymbol} {moonSign} · {d?.birthdate || ''}
             </div>
             {planets && (
               <div className="admin-planet-grid">

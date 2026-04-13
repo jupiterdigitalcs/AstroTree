@@ -20,6 +20,8 @@ const INGRESS_PLANETS = [
   { name: 'Mercury', glyph: '☿', planet: 'mercury', index: 2 },
   { name: 'Venus',   glyph: '♀', planet: 'venus',   index: 3 },
   { name: 'Mars',    glyph: '♂', planet: 'mars',    index: 4 },
+  { name: 'Jupiter', glyph: '♃', planet: 'jupiter', index: 5 },
+  { name: 'Saturn',  glyph: '♄', planet: 'saturn',  index: 6 },
 ]
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -61,7 +63,7 @@ function calcMoon(birthdate, birthTime) {
     const chart = chartAt(birthdate, hour, minute)
     const moon = chart.planets[1]
     if (!moon?.signName) return { moonSign: 'Unknown', moonSymbol: '☽' }
-    return { moonSign: moon.signName, moonSymbol: SIGN_SYMBOLS[moon.signName] ?? '☽' }
+    return { moonSign: moon.signName, moonSymbol: SIGN_SYMBOLS[moon.signName] ?? '☽', moonDegree: moon.degree ?? null }
   } catch {
     return { moonSign: 'Unknown', moonSymbol: '☽' }
   }
@@ -72,10 +74,11 @@ function calcInnerPlanets(birthdate, birthTime) {
     const { hour, minute } = parseTime(birthTime)
     const chart = chartAt(birthdate, hour, minute)
     const get = (idx, fallback) => {
-      const sign = chart.planets[idx]?.signName
-      return { sign: sign ?? null, symbol: SIGN_SYMBOLS[sign] ?? fallback }
+      const p = chart.planets[idx]
+      const sign = p?.signName
+      return { sign: sign ?? null, symbol: SIGN_SYMBOLS[sign] ?? fallback, degree: p?.degree ?? null }
     }
-    return { mercury: get(2, '☿'), venus: get(3, '♀'), mars: get(4, '♂') }
+    return { mercury: get(2, '☿'), venus: get(3, '♀'), mars: get(4, '♂'), sunDegree: chart.planets[0]?.degree ?? null }
   } catch {
     return {
       mercury: { sign: null, symbol: '☿' },
@@ -85,14 +88,33 @@ function calcInnerPlanets(birthdate, birthTime) {
   }
 }
 
+function calcOuterPlanets(birthdate, birthTime) {
+  try {
+    const { hour, minute } = parseTime(birthTime)
+    const chart = chartAt(birthdate, hour, minute)
+    const get = (idx, fallback) => {
+      const p = chart.planets[idx]
+      const sign = p?.signName
+      return { sign: sign ?? null, symbol: SIGN_SYMBOLS[sign] ?? fallback, degree: p?.degree ?? null }
+    }
+    return { jupiter: get(5, '♃'), saturn: get(6, '♄') }
+  } catch {
+    return {
+      jupiter: { sign: null, symbol: '♃' },
+      saturn:  { sign: null, symbol: '♄' },
+    }
+  }
+}
+
 function calcSunAtTime(birthdate, birthTime) {
   if (!birthdate || !birthTime) return null
   try {
     const { hour, minute } = parseTime(birthTime)
     const chart = chartAt(birthdate, hour, minute)
-    const sign = chart.planets[0]?.signName
+    const sun = chart.planets[0]
+    const sign = sun?.signName
     if (!sign) return null
-    return { sign, symbol: SIGN_SYMBOLS[sign] ?? '☀' }
+    return { sign, symbol: SIGN_SYMBOLS[sign] ?? '☀', degree: sun?.degree ?? null }
   } catch {
     return null
   }
@@ -123,6 +145,7 @@ function calcIngressWarnings(birthdate, birthTime) {
 const CALCULATORS = {
   moon: calcMoon,
   innerPlanets: calcInnerPlanets,
+  outerPlanets: calcOuterPlanets,
   sunAtTime: calcSunAtTime,
   ingressWarnings: calcIngressWarnings,
 }

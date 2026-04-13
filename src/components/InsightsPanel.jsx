@@ -6,6 +6,11 @@ import {
 } from '../utils/astrology.js'
 import { PlanetSign } from './PlanetSign.jsx'
 import { canAccess } from '../utils/entitlements.js'
+import {
+  collectiveElementMap, findHotspots, findGaps,
+  saturnLines, jupiterGifts, allPlanetsBySign,
+  findBridgePerson, deriveRoles, PLANET_GLYPHS,
+} from '../utils/groupChartCalc.js'
 
 const TheDig = lazy(() => import('./dig/TheDig.jsx'))
 
@@ -80,50 +85,50 @@ const SIGN_SYMBOLS = {
 }
 
 const SIGN_FLAVOR = {
-  Aries:       'bold, pioneering energy — instinct over hesitation',
-  Taurus:      'steady, sensual, and deeply rooted in the material world',
-  Gemini:      'curious, adaptable, and wired for connection and ideas',
-  Cancer:      'nurturing, intuitive, and attuned to home and memory',
-  Leo:         'expressive, warm-hearted, and built to shine',
-  Virgo:       'precise, devoted, and quietly powerful in service',
-  Libra:       'harmonious, fair-minded, and drawn to beauty and balance',
-  Scorpio:     'intense, perceptive, and transformed by depth',
-  Sagittarius: 'expansive, philosophical, and always seeking meaning',
-  Capricorn:   'disciplined, ambitious, and built to endure',
-  Aquarius:    'visionary, independent, and ahead of its time',
-  Pisces:      'empathic, dreamy, and moved by the unseen',
+  Aries:       'when this energy shows up in a group, it tends to push everyone toward action — the spark that gets things started',
+  Taurus:      'this energy brings a grounding quality to the group — patience, steadiness, and a reminder to slow down and enjoy the process',
+  Gemini:      'this energy keeps the group curious and connected — new ideas, lively conversation, and a restless need to keep learning',
+  Cancer:      'this energy anchors the group emotionally — a deep attunement to feelings, memory, and what makes a place feel like home',
+  Leo:         'this energy brings warmth and creative confidence to the group — a natural ability to make others feel seen and celebrated',
+  Virgo:       'this energy shows up as quiet competence — the group member who notices what needs doing and handles it without fanfare',
+  Libra:       'this energy smooths the group dynamic — a pull toward fairness, beauty, and keeping things in balance',
+  Scorpio:     'this energy brings depth and perception — the willingness to go beneath the surface and sit with difficult truths',
+  Sagittarius: 'this energy expands the group\'s vision — a philosophical streak and a pull toward meaning, travel, and big questions',
+  Capricorn:   'this energy brings structure and long-term thinking — the part of the group that plans, commits, and follows through',
+  Aquarius:    'this energy challenges the group to think differently — independence, innovation, and a vision that may run ahead of its time',
+  Pisces:      'this energy brings empathy and imagination — a sensitivity to what others feel and a rich, intuitive inner world',
 }
 
-const PLANET_GLYPH = { sun: '☀', moon: '☽', mercury: '☿', venus: '♀', mars: '♂' }
+const PLANET_GLYPH = { sun: '☀', moon: '☽', mercury: '☿', venus: '♀', mars: '♂', jupiter: '♃', saturn: '♄' }
 
 const VENUS_SIGN_BLURB = {
-  Aries:       'Bold and direct in love — acts on attraction fast, no patience for games.',
-  Taurus:      'Sensual and devoted — values security, comfort, and lasting loyalty.',
-  Gemini:      'Charming and curious — needs mental spark and variety to stay engaged.',
-  Cancer:      'Nurturing and protective — love feels like home, driven by emotional safety.',
-  Leo:         'Romantic and generous — loves grand gestures and being adored in return.',
-  Virgo:       'Shows love through service — attentive to details, quietly devoted.',
-  Libra:       'Drawn to harmony and beauty — partnership is everything, avoids conflict.',
-  Scorpio:     'Intense and all-or-nothing — trusts slowly but loves with everything.',
-  Sagittarius: 'Free-spirited and adventurous — love needs room to breathe and explore.',
-  Capricorn:   'Reserved but reliable — shows love through commitment and practical acts.',
-  Aquarius:    'Unconventional and independent — values friendship as the foundation of love.',
-  Pisces:      'Dreamy and boundless — deeply empathetic, love without limits.',
+  Aries:       'Tends to be direct and impulsive in love — may act on attraction quickly and value honesty over subtlety.',
+  Taurus:      'Often drawn to comfort, sensuality, and lasting loyalty — may show love through physical presence and steadiness.',
+  Gemini:      'Tends to connect through conversation and mental spark — may need variety and intellectual stimulation in love.',
+  Cancer:      'Often nurturing and emotionally invested — may build love around a sense of home and emotional safety.',
+  Leo:         'Tends to be warm and generous in love — may need to feel appreciated and often expresses affection openly.',
+  Virgo:       'Often shows love through thoughtful gestures and attention to detail — may express care more through doing than saying.',
+  Libra:       'Tends to seek harmony and beauty in relationships — may prioritize partnership and go out of their way to avoid conflict.',
+  Scorpio:     'Often loves with depth and intensity — may take time to trust but tends to be deeply loyal once committed.',
+  Sagittarius: 'Tends to need space and adventure in love — may connect through shared experiences and philosophical conversation.',
+  Capricorn:   'Often reserved in expressing affection — may show love through commitment, reliability, and quiet devotion.',
+  Aquarius:    'Tends to approach love unconventionally — may value friendship, independence, and intellectual connection as the basis of intimacy.',
+  Pisces:      'Often deeply empathetic and emotionally open — may love without boundaries and absorb a partner\'s feelings easily.',
 }
 
 const MARS_SIGN_BLURB = {
-  Aries:       'Acts first, asks later — direct, high-energy, and fiercely competitive.',
-  Taurus:      'Slow to move but unstoppable once started — patient with sudden bursts.',
-  Gemini:      'Quick and scattered energy — drives through ideas and fast pivots.',
-  Cancer:      'Driven by emotion and protection — fights hardest for those they love.',
-  Leo:         'Bold and dramatic — needs to lead and be seen doing it.',
-  Virgo:       'Precise and methodical — energy goes into doing things the right way.',
-  Libra:       'Motivated by fairness — acts through diplomacy, uncomfortable with direct conflict.',
-  Scorpio:     'Laser-focused and relentless — quiet intensity that doesn\'t quit.',
-  Sagittarius: 'Enthusiastic but scattered — big energy, needs a worthy goal to sustain it.',
-  Capricorn:   'Disciplined and strategic — long-game thinker, works hard without drama.',
-  Aquarius:    'Rebellious and unpredictable — driven by ideas and disrupting the status quo.',
-  Pisces:      'Sensitive and idealistic — energy flows toward helping, creating, or escaping.',
+  Aries:       'Tends to act quickly and directly — may be the first to take initiative and can bring high energy to any situation.',
+  Taurus:      'Often slow to start but persistent once moving — may surprise others with quiet determination and staying power.',
+  Gemini:      'Tends to channel energy through ideas and conversation — may approach challenges mentally before physically.',
+  Cancer:      'Often driven by emotion and a protective instinct — may fight hardest when someone they care about is affected.',
+  Leo:         'Tends to bring warmth and confidence to action — may need recognition for their efforts and often leads naturally.',
+  Virgo:       'Often precise and methodical in how they apply effort — may channel energy into getting things right rather than getting them fast.',
+  Libra:       'Tends to approach conflict through dialogue and diplomacy — may be uncomfortable with direct confrontation but firm on fairness.',
+  Scorpio:     'Often focused and deeply committed once engaged — may approach goals with quiet intensity and persistence.',
+  Sagittarius: 'Tends to bring enthusiasm and optimism to challenges — may need a meaningful goal to sustain effort over time.',
+  Capricorn:   'Often strategic and disciplined — may take a long-term approach and work steadily without needing external motivation.',
+  Aquarius:    'Tends to be driven by ideas and principles — may channel energy into innovation or challenging established systems.',
+  Pisces:      'Often motivated by compassion and creative vision — may direct energy toward helping, imagining, or connecting on a deeper level.',
 }
 
 const ELEMENT_THREAD_BLURB = {
@@ -273,9 +278,9 @@ function getArrivalStory(child, parents, elderSiblings) {
     if (parents.length >= 2 && parents.every(p => p.data.element === el)) {
       main = `born into it on both sides — ${qual} runs through this whole family`
     } else if (matchingParent && !matchingSibling) {
-      main = `took after ${matchingParent.data.name} — ${qual}, just like them`
+      main = `took after ${matchingParent.data.name} — ${qual}, cut from the same cloth`
     } else if (matchingSibling && !matchingParent) {
-      main = `like ${matchingSibling.data.name} before them — ${qual}, the two of them`
+      main = `shares ${qual} energy with ${matchingSibling.data.name} — the two carry the same thread`
     } else {
       main = `${qual} — now ${countAfter} of ${totalAfter} in this family share this`
     }
@@ -326,6 +331,16 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
   )
 }
 
+const COMPAT_EXPLAIN = {
+  'Cosmic Echo':           'All four personal planets aligned — an extraordinarily rare resonance.',
+  'Rare Triple Alignment': 'Three shared placements — an uncommon and deep connection.',
+  'Soul Twins':            'Same Sun and Moon — they tend to express and feel in the same way.',
+  'Cosmic Twins':          'Same Sun sign — they may see their own qualities reflected in each other.',
+  'Mirror Signs':          'Opposite signs — complementary qualities that can feel magnetic or challenging.',
+  'Lunar Bond':            'Same Moon sign — similar emotional instincts and inner needs.',
+  'Sun-Moon Reflection':   'One person\'s Sun falls on the other\'s Moon — a natural sense of comfort.',
+}
+
 function FullCompatPairs({ pairs, title, isExporting, generationLevel }) {
   const [showAll, setShowAll] = useState(false)
   // Export: trim to oldest 2 generations for large families
@@ -338,6 +353,9 @@ function FullCompatPairs({ pairs, title, isExporting, generationLevel }) {
     <div className="insight-card insight-full-compat">
       <h3 className="insight-heading">{title}<span className="insight-pro-tag">✦</span></h3>
       <p className="insight-note compat-pair-count">{exportPairs.length} notable pair{exportPairs.length !== 1 ? 's' : ''}</p>
+      <p className="insight-whisper" style={{ marginBottom: '0.3rem' }}>
+        Cosmic Echo = 4 shared placements · Soul Twins = same Sun + Moon · Cosmic Twins = same Sun · Mirror Signs = opposite signs · Lunar Bond = same Moon · Kindred Spirits = compatible elements
+      </p>
       <div className="compat-pair-list">
         {displayed.map(pair => (
           <div key={pairKey(pair.a, pair.b)} className="compat-pair-row">
@@ -348,6 +366,9 @@ function FullCompatPairs({ pairs, title, isExporting, generationLevel }) {
               <span className="compat-pair-rel">{pair.relationLabel}</span>
             </div>
             <p className="insight-compat" style={{ color: pair.color }}>{pair.compatLabel}</p>
+            {COMPAT_EXPLAIN[pair.compatLabel] && (
+              <p className="insight-whisper" style={{ marginTop: '0.05rem' }}>{COMPAT_EXPLAIN[pair.compatLabel]}</p>
+            )}
             {pair.moonNote && (
               <p className="insight-compat" style={{ color: '#9dbbd4', fontSize: '0.72rem', marginTop: '0.1rem' }}>
                 ☽ {pair.moonNote}
@@ -404,27 +425,35 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
             </div>
             {isOpen && (
               <div className="family-role-body">
-                <p className="insight-note">{buildRoleBlurb(role)}</p>
+                {role.derivedRole ? (
+                  <p className="insight-note" style={{ fontWeight: 500 }}>
+                    {role.node.data.name} — {role.derivedRole}.
+                  </p>
+                ) : (
+                  <p className="insight-note">{buildRoleBlurb(role)}</p>
+                )}
+                {role.contributions.length > 1 && role.contributions.slice(1).map((c, i) => (
+                  <p key={i} className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    {c.description}
+                  </p>
+                ))}
                 {role.node.data.moonSign && role.node.data.moonSign !== 'Unknown' && (() => {
-                  const moonEl = getElement(role.node.data.moonSign).element
-                  const moonMod = SIGN_MODALITY[role.node.data.moonSign]
-                  const moonElBlurb = ELEMENT_ROLE_BLURB[moonEl]
-                  const moonModBlurb = MODALITY_MODIFIER[moonMod]
-                  return (
+                  const moonStyle = MOON_STYLE[role.node.data.moonSign]
+                  return moonStyle ? (
                     <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>
-                      ☽ {role.node.data.moonSign} — emotionally {moonModBlurb} {moonElBlurb}.
+                      ☽ {role.node.data.moonSign} moon — {moonStyle}.
                     </p>
-                  )
+                  ) : null
                 })()}
-                {role.isOnlyElement && (
+                {role.isOnlyElement && !role.derivedRole && (
                   <p className="insight-note family-role-special">✦ Sole {role.node.data.element} energy in the {g}</p>
                 )}
-                {!role.isOnlyElement && role.sameElementPeers.length > 0 && (
+                {!role.isOnlyElement && !role.derivedRole && role.sameElementPeers.length > 0 && (
                   <p className="insight-note family-role-special">
                     Fellow {role.node.data.element} spirit alongside {role.sameElementPeers.join(', ')}
                   </p>
                 )}
-                {role.isBridge && (
+                {role.isBridge && !role.derivedRole && (
                   <p className="insight-note family-role-special">✦ The Bridge — brings {role.node.data.element} energy no one else carries</p>
                 )}
               </div>
@@ -473,6 +502,16 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const moonDominant = moonNodes.length >= 2
     ? ELEMENTS.reduce((a, b) => moonElementCounts[a] >= moonElementCounts[b] ? a : b)
     : null
+
+  // ── Group chart calculations (all planets, degree-based) ──────────────────────
+  const PERSONAL_PLANETS = ['sun', 'moon', 'mercury', 'venus', 'mars']
+  const groupElementMap = useMemo(() => collectiveElementMap(nodes, PERSONAL_PLANETS), [nodes])
+  const groupHotspots = useMemo(() => findHotspots(nodes), [nodes])
+  const groupGaps = useMemo(() => findGaps(nodes), [nodes])
+  const groupSaturnLines = useMemo(() => saturnLines(nodes), [nodes])
+  const groupJupiterGifts = useMemo(() => jupiterGifts(nodes), [nodes])
+  const groupSignMap = useMemo(() => allPlanetsBySign(nodes), [nodes])
+  const groupRoles = useMemo(() => deriveRoles(nodes), [nodes])
 
   // ── Inner planet data (Mercury/Venus/Mars) ────────────────────────────────────
   const innerPlanetData = useMemo(() => {
@@ -1026,7 +1065,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       } else {
         score = 0; compatLabel = 'Unique Dynamic'; color = 'var(--text-muted)'
       }
-      if (score > 1) {
+      if (score >= 3) {
         // Flag pairs where a contributing planet may be uncertain due to missing birth time
         const warnA = warningsPerNode.get(a.id) ?? new Set()
         const warnB = warningsPerNode.get(b.id) ?? new Set()
@@ -1053,6 +1092,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     const modality = SIGN_MODALITY[node.data.sign] ?? 'Unknown'
     const sameEl   = nodes.filter(n => n.id !== node.id && n.data.element === node.data.element)
     const sameSgn  = nodes.filter(n => n.id !== node.id && n.data.sign    === node.data.sign)
+    // Pull group-derived role if available
+    const derived = groupRoles.find(r => r.node.id === node.id)
     return {
       node, modality,
       elementBlurb:     ELEMENT_ROLE_BLURB[node.data.element] ?? 'brings a unique presence',
@@ -1062,6 +1103,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       sameElementPeers: sameEl.map(n => n.data.name),
       sameSignPeers:    sameSgn.map(n => n.data.name),
       isBridge:         sameEl.length === 0 && distinctEls >= 3,
+      derivedRole:      derived?.summary || null,
+      contributions:    derived?.contributions || [],
     }
   }).sort(byAgeNode)
 
@@ -1391,6 +1434,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* ── Insight cards (hidden when DIG tab active) ─────────────── */}
       {insightsTab === 'insights' && (<>
 
+      <p className="insight-whisper insight-whisper--standalone" style={{ textAlign: 'center', padding: '0.2rem 1rem 0.4rem' }}>
+        These insights describe tendencies and patterns, not certainties. A birth chart is one layer of a much bigger picture — how you live it evolves over time.
+      </p>
+
       {/* 1. Family Signature */}
       <FamilySignatureCard
         dominant={dominant}
@@ -1444,6 +1491,9 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             </div>
           )
         })()}
+        <p className="insight-whisper" style={{ marginTop: '0.4rem' }}>
+          Sun sign reflects how you tend to show up in the world — your outward identity and the energy others notice first.
+        </p>
       </div>
 
       {/* 3. Moon Element Makeup — only when enough moon data */}
@@ -1493,24 +1543,83 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               </div>
             )
           })()}
+          <p className="insight-whisper" style={{ marginTop: '0.4rem' }}>
+            Moon sign speaks to emotional needs and inner rhythms — it often tells a different story than the Sun sign, and that tension is part of what makes a chart interesting.
+          </p>
         </div>
       )}
 
-      {/* 5. Shared Sun Signs */}
-      {sharedSigns.length > 0 && (
+      {/* Collective Element Map — FREE, all planets across all members */}
+      {groupElementMap.total >= 4 && (
         <div className="insight-card">
-          <h3 className="insight-heading">☀ Shared Sun Signs</h3>
-          {sharedSigns.map(([sign]) => {
-            const members = nodes.filter(n => n.data.sign === sign).sort(byAge)
+          <h3 className="insight-heading">Collective Element Map</h3>
+          <p className="insight-whisper">Counting personal planets — Sun, Moon, Mercury, Venus, and Mars — across every member.</p>
+          {ELEMENTS.map(el => {
+            const count = groupElementMap[el]
+            const pct = Math.round(count / groupElementMap.total * 100)
+            const color = ELEMENT_COLORS[el]
+            const bd = groupElementMap.breakdown[el]
+            const parts = Object.entries(bd).filter(([, c]) => c > 0)
+              .map(([planet, c]) => `${c} ${planet}`)
             return (
-              <p key={sign} className="insight-note">
-                {members[0].data.symbol} <strong>{sign}</strong> —{' '}
-                {members.map(m => m.data.name).join(', ')}
-              </p>
+              <div key={el} style={{ marginBottom: '0.25rem' }}>
+                <div className="element-bar-row">
+                  <span className="element-bar-label" style={{ color }}>{el}</span>
+                  <div className="element-bar-track">
+                    <div className="element-bar-fill" style={{ width: `${pct}%`, background: color }} />
+                  </div>
+                  <span className="element-bar-count" style={{ color }}>{count}</span>
+                </div>
+                {parts.length > 0 && (
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', paddingLeft: '3.2rem', marginTop: '0.05rem' }}>
+                    {parts.join(' · ')}
+                  </div>
+                )}
+              </div>
             )
           })}
+          {groupElementMap.missing.length > 0 && (
+            <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.3rem' }}>
+              Missing {groupElementMap.missing.join(' and ')} — those qualities may be sought outside the {isGroupOnly ? 'group' : 'family'}.
+            </p>
+          )}
+          <p className="insight-whisper" style={{ marginTop: '0.4rem' }}>
+            {groupElementMap.total} total placements across {nodes.length} people. When one element dominates, its qualities tend to shape the group dynamic. Missing elements may show up as blind spots or things the group seeks elsewhere.
+          </p>
         </div>
       )}
+
+      {/* 5. Sign Threads — personal planets only (Sun, Moon, Mercury, Venus, Mars) */}
+      {(() => {
+        const personalPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars']
+        const concentrated = Object.entries(groupSignMap)
+          .map(([sign, data]) => {
+            const filtered = Object.entries(data.planets).filter(([p]) => personalPlanets.includes(p))
+            const total = filtered.reduce((s, [, c]) => s + c, 0)
+            return [sign, { total, planets: Object.fromEntries(filtered) }]
+          })
+          .filter(([, data]) => data.total >= 2)
+          .sort((a, b) => b[1].total - a[1].total)
+        if (concentrated.length === 0) return null
+        return (
+          <div className="insight-card">
+            <h3 className="insight-heading">Sign Threads</h3>
+            <p className="insight-whisper">Signs that appear more than once across personal planets in the group.</p>
+            {concentrated.slice(0, 6).map(([sign, data]) => {
+              const parts = Object.entries(data.planets)
+                .map(([planet, count]) => `${count} ${planet}`)
+              return (
+                <p key={sign} className="insight-note">
+                  {SIGN_SYMBOLS[sign]} <strong>{sign}</strong>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                    {' '}— {data.total} placement{data.total > 1 ? 's' : ''} ({parts.join(', ')})
+                  </span>
+                </p>
+              )
+            })}
+          </div>
+        )
+      })()}
 
       {/* 5. Shared Moon Signs */}
       {sharedMoonSigns.length > 0 && (
@@ -1557,6 +1666,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           { icon: '📊', label: 'Full Compatibility Report', detail: 'deep dive for every connection' },
           { icon: '🌸', label: 'Family Arrivals', detail: 'seasonal birth patterns' },
           { icon: '🪐', label: 'Pluto Generations', detail: 'generational themes & shifts' },
+          groupHotspots.length > 0 && { icon: '★', label: 'Group Hotspots', detail: `${groupHotspots.length} concentration zone${groupHotspots.length > 1 ? 's' : ''} found` },
+          groupGaps && { icon: '◌', label: 'The Gaps', detail: 'what the group may be missing' },
+          groupSaturnLines.length > 0 && { icon: '♄', label: 'Saturn Lines', detail: 'shared growth & responsibility' },
+          groupJupiterGifts.length > 0 && { icon: '♃', label: 'Jupiter Gifts', detail: 'where the group expands' },
         ].filter(Boolean)
         return (
         <div className="insight-card" style={{ padding: '1.2rem 1rem' }}>
@@ -1581,7 +1694,18 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {hasAdvanced && (<>
       {/* 4. Notable Bonds (premium) */}
-      {topBonds.length > 0 && (
+      {topBonds.length > 0 && (() => {
+        const BOND_EXPLAIN = {
+          'cosmic-echo': 'Multiple personal planets in the same sign is extraordinarily rare — it suggests a deep, almost fated resonance between these two.',
+          'rare-alignment': 'Three shared sign placements is uncommon and tends to create a feeling of being fundamentally understood by the other person.',
+          'soul-twins': 'Sharing both Sun and Moon signs means their outward identity and inner emotional world are built from the same material — they may instinctively understand each other.',
+          'cosmic-twins': 'Same Sun sign means they tend to express themselves in similar ways — they may see parts of themselves reflected in each other.',
+          'lunar-bond': 'Shared Moon sign suggests similar emotional needs and instincts — they may process feelings in the same way without having to explain.',
+          'mirror': 'Opposite signs sit across the zodiac from each other — they often represent complementary qualities that can feel magnetic or challenging.',
+          'sun-moon-reflection': 'When one person\'s Sun lands on the other\'s Moon, it can create a natural sense of comfort — one embodies outwardly what the other feels inwardly.',
+          'natural-flow': 'Compatible elements (Fire-Air or Earth-Water) tend to support and amplify each other — these two may find it easy to get along.',
+        }
+        return (
         <div className="insight-card">
           <h3 className="insight-heading">Notable Bonds<span className="insight-pro-tag">✦</span></h3>
           {topBonds.map(({ a, b, note, noteType, rel, needsTimeCheck }) => {
@@ -1605,6 +1729,11 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                   {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> — {rel}</span>}
                 </p>
                 <p className="insight-compat" style={{ color }}>{note}</p>
+                {BOND_EXPLAIN[noteType] && (
+                  <p className="insight-whisper" style={{ marginTop: '0.1rem' }}>
+                    {BOND_EXPLAIN[noteType]}
+                  </p>
+                )}
                 {needsTimeCheck && (
                   <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
                     ⚠ Confirm with exact birth time
@@ -1614,7 +1743,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             )
           })}
         </div>
-      )}
+        )
+      })()}
 
       {/* 6. Shared Venus & Mars Signs (premium) */}
       {(sharedVenusSigns.length > 0 || sharedMarsSigns.length > 0) && (
@@ -1800,9 +1930,9 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* 11. Dominant Sign */}
       {topSigns.length > 0 && (
         <div className="insight-card">
-          <h3 className="insight-heading">★ Sign Concentration<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem' }}>
-            The sign(s) holding the most planets across your whole group.
+          <h3 className="insight-heading">★ Planetary Patterns<span className="insight-pro-tag">✦</span></h3>
+          <p className="insight-whisper" style={{ marginBottom: '0.2rem' }}>
+            The sign(s) holding the most personal planets across the whole group.
           </p>
           {topSigns.map(([sign, { total, planets }]) => {
             const planetLine = Object.entries(planets)
@@ -1819,6 +1949,136 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               </p>
             )
           })}
+        </div>
+      )}
+
+      {/* Group Hotspots — degree clusters across members */}
+      {groupHotspots.length > 0 && (() => {
+        function describeHotspot(spot) {
+          const SIGN_THEMES = {
+            Aries:       { core: 'initiative and action', daily: 'Conversations may move fast. New ideas tend to spark quickly — follow-through may be the challenge.' },
+            Taurus:      { core: 'comfort and stability', daily: 'Shared meals, familiar routines, and creating physical warmth together may be a recurring theme.' },
+            Gemini:      { core: 'communication and ideas', daily: 'Gatherings probably run long. The group may process everything by talking it through — sometimes at the same time.' },
+            Cancer:      { core: 'emotional safety and home', daily: 'Loyalty runs deep here. Family traditions, shared memories, and a strong protective instinct may define the group dynamic.' },
+            Leo:         { core: 'self-expression and warmth', daily: 'Celebrating each other may come naturally. The group might be drawn to big moments and making sure no one feels overlooked.' },
+            Virgo:       { core: 'precision and service', daily: 'Helping each other is a love language here. Standards may run high — both for the group and for themselves.' },
+            Libra:       { core: 'harmony and fairness', daily: 'Conflict avoidance may be a pattern. Real effort goes into keeping things balanced — sometimes at the cost of directness.' },
+            Scorpio:     { core: 'depth and honesty', daily: 'Surface-level interactions may not satisfy this group. There\'s likely a preference for truth, even when it\'s uncomfortable.' },
+            Sagittarius: { core: 'meaning and expansion', daily: 'Big questions, new experiences, and a restless need to keep growing may bring the group together — and pull it in new directions.' },
+            Capricorn:   { core: 'responsibility and structure', daily: 'The group may naturally organize around goals and timelines. Long-term planning might be a shared strength — and a shared pressure.' },
+            Aquarius:    { core: 'independence and innovation', daily: 'Doing things differently may be a point of pride. The group might resist convention and gravitate toward unconventional approaches.' },
+            Pisces:      { core: 'empathy and sensitivity', daily: 'Unspoken feelings may carry a lot of weight. Creative or spiritual pursuits might be where the group feels most connected.' },
+          }
+          const theme = SIGN_THEMES[spot.sign]
+          if (!theme) return null
+          const hasMoon = spot.planets.some(p => p.planet === 'moon')
+          const hasVenus = spot.planets.some(p => p.planet === 'venus')
+          const hasMars = spot.planets.some(p => p.planet === 'mars')
+          let extra = ''
+          if (hasMoon && hasVenus) extra = ' With both Moon and Venus here, emotional needs and how love is expressed may be closely intertwined.'
+          else if (hasMoon) extra = ' With Moon placements here, this zone touches the group\'s emotional core.'
+          else if (hasVenus) extra = ' With Venus here, this zone shapes how the group connects and shows affection.'
+          else if (hasMars) extra = ' With Mars here, this is where the group\'s drive and motivation tend to concentrate.'
+          return `A shared pull toward ${theme.core}. ${theme.daily}${extra}`
+        }
+        return (
+        <div className="insight-card">
+          <h3 className="insight-heading">Group Hotspots<span className="insight-pro-tag">✦</span></h3>
+          <p className="insight-whisper">Zones of the zodiac where multiple people's planets concentrate — these themes tend to echo through the group's daily life.</p>
+          {groupHotspots.slice(0, 3).map((spot, i) => (
+            <div key={i} style={{ marginBottom: '0.6rem' }}>
+              <p className="insight-note">
+                <strong style={{ color: ELEMENT_COLORS[getElement(spot.sign).element] }}>
+                  {SIGN_SYMBOLS[spot.sign]} {spot.sign}
+                </strong>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                  {' '}— {spot.planets.length} planets from {spot.peopleCount} people
+                </span>
+              </p>
+              <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', paddingLeft: '1rem' }}>
+                {spot.planets.map(p => `${p.glyph} ${p.person}`).join(', ')}
+              </p>
+              {describeHotspot(spot) && (
+                <p className="insight-note" style={{ fontSize: '0.72rem', paddingLeft: '1rem', marginTop: '0.15rem' }}>
+                  {describeHotspot(spot)}
+                </p>
+              )}
+            </div>
+          ))}
+          {/* What's missing — integrated from Gaps analysis */}
+          {groupGaps && (
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+              <p className="insight-note" style={{ fontWeight: 500 }}>What's missing</p>
+              <p className="insight-note" style={{ fontSize: '0.75rem' }}>{groupGaps.description}</p>
+              {groupGaps.gapSigns.length > 0 && (
+                <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                  {groupGaps.gapSigns.map(s => `${SIGN_SYMBOLS[s]} ${s}`).join(', ')}
+                </p>
+              )}
+              <p className="insight-whisper" style={{ marginTop: '0.2rem' }}>
+                Gaps aren't weaknesses — they're areas where the group may seek those qualities in others or develop them over time.
+              </p>
+            </div>
+          )}
+        </div>
+        )
+      })()}
+
+      {/* The Gaps — standalone card when no hotspots exist */}
+      {groupHotspots.length === 0 && groupGaps && (
+        <div className="insight-card">
+          <h3 className="insight-heading">The Gaps<span className="insight-pro-tag">✦</span></h3>
+          <p className="insight-note">{groupGaps.description}</p>
+          {groupGaps.gapSigns.length > 0 && (
+            <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+              {groupGaps.gapSigns.map(s => `${SIGN_SYMBOLS[s]} ${s}`).join(', ')}
+            </p>
+          )}
+          <p className="insight-whisper" style={{ marginTop: '0.3rem' }}>
+            Gaps aren't weaknesses — they're areas where the group may seek those qualities in others or develop them over time.
+          </p>
+        </div>
+      )}
+
+      {/* Saturn Lines — shared structural themes */}
+      {groupSaturnLines.length > 0 && groupSaturnLines.some(g => g.members.length >= 2) && (
+        <div className="insight-card">
+          <h3 className="insight-heading">♄ Saturn Lines<span className="insight-pro-tag">✦</span></h3>
+          <p className="insight-whisper">Saturn's sign reflects where each person tends to carry responsibility and face their deepest growth.</p>
+          {groupSaturnLines.filter(g => g.members.length >= 1).map(g => (
+            <div key={g.sign} style={{ marginBottom: '0.4rem' }}>
+              <p className="insight-note">
+                <strong>{SIGN_SYMBOLS[g.sign]} Saturn in {g.sign}</strong>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                  {' '}— {g.names.join(', ')}
+                </span>
+              </p>
+              <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', paddingLeft: '1rem' }}>
+                {g.theme}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Jupiter Gifts — shared growth areas */}
+      {groupJupiterGifts.length > 0 && groupJupiterGifts.some(g => g.members.length >= 2) && (
+        <div className="insight-card">
+          <h3 className="insight-heading">♃ Jupiter Gifts<span className="insight-pro-tag">✦</span></h3>
+          <p className="insight-whisper">Jupiter's sign points to where each person tends to find expansion, luck, and natural ease.</p>
+          {groupJupiterGifts.filter(g => g.members.length >= 1).map(g => (
+            <div key={g.sign} style={{ marginBottom: '0.4rem' }}>
+              <p className="insight-note">
+                <strong>{SIGN_SYMBOLS[g.sign]} Jupiter in {g.sign}</strong>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                  {' '}— {g.names.join(', ')}
+                </span>
+              </p>
+              <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', paddingLeft: '1rem' }}>
+                {g.theme}
+              </p>
+            </div>
+          ))}
         </div>
       )}
 

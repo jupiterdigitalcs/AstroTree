@@ -45,7 +45,11 @@ export async function buildNodeData(member) {
   const astro = await computeAstrology(member.birthdate, member.birthTime ?? null)
   if (astro) {
     if (astro.moon) Object.assign(base, astro.moon)
-    if (astro.innerPlanets) base.innerPlanets = astro.innerPlanets
+    if (astro.innerPlanets) {
+      base.innerPlanets = astro.innerPlanets
+      if (astro.innerPlanets.sunDegree != null) base.sunDegree = astro.innerPlanets.sunDegree
+    }
+    if (astro.outerPlanets) base.outerPlanets = astro.outerPlanets
     if (astro.ingressWarnings) base.ingressWarnings = astro.ingressWarnings
     if (astro.sunAtTime?.sign) {
       const { element: el, color: c } = getElement(astro.sunAtTime.sign)
@@ -57,7 +61,7 @@ export async function buildNodeData(member) {
 
 // Enrich existing saved nodes with any missing computed fields
 export async function hydrateNodes(nodes) {
-  const needsHydration = nodes.filter(n => !n.data?.innerPlanets && n.data?.birthdate)
+  const needsHydration = nodes.filter(n => (!n.data?.innerPlanets || !n.data?.outerPlanets) && n.data?.birthdate)
   if (needsHydration.length === 0) return nodes
 
   const batch = await computeAstrologyBatch(
@@ -69,7 +73,11 @@ export async function hydrateNodes(nodes) {
     if (!astro) return n
     const enriched = { ...n.data }
     if (astro.moon && !n.data.moonSign) Object.assign(enriched, astro.moon)
-    if (astro.innerPlanets) enriched.innerPlanets = astro.innerPlanets
+    if (astro.innerPlanets) {
+      enriched.innerPlanets = astro.innerPlanets
+      if (astro.innerPlanets.sunDegree != null) enriched.sunDegree = astro.innerPlanets.sunDegree
+    }
+    if (astro.outerPlanets) enriched.outerPlanets = astro.outerPlanets
     if (astro.ingressWarnings) enriched.ingressWarnings = astro.ingressWarnings
     return { ...n, data: enriched }
   })

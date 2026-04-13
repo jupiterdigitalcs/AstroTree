@@ -51,6 +51,27 @@ async function handleEngagement(request) {
   return error ? NextResponse.json(null, { status: 500 }) : NextResponse.json(data)
 }
 
+async function handleMarkTest(request) {
+  if (!requireAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { deviceId, isTest } = await request.json()
+  if (!deviceId) return NextResponse.json({ error: 'Missing deviceId' }, { status: 400 })
+  // Mark device as test by setting a recognizable email prefix
+  const marker = isTest ? 'test@internal' : null
+  const { error } = await getSupabase()
+    .from('devices')
+    .update({ email: marker })
+    .eq('id', deviceId)
+  if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+  // Also mark all charts from this device as sample
+  if (isTest) {
+    await getSupabase()
+      .from('charts')
+      .update({ is_sample: true })
+      .eq('device_id', deviceId)
+  }
+  return NextResponse.json({ ok: true })
+}
+
 async function handlePaywallConfig(request) {
   if (!requireAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { data, error } = await getSupabase().from('paywall_config').select('key, value, updated_at')
@@ -81,6 +102,7 @@ const ROUTES = {
   devices: handleDevices, 'trees-per-day': handleTreesPerDay,
   engagement: handleEngagement, 'paywall-config': handlePaywallConfig,
   'paywall-config-set': handlePaywallConfigSet, purchases: handlePurchases,
+  'mark-test': handleMarkTest,
 }
 
 export async function GET(request) {
