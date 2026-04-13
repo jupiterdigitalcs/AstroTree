@@ -281,15 +281,38 @@ export default function App() {
     return () => { cancelled = true }
   }, [authUser]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Handle OAuth redirect results ───────────────────────────────────────
+  // ── Handle OAuth / GSI redirect results ─────────────────────────────────
   useEffect(() => {
+    // Check URL hash for session tokens from GSI redirect mode.
+    // The /api/auth/gsi endpoint puts tokens in the hash after exchanging
+    // the Google credential server-side. The @supabase/ssr browser client
+    // uses cookies (not hash detection), so we pick them up manually.
+    const hash = window.location.hash
+    if (hash && hash.includes('access_token=')) {
+      const hashParams = new URLSearchParams(hash.substring(1))
+      const accessToken = hashParams.get('access_token')
+      const refreshToken = hashParams.get('refresh_token')
+      if (accessToken && refreshToken) {
+        const supabase = getSupabaseBrowser()
+        if (supabase) {
+          supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+            .then(({ error }) => {
+              if (error) console.error('[auth] setSession from hash failed:', error.message)
+            })
+            .catch(err => console.error('[auth] setSession error:', err))
+        }
+        // Clean the hash
+        window.history.replaceState({}, '', window.location.pathname + window.location.search)
+      }
+    }
+
+    // Check query params for auth status from /auth/callback
     const params = new URLSearchParams(window.location.search)
     const authStatus = params.get('auth')
     if (!authStatus) return
 
     // Client-side code exchange fallback: server couldn't exchange the code
-    // (PKCE cookie lost on mobile redirect), so we try from the browser
-    // which has the code_verifier in its own storage.
+    // (PKCE cookie lost on mobile redirect), so we try from the browser.
     if (authStatus === 'code') {
       const code = params.get('code')
       if (code) {
