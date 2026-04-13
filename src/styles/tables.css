@@ -9,7 +9,7 @@
 
 @media (max-width: 768px) {
   .tables-canvas-wrap {
-    padding: 4rem 1rem calc(80px + env(safe-area-inset-bottom) + 5rem);
+    padding: 4.5rem 1rem calc(80px + env(safe-area-inset-bottom) + 5rem);
   }
 }
 

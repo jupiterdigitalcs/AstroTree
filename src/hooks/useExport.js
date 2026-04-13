@@ -281,6 +281,24 @@ export function useExport({ savedChartId, fitViewRef }) {
     const filename = `${slug}-constellation.png`
 
     try {
+      // Temporarily reposition legend below SVG so it doesn't overlap the constellation
+      const legend = el.querySelector('.constellation-legend')
+      const svg = el.querySelector('.constellation-svg')
+      let prevStyles = null
+      if (legend) {
+        prevStyles = { position: legend.style.position, bottom: legend.style.bottom, left: legend.style.left, transform: legend.style.transform, width: legend.style.width }
+        legend.style.position = 'relative'
+        legend.style.bottom = 'auto'
+        legend.style.left = 'auto'
+        legend.style.transform = 'none'
+        legend.style.width = '100%'
+      }
+      // Switch wrap from overflow:hidden to visible for full capture
+      const prevOverflow = el.style.overflow
+      el.style.overflow = 'visible'
+      // Ensure SVG doesn't flex-shrink when legend takes space
+      if (svg) svg.style.flexShrink = '0'
+
       const baseOpts = {
         backgroundColor: '#09071a',
         pixelRatio: 2,
@@ -290,10 +308,16 @@ export function useExport({ savedChartId, fitViewRef }) {
           if (!c) return true
           if (c.contains('constellation-tooltip')) return false
           if (c.contains('constellation-controls')) return false
+          if (c.contains('constellation-legend-toggle')) return false
           return true
         },
       }
       const url = await (await getToPng())(el, fullSizeCaptureOpts(el, baseOpts))
+
+      // Restore original styles
+      if (legend && prevStyles) Object.assign(legend.style, prevStyles)
+      el.style.overflow = prevOverflow
+      if (svg) svg.style.flexShrink = ''
       const finalUrl = await appendBrandBar(url, 2)
       await shareOrDownload(
         finalUrl, filename,

@@ -1,6 +1,4 @@
-import { useState } from 'react'
 import { JupiterIcon } from './JupiterIcon.jsx'
-import { getSavedEmail } from './EmailCapture.jsx'
 
 function IgIcon()     { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> }
 function TikTokIcon() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/></svg> }
@@ -9,18 +7,6 @@ function EtsyIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" f
 function MailIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> }
 
 export default function AboutPanel() {
-  const [savedEmail,       setSavedEmail]       = useState(() => getSavedEmail())
-  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
-
-  function handleRemoveEmail() {
-    try {
-      localStorage.removeItem('astrotree_user_email')
-      localStorage.removeItem('astrotree_email_asked')
-    } catch {}
-    setSavedEmail(null)
-    setShowRemoveConfirm(false)
-  }
-
   return (
     <div className="about-panel">
 
@@ -158,20 +144,22 @@ export default function AboutPanel() {
       <div className="about-card" id="about-data">
         <h3 className="about-heading">Your Data &amp; Privacy</h3>
         <p className="about-bio">
-          AstroDig saves your charts locally in your browser and syncs them to our servers.
-          You can sign in with Google to protect your charts across devices, or use the app anonymously.
+          AstroDig saves your charts locally in your browser and syncs them to our servers when you sign in.
+          Sign in with Google to access your charts and any purchases (like Celestial) on any device.
         </p>
 
         <p className="about-data-subhead">What we collect</p>
         <ul className="about-data-list">
           <li>Chart data (names, birthdates, astrological signs)</li>
-          <li>Your email, if you provide it</li>
+          <li>Your Google account email when you sign in</li>
+          <li>Basic device info for chart syncing</li>
         </ul>
 
         <p className="about-data-subhead">How we use it</p>
         <ul className="about-data-list">
-          <li>To sync and store your charts</li>
-          <li>To send app updates, announcements, and occasional offers from Jupiter Digital</li>
+          <li>To sync and store your charts across devices</li>
+          <li>To link purchases (Celestial) to your account</li>
+          <li>To send purchase confirmations and occasional updates from Jupiter Digital</li>
         </ul>
 
         <p className="about-data-subhead">What we don't do</p>
@@ -180,31 +168,11 @@ export default function AboutPanel() {
         </ul>
 
         <p className="about-bio" style={{ marginTop: '0.5rem' }}>
-          You can delete your charts anytime from Saved Charts, or request data or email removal by
+          You can delete individual charts from the Saved tab, or request full data removal by
           contacting us at <a className="about-inline-link" href="mailto:jupreturns@gmail.com">jupreturns@gmail.com</a>.
+          To disconnect your account, sign out from the Saved tab.
           This app is not intended for children under 13.
         </p>
-
-        {savedEmail && !showRemoveConfirm && (
-          <div className="about-email-row">
-            <span className="about-email-label">Saved email: <strong>{savedEmail}</strong></span>
-            <button type="button" className="about-remove-email-btn" onClick={() => setShowRemoveConfirm(true)}>
-              Remove
-            </button>
-          </div>
-        )}
-
-        {showRemoveConfirm && (
-          <div className="about-remove-confirm">
-            <p className="about-remove-warning">
-              ⚠ This removes your email from this device. Your charts stay saved locally, but <strong>sync and backup will stop</strong> until you re-enter an email. This doesn't delete your charts from the server.
-            </p>
-            <div className="about-remove-actions">
-              <button type="button" className="about-remove-cancel" onClick={() => setShowRemoveConfirm(false)}>Cancel</button>
-              <button type="button" className="about-remove-confirm-btn" onClick={handleRemoveEmail}>Remove email</button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── App note ──────────────────────────────────────────────────── */}
