@@ -276,7 +276,13 @@ export default function App() {
     }).catch(err => {
       if (cancelled) return
       console.error('[auth] refreshAfterAuth failed:', err)
-      setActiveTab('charts')
+      // Still show upgrade prompt if that's what they were trying to do
+      if (pendingUpgrade) {
+        setPendingUpgrade(false)
+        setShowUpgradePrompt(true)
+      } else {
+        setActiveTab('charts')
+      }
     })
     return () => { cancelled = true }
   }, [authUser]) // eslint-disable-line react-hooks/exhaustive-deps
