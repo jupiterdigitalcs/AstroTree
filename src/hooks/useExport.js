@@ -149,10 +149,11 @@ export function useExport({ savedChartId, fitViewRef }) {
     setExportError(null)
     setExporting(true)
 
-    // Fit so layout is fresh, then we'll override with our own transform sized to content
+    // Fit so layout is fresh, then we'll override with our own transform sized to content.
+    // Mobile needs extra time for the layout + paint to settle before capture.
     const rf = fitViewRef.current
     rf?.fitView?.({ padding: 0.12, duration: 0 })
-    await new Promise(r => setTimeout(r, 120))
+    await new Promise(r => setTimeout(r, 300))
 
     el.classList.add('exporting')
     const { chartTitle, slug } = getChartSlug(savedChartId)
@@ -203,7 +204,12 @@ export function useExport({ savedChartId, fitViewRef }) {
           },
         }
       }
-      const url = await (await getToPng())(captureEl, toPngOpts)
+      const toPng = await getToPng()
+      // First call forces fonts/images to load; second captures cleanly.
+      // Without this, mobile often produces a blank or partial image.
+      await toPng(captureEl, toPngOpts).catch(() => {})
+      await new Promise(r => setTimeout(r, 100))
+      const url = await toPng(captureEl, toPngOpts)
       const finalUrl = await appendBrandBar(url, 2)
       await shareOrDownload(
         finalUrl, filename,

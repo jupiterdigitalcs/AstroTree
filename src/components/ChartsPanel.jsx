@@ -96,61 +96,6 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         )}
       </div>
 
-      {/* ── Account status + Celestial explainer ─────────────────────────── */}
-      {authUser ? (
-        entitlements?.tier === 'premium' ? (
-          <div className="celestial-explainer celestial-explainer--active" id="celestial-info">
-            <h3 className="celestial-explainer-title">✦ Celestial</h3>
-            <p className="celestial-explainer-text">
-              All views, full insights, unlimited charts — unlocked forever.
-              Signed in as <strong>{authUser.email}</strong>.
-            </p>
-          </div>
-        ) : (
-          <div className="celestial-explainer" id="celestial-info">
-            <h3 className="celestial-explainer-title">✓ Signed in</h3>
-            <p className="celestial-explainer-text">
-              Signed in as <strong>{authUser.email}</strong>. Your charts will follow you to any device.
-            </p>
-            <button type="button" className="celestial-explainer-btn" onClick={onUpgrade}>
-              ✦ Unlock Celestial — $9.99
-            </button>
-          </div>
-        )
-      ) : !authLoading && (
-        // Not signed in — Celestial is account-bound, so the only state here
-        // is "explain Celestial + sign in to unlock". The previous "isn't
-        // protected" branch is dead now that tier is always 'free' when no
-        // auth user.
-        <div className="celestial-explainer" id="celestial-info">
-          <h3 className="celestial-explainer-title">✦ What is Celestial?</h3>
-          <p className="celestial-explainer-text">
-            <strong>Celestial</strong> is a one-time $9.99 upgrade that unlocks the full cosmos:
-          </p>
-          <ul className="celestial-explainer-list">
-            <li>☉ Zodiac Wheel + Constellation views</li>
-            <li>☽ Tables — sortable sun, moon &amp; planet grid</li>
-            <li>✦ Full Insights — compatibility, roles, zodiac threads</li>
-            <li>✦ The Full DIG — every slide in your cosmic story</li>
-            <li>📚 Unlimited charts — save as many as you want</li>
-          </ul>
-          {onSignIn && (
-            <button type="button" className="celestial-explainer-btn" onClick={onSignIn}>
-              ✦ Sign in to Unlock Celestial
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* ── Account status ────────────────────────────────────────────── */}
-      {authUser ? (
-        <div className="charts-account-row">
-          <span className="charts-account-check">✓</span>
-          <span className="charts-account-email">{authUser.email}</span>
-          <button type="button" className="charts-signout-btn" onClick={onSignOut}>Sign out</button>
-        </div>
-      ) : null}
-
       {sorted.length > 0 ? (() => {
         const chartLimit = entitlements && isPaywallEnabled(entitlements.config) && entitlements.tier !== 'premium'
           ? getChartLimit(entitlements.tier, entitlements.config)
@@ -235,6 +180,51 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         <button type="button" className="add-row-btn chart-ideas-new-btn" onClick={onNew}>
           ＋ New Chart
         </button>
+      </div>
+
+      {/* ── Account & Celestial ────────────────────────────────────────── */}
+      <div className="charts-account-section">
+        {authUser ? (
+          <>
+            {entitlements?.tier === 'premium' ? (
+              <div className="celestial-explainer celestial-explainer--active" id="celestial-info">
+                <h3 className="celestial-explainer-title">✦ Celestial</h3>
+                <p className="celestial-explainer-text">
+                  All views, full insights, unlimited charts — unlocked forever.
+                </p>
+              </div>
+            ) : (
+              <div className="celestial-explainer" id="celestial-info">
+                <h3 className="celestial-explainer-title">✦ What is Celestial?</h3>
+                <p className="celestial-explainer-text">
+                  A one-time $9.99 upgrade — zodiac wheel, tables, full insights, The DIG, and unlimited charts.
+                </p>
+                <button type="button" className="celestial-explainer-btn" onClick={onUpgrade}>
+                  ✦ Unlock Celestial — $9.99
+                </button>
+              </div>
+            )}
+            <div className="charts-account-row">
+              <span className="charts-account-check">✓</span>
+              <span className="charts-account-email">{authUser.email}</span>
+              <button type="button" className="charts-signout-btn" onClick={onSignOut}>Sign out</button>
+            </div>
+          </>
+        ) : !authLoading && (
+          <>
+            <div className="celestial-explainer" id="celestial-info">
+              <h3 className="celestial-explainer-title">✦ What is Celestial?</h3>
+              <p className="celestial-explainer-text">
+                A one-time $9.99 upgrade — zodiac wheel, tables, full insights, The DIG, and unlimited charts.
+              </p>
+              {onSignIn && (
+                <button type="button" className="celestial-explainer-btn" onClick={onSignIn}>
+                  ✦ Sign in to Unlock Celestial
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* ── Sample Trees ──────────────────────────────────────────────── */}

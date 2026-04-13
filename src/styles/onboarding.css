@@ -165,8 +165,9 @@
   color: var(--gold);
   box-shadow: none;
   font-size: 0.82rem;
-  padding: 0.7rem 1.6rem;
+  padding: 0.7rem 2rem;
   margin-top: 0.5rem;
+  white-space: nowrap;
 }
 
 .welcome-demo-row {

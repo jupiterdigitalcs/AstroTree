@@ -47,6 +47,16 @@
 }
 .charts-data-link:hover { opacity: 0.85; }
 
+/* ── Account section ─────────────────────────────────────────────────── */
+.charts-account-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(201,168,76,0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 /* ── Account row ──────────────────────────────────────────────────────── */
 .charts-account-row {
   display: flex;
