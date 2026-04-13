@@ -32,6 +32,7 @@ import { ShareButton } from './components/ShareButton.jsx'
 import { fetchChartByToken, isCloudEnabled, pingVisit, logEvent } from './utils/cloudStorage.js'
 import { EmailCapture, hasBeenAsked, clearEmailAsked, shouldForcePrompt } from './components/EmailCapture.jsx'
 import { useAuth } from './hooks/useAuth.js'
+import { getSupabaseBrowser } from './utils/supabaseClient.js'
 import { DraggableFab } from './components/DraggableFab.jsx'
 import { UpgradePrompt } from './components/UpgradePrompt.jsx'
 import { checkPurchaseReturn } from './utils/checkout.js'
@@ -280,15 +281,32 @@ export default function App() {
     return () => { cancelled = true }
   }, [authUser]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Clean up ?auth= param after OAuth redirect ──────────────────────────
+  // ── Handle OAuth redirect results ───────────────────────────────────────
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const authStatus = params.get('auth')
-    if (authStatus) {
-      const url = new URL(window.location)
-      url.searchParams.delete('auth')
-      window.history.replaceState({}, '', url)
+    if (!authStatus) return
+
+    // Client-side code exchange fallback: server couldn't exchange the code
+    // (PKCE cookie lost on mobile redirect), so we try from the browser
+    // which has the code_verifier in its own storage.
+    if (authStatus === 'code') {
+      const code = params.get('code')
+      if (code) {
+        const supabase = getSupabaseBrowser()
+        if (supabase) {
+          supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+            if (error) console.error('[auth] client-side code exchange failed:', error.message)
+          }).catch(err => console.error('[auth] client-side code exchange error:', err))
+        }
+      }
     }
+
+    // Clean the URL
+    const url = new URL(window.location)
+    url.searchParams.delete('auth')
+    url.searchParams.delete('code')
+    window.history.replaceState({}, '', url)
   }, [])
 
   // ── Show email capture after onboarding completes (insights seen) ────────
