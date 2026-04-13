@@ -60,23 +60,37 @@ export function useAuth() {
 
   // Initialize GSI and render Google's sign-in button into a container element.
   // Called by EmailCapture to place the button in the dialog.
+  //
+  // On desktop: ux_mode 'popup' — GSI opens a popup, callback fires in-page.
+  // On mobile:  ux_mode 'redirect' — GSI redirects to Google, which POSTs the
+  //             credential to /api/auth/gsi. This keeps Google showing
+  //             "astrodig.com" (not the Supabase URL) and avoids the white-screen
+  //             bug where popup mode silently redirects the page on mobile.
   const initGoogleButton = useCallback((containerEl, onResult) => {
     const supabase = getSupabaseBrowser()
     if (!supabase || !containerEl) return
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
     if (!clientId) { onResult?.({ ok: false, error: 'Google client ID not configured' }); return }
 
+    const isMobile = window.innerWidth <= 768
+
     function tryInit() {
       if (!window.google?.accounts?.id) return false
-      window.google.accounts.id.initialize({
+
+      const config = {
         client_id: clientId,
-        ux_mode: 'popup',
-        callback: async (response) => {
+        itp_support: true,
+      }
+
+      if (isMobile) {
+        // Redirect mode: Google POSTs credential to our server endpoint
+        config.ux_mode = 'redirect'
+        config.login_uri = `${window.location.origin}/api/auth/gsi`
+      } else {
+        // Popup mode: callback fires in-page (desktop)
+        config.ux_mode = 'popup'
+        config.callback = async (response) => {
           try {
-            // signInWithIdToken replaces any existing session atomically —
-            // no need to sign out first (doing so causes a race condition
-            // where onAuthStateChange fires null then new-user in quick
-            // succession, crashing on mobile).
             const { error } = await supabase.auth.signInWithIdToken({
               provider: 'google',
               token: response.credential,
@@ -86,9 +100,10 @@ export function useAuth() {
             console.error('[auth] Google sign-in error:', err)
             onResult?.({ ok: false, error: err.message })
           }
-        },
-        itp_support: true,
-      })
+        }
+      }
+
+      window.google.accounts.id.initialize(config)
       window.google.accounts.id.renderButton(containerEl, {
         type: 'standard',
         theme: 'filled_black',

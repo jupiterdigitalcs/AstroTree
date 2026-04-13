@@ -74,15 +74,10 @@ export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, ini
 
   const isPostPurchase = variant === 'post-purchase'
 
-  // On mobile, GSI's "choose another account" flow redirects the page to
-  // Google and back, causing a white screen because the callback never fires.
-  // Use Supabase's OAuth redirect flow on mobile instead — it handles the
-  // redirect cycle properly via /auth/callback.
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
-
-  // Render Google's native sign-in button (desktop only)
+  // Render Google's native sign-in button.
+  // On mobile, GSI uses redirect mode (login_uri) instead of popup mode,
+  // so the button works the same way but the redirect is handled server-side.
   useEffect(() => {
-    if (isMobile) return // Skip GSI on mobile — use OAuth redirect instead
     if (!initGoogleButton || !googleBtnRef.current) return
     initGoogleButton(googleBtnRef.current, (result) => {
       if (!result.ok) {
@@ -99,7 +94,7 @@ export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, ini
     }, 200)
     const timeout = setTimeout(() => { clearInterval(check) }, 5000)
     return () => { clearInterval(check); clearTimeout(timeout) }
-  }, [initGoogleButton, isMobile])
+  }, [initGoogleButton])
 
   function handleDismiss() {
     const state = getPromptState()
@@ -169,13 +164,10 @@ export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, ini
             : 'Sign in so your charts follow you everywhere — new phone, new browser, always yours.'}
         </p>
 
-        {/* Google Sign-In: GSI native button on desktop, OAuth redirect on mobile.
-            GSI's "choose another account" flow redirects the page on mobile,
-            causing a white screen. OAuth redirect handles this properly. */}
-        {!isMobile && (
-          <div ref={googleBtnRef} className="auth-google-gsi" style={{ display: 'flex', justifyContent: 'center', minHeight: 44 }} />
-        )}
-        {(isMobile || !gsiReady) && (
+        {/* Primary: Google Sign-In (native GSI button — popup on desktop, redirect on mobile) */}
+        <div ref={googleBtnRef} className="auth-google-gsi" style={{ display: 'flex', justifyContent: 'center', minHeight: 44 }} />
+        {/* Fallback if GSI doesn't load */}
+        {!gsiReady && (
           <button
             type="button"
             className="auth-google-btn"
