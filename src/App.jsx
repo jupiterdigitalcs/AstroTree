@@ -1186,7 +1186,7 @@ export default function App() {
           nodeDragThreshold={6}
           nodeTypes={NODE_TYPES}
           fitView fitViewOptions={{ padding: 0.4 }}
-          minZoom={0.3} colorMode="dark"
+          minZoom={0.1} colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >
           <FitViewOnLayout fitTick={fitTick} fitViewRef={fitViewRef} />

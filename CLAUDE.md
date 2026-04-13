@@ -129,8 +129,8 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
 ---
 
 ## What's Next
-- **MVP 3:** Deeper birth chart features — house placements, aspects between family members' charts, rising sign display
-- Celestine is already integrated server-side at `/src/app/api/astrology/route.js`
+- **Content Revamp:** Group astrology depth — Jupiter/Saturn, degree clustering, collective element maps, copy rewrite. Full plan at `CONTENT_REVAMP_PLAN.md`.
+- **Advanced Charts (future):** Birth time + place, Rising sign, house placements, aspects between members' charts.
 
 ## Insights Panel Card Order (do not reorder unless asked)
   1. Family Signature

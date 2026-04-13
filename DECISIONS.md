@@ -33,14 +33,14 @@ Fast local dev, minimal setup. Outgrown once server-side computation and proper 
 ---
 
 ## Celestine for astrology calculations
-**Why:** Started with custom date-range logic for sun signs (MVP 1–2). Now using the Celestine package for ephemeris calculations — gives us Moon, Mercury, Venus, Mars signs plus ingress warnings from birth date/time. Runs client-side currently; will move to server-side (Next.js server actions or API routes) for heavier features like transit calculations.
-**When this changes:** Birth time reconciliation and transits will require server-side computation to avoid blocking the UI thread.
+**Why:** Started with custom date-range logic for sun signs (MVP 1–2). Now using the Celestine package for ephemeris calculations — gives us Moon, Mercury, Venus, Mars signs plus ingress warnings from birth date/time. Runs server-side at `/src/app/api/astrology/route.js`.
+**When this changes:** Birth time reconciliation and transits will add more server-side computation but the architecture is already in place.
 
 ---
 
-## Supabase for persistence (device-based, no user accounts)
-**Why:** Supabase gives us Postgres + RPC functions with minimal setup. All access is server-side through API routes — no Supabase keys exposed to the client. Device IDs (localStorage UUIDs) serve as the identity model instead of user accounts.
-**When this changes:** User accounts would unlock multi-device sync and per-user billing, but device-based auth is good enough for now.
+## Supabase for persistence + auth
+**Why:** Supabase gives us Postgres + RPC functions with minimal setup. All access is server-side through API routes — no Supabase keys exposed to the client. Device IDs (localStorage UUIDs) are created on first visit; users optionally sign in via Google (GSI popup) or magic link to bind their device to an auth account. Auth users get multi-device sync and their tier (free/premium) is stored in `user_profiles` as the source of truth.
+**History:** Started device-only (MVP 1–3). Auth added in MVP 4 for cloud sync and Stripe purchase binding.
 
 ---
 
@@ -50,6 +50,6 @@ Fast local dev, minimal setup. Outgrown once server-side computation and proper 
 
 ---
 
-## No mobile-first (yet)
-**Why:** Tree visualization is complex on small screens. Desktop-first lets us move faster on the core experience.
-**When this changes:** Post-MVP 3, once the core product is stable.
+## Mobile-first "cosmic" layout
+**Why:** Most users visit on mobile. The "cosmic" UX mode (default) uses a fixed bottom nav, bottom sheets for panels, floating pills for view switching, and touch-optimized controls. Desktop still works with the same layout. A legacy "topnav" mode exists but is not the default.
+**History:** Started desktop-first (MVP 1–2). Mobile cosmic layout built during MVP 3–4.

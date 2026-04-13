@@ -63,57 +63,50 @@ Make the app stable and shareable beyond beta testers.
 - Unified canvas action bar — Download, Share Link, and Insights work on both Tree and Zodiac views
 
 
-## MVP 5 — Moon Sign & Social Planets 
-Add depth for users without extra effort on their end
-Bring in astrological data 
-
-**Features:**
-- Integrate a chart calculation package (opensource or build own)
-- Assumes location or prefills to make it easy for users
-- Calculate Moon sign from birthdate + approximate time (falls back gracefully if time unknown)
-- Nodes show Sun + Moon (e.g. "☉ Scorpio · ☽ Pisces")
-- Moon-sign layer in Family Insights — elemental breakdown for Moon signs
-- Insights for other social planet patterns - Venus, Mars, Mercury 
-- Flag nodes where Sun or Moon sign is uncertain due to sign change during that day. 
-- Zodiac wheel include all social planets 
-- Constellation enhancements 
-- Insights enhancements 
-
-**Goal:** Meaningful upgrade for insights without making it more effort for casual ones.
+## MVP 5 — Moon Sign & Social Planets ✅ COMPLETE
+- Celestine integration for Moon, Mercury, Venus, Mars (server-side)
+- Nodes show Sun + Moon signs
+- Moon/inner planet element breakdowns in Insights
+- Ingress warnings for uncertain signs
+- Zodiac wheel with all social planets
+- Constellation and Tables views added
 
 ---
 
-## MVP 5 — Advanced Chart Profiles
-Require birth time and place, show the Rising and add Aspect patterns  
+## MVP 6 — Monetization ✅ COMPLETE
+- $9.99 one-time "Celestial" unlock via Stripe Checkout
+- Free tier: tree view, basic insights, 3 DIG slides, 3 charts
+- Celestial tier: all views, full insights, full DIG, 50 charts
+- Stripe webhooks, refund handling, gift/promo codes
+- Auth via Google (GSI) + magic links, cloud sync
+- Owner purchase notification email
+
+---
+
+## Next — Content Revamp (Group Astrology)
+See `CONTENT_REVAMP_PLAN.md` for full 6-phase plan.
+- Add Jupiter + Saturn calculations, degree data (internal only)
+- Group chart analysis: hotspots, gaps, collective element maps
+- Rewrite all copy in warm/hedging voice
+- New DIG slides based on chart math, not sun-sign superlatives
+
+---
+
+## MVP 7 — Advanced Chart Profiles
+Require birth time and place, show the Rising and add Aspect patterns.
 
 **Features:**
-- Optional birth time field on add/edit form- 
 - Birth time + place inputs (city autocomplete)
-- Each Tree node shows Sun / Moon / Rising
+- Each node shows Sun / Moon / Rising
 - Expanded profile card on node click
 - Cross-family Rising sign analysis in Insights
-- Show major aspects for each person 
-- Advanced insights for aspects 
+- Major aspects for each person + group aspect patterns
 
-**Goal:** Becomes a real astrology product with advanced insights and research data for group dynamics. 
-
----
-
-## MVP 6 — Reports & Monetization
-First paywalled feature. Bridges to the existing JupiterDigital Etsy customer base.
-
-**Features:**
-- Premium PDF export — beautifully designed family astrology report (beyond the current print view)
-- Stripe integration for one-time purchase per report
-- "Gift a report" flow — natural upsell from birthday calendar customers
-- Branding options (add family name, custom title)
-
-**Goal:** Revenue. The export already exists — this is about making it premium and charging for it.
+**Goal:** Real astrology product with advanced insights for group dynamics.
 
 ---
 
 ## Backlog / Future Ideas
-- User accounts with login (charts save to Supabase already, but no auth yet)
 - Invite family members to add their own birth data via link
 - Synastry overlays between any two family members
 - AI-written narrative report: "Your family's cosmic story" (Claude API)

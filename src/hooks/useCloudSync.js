@@ -95,10 +95,18 @@ export function useCloudSync({ onMergeCharts, authUser }) {
       localStorage.removeItem('astrotree_charts')
       localStorage.removeItem('astrotree_draft')
     } catch {}
-    const ent = await fetchEntitlements({ isSignedIn: true })
-    setEntitlements(ent)
-    setCachedEntitlements(ent)
-    await mergeCloudCharts()
+    try {
+      const ent = await fetchEntitlements({ isSignedIn: true })
+      setEntitlements(ent)
+      setCachedEntitlements(ent)
+    } catch (err) {
+      console.error('[cloud] fetchEntitlements failed after auth:', err)
+    }
+    try {
+      await mergeCloudCharts()
+    } catch (err) {
+      console.error('[cloud] mergeCloudCharts failed after auth:', err)
+    }
   }, [mergeCloudCharts])
 
   const resetEntitlements = useCallback(() => {
