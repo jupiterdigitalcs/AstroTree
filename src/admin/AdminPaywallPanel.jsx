@@ -44,9 +44,26 @@ export default function AdminPaywallPanel() {
     save('products', next)
   }
 
+  function activateProduct(idx) {
+    // Set the selected product's key to 'premium_upgrade' (the key the checkout uses)
+    // and reset all others to a non-matching key so only one is active
+    const next = products.map((p, i) => ({
+      ...p,
+      key: i === idx ? 'premium_upgrade' : (p.key === 'premium_upgrade' ? p.name?.toLowerCase().replace(/\s+/g, '_') || `product_${i}` : p.key),
+    }))
+    save('products', next)
+  }
+
   function addProduct() {
-    if (!newProduct.key || !newProduct.stripePriceId) return
-    const next = [...products, { ...newProduct, amountCents: parseInt(newProduct.amountCents, 10) || 0 }]
+    if (!newProduct.name || !newProduct.stripePriceId) return
+    // If this is the first product, auto-activate it
+    const isFirst = products.filter(p => p.key === 'premium_upgrade').length === 0
+    const entry = {
+      ...newProduct,
+      key: isFirst ? 'premium_upgrade' : newProduct.name.toLowerCase().replace(/\s+/g, '_') || 'new_product',
+      amountCents: parseInt(newProduct.amountCents, 10) || 0,
+    }
+    const next = [...products, entry]
     save('products', next)
     setNewProduct({ key: '', name: '', stripePriceId: '', amountCents: '' })
   }
@@ -173,35 +190,53 @@ export default function AdminPaywallPanel() {
         </div>
       </div>
 
-      {/* ── Products (Stripe Price IDs) ───────────────── */}
+      {/* ── Products (Stripe Prices) ────────────────── */}
       <div className="admin-paywall-section">
         <h3 className="admin-paywall-heading">Products</h3>
+        <p className="admin-paywall-hint">
+          The <strong>active</strong> product is what users are charged when they click &ldquo;Unlock Celestial.&rdquo;
+          {!products.some(p => p.key === 'premium_upgrade') && products.length > 0 && (
+            <span style={{ display: 'block', marginTop: '0.35rem', color: '#e87070', fontWeight: 600 }}>
+              ⚠ No active product — purchases will fail. Click &ldquo;Use this&rdquo; on one.
+            </span>
+          )}
+        </p>
         {products.length > 0 && (
-          <table className="admin-paywall-table">
-            <thead>
-              <tr><th>Key</th><th>Name</th><th>Price ID</th><th>Amount</th><th></th></tr>
-            </thead>
-            <tbody>
-              {products.map((p, i) => (
-                <tr key={i}>
-                  <td>{p.key}</td>
-                  <td>{p.name}</td>
-                  <td className="admin-paywall-mono">{p.stripePriceId}</td>
-                  <td>${((p.amountCents ?? 0) / 100).toFixed(2)}</td>
-                  <td>
+          <div className="admin-product-cards">
+            {products.map((p, i) => {
+              const isActive = p.key === 'premium_upgrade'
+              return (
+                <div key={i} className={`admin-product-card${isActive ? ' admin-product-card--active' : ''}`}>
+                  <div className="admin-product-card-header">
+                    <span className="admin-product-card-name">{p.name || '(unnamed)'}</span>
+                    <span className="admin-product-card-price">${((p.amountCents ?? 0) / 100).toFixed(2)}</span>
+                  </div>
+                  <div className="admin-product-card-id">{p.stripePriceId}</div>
+                  <div className="admin-product-card-actions">
+                    {isActive ? (
+                      <span className="admin-product-card-badge">✦ Active</span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="admin-product-card-use-btn"
+                        onClick={() => activateProduct(i)}
+                        disabled={saving === 'products'}
+                      >
+                        Use this
+                      </button>
+                    )}
                     <button type="button" className="admin-paywall-remove" onClick={() => removeProduct(i)}>x</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         )}
         <div className="admin-paywall-add-product">
-          <input placeholder="key (e.g. premium_upgrade)" value={newProduct.key} onChange={e => setNewProduct(p => ({ ...p, key: e.target.value }))} />
           <input placeholder="Display name" value={newProduct.name} onChange={e => setNewProduct(p => ({ ...p, name: e.target.value }))} />
           <input placeholder="Stripe Price ID" value={newProduct.stripePriceId} onChange={e => setNewProduct(p => ({ ...p, stripePriceId: e.target.value }))} />
           <input placeholder="Amount (cents)" type="number" value={newProduct.amountCents} onChange={e => setNewProduct(p => ({ ...p, amountCents: e.target.value }))} />
-          <button type="button" onClick={addProduct} disabled={!newProduct.key || !newProduct.stripePriceId}>Add</button>
+          <button type="button" onClick={addProduct} disabled={!newProduct.name || !newProduct.stripePriceId}>Add</button>
         </div>
       </div>
 

@@ -1629,6 +1629,96 @@
 .admin-paywall-add-product button:hover { background: rgba(201,168,76,0.25); }
 .admin-paywall-add-product button:disabled { opacity: 0.4; cursor: default; }
 
+/* ── Product cards ────────────────────────────────────────────── */
+.admin-product-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-product-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  transition: border-color 0.15s;
+}
+
+.admin-product-card--active {
+  border-color: rgba(201,168,76,0.5);
+  background: rgba(201,168,76,0.06);
+}
+
+.admin-product-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-product-card-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+
+.admin-product-card--active .admin-product-card-name {
+  color: var(--gold);
+}
+
+.admin-product-card-price {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+
+.admin-product-card-id {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  word-break: break-all;
+  margin-bottom: 0.4rem;
+}
+
+.admin-product-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-product-card-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+}
+
+.admin-product-card-use-btn {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.05);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.admin-product-card-use-btn:hover {
+  border-color: rgba(201,168,76,0.4);
+  color: var(--gold);
+  background: rgba(201,168,76,0.1);
+}
+
+.admin-product-card-use-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* ── Purchase status badges ──────────────────────────────────── */
 .admin-paywall-status {
   font-size: 0.72rem;
