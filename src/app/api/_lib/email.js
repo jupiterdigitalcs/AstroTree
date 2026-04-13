@@ -45,37 +45,51 @@ export async function sendPremiumConfirmation({ to, charts }) {
   }).join('')
 
   const html = `
-    <div style="background:#09071a;padding:32px;font-family:'Raleway',Helvetica,Arial,sans-serif;color:#e8dcc8;max-width:600px;margin:0 auto">
-      <div style="text-align:center;margin-bottom:24px">
-        <h1 style="font-family:Cinzel,Georgia,serif;color:#c9a84c;font-size:22px;margin:0">✦ Welcome to AstroDig Celestial</h1>
-        <p style="color:rgba(255,255,255,0.5);font-size:14px;margin:8px 0 0">Your cosmic connections, fully unlocked.</p>
+    <div style="background:#09071a;padding:0;font-family:'Raleway',Helvetica,Arial,sans-serif;color:#e8dcc8;max-width:600px;margin:0 auto;border-radius:12px;overflow:hidden">
+      <!-- Header bar -->
+      <div style="background:linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(140,80,200,0.08) 100%);border-bottom:1px solid rgba(201,168,76,0.2);padding:24px 32px;text-align:center">
+        <p style="font-family:Cinzel,Georgia,serif;color:#c9a84c;font-size:11px;letter-spacing:0.15em;margin:0 0 8px;text-transform:uppercase">✦ AstroDig</p>
+        <h1 style="font-family:Cinzel,Georgia,serif;color:#e8dcc8;font-size:22px;margin:0;letter-spacing:0.04em">Welcome to Celestial</h1>
       </div>
 
-      <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:8px;padding:16px;margin-bottom:24px">
-        <p style="margin:0 0 8px;font-size:14px;color:#c9a84c;font-weight:600">What you've unlocked:</p>
-        <ul style="margin:0;padding:0 0 0 18px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8">
-          <li>Zodiac Wheel &amp; Tables views</li>
-          <li>Full Insights — compatibility, roles, zodiac threads</li>
-          <li>The complete DIG experience</li>
-          <li>Unlimited charts</li>
-          <li>All future features</li>
-        </ul>
-      </div>
-
-      ${charts.length > 0 ? `
-        <div style="margin-bottom:24px">
-          <h2 style="font-family:Cinzel,Georgia,serif;color:#e8dcc8;font-size:16px;margin:0 0 12px">Your Charts</h2>
-          ${chartSections}
+      <div style="padding:28px 32px">
+        <!-- What's unlocked -->
+        <div style="background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.18);border-radius:8px;padding:16px;margin-bottom:24px">
+          <p style="margin:0 0 10px;font-size:14px;color:#c9a84c;font-weight:600">What's now yours:</p>
+          <ul style="margin:0;padding:0 0 0 18px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.9">
+            <li>Zodiac Wheel &amp; Constellation views</li>
+            <li>Tables — sortable sun, moon &amp; planet grid</li>
+            <li>Full Insights — compatibility, roles, zodiac threads</li>
+            <li>The complete DIG — every slide in your cosmic story</li>
+            <li>Unlimited charts</li>
+          </ul>
         </div>
-      ` : ''}
 
-      <div style="text-align:center;margin:24px 0">
-        <a href="https://astrodig.com" style="display:inline-block;background:rgba(201,168,76,0.2);border:1px solid rgba(201,168,76,0.4);border-radius:8px;padding:10px 24px;color:#c9a84c;text-decoration:none;font-size:14px;font-weight:600">Open AstroDig</a>
+        <!-- How to access -->
+        <div style="background:rgba(140,80,200,0.06);border:1px solid rgba(140,80,200,0.15);border-radius:8px;padding:16px;margin-bottom:24px">
+          <p style="margin:0 0 6px;font-size:14px;color:#b8a0d4;font-weight:600">Getting back in</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6">
+            Your Celestial access is tied to <strong style="color:#e8dcc8">${to}</strong>. To access your charts and Celestial features on any device, just sign in with this email at <a href="https://astrodig.com" style="color:#c9a84c;text-decoration:none">astrodig.com</a>.
+          </p>
+        </div>
+
+        ${charts.length > 0 ? `
+          <!-- Charts -->
+          <div style="margin-bottom:24px">
+            <h2 style="font-family:Cinzel,Georgia,serif;color:#e8dcc8;font-size:15px;margin:0 0 12px;letter-spacing:0.04em">Your Charts</h2>
+            ${chartSections}
+          </div>
+        ` : ''}
+
+        <div style="text-align:center;margin:24px 0 8px">
+          <a href="https://astrodig.com" style="display:inline-block;background:rgba(201,168,76,0.18);border:1px solid rgba(201,168,76,0.4);border-radius:8px;padding:12px 28px;color:#c9a84c;text-decoration:none;font-family:Cinzel,Georgia,serif;font-size:14px;font-weight:500;letter-spacing:0.06em">Open AstroDig</a>
+        </div>
       </div>
 
-      <div style="border-top:1px solid rgba(201,168,76,0.15);padding-top:16px;text-align:center">
-        <p style="font-family:Cinzel,Georgia,serif;font-size:11px;color:rgba(201,168,76,0.5);letter-spacing:0.06em;margin:0">✦ AstroDig · Jupiter Digital</p>
-        <p style="font-size:10px;color:rgba(255,255,255,0.2);margin:4px 0 0">astrodig.com · jupiterdigitalevents.com</p>
+      <!-- Footer -->
+      <div style="border-top:1px solid rgba(201,168,76,0.12);padding:16px 32px;text-align:center;background:rgba(0,0,0,0.15)">
+        <p style="font-family:Cinzel,Georgia,serif;font-size:10px;color:rgba(201,168,76,0.45);letter-spacing:0.08em;margin:0">✦ AstroDig by Jupiter Digital</p>
+        <p style="font-size:10px;color:rgba(255,255,255,0.18);margin:4px 0 0">astrodig.com</p>
       </div>
     </div>
   `

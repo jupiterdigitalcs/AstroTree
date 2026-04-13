@@ -93,7 +93,6 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
           <li>✦ <strong>Full Insights</strong> — compatibility, roles, zodiac threads, pluto generations</li>
           <li>✦ <strong>The Full DIG</strong> — every slide in your cosmic story</li>
           <li>🗂️ <strong>Unlimited Charts</strong> — save as many as you want</li>
-          <li>🔮 <strong>Future Features</strong> — birth time reconciliation, transits &amp; more</li>
         </ul>
 
         <div className="upgrade-price">
