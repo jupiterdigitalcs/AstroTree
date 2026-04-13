@@ -98,17 +98,25 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
 
       {/* ── Account status + Celestial explainer ─────────────────────────── */}
       {authUser ? (
-        <div className="celestial-explainer" id="celestial-info">
-          <h3 className="celestial-explainer-title">✓ Your charts are protected</h3>
-          <p className="celestial-explainer-text">
-            Signed in as <strong>{authUser.email}</strong>. Your charts and {entitlements?.tier === 'premium' ? 'Celestial access' : 'account'} will follow you to any device.
-          </p>
-          {entitlements?.tier !== 'premium' && (
+        entitlements?.tier === 'premium' ? (
+          <div className="celestial-explainer celestial-explainer--active" id="celestial-info">
+            <h3 className="celestial-explainer-title">✦ Celestial</h3>
+            <p className="celestial-explainer-text">
+              All views, full insights, unlimited charts — unlocked forever.
+              Signed in as <strong>{authUser.email}</strong>.
+            </p>
+          </div>
+        ) : (
+          <div className="celestial-explainer" id="celestial-info">
+            <h3 className="celestial-explainer-title">✓ Signed in</h3>
+            <p className="celestial-explainer-text">
+              Signed in as <strong>{authUser.email}</strong>. Your charts will follow you to any device.
+            </p>
             <button type="button" className="celestial-explainer-btn" onClick={onUpgrade}>
               ✦ Unlock Celestial — $9.99
             </button>
-          )}
-        </div>
+          </div>
+        )
       ) : !authLoading && (
         // Not signed in — Celestial is account-bound, so the only state here
         // is "explain Celestial + sign in to unlock". The previous "isn't

@@ -154,6 +154,18 @@
   border-color: rgba(201, 168, 76, 0.5);
 }
 
+/* Active Celestial member variant */
+.celestial-explainer--active {
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.1) 0%, rgba(140, 80, 200, 0.06) 100%);
+  border-color: rgba(201, 168, 76, 0.35);
+}
+.celestial-explainer--active .celestial-explainer-title {
+  font-size: 0.85rem;
+}
+.celestial-explainer--active .celestial-explainer-text {
+  margin-bottom: 0;
+}
+
 /* At-risk warning variant */
 .celestial-explainer--at-risk .celestial-explainer-title {
   color: var(--text-soft);
