@@ -63,7 +63,7 @@ function FitViewOnLayout({ fitTick, fitViewRef }) {
   fitViewRef.current = rf
   useEffect(() => {
     if (fitTick === 0) return
-    const t = setTimeout(() => rf.fitView({ padding: 0.25, duration: 400 }), 80)
+    const t = setTimeout(() => rf.fitView({ padding: 0.4, duration: 400 }), 80)
     return () => clearTimeout(t)
   }, [fitTick, rf])
   return null
@@ -270,6 +270,10 @@ export default function App() {
         } else {
           setActiveTab('charts')
         }
+      }).catch(err => {
+        console.error('[auth] refreshAfterAuth failed:', err)
+        // Still navigate — don't leave user on a blank screen
+        setActiveTab('charts')
       })
     }
   }, [authUser]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -1020,7 +1024,7 @@ export default function App() {
         {/* ── Canvas action bar — single horizontal strip ────────────── */}
         {nodes.length > 0 && isCosmic && (
           <div className="cosmic-action-bar">
-            {(treeView === 'tree' || treeView === 'constellation') && (
+            {treeView === 'tree' && (
               <button type="button" className="cosmic-action-btn" onClick={handleRelayout} title="Re-layout">⟳</button>
             )}
             <button
@@ -1165,6 +1169,7 @@ export default function App() {
               edges={edges}
               onSelectNode={(id) => setEditingNodeId(id)}
               layoutTick={constellationTick}
+              onRelayout={() => setConstellationTick(t => t + 1)}
             />
           </Suspense>
         ) : (
@@ -1178,7 +1183,7 @@ export default function App() {
           // and the click handler suppressed itself thinking it was a drag.
           nodeDragThreshold={6}
           nodeTypes={NODE_TYPES}
-          fitView fitViewOptions={{ padding: 0.25 }}
+          fitView fitViewOptions={{ padding: 0.4 }}
           minZoom={0.3} colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >

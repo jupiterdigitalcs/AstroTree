@@ -150,6 +150,27 @@
   }
 }
 
+/* Collapsed legend — just the toggle button */
+.constellation-legend--collapsed {
+  padding: 0.3rem 0.7rem;
+}
+
+.constellation-legend-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.constellation-legend-toggle:hover {
+  color: var(--gold-light);
+}
+
 .constellation-sun-note {
   font-family: 'Raleway', sans-serif;
   font-size: 0.62rem;

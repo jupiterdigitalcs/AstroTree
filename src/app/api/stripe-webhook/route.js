@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getSupabase } from '../_lib/supabase.js'
-import { sendPremiumConfirmation } from '../_lib/email.js'
+import { sendPremiumConfirmation, sendOwnerPurchaseNotification } from '../_lib/email.js'
 
 export async function POST(request) {
   try {
@@ -89,6 +89,12 @@ export async function POST(request) {
           sendPremiumConfirmation({ to: email, charts: parsed }).catch(err =>
             console.error('[stripe] email send error:', err)
           )
+          sendOwnerPurchaseNotification({
+            buyerEmail: email,
+            amount: session.amount_total,
+            chartsCount: parsed.length,
+            deviceId,
+          }).catch(err => console.error('[stripe] owner notification error:', err))
         }
       }
     }

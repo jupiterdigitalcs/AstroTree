@@ -72,11 +72,20 @@ export function useAuth() {
         client_id: clientId,
         ux_mode: 'popup',
         callback: async (response) => {
-          const { error } = await supabase.auth.signInWithIdToken({
-            provider: 'google',
-            token: response.credential,
-          })
-          onResult?.({ ok: !error, error: error?.message })
+          try {
+            // Sign out any existing session first to avoid conflicts
+            // when switching between Google accounts
+            const { data: { session: existing } } = await supabase.auth.getSession()
+            if (existing) await supabase.auth.signOut()
+            const { error } = await supabase.auth.signInWithIdToken({
+              provider: 'google',
+              token: response.credential,
+            })
+            onResult?.({ ok: !error, error: error?.message })
+          } catch (err) {
+            console.error('[auth] Google sign-in error:', err)
+            onResult?.({ ok: false, error: err.message })
+          }
         },
         itp_support: true,
       })

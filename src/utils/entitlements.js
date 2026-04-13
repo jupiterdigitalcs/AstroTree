@@ -38,8 +38,9 @@ export function isPaywallEnabled(config) {
 // Is a specific feature gated (requires premium)?
 export function isFeatureGated(featureKey, config) {
   if (!isPaywallEnabled(config)) return false
-  // Use server-configured list if present, otherwise the baked-in default.
-  const gated = config?.gated_features ?? DEFAULT_GATED_FEATURES
+  // Use server-configured list if present and non-empty, otherwise the baked-in default.
+  const serverList = config?.gated_features
+  const gated = Array.isArray(serverList) && serverList.length > 0 ? serverList : DEFAULT_GATED_FEATURES
   return gated.includes(featureKey)
 }
 

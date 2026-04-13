@@ -93,3 +93,48 @@ export async function sendPremiumConfirmation({ to, charts }) {
     return { ok: false, error: err.message }
   }
 }
+
+/**
+ * Notify the site owner of a new purchase.
+ */
+export async function sendOwnerPurchaseNotification({ buyerEmail, amount, chartsCount, deviceId }) {
+  const resend = getResend()
+  const ownerEmail = process.env.OWNER_EMAIL
+  if (!ownerEmail) {
+    console.warn('[email] OWNER_EMAIL not set — skipping owner notification')
+    return { ok: false, error: 'OWNER_EMAIL not configured' }
+  }
+
+  const amountStr = amount ? `$${(amount / 100).toFixed(2)}` : '$9.99'
+  const html = `
+    <div style="background:#09071a;padding:32px;font-family:'Raleway',Helvetica,Arial,sans-serif;color:#e8dcc8;max-width:500px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:24px">
+        <h1 style="font-family:Cinzel,Georgia,serif;color:#c9a84c;font-size:22px;margin:0">✦ New Celestial Purchase</h1>
+      </div>
+      <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:8px;padding:16px;margin-bottom:16px">
+        <table style="width:100%;font-size:14px;color:#e8dcc8">
+          <tr><td style="padding:4px 0;color:rgba(255,255,255,0.5)">Buyer</td><td style="padding:4px 0">${buyerEmail || 'No email provided'}</td></tr>
+          <tr><td style="padding:4px 0;color:rgba(255,255,255,0.5)">Amount</td><td style="padding:4px 0">${amountStr}</td></tr>
+          <tr><td style="padding:4px 0;color:rgba(255,255,255,0.5)">Charts</td><td style="padding:4px 0">${chartsCount ?? 0}</td></tr>
+          <tr><td style="padding:4px 0;color:rgba(255,255,255,0.5)">Device</td><td style="padding:4px 0;font-size:11px;color:rgba(255,255,255,0.4)">${deviceId || '—'}</td></tr>
+        </table>
+      </div>
+      <div style="text-align:center">
+        <a href="https://astrodig.com/admin" style="display:inline-block;background:rgba(201,168,76,0.2);border:1px solid rgba(201,168,76,0.4);border-radius:8px;padding:8px 20px;color:#c9a84c;text-decoration:none;font-size:13px">Open Admin</a>
+      </div>
+    </div>
+  `
+
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: ownerEmail,
+      subject: `✦ New purchase — ${buyerEmail || 'unknown'}`,
+      html,
+    })
+    return { ok: true }
+  } catch (err) {
+    console.error('[email] owner notification failed:', err)
+    return { ok: false, error: err.message }
+  }
+}

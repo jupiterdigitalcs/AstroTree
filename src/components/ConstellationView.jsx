@@ -111,12 +111,13 @@ function runForceLayout(nodes, edges, width, height) {
   return positions
 }
 
-export default function ConstellationView({ nodes, edges, onSelectNode, layoutTick }) {
+export default function ConstellationView({ nodes, edges, onSelectNode, layoutTick, onRelayout }) {
   const [hoveredNode, setHoveredNode] = useState(null)
   const [positions, setPositions] = useState([])
   const [dragging, setDragging] = useState(null) // index of node being dragged
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [legendCollapsed, setLegendCollapsed] = useState(false)
   const [isPanning, setIsPanning] = useState(false)
   const panStart = useRef(null)
   const svgRef = useRef(null)
@@ -358,7 +359,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
       <div className="constellation-controls">
         <button type="button" onClick={() => setZoom(z => Math.min(3, z + 0.2))} title="Zoom in">+</button>
         <button type="button" onClick={() => setZoom(z => Math.max(0.3, z - 0.2))} title="Zoom out">−</button>
-        <button type="button" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }) }} title="Reset view">⟲</button>
+        <button type="button" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); onRelayout?.() }} title="Reset view">⟲</button>
       </div>
 
       {/* Hover tooltip */}
@@ -389,33 +390,45 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
       })()}
 
       {/* Compact legend — inline, bottom of view */}
-      <div className="constellation-legend">
-        <p className="constellation-sun-note">☀ Nodes colored by Sun sign</p>
-        {activeEdgeTypes.length > 0 && (
-          <div className="constellation-legend-edges">
-            {activeEdgeTypes.map(type => (
-              <span key={type} className="constellation-legend-edge">
-                <svg width="16" height="8"><line x1="0" y1="4" x2="16" y2="4" stroke={EDGE_COLORS[type]} strokeWidth="2" strokeDasharray={EDGE_DASH[type]} /></svg>
-                <span style={{ color: `${EDGE_COLORS[type]}bb` }}>{EDGE_LABELS[type]}</span>
-              </span>
-            ))}
-          </div>
+      <div className={`constellation-legend${legendCollapsed ? ' constellation-legend--collapsed' : ''}`}>
+        <button
+          type="button"
+          className="constellation-legend-toggle"
+          onClick={() => setLegendCollapsed(c => !c)}
+          title={legendCollapsed ? 'Show legend' : 'Hide legend'}
+        >
+          {legendCollapsed ? '▲ Legend' : '▼ Hide'}
+        </button>
+        {!legendCollapsed && (
+          <>
+            <p className="constellation-sun-note">☀ Nodes colored by Sun sign</p>
+            {activeEdgeTypes.length > 0 && (
+              <div className="constellation-legend-edges">
+                {activeEdgeTypes.map(type => (
+                  <span key={type} className="constellation-legend-edge">
+                    <svg width="16" height="8"><line x1="0" y1="4" x2="16" y2="4" stroke={EDGE_COLORS[type]} strokeWidth="2" strokeDasharray={EDGE_DASH[type]} /></svg>
+                    <span style={{ color: `${EDGE_COLORS[type]}bb` }}>{EDGE_LABELS[type]}</span>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="constellation-legend-nodes">
+              {nodes.map(n => (
+                <span
+                  key={n.id}
+                  className={`constellation-legend-chip${hoveredNode === n.id ? ' constellation-legend-chip--active' : ''}`}
+                  onMouseEnter={() => setHoveredNode(n.id)}
+                  onMouseLeave={() => setHoveredNode(null)}
+                  onClick={() => onSelectNode?.(n.id)}
+                  style={{ borderColor: `${n.data.elementColor}44` }}
+                >
+                  <span style={{ color: n.data.elementColor }}>{n.data.symbol}</span>
+                  <span>{n.data.name}</span>
+                </span>
+              ))}
+            </div>
+          </>
         )}
-        <div className="constellation-legend-nodes">
-          {nodes.map(n => (
-            <span
-              key={n.id}
-              className={`constellation-legend-chip${hoveredNode === n.id ? ' constellation-legend-chip--active' : ''}`}
-              onMouseEnter={() => setHoveredNode(n.id)}
-              onMouseLeave={() => setHoveredNode(null)}
-              onClick={() => onSelectNode?.(n.id)}
-              style={{ borderColor: `${n.data.elementColor}44` }}
-            >
-              <span style={{ color: n.data.elementColor }}>{n.data.symbol}</span>
-              <span>{n.data.name}</span>
-            </span>
-          ))}
-        </div>
       </div>
     </div>
   )
