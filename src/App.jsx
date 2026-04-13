@@ -35,7 +35,7 @@ import { useAuth } from './hooks/useAuth.js'
 import { getSupabaseBrowser } from './utils/supabaseClient.js'
 import { DraggableFab } from './components/DraggableFab.jsx'
 import { UpgradePrompt } from './components/UpgradePrompt.jsx'
-import { checkPurchaseReturn } from './utils/checkout.js'
+import { checkPurchaseReturn, startCheckout } from './utils/checkout.js'
 import { OnboardingProgress, markInsightsSeen } from './components/OnboardingProgress.jsx'
 import { buildDemoChart, buildDemoCrewChart } from './utils/demoData.js'
 import { buildNodeData, makeEdge, hydrateNodes } from './utils/treeHelpers.js'
@@ -269,17 +269,20 @@ export default function App() {
       if (cancelled) return
       if (pendingUpgrade) {
         setPendingUpgrade(false)
-        setShowUpgradePrompt(true)
+        // Go straight to Stripe checkout — don't make them click again
+        startCheckout('premium_upgrade').catch(err => {
+          console.error('[auth] auto-checkout failed:', err)
+          setShowUpgradePrompt(true) // Fall back to showing the prompt
+        })
       } else {
         setActiveTab('charts')
       }
     }).catch(err => {
       if (cancelled) return
       console.error('[auth] refreshAfterAuth failed:', err)
-      // Still show upgrade prompt if that's what they were trying to do
       if (pendingUpgrade) {
         setPendingUpgrade(false)
-        setShowUpgradePrompt(true)
+        startCheckout('premium_upgrade').catch(() => setShowUpgradePrompt(true))
       } else {
         setActiveTab('charts')
       }

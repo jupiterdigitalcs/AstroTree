@@ -81,12 +81,14 @@ export async function sendPremiumConfirmation({ to, charts }) {
   `
 
   try {
-    await resend.emails.send({
+    console.log(`[email] sending purchase confirmation to ${to}`)
+    const result = await resend.emails.send({
       from: FROM,
       to,
       subject: '✦ Welcome to AstroDig Celestial — Your Charts Inside',
       html,
     })
+    console.log(`[email] purchase confirmation sent to ${to}:`, result)
     return { ok: true }
   } catch (err) {
     console.error('[email] send failed:', err)

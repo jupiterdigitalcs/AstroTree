@@ -76,6 +76,7 @@ export async function POST(request) {
 
         // Send purchase confirmation email with chart data
         const email = session.customer_details?.email
+        console.log(`[stripe] purchase complete — email: ${email || 'NONE'}, productKey: ${productKey}, deviceId: ${deviceId}`)
         if (email && productKey === 'premium_upgrade') {
           const { data: charts } = await sb
             .from('charts')
