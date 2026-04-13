@@ -29,7 +29,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
 
   async function handleRedeem(e) {
     e.preventDefault()
-    if (!codeValue.trim() || !codeEmail.trim()) return
+    if (!codeValue.trim() || !authUser?.email) return
     setCodeLoading(true)
     setCodeError(null)
     try {
@@ -38,7 +38,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code: codeValue.trim(),
-          email: codeEmail.trim(),
+          email: authUser.email,
           deviceId: getDeviceId(),
         }),
       })
@@ -141,20 +141,23 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
             >
               Have a gift code?
             </button>
+          ) : !authUser ? (
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0 0 0.5rem' }}>Sign in first to redeem a gift code</p>
+              <button
+                type="button"
+                onClick={onSignIn}
+                style={{
+                  background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.3)',
+                  borderRadius: '6px', padding: '0.45rem 0.8rem', color: 'var(--gold)',
+                  fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', cursor: 'pointer',
+                }}
+              >
+                Sign in
+              </button>
+            </div>
           ) : (
             <form onSubmit={handleRedeem} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <input
-                type="email"
-                placeholder="Your email"
-                value={codeEmail}
-                onChange={e => setCodeEmail(e.target.value)}
-                required
-                style={{
-                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: '6px', padding: '0.45rem 0.7rem', color: 'var(--text)',
-                  fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem',
-                }}
-              />
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <input
                   type="text"

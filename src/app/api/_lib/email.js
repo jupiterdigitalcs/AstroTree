@@ -121,7 +121,7 @@ export async function sendOwnerPurchaseNotification({ buyerEmail, amount, charts
     return { ok: false, error: 'OWNER_EMAIL not configured' }
   }
 
-  const amountStr = amount ? `$${(amount / 100).toFixed(2)}` : '$9.99'
+  const amountStr = amount != null ? `$${(amount / 100).toFixed(2)}` : '$9.99'
   const html = `
     <div style="background:#09071a;padding:32px;font-family:'Raleway',Helvetica,Arial,sans-serif;color:#e8dcc8;max-width:500px;margin:0 auto">
       <div style="text-align:center;margin-bottom:24px">
@@ -142,12 +142,14 @@ export async function sendOwnerPurchaseNotification({ buyerEmail, amount, charts
   `
 
   try {
+    console.log(`[email] sending owner notification to ${ownerEmail} for buyer ${buyerEmail}`)
     await resend.emails.send({
       from: FROM,
       to: ownerEmail,
       subject: `✦ New purchase — ${buyerEmail || 'unknown'}`,
       html,
     })
+    console.log(`[email] owner notification sent to ${ownerEmail}`)
     return { ok: true }
   } catch (err) {
     console.error('[email] owner notification failed:', err)

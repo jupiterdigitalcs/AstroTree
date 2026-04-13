@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSupabase } from '../_lib/supabase.js'
+import { sendPremiumConfirmation, sendOwnerPurchaseNotification } from '../_lib/email.js'
 
 export async function POST(request) {
   try {
@@ -87,6 +88,28 @@ export async function POST(request) {
       completed_at: new Date().toISOString(),
       metadata: { code, email },
     })
+
+    // Send confirmation emails (same as Stripe purchase)
+    if (cleanEmail) {
+      const { data: charts } = await sb
+        .from('charts')
+        .select('title, tree_data')
+        .eq('device_id', deviceId)
+        .order('saved_at', { ascending: false })
+      const parsed = (charts || []).map(c => {
+        const d = typeof c.tree_data === 'string' ? JSON.parse(c.tree_data) : c.tree_data
+        return { title: c.title, nodes: d?.nodes || [] }
+      })
+      sendPremiumConfirmation({ to: cleanEmail, charts: parsed }).catch(err =>
+        console.error('[redeem] email send error:', err)
+      )
+      sendOwnerPurchaseNotification({
+        buyerEmail: cleanEmail,
+        amount: 0,
+        chartsCount: parsed.length,
+        deviceId,
+      }).catch(err => console.error('[redeem] owner notification error:', err))
+    }
 
     return NextResponse.json({ ok: true, tier })
   } catch (e) {

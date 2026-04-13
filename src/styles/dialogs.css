@@ -130,6 +130,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  overflow-y: auto;
 }
 
 .save-dialog {
