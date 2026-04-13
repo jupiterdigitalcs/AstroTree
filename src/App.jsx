@@ -262,20 +262,22 @@ export default function App() {
 
   // ── Re-fetch charts + entitlements after auth sign-in ───────────────────
   useEffect(() => {
-    if (authUser) {
-      refreshAfterAuth().then(() => {
-        if (pendingUpgrade) {
-          setPendingUpgrade(false)
-          setShowUpgradePrompt(true)
-        } else {
-          setActiveTab('charts')
-        }
-      }).catch(err => {
-        console.error('[auth] refreshAfterAuth failed:', err)
-        // Still navigate — don't leave user on a blank screen
+    if (!authUser) return
+    let cancelled = false
+    refreshAfterAuth().then(() => {
+      if (cancelled) return
+      if (pendingUpgrade) {
+        setPendingUpgrade(false)
+        setShowUpgradePrompt(true)
+      } else {
         setActiveTab('charts')
-      })
-    }
+      }
+    }).catch(err => {
+      if (cancelled) return
+      console.error('[auth] refreshAfterAuth failed:', err)
+      setActiveTab('charts')
+    })
+    return () => { cancelled = true }
   }, [authUser]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Clean up ?auth= param after OAuth redirect ──────────────────────────
@@ -1189,7 +1191,7 @@ export default function App() {
         >
           <FitViewOnLayout fitTick={fitTick} fitViewRef={fitViewRef} />
           <Background color="#1a1040" gap={36} size={1} />
-          {nodes.length > 0 && <Controls showInteractive={false} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />}
+          {nodes.length > 0 && <Controls showInteractive={false} fitViewOptions={{ padding: 0.4 }} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />}
         </ReactFlow>
         )}
       </main>

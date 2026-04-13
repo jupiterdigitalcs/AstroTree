@@ -73,10 +73,10 @@ export function useAuth() {
         ux_mode: 'popup',
         callback: async (response) => {
           try {
-            // Sign out any existing session first to avoid conflicts
-            // when switching between Google accounts
-            const { data: { session: existing } } = await supabase.auth.getSession()
-            if (existing) await supabase.auth.signOut()
+            // signInWithIdToken replaces any existing session atomically —
+            // no need to sign out first (doing so causes a race condition
+            // where onAuthStateChange fires null then new-user in quick
+            // succession, crashing on mobile).
             const { error } = await supabase.auth.signInWithIdToken({
               provider: 'google',
               token: response.credential,
