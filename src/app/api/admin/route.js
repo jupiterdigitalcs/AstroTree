@@ -72,6 +72,55 @@ async function handleMarkTest(request) {
   return NextResponse.json({ ok: true })
 }
 
+async function handleCelestialUsers(request) {
+  if (!requireAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const sb = getSupabase()
+  // Get all user_profiles with premium tier
+  const { data, error } = await sb
+    .from('user_profiles')
+    .select('auth_user_id, tier, tier_updated_at, stripe_customer_id')
+    .eq('tier', 'premium')
+  if (error) return NextResponse.json([], { status: 500 })
+  if (!data?.length) return NextResponse.json([])
+
+  // Single call to get all auth users, then match by ID
+  const { data: { users } } = await sb.auth.admin.listUsers({ perPage: 1000 })
+  const userMap = {}
+  if (users) users.forEach(u => { userMap[u.id] = u.email })
+
+  const results = (data ?? []).map(profile => ({
+    authUserId: profile.auth_user_id,
+    email: userMap[profile.auth_user_id] ?? null,
+    tier: profile.tier,
+    tierUpdatedAt: profile.tier_updated_at,
+    stripeCustomerId: profile.stripe_customer_id,
+  }))
+  return NextResponse.json(results)
+}
+
+async function handleDowngradeUser(request) {
+  if (!requireAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { authUserId, email } = await request.json()
+  if (!authUserId) return NextResponse.json({ error: 'Missing authUserId' }, { status: 400 })
+
+  const sb = getSupabase()
+
+  // Downgrade user_profiles
+  const { error: profileErr } = await sb
+    .from('user_profiles')
+    .update({ tier: 'free', tier_updated_at: new Date().toISOString() })
+    .eq('auth_user_id', authUserId)
+  if (profileErr) return NextResponse.json({ ok: false, error: profileErr.message }, { status: 500 })
+
+  // Also downgrade any devices linked to this user
+  await sb
+    .from('devices')
+    .update({ tier: 'free', tier_updated_at: new Date().toISOString() })
+    .eq('auth_user_id', authUserId)
+
+  return NextResponse.json({ ok: true })
+}
+
 async function handlePaywallConfig(request) {
   if (!requireAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { data, error } = await getSupabase().from('paywall_config').select('key, value, updated_at')
@@ -102,7 +151,8 @@ const ROUTES = {
   devices: handleDevices, 'trees-per-day': handleTreesPerDay,
   engagement: handleEngagement, 'paywall-config': handlePaywallConfig,
   'paywall-config-set': handlePaywallConfigSet, purchases: handlePurchases,
-  'mark-test': handleMarkTest,
+  'mark-test': handleMarkTest, 'celestial-users': handleCelestialUsers,
+  'downgrade-user': handleDowngradeUser,
 }
 
 export async function GET(request) {

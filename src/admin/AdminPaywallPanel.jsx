@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { fetchPaywallConfig, updatePaywallConfig, fetchPurchases } from './utils/adminStorage.js'
+import { fetchPaywallConfig, updatePaywallConfig, fetchPurchases, fetchCelestialUsers, downgradeUser } from './utils/adminStorage.js'
 import { FEATURE_KEYS } from '../utils/entitlements.js'
 
 export default function AdminPaywallPanel() {
@@ -10,10 +10,15 @@ export default function AdminPaywallPanel() {
   const [newCode,    setNewCode]    = useState({ code: '', tier: 'premium', max_uses: '', expires_at: '' })
   const [editIdx,    setEditIdx]    = useState(null)
   const [editDraft,  setEditDraft]  = useState(null)
+  const [hideTestPurchases, setHideTestPurchases] = useState(true)
+  const [celestialUsers, setCelestialUsers] = useState([])
+  const [downgradeConfirm, setDowngradeConfirm] = useState(null) // email to confirm
+  const [downgrading, setDowngrading] = useState(false)
 
   useEffect(() => {
     fetchPaywallConfig().then(c => { if (c && typeof c === 'object') setConfig(c) })
     fetchPurchases().then(setPurchases)
+    fetchCelestialUsers().then(setCelestialUsers)
   }, [])
 
   if (!config) return <p style={{ padding: '1rem', opacity: 0.5 }}>Loading paywall config...</p>
@@ -303,18 +308,95 @@ export default function AdminPaywallPanel() {
         </div>
       </div>
 
+      {/* ── Celestial Members ─────────────────────────── */}
+      <div className="admin-paywall-section">
+        <h3 className="admin-paywall-heading">Celestial Members</h3>
+        {celestialUsers.length === 0 ? (
+          <p className="admin-paywall-hint">No Celestial members yet.</p>
+        ) : (
+          <table className="admin-paywall-table">
+            <thead>
+              <tr><th>Email</th><th>Since</th><th>Stripe</th><th></th></tr>
+            </thead>
+            <tbody>
+              {celestialUsers.map(u => {
+                const since = u.tierUpdatedAt ? new Date(u.tierUpdatedAt).toLocaleDateString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric' }) : '—'
+                const isConfirming = downgradeConfirm === u.authUserId
+                return (
+                  <tr key={u.authUserId}>
+                    <td>{u.email ?? '—'}</td>
+                    <td style={{ fontSize: '0.65rem' }}>{since}</td>
+                    <td style={{ fontSize: '0.6rem' }} className="admin-paywall-mono">{u.stripeCustomerId ? 'yes' : '—'}</td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      {isConfirming ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontSize: '0.6rem', color: '#e87070' }}>Downgrade {u.email}?</span>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              setDowngrading(true)
+                              await downgradeUser(u.authUserId, u.email)
+                              setCelestialUsers(prev => prev.filter(x => x.authUserId !== u.authUserId))
+                              setDowngradeConfirm(null)
+                              setDowngrading(false)
+                            }}
+                            disabled={downgrading}
+                            style={{ fontSize: '0.6rem', padding: '0.15rem 0.45rem', color: '#e87070', background: 'rgba(232,112,112,0.12)', border: '1px solid rgba(232,112,112,0.3)', borderRadius: '4px', cursor: 'pointer' }}
+                          >
+                            {downgrading ? '...' : 'Yes'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDowngradeConfirm(null)}
+                            style={{ fontSize: '0.6rem', padding: '0.15rem 0.45rem', color: 'var(--text-dim)', background: 'none', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}
+                          >
+                            No
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setDowngradeConfirm(u.authUserId)}
+                          style={{ fontSize: '0.6rem', padding: '0.15rem 0.45rem', color: 'var(--text-dim)', background: 'none', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}
+                        >
+                          Downgrade
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
       {/* ── Purchase Log ──────────────────────────────── */}
       <div className="admin-paywall-section">
         <h3 className="admin-paywall-heading">Recent Purchases</h3>
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: '0.5rem' }}>
+          <input
+            type="checkbox"
+            checked={hideTestPurchases}
+            onChange={e => setHideTestPurchases(e.target.checked)}
+          />
+          Hide test purchases
+        </label>
         {purchases.length === 0 ? (
           <p className="admin-paywall-hint">No purchases yet.</p>
-        ) : (
+        ) : (() => {
+          const filtered = hideTestPurchases
+            ? purchases.filter(p => !p.stripe_session_id?.startsWith('cs_test_'))
+            : purchases
+          return filtered.length === 0 ? (
+            <p className="admin-paywall-hint">No live purchases yet (hiding {purchases.length} test).</p>
+          ) : (
           <table className="admin-paywall-table">
             <thead>
               <tr><th>Date (EST)</th><th>Email</th><th>Product</th><th>Amount</th><th>Status</th><th></th></tr>
             </thead>
             <tbody>
-              {purchases.map(p => {
+              {filtered.map(p => {
                 const isTest = p.stripe_session_id?.startsWith('cs_test_')
                 const isPromo = p.stripe_session_id?.startsWith('promo_')
                 const estDate = new Date(p.created_at).toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
@@ -334,7 +416,8 @@ export default function AdminPaywallPanel() {
               })}
             </tbody>
           </table>
-        )}
+          )
+        })()}
       </div>
     </div>
   )

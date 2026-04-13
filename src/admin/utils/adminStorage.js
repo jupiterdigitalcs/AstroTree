@@ -130,6 +130,31 @@ export async function fetchPurchases() {
   }
 }
 
+export async function fetchCelestialUsers() {
+  try {
+    const res = await fetch('/api/admin?action=celestial-users', { headers: adminHeaders() })
+    if (!res.ok) return []
+    return await res.json()
+  } catch (e) {
+    console.error('fetchCelestialUsers exception:', e)
+    return []
+  }
+}
+
+export async function downgradeUser(authUserId, email) {
+  try {
+    const res = await fetch('/api/admin?action=downgrade-user', {
+      method: 'POST',
+      headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ authUserId, email }),
+    })
+    return await res.json()
+  } catch (e) {
+    console.error('downgradeUser exception:', e)
+    return { ok: false }
+  }
+}
+
 export async function fetchEngagementStats() {
   try {
     const res = await fetch('/api/admin?action=engagement', { headers: adminHeaders() })
