@@ -19,7 +19,7 @@ export const metadata = {
       "Build your astrology chart — sun signs, moon signs, compatibility, zodiac wheel, and The DIG. Free tool by Jupiter Digital.",
     images: [
       {
-        url: '/og-image.svg',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'AstroDig — Cosmic Connections by Jupiter Digital',
@@ -34,7 +34,7 @@ export const metadata = {
     title: 'AstroDig — Map Your Cosmic Connections',
     description:
       "Build your astrology chart — sun signs, moon signs, compatibility, zodiac wheel, and The DIG. Free tool by Jupiter Digital.",
-    images: ['/og-image.svg'],
+    images: ['/og-image.png'],
   },
   icons: {
     icon: { url: '/favicon.svg', type: 'image/svg+xml' },

@@ -17,34 +17,102 @@ export async function getToPng() {
 }
 
 // ── Shared brand-bar compositing ────────────────────────────────────────────
+function drawJupiterIcon(ctx, cx, cy, r, pr) {
+  // Mini Jupiter planet with ring — matches favicon
+  const grad = ctx.createRadialGradient(cx - r * 0.2, cy - r * 0.25, 0, cx, cy, r)
+  grad.addColorStop(0, '#8a5fc7')
+  grad.addColorStop(1, '#3a1f6e')
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = grad; ctx.fill()
+  // Bands
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip()
+  ctx.fillStyle = 'rgba(232,201,126,0.5)'; ctx.fillRect(cx - r, cy - r * 0.32, r * 2, r * 0.28)
+  ctx.fillStyle = 'rgba(45,24,85,0.7)'; ctx.fillRect(cx - r, cy - r * 0.02, r * 2, r * 0.16)
+  ctx.fillStyle = 'rgba(201,168,76,0.6)'; ctx.fillRect(cx - r, cy + r * 0.16, r * 2, r * 0.36)
+  ctx.restore()
+  // Ring
+  ctx.beginPath(); ctx.ellipse(cx, cy, r * 1.5, r * 0.32, 0, 0, Math.PI * 2)
+  ctx.strokeStyle = 'rgba(201,168,76,0.5)'; ctx.lineWidth = 1.2 * pr; ctx.stroke()
+}
+
+function drawStarAccent(ctx, x, y, size) {
+  ctx.save()
+  ctx.strokeStyle = 'rgba(201,168,76,0.4)'
+  ctx.lineWidth = size * 0.15
+  // 4-pointed star
+  ctx.beginPath(); ctx.moveTo(x, y - size); ctx.lineTo(x, y + size); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(x - size, y); ctx.lineTo(x + size, y); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(x - size * 0.6, y - size * 0.6); ctx.lineTo(x + size * 0.6, y + size * 0.6); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(x + size * 0.6, y - size * 0.6); ctx.lineTo(x - size * 0.6, y + size * 0.6); ctx.stroke()
+  ctx.restore()
+}
+
 async function appendBrandBar(imageUrl, pixelRatio = 2) {
   await document.fonts.ready
   const img = new Image()
   img.src = imageUrl
   await new Promise(r => { img.onload = r })
   const pr = pixelRatio
-  const barH = 44 * pr
+  const barH = 56 * pr
   const cvs = document.createElement('canvas')
   cvs.width  = img.width
   cvs.height = img.height + barH
   const ctx = cvs.getContext('2d')
   ctx.drawImage(img, 0, 0)
-  ctx.fillStyle = '#09071a'
-  ctx.fillRect(0, img.height, cvs.width, barH)
-  ctx.strokeStyle = 'rgba(201,168,76,0.2)'
-  ctx.lineWidth = 1
-  ctx.beginPath(); ctx.moveTo(0, img.height); ctx.lineTo(cvs.width, img.height); ctx.stroke()
-  const pad = 16 * pr
-  const mid = img.height + barH / 2
+
+  // Bar background with subtle gradient
+  const barY = img.height
+  const barGrad = ctx.createLinearGradient(0, barY, 0, barY + barH)
+  barGrad.addColorStop(0, '#0d0a22')
+  barGrad.addColorStop(1, '#09071a')
+  ctx.fillStyle = barGrad
+  ctx.fillRect(0, barY, cvs.width, barH)
+
+  // Gold top border with glow
+  ctx.shadowColor = 'rgba(201,168,76,0.3)'
+  ctx.shadowBlur = 4 * pr
+  ctx.strokeStyle = 'rgba(201,168,76,0.45)'
+  ctx.lineWidth = 1.5 * pr
+  ctx.beginPath(); ctx.moveTo(0, barY); ctx.lineTo(cvs.width, barY); ctx.stroke()
+  ctx.shadowBlur = 0
+
+  // Decorative star accents
+  drawStarAccent(ctx, 24 * pr, barY + barH / 2, 5 * pr)
+  drawStarAccent(ctx, cvs.width - 24 * pr, barY + barH / 2, 5 * pr)
+
+  // Scattered tiny dots across the bar (like stars)
+  ctx.fillStyle = 'rgba(255,255,255,0.12)'
+  const dotPositions = [0.08, 0.15, 0.28, 0.42, 0.58, 0.72, 0.85, 0.92]
+  for (const frac of dotPositions) {
+    const dy = (Math.sin(frac * 17) * 0.3 + 0.5) * barH
+    ctx.beginPath(); ctx.arc(cvs.width * frac, barY + dy, 0.8 * pr, 0, Math.PI * 2); ctx.fill()
+  }
+
+  const pad = 48 * pr
+  const mid = barY + barH / 2
+
+  // Jupiter icon on left
+  const iconR = 9 * pr
+  const iconX = pad + iconR
+  drawJupiterIcon(ctx, iconX, mid, iconR, pr)
+
+  // Brand text — left side
+  const textLeft = iconX + iconR * 1.8
   ctx.textBaseline = 'middle'
   ctx.fillStyle = '#c9a84c'
   ctx.font = `600 ${13 * pr}px Cinzel, Georgia, serif`
   ctx.textAlign = 'left'
-  ctx.fillText('✦ AstroDig · Jupiter Digital', pad, mid)
-  ctx.fillStyle = 'rgba(184,170,212,0.65)'
-  ctx.font = `${10 * pr}px Raleway, Helvetica, sans-serif`
+  ctx.fillText('AstroDig', textLeft, mid - 1 * pr)
+  const adw = ctx.measureText('AstroDig').width
+  ctx.fillStyle = 'rgba(184,170,212,0.55)'
+  ctx.font = `300 ${10 * pr}px Raleway, Helvetica, sans-serif`
+  ctx.fillText('  by Jupiter Digital', textLeft + adw, mid - 1 * pr)
+
+  // Right side — URL + handle
+  ctx.fillStyle = 'rgba(201,168,76,0.6)'
+  ctx.font = `500 ${11 * pr}px Raleway, Helvetica, sans-serif`
   ctx.textAlign = 'right'
-  ctx.fillText('astrodig.com  ·  jupiterdigitalevents.com', cvs.width - pad, mid)
+  ctx.fillText('astrodig.com  ·  @jupreturn', cvs.width - pad, mid - 1 * pr)
+
   return cvs.toDataURL('image/png')
 }
 
