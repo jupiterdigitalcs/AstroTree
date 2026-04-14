@@ -1061,7 +1061,7 @@
 /* Tooltip */
 .zodiac-tooltip {
   position: absolute;
-  top: 0.6rem;
+  top: 3.5rem;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -1073,7 +1073,7 @@
   padding: 0.5rem 0.85rem;
   pointer-events: none;
   backdrop-filter: blur(8px);
-  z-index: 10;
+  z-index: 20;
   white-space: nowrap;
 }
 
