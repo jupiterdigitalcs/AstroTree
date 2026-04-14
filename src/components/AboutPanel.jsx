@@ -216,6 +216,11 @@ export default function AboutPanel() {
         </p>
       </div>
 
+      {/* ── Disclaimer ────────────────────────────────────────────── */}
+      <p className="about-disclaimer">
+        Jupiter Digital provides astrology content for entertainment and personal reflection. We assume no liability for actions taken based on the information provided.
+      </p>
+
     </div>
   )
 }

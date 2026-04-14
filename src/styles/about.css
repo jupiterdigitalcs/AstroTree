@@ -466,3 +466,13 @@
   font-family: 'Raleway', sans-serif;
   line-height: 1.55;
 }
+
+.about-disclaimer {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+  text-align: center;
+  line-height: 1.5;
+  padding: 1rem 1rem 0.25rem;
+  margin: 0;
+}
