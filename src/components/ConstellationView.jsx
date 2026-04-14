@@ -174,7 +174,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
     e.preventDefault()
     activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     dragMoved.current = false
-    tappedNodeId.current = nodeId ?? null
+    tappedNodeId.current = e.pointerType === 'touch' ? (nodeId ?? null) : null
     setDragging(nodeIdx)
     e.target.setPointerCapture?.(e.pointerId)
   }, [])
@@ -215,7 +215,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
     panStart.current = null
 
     // Resolve touch taps: if no drag occurred and a node was tapped
-    if (nodeId && !dragMoved.current && e?.pointerType === 'touch') {
+    if (nodeId && !dragMoved.current) {
       setHoveredNode(prev => prev === nodeId ? null : nodeId)
     }
   }, [])
@@ -306,8 +306,10 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
             return (
               <g
                 key={n.id}
-                onClick={() => {
+                onClick={(e) => {
                   if (dragMoved.current) return
+                  // On touch devices, taps are handled via pointer events (tooltip first)
+                  if ('ontouchstart' in window) return
                   onSelectNode?.(n.id)
                 }}
                 onMouseEnter={() => setHoveredNode(n.id)}
