@@ -70,6 +70,29 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
 
   return (
     <div className="charts-panel">
+      {/* ── Account row (compact, always at top) ─────────────────────── */}
+      {authUser ? (
+        <div className="charts-account-top">
+          <span className="charts-account-check">✓</span>
+          <span className="charts-account-email">{authUser.email}</span>
+          {entitlements?.tier === 'premium' && <span className="charts-celestial-badge">✦ Celestial</span>}
+          <button type="button" className="charts-signout-btn" onClick={onSignOut}>Sign out</button>
+        </div>
+      ) : !authLoading && onSignIn ? (
+        <div className="charts-account-top charts-account-top--unsigned">
+          <button type="button" className="charts-signin-link" onClick={onSignIn}>Sign in</button>
+          <span className="charts-account-hint">to sync charts &amp; unlock Celestial</span>
+        </div>
+      ) : null}
+
+      {/* ── Celestial sell banner (free users) ────────────────────────── */}
+      {entitlements?.tier !== 'premium' && (
+        <button type="button" className="charts-celestial-sell" onClick={authUser ? onUpgrade : onSignIn}>
+          <span className="charts-celestial-sell-text">✦ <strong>Unlock Celestial</strong> — zodiac wheel, full insights, The DIG, unlimited charts</span>
+          <span className="charts-celestial-sell-price">$9.99</span>
+        </button>
+      )}
+
       <div className="charts-panel-header">
         <h2 className="charts-panel-title">🗂️ My Charts
           {entitlements && isPaywallEnabled(entitlements.config) && (() => {
@@ -167,7 +190,7 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
             Use <strong>⎘</strong> on any chart above to duplicate it, then rename and edit from there.
           </p>
         )}
-        {charts.length <= 1 && (
+        {charts.length >= 1 && charts.length <= 2 && (
           <>
             <p className="chart-ideas-title">✦ Ideas for more charts</p>
             <ul className="chart-ideas-list">
@@ -182,50 +205,6 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         </button>
       </div>
 
-      {/* ── Account & Celestial ────────────────────────────────────────── */}
-      <div className="charts-account-section">
-        {authUser ? (
-          <>
-            {entitlements?.tier === 'premium' ? (
-              <div className="celestial-explainer celestial-explainer--active" id="celestial-info">
-                <h3 className="celestial-explainer-title">✦ Celestial</h3>
-                <p className="celestial-explainer-text">
-                  All views, full insights, unlimited charts — unlocked forever.
-                </p>
-              </div>
-            ) : (
-              <div className="celestial-explainer" id="celestial-info">
-                <h3 className="celestial-explainer-title">✦ What is Celestial?</h3>
-                <p className="celestial-explainer-text">
-                  A one-time $9.99 upgrade — zodiac wheel, tables, full insights, The DIG, and unlimited charts.
-                </p>
-                <button type="button" className="celestial-explainer-btn" onClick={onUpgrade}>
-                  ✦ Unlock Celestial — $9.99
-                </button>
-              </div>
-            )}
-            <div className="charts-account-row">
-              <span className="charts-account-check">✓</span>
-              <span className="charts-account-email">{authUser.email}</span>
-              <button type="button" className="charts-signout-btn" onClick={onSignOut}>Sign out</button>
-            </div>
-          </>
-        ) : !authLoading && (
-          <>
-            <div className="celestial-explainer" id="celestial-info">
-              <h3 className="celestial-explainer-title">✦ What is Celestial?</h3>
-              <p className="celestial-explainer-text">
-                A one-time $9.99 upgrade — zodiac wheel, tables, full insights, The DIG, and unlimited charts.
-              </p>
-              {onSignIn && (
-                <button type="button" className="celestial-explainer-btn" onClick={onSignIn}>
-                  ✦ Sign in to Unlock Celestial
-                </button>
-              )}
-            </div>
-          </>
-        )}
-      </div>
 
       {/* ── Sample Trees ──────────────────────────────────────────────── */}
       <div className="sample-charts">

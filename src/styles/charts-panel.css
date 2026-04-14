@@ -47,14 +47,90 @@
 }
 .charts-data-link:hover { opacity: 0.85; }
 
-/* ── Account section ─────────────────────────────────────────────────── */
-.charts-account-section {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(201,168,76,0.12);
+/* ── Account top bar (compact) ────────────────────────────────────────── */
+.charts-account-top {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  background: rgba(126, 200, 69, 0.04);
+  border: 1px solid rgba(126, 200, 69, 0.12);
+  border-radius: 8px;
+  font-size: 0.72rem;
+  margin-bottom: 0.5rem;
+}
+
+.charts-account-top--unsigned {
+  background: rgba(201,168,76,0.04);
+  border-color: rgba(201,168,76,0.12);
+}
+
+.charts-celestial-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.4rem;
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* ── Celestial sell banner (compact) ──────────────────────────────────── */
+.charts-celestial-sell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(140,80,200,0.06) 100%);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  margin-bottom: 1rem;
+}
+.charts-celestial-sell:hover {
+  border-color: rgba(201,168,76,0.5);
+  background: linear-gradient(135deg, rgba(201,168,76,0.14) 0%, rgba(140,80,200,0.08) 100%);
+}
+.charts-celestial-sell-text {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  text-align: left;
+  line-height: 1.5;
+}
+.charts-celestial-sell-text strong {
+  color: var(--gold);
+}
+.charts-celestial-sell-price {
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gold);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.charts-signin-link {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.charts-account-hint {
+  color: var(--text-muted);
+  font-size: 0.7rem;
 }
 
 /* ── Account row ──────────────────────────────────────────────────────── */

@@ -175,10 +175,47 @@ export default function AboutPanel() {
         </p>
       </div>
 
+      {/* ── Terms of Service ─────────────────────────────────────────── */}
+      <div className="about-card" id="about-terms">
+        <h3 className="about-heading">Terms of Service</h3>
+        <p className="about-bio">
+          By using AstroDig, you agree to the following terms. If you do not agree, please do not use the app.
+        </p>
+
+        <p className="about-data-subhead">Ownership &amp; Intellectual Property</p>
+        <p className="about-bio">
+          AstroDig, including its design, code, branding, content, and all related materials, is the intellectual property of Jupiter Digital LLC. You may not copy, reproduce, redistribute, reverse-engineer, or create derivative works from any part of AstroDig without written permission.
+        </p>
+
+        <p className="about-data-subhead">User Content</p>
+        <p className="about-bio">
+          You retain ownership of the data you enter (names, birthdates, etc.). By using AstroDig, you grant Jupiter Digital LLC a limited license to store, process, and display your data solely to provide the service. We do not claim ownership of your chart data.
+        </p>
+
+        <p className="about-data-subhead">Purchases &amp; Refunds</p>
+        <p className="about-bio">
+          Celestial is a one-time digital purchase. All sales are final. If you experience a technical issue preventing access to features you've paid for, contact us at <a className="about-inline-link" href="mailto:jupreturns@gmail.com">jupreturns@gmail.com</a> and we'll make it right.
+        </p>
+
+        <p className="about-data-subhead">Astrology Disclaimer</p>
+        <p className="about-bio">
+          AstroDig is for entertainment and self-reflection purposes. Astrological insights are based on planetary calculations and general interpretations — they are not professional advice of any kind. A birth chart is a starting point, not the whole story.
+        </p>
+
+        <p className="about-data-subhead">Limitation of Liability</p>
+        <p className="about-bio">
+          AstroDig is provided "as is" without warranties of any kind. Jupiter Digital LLC is not liable for any damages arising from your use of the app, including loss of data, interruption of service, or reliance on astrological content.
+        </p>
+
+        <p className="about-bio" style={{ marginTop: '0.5rem', fontSize: '0.68rem', color: 'var(--text-dim)' }}>
+          These terms are governed by the laws of the United States. Jupiter Digital LLC reserves the right to update these terms at any time. Continued use of AstroDig constitutes acceptance of any changes.
+        </p>
+      </div>
+
       {/* ── App note ──────────────────────────────────────────────────── */}
       <p className="about-app-note">
         If AstroDig brings you joy, a site, social, or shop visit
-        means the world. ✨
+        means the world.
       </p>
 
     </div>
