@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  padding-bottom: 1rem;
+  padding-bottom: 0;
 }
 
 .about-brand-block {
@@ -275,7 +275,8 @@
   color: var(--text-muted);
   text-align: center;
   line-height: 1.5;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.5rem 0;
+  margin: 0;
 }
 
 /* ── Family welcome inline layout ──────────────────────────────────────── */

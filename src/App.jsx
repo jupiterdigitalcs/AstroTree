@@ -548,7 +548,7 @@ export default function App() {
       {premiumToast && (
         <div className="premium-toast">
           <p className="premium-toast-title">✦ Welcome to Celestial</p>
-          <p className="premium-toast-sub">The full cosmos is yours — all views, insights, and unlimited charts unlocked.</p>
+          <p className="premium-toast-sub">The full cosmos is yours — all views, insights, and The DIG unlocked.</p>
         </div>
       )}
 

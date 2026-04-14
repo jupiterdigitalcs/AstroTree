@@ -437,7 +437,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   min-height: 0; /* Required for flex child to scroll */
-  padding: 0.25rem 1.4rem 3rem;
+  padding: 0.25rem 1.4rem calc(80px + env(safe-area-inset-bottom) + 1.5rem);
   display: flex;
   flex-direction: column;
   gap: 0.9rem;

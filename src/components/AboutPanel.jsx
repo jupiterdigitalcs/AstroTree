@@ -15,7 +15,7 @@ export default function AboutPanel() {
         <div className="about-brand-logo"><JupiterIcon size={52} /></div>
         <div>
           <h2 className="about-brand-name">Jupiter Digital</h2>
-          <p className="about-brand-tagline">Astrology for modern families</p>
+          <p className="about-brand-tagline">Cosmic Connections</p>
         </div>
       </div>
 
@@ -214,8 +214,7 @@ export default function AboutPanel() {
 
       {/* ── App note ──────────────────────────────────────────────────── */}
       <p className="about-app-note">
-        If AstroDig brings you joy, a site, social, or shop visit
-        means the world.
+        Enjoying AstroDig? Follow us on social or visit the shop — it means the world.
       </p>
 
     </div>

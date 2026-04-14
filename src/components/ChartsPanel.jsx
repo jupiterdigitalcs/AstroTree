@@ -85,10 +85,15 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         </div>
       ) : null}
 
-      {/* ── Celestial sell banner (free users) ────────────────────────── */}
-      {entitlements?.tier !== 'premium' && (
+      {/* ── Celestial: sell banner (free) or active summary (premium) ── */}
+      {entitlements?.tier === 'premium' ? (
+        <div className="celestial-explainer celestial-explainer--active">
+          <p className="celestial-explainer-title">✦ Celestial Active</p>
+          <p className="celestial-explainer-text">All views, full insights, The DIG, and expanded chart saves — unlocked.</p>
+        </div>
+      ) : (
         <button type="button" className="charts-celestial-sell" onClick={authUser ? onUpgrade : onSignIn}>
-          <span className="charts-celestial-sell-text">✦ <strong>Unlock Celestial</strong> — zodiac wheel, full insights, The DIG, unlimited charts</span>
+          <span className="charts-celestial-sell-text">✦ <strong>Unlock Celestial</strong> — extra views, full insights, The DIG, and more</span>
           <span className="charts-celestial-sell-price">$9.99</span>
         </button>
       )}

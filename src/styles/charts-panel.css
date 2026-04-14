@@ -91,7 +91,7 @@
   border-radius: 10px;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
-  margin-bottom: 1rem;
+  margin-bottom: 0.25rem;
 }
 .charts-celestial-sell:hover {
   border-color: rgba(201,168,76,0.5);

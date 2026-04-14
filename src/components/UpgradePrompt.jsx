@@ -61,7 +61,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
         <div className="save-dialog upgrade-prompt">
           <p className="save-dialog-title">✦ Celestial Unlocked!</p>
           <p className="save-dialog-sub">
-            All features are now yours. Welcome to the full cosmos.
+            All Celestial features are now yours. Welcome to the full cosmos.
           </p>
           <div className="save-dialog-btns">
             <button type="button" className="save-dialog-save upgrade-btn" onClick={onClose}>
@@ -88,11 +88,10 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
         )}
 
         <ul className="upgrade-features-list">
-          <li>☉ <strong>Zodiac Wheel</strong> — map your family across the zodiac</li>
-          <li>☽ <strong>Tables View</strong> — sortable sun, moon &amp; planet grid</li>
-          <li>✦ <strong>Full Insights</strong> — compatibility, roles, zodiac threads, pluto generations</li>
+          <li>☉ <strong>Extra Views</strong> — zodiac wheel, tables, and more</li>
+          <li>✦ <strong>Full Insights</strong> — compatibility, roles, zodiac threads, and deeper analysis</li>
           <li>✦ <strong>The Full DIG</strong> — every slide in your cosmic story</li>
-          <li>🗂️ <strong>Unlimited Charts</strong> — save as many as you want</li>
+          <li>🗂️ <strong>More Charts</strong> — save and manage more charts</li>
         </ul>
 
         <div className="upgrade-price">

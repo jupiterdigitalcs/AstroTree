@@ -326,18 +326,6 @@ export default function EditMemberPanel({
         </div>
       )}
 
-      {/* Outer planets — Jupiter & Saturn */}
-      {node.data?.outerPlanets && (node.data.outerPlanets.jupiter?.sign || node.data.outerPlanets.saturn?.sign) && (
-        <div className="outer-planets-row">
-          {node.data.outerPlanets.jupiter?.sign && (
-            <PlanetSign planet="jupiter" symbol="♃" sign={node.data.outerPlanets.jupiter.sign} />
-          )}
-          {node.data.outerPlanets.saturn?.sign && (
-            <PlanetSign planet="saturn" symbol="♄" sign={node.data.outerPlanets.saturn.sign} />
-          )}
-        </div>
-      )}
-
       {error && <p className="form-error">{error}</p>}
 
       {/* ── Connections ─────────────────────────────────────────────────── */}
