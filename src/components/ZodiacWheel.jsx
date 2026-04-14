@@ -523,7 +523,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
               style={{ '--ring-color': ring.key === 'sun' ? '#c9a84c' : ring.color }}
             >
               {ring.glyph} {ring.label}
-              {isCrowded && <span className="zodiac-ring-cap"> ⚠{maxSeg}</span>}
+              {isCrowded && <span className="zodiac-ring-cap"> ({maxSeg} in one sign)</span>}
             </button>
           )
         })}

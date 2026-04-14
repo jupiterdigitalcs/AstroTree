@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { buildSlides, buildDigSummaryHtml } from '../../utils/digSlides.js'
+import { buildSlides } from '../../utils/digSlides.js'
 import { useSwipe } from '../../hooks/useSwipe.js'
 import DigProgressBar from './DigProgressBar.jsx'
 import DigSlide from './DigSlide.jsx'
@@ -24,7 +24,6 @@ export default function TheDig({ digData, onClose, chartTitle, isPremium = true,
   const [direction, setDirection] = useState('forward')
   const [transitioning, setTransitioning] = useState(false)
   const [sharing, setSharing] = useState(false)
-  const shareRef = useRef(null)
 
   const go = useCallback((dir) => {
     if (transitioning) return
@@ -61,60 +60,75 @@ export default function TheDig({ digData, onClose, chartTitle, isPremium = true,
     onSwipeRight: () => go('back'),
   })
 
-  // Share the current slide (mobile: native share, desktop: summary download)
+  // Convert a data URL to a Blob
+  function dataUrlToBlob(dataUrl) {
+    const parts = dataUrl.split(',')
+    const mime = parts[0].match(/:(.*?);/)[1]
+    const bin = atob(parts[1])
+    const arr = new Uint8Array(bin.length)
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i)
+    return new Blob([arr], { type: mime })
+  }
+
+  // Download a blob as a file
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.download = filename
+    link.href = url
+    link.style.display = 'none'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  // Share the current slide (mobile: native share, desktop/fallback: download)
   async function handleShare() {
     if (sharing) return
     setSharing(true)
-    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
     try {
       const { getToPng } = await import('../../hooks/useExport.js')
       const toPng = await getToPng()
       const slug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family'
-
-      // Mobile: capture just the current slide and share it
-      if (isMobile && navigator.share) {
-        const el = document.querySelector('.dig-slide--active')
-        if (el) {
-          const dataUrl = await toPng(el, { backgroundColor: '#05031a', pixelRatio: 2, skipFonts: true })
-          const parts = dataUrl.split(',')
-          const bin = atob(parts[1])
-          const arr = new Uint8Array(bin.length)
-          for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i)
-          const blob = new Blob([arr], { type: parts[0].match(/:(.*?);/)[1] })
-          const file = new File([blob], `the-dig-${slug}-${current + 1}.png`, { type: 'image/png' })
-          if (navigator.canShare?.({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'The DIG — AstroDig', text: 'My family\'s cosmic story ✦ astrodig.com' })
-          }
-        }
-        setSharing(false)
-        return
+      const filename = `the-dig-${slug}-${current + 1}.png`
+      const captureOpts = {
+        backgroundColor: '#05031a',
+        pixelRatio: 2,
+        skipFonts: true,
+        filter: (node) => {
+          if (!node.classList) return true
+          // Hide share button and close button from capture
+          return !node.classList.contains('dig-slide-share') && !node.classList.contains('dig-close')
+        },
       }
 
-      // Desktop: render a summary card and download it
-      const wrap = document.createElement('div')
-      wrap.style.cssText = 'position:fixed;left:0;top:0;width:420px;background:#05031a;z-index:9999;'
-      wrap.innerHTML = buildDigSummaryHtml(digData, slides, chartTitle)
-      document.body.appendChild(wrap)
-      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+      const el = document.querySelector('.dig-slide--active')
+      if (!el) { setSharing(false); return }
 
-      const dataUrl = await toPng(wrap, { backgroundColor: '#05031a', pixelRatio: 2, skipFonts: true })
-      document.body.removeChild(wrap)
+      // Double-render: first call forces fonts/images, second captures cleanly
+      await toPng(el, captureOpts).catch(() => {})
+      await new Promise(r => setTimeout(r, 120))
+      const dataUrl = await toPng(el, captureOpts)
+      const blob = dataUrlToBlob(dataUrl)
 
-      const parts = dataUrl.split(',')
-      const mime = parts[0].match(/:(.*?);/)[1]
-      const bin = atob(parts[1])
-      const arr = new Uint8Array(bin.length)
-      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i)
-      const blob = new Blob([arr], { type: mime })
-      const blobUrl = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.download = `the-dig-${slug}-summary.png`
-      link.href = blobUrl
-      link.style.display = 'none'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(blobUrl)
+      // Try native share on mobile
+      if (navigator.share) {
+        try {
+          const file = new File([blob], filename, { type: 'image/png' })
+          if (navigator.canShare?.({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'The DIG — AstroDig', text: 'My family\'s cosmic story ✦ astrodig.com' })
+            setSharing(false)
+            return
+          }
+        } catch (e) {
+          if (e?.name === 'AbortError') { setSharing(false); return }
+          // Fall through to download
+        }
+      }
+
+      // Fallback: download the image
+      downloadBlob(blob, filename)
     } catch (e) {
       console.error('[dig] share error:', e)
     }

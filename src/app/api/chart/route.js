@@ -149,12 +149,24 @@ async function handlePublic() {
 async function handleShare(request) {
   const deviceId = request.headers.get('x-device-id')
   const body = await request.json()
-  if (!deviceId || !body?.id) return NextResponse.json({ token: null }, { status: 400 })
+  if (!body?.id) return NextResponse.json({ token: null }, { status: 400 })
+  const authUser = await getAuthUser(request)
   const token = crypto.randomUUID()
-  const { data, error } = await getSupabase()
-    .from('charts').update({ share_token: token })
-    .eq('id', body.id).eq('device_id', deviceId)
-    .select('id')
+
+  // Try matching by auth_user_id first (signed-in users), then by device_id
+  let data, error
+  if (authUser) {
+    ;({ data, error } = await getSupabase()
+      .from('charts').update({ share_token: token })
+      .eq('id', body.id).eq('auth_user_id', authUser.id)
+      .select('id'))
+  }
+  if (!data?.length && deviceId) {
+    ;({ data, error } = await getSupabase()
+      .from('charts').update({ share_token: token })
+      .eq('id', body.id).eq('device_id', deviceId)
+      .select('id'))
+  }
   if (error) return NextResponse.json({ token: null }, { status: 500 })
   if (!data?.length) return NextResponse.json({ token: null }, { status: 404 })
   return NextResponse.json({ token })
