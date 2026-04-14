@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getSupabase } from '../_lib/supabase.js'
-import { sendPremiumConfirmation, sendOwnerPurchaseNotification } from '../_lib/email.js'
+import { sendPremiumConfirmation, sendOwnerPurchaseNotification, sendRefundConfirmation, sendOwnerRefundNotification } from '../_lib/email.js'
 
 export async function POST(request) {
   try {
@@ -78,11 +78,15 @@ export async function POST(request) {
         const email = session.customer_details?.email
         console.log(`[stripe] purchase complete — email: ${email || 'NONE'}, productKey: ${productKey}, deviceId: ${deviceId}`)
         if (email && productKey === 'premium_upgrade') {
-          const { data: charts } = await sb
-            .from('charts')
-            .select('title, tree_data')
-            .eq('device_id', deviceId)
-            .order('saved_at', { ascending: false })
+          // Query charts by auth_user_id first (covers all devices), fall back to device_id
+          const { data: device } = await sb.from('devices').select('auth_user_id').eq('id', deviceId).single()
+          let chartsQuery = sb.from('charts').select('title, tree_data').order('saved_at', { ascending: false })
+          if (device?.auth_user_id) {
+            chartsQuery = chartsQuery.eq('auth_user_id', device.auth_user_id)
+          } else {
+            chartsQuery = chartsQuery.eq('device_id', deviceId)
+          }
+          const { data: charts } = await chartsQuery
           const parsed = (charts || []).map(c => {
             const d = typeof c.tree_data === 'string' ? JSON.parse(c.tree_data) : c.tree_data
             return { title: c.title, nodes: d?.nodes || [] }
@@ -135,6 +139,19 @@ export async function POST(request) {
             tier_updated_at: new Date().toISOString(),
           }).eq('auth_user_id', dev.auth_user_id)
         }
+
+        // Send refund emails
+        const { data: refundDevice } = await sb.from('devices').select('email').eq('id', purchase.device_id).single()
+        const refundEmail = refundDevice?.email
+        if (refundEmail) {
+          sendRefundConfirmation({ to: refundEmail }).catch(err =>
+            console.error('[stripe] refund email error:', err)
+          )
+        }
+        sendOwnerRefundNotification({
+          buyerEmail: refundEmail,
+          deviceId: purchase.device_id,
+        }).catch(err => console.error('[stripe] owner refund notification error:', err))
 
         console.log(`[stripe] refund processed — device ${purchase.device_id} downgraded to free`)
       }

@@ -89,7 +89,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
 
         <ul className="upgrade-features-list">
           <li>☉ <strong>Extra Views</strong> — zodiac wheel, tables, and more</li>
-          <li>✦ <strong>Full Insights</strong> — compatibility, roles, zodiac threads, and deeper analysis</li>
+          <li>✦ <strong>Full Insights</strong> — roles, zodiac threads, and deeper analysis</li>
           <li>✦ <strong>The Full DIG</strong> — every slide in your cosmic story</li>
           <li>🗂️ <strong>More Charts</strong> — save and manage more charts</li>
         </ul>

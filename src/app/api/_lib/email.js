@@ -59,7 +59,7 @@ export async function sendPremiumConfirmation({ to, charts }) {
           <ul style="margin:0;padding:0 0 0 18px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.9">
             <li>Zodiac Wheel &amp; Constellation views</li>
             <li>Tables — sortable sun, moon &amp; planet grid</li>
-            <li>Full Insights — compatibility, roles, zodiac threads</li>
+            <li>Full Insights — roles, zodiac threads, and deeper analysis</li>
             <li>The complete DIG — every slide in your cosmic story</li>
             <li>Unlimited charts</li>
           </ul>
@@ -153,6 +153,79 @@ export async function sendOwnerPurchaseNotification({ buyerEmail, amount, charts
     return { ok: true }
   } catch (err) {
     console.error('[email] owner notification failed:', err)
+    return { ok: false, error: err.message }
+  }
+}
+
+/**
+ * Send refund confirmation to the buyer.
+ */
+export async function sendRefundConfirmation({ to }) {
+  const resend = getResend()
+
+  const html = `
+    <div style="background:#09071a;padding:0;font-family:'Raleway',Helvetica,Arial,sans-serif;color:#e8dcc8;max-width:600px;margin:0 auto;border-radius:12px;overflow:hidden">
+      <div style="background:linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(140,80,200,0.08) 100%);border-bottom:1px solid rgba(201,168,76,0.2);padding:24px 32px;text-align:center">
+        <p style="font-family:Cinzel,Georgia,serif;color:#c9a84c;font-size:11px;letter-spacing:0.15em;margin:0 0 8px;text-transform:uppercase">✦ AstroDig</p>
+        <h1 style="font-family:Cinzel,Georgia,serif;color:#e8dcc8;font-size:22px;margin:0;letter-spacing:0.04em">Your Refund Has Been Processed</h1>
+      </div>
+      <div style="padding:28px 32px">
+        <p style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.7;margin:0 0 16px">
+          Your Celestial purchase has been refunded. The charge will be reversed on your statement within 5–10 business days.
+        </p>
+        <p style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.7;margin:0 0 16px">
+          Your account has been moved back to the free tier. Your saved charts and members are still there — you just won't have access to Celestial features.
+        </p>
+        <p style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.7;margin:0">
+          If you change your mind, you can upgrade again anytime at <a href="https://astrodig.com" style="color:#c9a84c;text-decoration:none">astrodig.com</a>.
+        </p>
+      </div>
+      <div style="border-top:1px solid rgba(201,168,76,0.12);padding:16px 32px;text-align:center;background:rgba(0,0,0,0.15)">
+        <p style="font-family:Cinzel,Georgia,serif;font-size:10px;color:rgba(201,168,76,0.45);letter-spacing:0.08em;margin:0">✦ AstroDig by Jupiter Digital</p>
+        <p style="font-size:10px;color:rgba(255,255,255,0.18);margin:4px 0 0">astrodig.com</p>
+      </div>
+    </div>
+  `
+
+  try {
+    console.log(`[email] sending refund confirmation to ${to}`)
+    await resend.emails.send({ from: FROM, to, subject: 'Your AstroDig refund has been processed', html })
+    console.log(`[email] refund confirmation sent to ${to}`)
+    return { ok: true }
+  } catch (err) {
+    console.error('[email] refund confirmation failed:', err)
+    return { ok: false, error: err.message }
+  }
+}
+
+/**
+ * Notify the site owner of a refund.
+ */
+export async function sendOwnerRefundNotification({ buyerEmail, deviceId }) {
+  const resend = getResend()
+  const ownerEmail = process.env.OWNER_EMAIL
+  if (!ownerEmail) return { ok: false, error: 'OWNER_EMAIL not configured' }
+
+  const html = `
+    <div style="background:#09071a;padding:32px;font-family:'Raleway',Helvetica,Arial,sans-serif;color:#e8dcc8;max-width:500px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:24px">
+        <h1 style="font-family:Cinzel,Georgia,serif;color:#e87070;font-size:22px;margin:0">Refund Processed</h1>
+      </div>
+      <div style="background:rgba(232,112,112,0.08);border:1px solid rgba(232,112,112,0.2);border-radius:8px;padding:16px;margin-bottom:16px">
+        <table style="width:100%;font-size:14px;color:#e8dcc8">
+          <tr><td style="padding:4px 0;color:rgba(255,255,255,0.5)">Buyer</td><td style="padding:4px 0">${buyerEmail || 'No email on file'}</td></tr>
+          <tr><td style="padding:4px 0;color:rgba(255,255,255,0.5)">Device</td><td style="padding:4px 0;font-size:11px;color:rgba(255,255,255,0.4)">${deviceId || '—'}</td></tr>
+        </table>
+      </div>
+      <p style="font-size:13px;color:rgba(255,255,255,0.5);text-align:center">Account downgraded to free tier.</p>
+    </div>
+  `
+
+  try {
+    await resend.emails.send({ from: FROM, to: ownerEmail, subject: `Refund — ${buyerEmail || 'unknown'}`, html })
+    return { ok: true }
+  } catch (err) {
+    console.error('[email] owner refund notification failed:', err)
     return { ok: false, error: err.message }
   }
 }
