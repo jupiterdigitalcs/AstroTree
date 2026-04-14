@@ -380,7 +380,7 @@
 .admin-preview-flow .node-name { font-size: 0.7rem; }
 .admin-preview-flow .node-sign { font-size: 0.6rem; }
 .admin-preview-flow .node-moon { font-size: 0.6rem; }
-.admin-preview-flow .node-element { font-size: 0.5rem; margin-top: 0.1rem; }
+.admin-preview-flow .node-element-badge { font-size: 0.45rem; padding: 0.04rem 0.25rem; }
 .admin-preview-flow .node-element-dots { display: none; }
 
 @media (max-width: 700px) {

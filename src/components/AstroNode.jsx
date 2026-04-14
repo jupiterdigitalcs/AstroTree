@@ -53,14 +53,16 @@ export default function AstroNode({ data, selected }) {
         {symbol}
       </div>
       <div className="node-name">{name}</div>
-      <div className="node-sign" style={{ color: glow }}>{sign}</div>
+      <div className="node-sign-row">
+        <span className="node-sign" style={{ color: glow }}>{sign}</span>
+        {element && (
+          <span className="node-element-badge" style={{ background: `${glow}22`, borderColor: `${glow}44`, color: glow }}>{element}</span>
+        )}
+      </div>
       {moonSign && moonSign !== 'Unknown' && (
         <div className="node-moon">
           <PlanetSign planet="moon" symbol={moonSymbol} sign={moonSign} />
         </div>
-      )}
-      {element && (
-        <div className="node-element" style={{ color: `${glow}99` }}>{element}</div>
       )}
       {data.innerPlanets && (
         <div className="node-element-dots">

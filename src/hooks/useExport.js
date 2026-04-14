@@ -244,6 +244,7 @@ export function useExport({ savedChartId, fitViewRef }) {
           if (c.contains('canvas-panel-btns'))      return false
           if (c.contains('connect-prompt'))         return false
           if (c.contains('canvas-brand'))           return false
+          if (c.contains('tree-legend'))            return false
           return true
         },
       }

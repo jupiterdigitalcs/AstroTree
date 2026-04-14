@@ -50,6 +50,7 @@ import { LockedOverlay } from './components/LockedOverlay.jsx'
 import { BottomSheet } from './components/BottomSheet.jsx'
 import { FloatingPills } from './components/FloatingPills.jsx'
 import { CanvasOnboarding } from './components/CanvasOnboarding.jsx'
+import { TreeLegend } from './components/TreeLegend.jsx'
 
 const NODE_TYPES = { astro: AstroNode }
 
@@ -1080,6 +1081,9 @@ export default function App() {
         {/* ── Canvas action bar — single horizontal strip ────────────── */}
         {nodes.length > 0 && isCosmic && (
           <div className="cosmic-action-bar">
+            {treeView === 'tree' && nodes.some(n => n.data?.innerPlanets) && (
+              <TreeLegend onGoToTables={() => setTreeView('tables')} />
+            )}
             {treeView === 'tree' && (
               <button type="button" className="cosmic-action-btn" onClick={handleRelayout} title="Re-layout">⟳</button>
             )}
@@ -1095,6 +1099,9 @@ export default function App() {
         {/* Classic mode action buttons */}
         {nodes.length > 0 && !isCosmic && (
           <div className="canvas-panel-btns">
+            {treeView === 'tree' && nodes.some(n => n.data?.innerPlanets) && (
+              <TreeLegend onGoToTables={() => setTreeView('tables')} />
+            )}
             <button type="button" className="relayout-btn relayout-btn--insights" onClick={() => goTab('insights')}>✦ Insights</button>
             <ShareButton savedChartId={savedChartId} syncStatus={syncStatus} />
             <button

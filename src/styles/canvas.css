@@ -42,12 +42,31 @@
   letter-spacing: 0.02em;
 }
 
+.node-sign-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-top: 0.18rem;
+}
+
 .node-sign {
   font-family: 'Raleway', sans-serif;
   font-size: 0.92rem;
   font-weight: 500;
   letter-spacing: 0.06em;
-  margin-top: 0.18rem;
+}
+
+.node-element-badge {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.08rem 0.4rem;
+  border-radius: 10px;
+  border: 1px solid;
+  line-height: 1.3;
 }
 
 .node-moon {
@@ -63,15 +82,6 @@
   border-radius: 20px;
   padding: 0.14rem 0.55rem;
   /* color supplied by PlanetSign inline style */
-}
-
-.node-element {
-  font-family: 'Raleway', sans-serif;
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  margin-top: 0.2rem;
-  opacity: 0.75;
 }
 
 .node-element-dots {

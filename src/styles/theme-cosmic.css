@@ -81,7 +81,7 @@
 
 /* ── Label / caps text ───────────────────────────────────────────────────── */
 .app--cosmic .cosmic-bottom-nav-label,
-.app--cosmic .node-element,
+.app--cosmic .node-element-badge,
 .app--cosmic .add-form label {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 600;
@@ -290,7 +290,7 @@
   border-color: rgba(155, 142, 196, 0.15);
 }
 
-.app--cosmic .node-element {
+.app--cosmic .node-element-badge {
   color: var(--a-text-muted);
 }
 
