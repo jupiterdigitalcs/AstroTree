@@ -25,8 +25,8 @@
   flex-direction: column;
   gap: 0.9rem;
   padding: 1rem 1.15rem 1.2rem;
-  /* Push content above the virtual keyboard on touch devices */
-  padding-bottom: calc(1.2rem + env(keyboard-inset-height, 0px));
+  /* Push content above the tier-bar + virtual keyboard on touch devices */
+  padding-bottom: calc(2.5rem + env(keyboard-inset-height, 0px));
 }
 
 .sidebar-content::-webkit-scrollbar { width: 6px; }

@@ -2042,7 +2042,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       )}
 
       {/* Saturn Lines — shared structural themes */}
-      {groupSaturnLines.length > 0 && groupSaturnLines.some(g => g.members.length >= 2) && (
+      {groupSaturnLines.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">♄ Saturn Lines<span className="insight-pro-tag">✦</span></h3>
           <p className="insight-whisper">Saturn's sign reflects where each person tends to carry responsibility and face their deepest growth.</p>
@@ -2063,7 +2063,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       )}
 
       {/* Jupiter Gifts — shared growth areas */}
-      {groupJupiterGifts.length > 0 && groupJupiterGifts.some(g => g.members.length >= 2) && (
+      {groupJupiterGifts.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">♃ Jupiter Gifts<span className="insight-pro-tag">✦</span></h3>
           <p className="insight-whisper">Jupiter's sign points to where each person tends to find expansion, luck, and natural ease.</p>
