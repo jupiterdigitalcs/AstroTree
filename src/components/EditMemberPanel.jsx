@@ -375,19 +375,8 @@ export default function EditMemberPanel({
           {eligibleNodes.length > 0 && (
             <div className="conn-add-section">
               <span className="parent-select-label">Add connection</span>
-              {eligibleNodes.length > 5 && (
-                <input
-                  className="conn-search-input"
-                  type="search"
-                  placeholder="Filter people…"
-                  value={connSearch}
-                  onChange={e => setConnSearch(e.target.value)}
-                />
-              )}
               <div className="conn-eligible-grid">
-                {eligibleNodes
-                  .filter(n => !connSearch || n.data.name.toLowerCase().includes(connSearch.toLowerCase()))
-                  .map(n => (
+                {eligibleNodes.map(n => (
                     <button
                       key={n.id}
                       type="button"

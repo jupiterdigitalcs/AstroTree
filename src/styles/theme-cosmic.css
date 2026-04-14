@@ -302,14 +302,14 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: calc(80px + env(safe-area-inset-bottom));
   z-index: 150;
   transform: translateY(100%);
   transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
   flex-direction: column;
   max-height: calc(100dvh - 80px - env(safe-area-inset-bottom));
-  min-height: 60dvh;
+  min-height: 50dvh;
   background: var(--a-surface);
   backdrop-filter: blur(32px) saturate(1.4);
   border-top-left-radius: 22px;
@@ -437,7 +437,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   min-height: 0; /* Required for flex child to scroll */
-  padding: 0.25rem 1.4rem calc(80px + env(safe-area-inset-bottom) + 1.5rem);
+  padding: 0.25rem 1.4rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
@@ -1494,8 +1494,8 @@
 
 .app--cosmic .edit-panel .name-date-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
+  grid-template-columns: 1fr;
+  gap: 0.35rem;
 }
 
 .app--cosmic .edit-panel .birthtime-field {
@@ -1572,7 +1572,8 @@
   }
 
   .app--cosmic .tables-canvas-wrap {
-    padding-top: 3rem;
+    padding-top: 1rem;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom) + 2rem);
   }
 }
 

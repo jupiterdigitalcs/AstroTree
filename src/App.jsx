@@ -1191,7 +1191,7 @@ export default function App() {
             />
           </div>
         ) : treeView === 'tables' && nodes.length > 0 ? (
-          <div className="tables-canvas-wrap" style={{ position: 'relative' }}>
+          <div className="tables-canvas-wrap">
             {!canAccess('tables_view', entitlements?.tier, entitlements?.config) && (
               <LockedOverlay
                 feature="Tables View"

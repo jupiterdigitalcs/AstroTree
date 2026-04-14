@@ -300,6 +300,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
                 onClick={() => { if (!dragMoved.current) onSelectNode?.(n.id) }}
                 onMouseEnter={() => setHoveredNode(n.id)}
                 onMouseLeave={() => setHoveredNode(null)}
+                onTouchStart={() => setHoveredNode(prev => prev === n.id ? null : n.id)}
                 onPointerDown={(e) => handlePointerDown(e, i)}
                 style={{ cursor: dragging === i ? 'grabbing' : 'grab' }}
               >

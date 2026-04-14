@@ -66,16 +66,21 @@
 .edit-panel-title-row .form-title { margin-bottom: 0; }
 
 .edit-saved-flash {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: #6bda8e;
   letter-spacing: 0.05em;
   font-family: 'Raleway', sans-serif;
-  animation: saved-flash-in 0.2s ease;
+  font-weight: 600;
+  background: rgba(107, 218, 142, 0.1);
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(107, 218, 142, 0.25);
+  animation: saved-flash-in 0.25s ease;
 }
 
 @keyframes saved-flash-in {
-  from { opacity: 0; transform: translateY(-3px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .cancel-btn {

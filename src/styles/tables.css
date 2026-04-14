@@ -3,13 +3,13 @@
   position: absolute;
   inset: 0;
   overflow-y: auto;
-  padding: 4.5rem 2rem 6rem;
+  padding: 2rem 2rem 6rem;
   z-index: 1;
 }
 
 @media (max-width: 768px) {
   .tables-canvas-wrap {
-    padding: 4.5rem 1rem calc(80px + env(safe-area-inset-bottom) + 5rem);
+    padding: 1rem 1rem calc(80px + env(safe-area-inset-bottom) + 8rem);
   }
 }
 
