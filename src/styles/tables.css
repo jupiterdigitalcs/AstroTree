@@ -9,7 +9,7 @@
 
 @media (max-width: 768px) {
   .tables-canvas-wrap {
-    padding: 0.5rem 0.75rem calc(80px + env(safe-area-inset-bottom) + 8rem);
+    padding: 4rem 0.75rem calc(80px + env(safe-area-inset-bottom) + 8rem);
   }
 }
 
@@ -201,49 +201,6 @@
   font-size: 0.85rem;
   padding: 2rem 0;
   text-align: center;
-}
-
-/* ── Inline view switcher (replaces floating pills on tables) ─────────── */
-.tables-view-bar {
-  display: flex;
-  gap: 2px;
-  padding: 3px;
-  margin-bottom: 0.75rem;
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: rgba(10, 13, 26, 0.85);
-  border: 1px solid rgba(155, 142, 196, 0.08);
-  border-radius: 50px;
-  backdrop-filter: blur(20px) saturate(1.3);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-  width: fit-content;
-}
-
-.tables-view-btn {
-  font-family: 'Raleway', sans-serif;
-  font-size: 0.7rem;
-  font-weight: 500;
-  padding: 0.35rem 0.75rem;
-  border-radius: 50px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color 0.2s, background 0.2s;
-  white-space: nowrap;
-}
-
-.tables-view-btn:hover {
-  color: var(--text-soft);
-  background: rgba(255,255,255,0.04);
-}
-
-.tables-view-btn--active {
-  color: var(--gold);
-  background: rgba(201,168,76,0.12);
-  box-shadow: 0 0 12px rgba(212,168,76,0.08);
-  cursor: default;
 }
 
 /* ── Column visibility toggles ──────────────────────────────────────────── */

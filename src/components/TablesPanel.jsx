@@ -29,7 +29,7 @@ function ElementTag({ sign }) {
   )
 }
 
-export function TablesPanel({ nodes, chartTitle, onChangeView }) {
+export function TablesPanel({ nodes, chartTitle }) {
   const [sortBy,  setSortBy]  = useState('name')
   const [sortDir, setSortDir] = useState('asc')
   const [visible, setVisible] = useState(DEFAULT_VISIBLE)
@@ -136,16 +136,6 @@ export function TablesPanel({ nodes, chartTitle, onChangeView }) {
   return (
     <div className="tables-panel">
       <h3 className="tables-title">{chartTitle || 'Astrology Data'}</h3>
-
-      {/* View switcher (replaces floating pills hidden on tables) */}
-      {onChangeView && (
-        <div className="tables-view-bar">
-          <button type="button" className="tables-view-btn" onClick={() => onChangeView('tree')}>🌳 Tree</button>
-          <button type="button" className="tables-view-btn" onClick={() => onChangeView('zodiac')}>☉ Zodiac</button>
-          <button type="button" className="tables-view-btn" onClick={() => onChangeView('constellation')}>✦ Constellation</button>
-          <span className="tables-view-btn tables-view-btn--active">☽ Tables</span>
-        </div>
-      )}
 
       {/* Column visibility toggles */}
       <div className="tables-col-toggles">

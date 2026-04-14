@@ -122,7 +122,8 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
   const panStart = useRef(null)
   const svgRef = useRef(null)
   const dragMoved = useRef(false)
-  const tappedNodeId = useRef(null) // track which node was tapped for touch handling
+  const lastWasTouch = useRef(false) // blocks onClick after touch
+  const touchTooltipTimer = useRef(null)
   const activePointers = useRef(new Map()) // pointerId → {x, y} — for pinch detection
 
   const isMobileConst = typeof window !== 'undefined' && window.innerWidth <= 640
@@ -174,9 +175,19 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
     e.preventDefault()
     activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     dragMoved.current = false
-    tappedNodeId.current = e.pointerType === 'touch' ? (nodeId ?? null) : null
+    lastWasTouch.current = e.pointerType === 'touch'
+    clearTimeout(touchTooltipTimer.current)
     setDragging(nodeIdx)
     e.target.setPointerCapture?.(e.pointerId)
+
+    // On touch: show tooltip after short delay (cancelled if drag starts)
+    if (e.pointerType === 'touch' && nodeId) {
+      touchTooltipTimer.current = setTimeout(() => {
+        if (!dragMoved.current) {
+          setHoveredNode(prev => prev === nodeId ? null : nodeId)
+        }
+      }, 150)
+    }
   }, [])
 
   const handlePointerMove = useCallback((e) => {
@@ -193,6 +204,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
     if (dragging != null) {
       activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
       dragMoved.current = true
+      clearTimeout(touchTooltipTimer.current)
       const pt = getSVGPoint(e.clientX, e.clientY)
       setPositions(prev => {
         const next = [...prev]
@@ -208,16 +220,9 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
 
   const handlePointerUp = useCallback((e) => {
     activePointers.current.delete(e?.pointerId)
-    const nodeId = tappedNodeId.current
-    tappedNodeId.current = null
     setDragging(null)
     setIsPanning(false)
     panStart.current = null
-
-    // Resolve touch taps: if no drag occurred and a node was tapped
-    if (nodeId && !dragMoved.current) {
-      setHoveredNode(prev => prev === nodeId ? null : nodeId)
-    }
   }, [])
 
   const handleBgPointerDown = useCallback((e) => {
@@ -306,10 +311,10 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
             return (
               <g
                 key={n.id}
-                onClick={(e) => {
+                onClick={() => {
                   if (dragMoved.current) return
-                  // On touch devices, taps are handled via pointer events (tooltip first)
-                  if ('ontouchstart' in window) return
+                  // Block edit on touch — tooltip is shown via pointerDown instead
+                  if (lastWasTouch.current) return
                   onSelectNode?.(n.id)
                 }}
                 onMouseEnter={() => setHoveredNode(n.id)}
