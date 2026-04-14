@@ -1092,14 +1092,6 @@
   flex-direction: column;
   align-items: flex-start;
 }
-@media (min-width: 769px) {
-  .constellation-tooltip {
-    top: 1rem;
-    left: 4.5rem;
-    right: auto;
-    transform: none;
-  }
-}
 
 .zodiac-tooltip-symbol { font-size: 1.1rem; }
 .zodiac-tooltip-name { font-weight: 600; font-size: 0.88rem; }
