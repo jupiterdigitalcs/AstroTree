@@ -23,9 +23,8 @@ export default function AboutPanel() {
       <div className="about-card">
         <h3 className="about-heading">What is AstroDig?</h3>
         <p className="about-bio">
-          AstroDig is a tool to learn astrological connections for your family or group. 
-          You can uncover hidden layers beneath the surface and patterns woven through
-          your relationships. 
+          AstroDig is a tool to explore the astrological connections between the people in your life.
+          Add your family, friends, or coworkers and see what the stars say about how you all connect.
         </p>
       </div>
 
@@ -41,6 +40,11 @@ export default function AboutPanel() {
           partners through a cosmic lens.
         </p>
       </div>
+
+      {/* ── App note ──────────────────────────────────────────────────── */}
+      <p className="about-app-note">
+        Enjoying AstroDig? Follow us on social or visit the shop — it means the world.
+      </p>
 
       {/* ── Social links ──────────────────────────────────────────────── */}
       <div className="about-card">
@@ -211,11 +215,6 @@ export default function AboutPanel() {
           These terms are governed by the laws of the United States. Jupiter Digital LLC reserves the right to update these terms at any time. Continued use of AstroDig constitutes acceptance of any changes.
         </p>
       </div>
-
-      {/* ── App note ──────────────────────────────────────────────────── */}
-      <p className="about-app-note">
-        Enjoying AstroDig? Follow us on social or visit the shop — it means the world.
-      </p>
 
     </div>
   )

@@ -1,6 +1,7 @@
 import { canAccess } from '../utils/entitlements.js'
 
 export function FloatingPills({ treeView, setTreeView, entitlements }) {
+  const isPremium = entitlements?.tier === 'premium'
   const views = [
     { key: 'tree', label: '🌳 Tree' },
     { key: 'constellation', label: '✦ Constellation' },
@@ -20,6 +21,7 @@ export function FloatingPills({ treeView, setTreeView, entitlements }) {
             onClick={() => setTreeView(v.key)}
           >
             {v.label}
+            {v.feature && isPremium && <span className="pro-tag pro-tag--subtle">✦</span>}
             {locked && <span className="cosmic-pill-lock">🔒</span>}
           </button>
         )
