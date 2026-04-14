@@ -297,10 +297,17 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
             return (
               <g
                 key={n.id}
-                onClick={() => { if (!dragMoved.current) onSelectNode?.(n.id) }}
+                onClick={() => {
+                  if (dragMoved.current) return
+                  // On touch: first tap shows tooltip, second tap opens edit
+                  if ('ontouchstart' in window && hoveredNode !== n.id) {
+                    setHoveredNode(n.id)
+                    return
+                  }
+                  onSelectNode?.(n.id)
+                }}
                 onMouseEnter={() => setHoveredNode(n.id)}
                 onMouseLeave={() => setHoveredNode(null)}
-                onTouchStart={() => setHoveredNode(prev => prev === n.id ? null : n.id)}
                 onPointerDown={(e) => handlePointerDown(e, i)}
                 style={{ cursor: dragging === i ? 'grabbing' : 'grab' }}
               >

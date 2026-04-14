@@ -65,22 +65,26 @@
 
 .edit-panel-title-row .form-title { margin-bottom: 0; }
 
-.edit-saved-flash {
-  font-size: 0.72rem;
+.edit-saved-toast {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  font-size: 0.78rem;
   color: #6bda8e;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   font-family: 'Raleway', sans-serif;
   font-weight: 600;
-  background: rgba(107, 218, 142, 0.1);
-  padding: 0.15rem 0.55rem;
-  border-radius: 6px;
-  border: 1px solid rgba(107, 218, 142, 0.25);
-  animation: saved-flash-in 0.25s ease;
+  background: rgba(107, 218, 142, 0.12);
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(107, 218, 142, 0.3);
+  text-align: center;
+  animation: saved-toast-in 0.25s ease;
 }
 
-@keyframes saved-flash-in {
-  from { opacity: 0; transform: scale(0.9); }
-  to   { opacity: 1; transform: scale(1); }
+@keyframes saved-toast-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .cancel-btn {

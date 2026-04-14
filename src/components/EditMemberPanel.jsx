@@ -210,8 +210,8 @@ export default function EditMemberPanel({
     <div className="add-form edit-panel">
       <div className="edit-panel-title-row">
         <h2 className="form-title">✦ Edit Member</h2>
-        {savedFlash && <span className="edit-saved-flash">✓ Saved</span>}
       </div>
+      {savedFlash && <div className="edit-saved-toast">✓ Saved</div>}
 
       <div className="name-date-row">
         <label>
