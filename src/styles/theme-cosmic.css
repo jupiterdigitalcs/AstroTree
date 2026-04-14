@@ -435,6 +435,8 @@
 .cosmic-bottom-sheet-content {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0; /* Required for flex child to scroll */
   padding: 0.25rem 1.4rem 3rem;
   display: flex;
   flex-direction: column;

@@ -262,17 +262,21 @@ export default function App() {
   }, [authLoading, authUser, refreshEntitlements])
 
   // ── Re-fetch charts + entitlements after auth sign-in ───────────────────
+  // Only navigate on the first sign-in, not on token refreshes or session
+  // restores — otherwise users get yanked to the charts tab unexpectedly.
+  const authHandledRef = useRef(false)
   useEffect(() => {
-    if (!authUser) return
+    if (!authUser) { authHandledRef.current = false; return }
+    if (authHandledRef.current) return // Already handled this session
+    authHandledRef.current = true
     let cancelled = false
     refreshAfterAuth().then(() => {
       if (cancelled) return
       if (pendingUpgrade) {
         setPendingUpgrade(false)
-        // Go straight to Stripe checkout — don't make them click again
         startCheckout('premium_upgrade').catch(err => {
           console.error('[auth] auto-checkout failed:', err)
-          setShowUpgradePrompt(true) // Fall back to showing the prompt
+          setShowUpgradePrompt(true)
         })
       } else {
         setActiveTab('charts')
