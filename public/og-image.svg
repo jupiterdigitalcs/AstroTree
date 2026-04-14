@@ -143,17 +143,17 @@
     font-family="Georgia,'Times New Roman',serif"
     font-size="88" font-weight="700" letter-spacing="2"
     fill="#f0e6cc" text-anchor="middle"
-    filter="url(#text-glow)">AstroTree</text>
+    filter="url(#text-glow)">AstroDig</text>
 
   <text x="600" y="365"
     font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
     font-size="20" font-weight="300" letter-spacing="5"
-    fill="#c9a84c" opacity="0.8" text-anchor="middle">FAMILY CELESTIAL TREE</text>
+    fill="#c9a84c" opacity="0.8" text-anchor="middle">MAP YOUR COSMIC CONNECTIONS</text>
 
   <text x="600" y="415"
     font-family="'Helvetica Neue',Helvetica,Arial,sans-serif"
     font-size="15" font-weight="300" letter-spacing="2"
-    fill="#8b7daa" opacity="0.9" text-anchor="middle">Map your family&#x2019;s astrological sun signs across generations</text>
+    fill="#8b7daa" opacity="0.9" text-anchor="middle">Sun signs, moon signs, compatibility &#x2014; free tool by Jupiter Digital</text>
 
   <line x1="510" y1="435" x2="690" y2="435" stroke="#c9a84c" stroke-width="0.7" opacity="0.3"/>
 
