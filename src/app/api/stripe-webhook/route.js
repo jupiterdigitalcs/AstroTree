@@ -78,16 +78,20 @@ export async function POST(request) {
         const email = session.customer_details?.email
         console.log(`[stripe] purchase complete — email: ${email || 'NONE'}, productKey: ${productKey}, deviceId: ${deviceId}`)
         if (email && productKey === 'premium_upgrade') {
-          // Query charts by auth_user_id first (covers all devices), fall back to device_id
-          const { data: device } = await sb.from('devices').select('auth_user_id').eq('id', deviceId).single()
-          let chartsQuery = sb.from('charts').select('title, tree_data').order('saved_at', { ascending: false })
-          if (device?.auth_user_id) {
-            chartsQuery = chartsQuery.eq('auth_user_id', device.auth_user_id)
-          } else {
-            chartsQuery = chartsQuery.eq('device_id', deviceId)
-          }
-          const { data: charts } = await chartsQuery
-          const parsed = (charts || []).map(c => {
+          // Charts may have auth_user_id, device_id, or both — query with OR to catch all
+          const { data: dev } = await sb.from('devices').select('auth_user_id').eq('id', deviceId).single()
+          const orFilter = dev?.auth_user_id
+            ? `device_id.eq.${deviceId},auth_user_id.eq.${dev.auth_user_id}`
+            : `device_id.eq.${deviceId}`
+          const { data: charts } = await sb
+            .from('charts')
+            .select('id, title, tree_data')
+            .or(orFilter)
+            .order('saved_at', { ascending: false })
+          // Deduplicate in case a chart matches both device_id and auth_user_id
+          const seen = new Set()
+          const unique = (charts || []).filter(c => seen.has(c.id) ? false : (seen.add(c.id), true))
+          const parsed = unique.map(c => {
             const d = typeof c.tree_data === 'string' ? JSON.parse(c.tree_data) : c.tree_data
             return { title: c.title, nodes: d?.nodes || [] }
           })
