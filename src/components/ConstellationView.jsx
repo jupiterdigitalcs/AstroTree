@@ -122,6 +122,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
   const panStart = useRef(null)
   const svgRef = useRef(null)
   const dragMoved = useRef(false)
+  const tappedNodeId = useRef(null) // track which node was tapped for touch handling
   const activePointers = useRef(new Map()) // pointerId → {x, y} — for pinch detection
 
   const isMobileConst = typeof window !== 'undefined' && window.innerWidth <= 640
@@ -168,11 +169,12 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
     }
   }, [size])
 
-  const handlePointerDown = useCallback((e, nodeIdx) => {
+  const handlePointerDown = useCallback((e, nodeIdx, nodeId) => {
     e.stopPropagation()
     e.preventDefault()
     activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     dragMoved.current = false
+    tappedNodeId.current = nodeId ?? null
     setDragging(nodeIdx)
     e.target.setPointerCapture?.(e.pointerId)
   }, [])
@@ -206,9 +208,16 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
 
   const handlePointerUp = useCallback((e) => {
     activePointers.current.delete(e?.pointerId)
+    const nodeId = tappedNodeId.current
+    tappedNodeId.current = null
     setDragging(null)
     setIsPanning(false)
     panStart.current = null
+
+    // Resolve touch taps: if no drag occurred and a node was tapped
+    if (nodeId && !dragMoved.current && e?.pointerType === 'touch') {
+      setHoveredNode(prev => prev === nodeId ? null : nodeId)
+    }
   }, [])
 
   const handleBgPointerDown = useCallback((e) => {
@@ -301,21 +310,9 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
                   if (dragMoved.current) return
                   onSelectNode?.(n.id)
                 }}
-                onPointerUp={(e) => {
-                  if (dragMoved.current) return
-                  // On touch: first tap shows tooltip, second tap opens edit
-                  if (e.pointerType === 'touch') {
-                    if (hoveredNode !== n.id) {
-                      setHoveredNode(n.id)
-                    } else {
-                      setHoveredNode(null)
-                      onSelectNode?.(n.id)
-                    }
-                  }
-                }}
                 onMouseEnter={() => setHoveredNode(n.id)}
                 onMouseLeave={() => setHoveredNode(null)}
-                onPointerDown={(e) => handlePointerDown(e, i)}
+                onPointerDown={(e) => handlePointerDown(e, i, n.id)}
                 style={{ cursor: dragging === i ? 'grabbing' : 'grab' }}
               >
                 <circle
