@@ -27,7 +27,7 @@ export default function SlideGlue({ data, active }) {
         Connected to {animCount} people{typeCount >= 2 ? ` across ${typeCount} types of relationship` : ''}.
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.75rem', opacity: 0.5, marginTop: '0.4rem' }}>
-        The glue is the person who tends to link different parts of the group — not just by proximity, but by bridging across circles.
+        The glue is the person who tends to link different parts of the group, not just by proximity, but by bridging across circles.
       </p>
     </div>
   )

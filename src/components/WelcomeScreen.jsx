@@ -9,12 +9,12 @@ export function WelcomeScreen({ onBegin, onDemo, onDemoCrew, hasUsedApp, onLoadC
         <h2 className="welcome-title">AstroDig</h2>
         <p className="welcome-tagline">
           {hasUsedApp
-            ? <>Welcome back —<br />your charts are waiting</>
+            ? <>Welcome back.<br />Your charts are waiting.</>
             : <>See how the stars connect<br />the people in your life</>}
         </p>
         {!hasUsedApp && (
           <p className="welcome-subtitle">
-            Map sun signs, moon signs, elements, and compatibility across your family, friends, and coworkers.
+            Map sun signs, moon signs, elements, and cosmic connections across your family, friends, and coworkers.
           </p>
         )}
 
@@ -52,15 +52,15 @@ export function WelcomeScreen({ onBegin, onDemo, onDemoCrew, hasUsedApp, onLoadC
           <div className="welcome-steps">
             <div className="welcome-step">
               <span className="welcome-step-icon">☉</span>
-              <span>Enter a birthdate — sun sign appears automatically</span>
+              <span>Enter a birthdate, sun sign appears automatically</span>
             </div>
             <div className="welcome-step">
               <span className="welcome-step-icon">♒</span>
-              <span>See shared signs, element patterns, and compatibility</span>
+              <span>See shared signs, element patterns, and cosmic connections</span>
             </div>
             <div className="welcome-step">
               <span className="welcome-step-icon">✦</span>
-              <span>Add a few now, come back later — it saves as you go</span>
+              <span>Add a few now, come back later. It saves as you go.</span>
             </div>
           </div>
         )}

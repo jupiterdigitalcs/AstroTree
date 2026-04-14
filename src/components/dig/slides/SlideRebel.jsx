@@ -12,7 +12,7 @@ export default function SlideRebel({ data }) {
         {d.name}
       </h2>
       <p className="dig-body dig-fly-in" style={{ '--i': 2, color: '#5bc8f5', fontWeight: 500, fontSize: '1rem' }}>
-        Marches to Their Own Cosmic Beat
+        The Independent Thinker
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3 }}>

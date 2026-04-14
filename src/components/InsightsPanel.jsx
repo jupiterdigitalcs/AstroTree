@@ -34,7 +34,7 @@ const SUN_ELEMENT_DESC = {
 const MOON_ELEMENT_DESC = {
   Fire:  'big, expressive emotions that ignite fast and need room to burn',
   Earth: 'steady emotional needs rooted in routine, safety, and physical comfort',
-  Air:   'inner worlds that process feeling through words — needing space to talk it out',
+  Air:   'inner worlds that process feeling through words, needing space to talk it out',
   Water: 'deep emotional lives shaped by intuition, empathy, and what they sense in others',
 }
 
@@ -52,21 +52,21 @@ function describeElementMix({ counts, total, kind, groupLabel }) {
 
   let summary
   if (present.length === 1) {
-    summary = `Everyone shares the same element — that consistency amplifies, but the ${groupLabel} may feel the absence of the other three.`
+    summary = `Everyone shares the same element. That consistency amplifies, but the ${groupLabel} may feel the absence of the other three.`
   } else if (present.length === 4) {
-    summary = `All four elements are represented — a rare full spread, and a naturally balanced ${groupLabel}.`
+    summary = `All four elements are represented. A rare full spread, and a naturally balanced ${groupLabel}.`
   } else {
     const top = present[0]
     const topPct = counts[top] / total
     if (topPct >= 0.6) {
       summary = `${top} clearly leads the ${groupLabel}, with ${present.slice(1).join(' and ')} offering counterweight.`
     } else {
-      summary = `A mix of ${present.join(', ')} — no single element dominates.`
+      summary = `A mix of ${present.join(', ')}. No single element dominates.`
     }
   }
 
   const missingNote = missing.length > 0 && missing.length < 4
-    ? `Missing ${missing.join(' and ')} — those qualities may be sought outside the ${groupLabel}.`
+    ? `Missing ${missing.join(' and ')}. Those qualities may be sought outside the ${groupLabel}.`
     : null
 
   return { perElement, summary, missingNote }
@@ -85,50 +85,50 @@ const SIGN_SYMBOLS = {
 }
 
 const SIGN_FLAVOR = {
-  Aries:       'when this energy shows up in a group, it tends to push everyone toward action — the spark that gets things started',
-  Taurus:      'this energy brings a grounding quality to the group — patience, steadiness, and a reminder to slow down and enjoy the process',
-  Gemini:      'this energy keeps the group curious and connected — new ideas, lively conversation, and a restless need to keep learning',
-  Cancer:      'this energy anchors the group emotionally — a deep attunement to feelings, memory, and what makes a place feel like home',
-  Leo:         'this energy brings warmth and creative confidence to the group — a natural ability to make others feel seen and celebrated',
-  Virgo:       'this energy shows up as quiet competence — the group member who notices what needs doing and handles it without fanfare',
-  Libra:       'this energy smooths the group dynamic — a pull toward fairness, beauty, and keeping things in balance',
-  Scorpio:     'this energy brings depth and perception — the willingness to go beneath the surface and sit with difficult truths',
-  Sagittarius: 'this energy expands the group\'s vision — a philosophical streak and a pull toward meaning, travel, and big questions',
-  Capricorn:   'this energy brings structure and long-term thinking — the part of the group that plans, commits, and follows through',
-  Aquarius:    'this energy challenges the group to think differently — independence, innovation, and a vision that may run ahead of its time',
-  Pisces:      'this energy brings empathy and imagination — a sensitivity to what others feel and a rich, intuitive inner world',
+  Aries:       'when this energy shows up in a group, it tends to push everyone toward action. The spark that gets things started.',
+  Taurus:      'this energy brings a grounding quality to the group. Patience, steadiness, and a reminder to slow down and enjoy the process.',
+  Gemini:      'this energy keeps the group curious and connected. New ideas, lively conversation, and a restless need to keep learning.',
+  Cancer:      'this energy anchors the group emotionally. A deep attunement to feelings, memory, and what makes a place feel like home.',
+  Leo:         'this energy brings warmth and creative confidence to the group. A natural ability to make others feel seen and celebrated.',
+  Virgo:       'this energy shows up as quiet competence. The group member who notices what needs doing and handles it without fanfare.',
+  Libra:       'this energy smooths the group dynamic. A pull toward fairness, beauty, and keeping things in balance.',
+  Scorpio:     'this energy brings depth and perception. The willingness to go beneath the surface and sit with difficult truths.',
+  Sagittarius: 'this energy expands the group\'s vision. A philosophical streak and a pull toward meaning, travel, and big questions.',
+  Capricorn:   'this energy brings structure and long-term thinking. The part of the group that plans, commits, and follows through.',
+  Aquarius:    'this energy challenges the group to think differently. Independence, innovation, and a vision that may run ahead of its time.',
+  Pisces:      'this energy brings empathy and imagination. A sensitivity to what others feel and a deep inner world.',
 }
 
 const PLANET_GLYPH = { sun: '☀', moon: '☽', mercury: '☿', venus: '♀', mars: '♂', jupiter: '♃', saturn: '♄' }
 
 const VENUS_SIGN_BLURB = {
-  Aries:       'Tends to be direct and impulsive in love — may act on attraction quickly and value honesty over subtlety.',
-  Taurus:      'Often drawn to comfort, sensuality, and lasting loyalty — may show love through physical presence and steadiness.',
-  Gemini:      'Tends to connect through conversation and mental spark — may need variety and intellectual stimulation in love.',
-  Cancer:      'Often nurturing and emotionally invested — may build love around a sense of home and emotional safety.',
-  Leo:         'Tends to be warm and generous in love — may need to feel appreciated and often expresses affection openly.',
-  Virgo:       'Often shows love through thoughtful gestures and attention to detail — may express care more through doing than saying.',
-  Libra:       'Tends to seek harmony and beauty in relationships — may prioritize partnership and go out of their way to avoid conflict.',
-  Scorpio:     'Often loves with depth and intensity — may take time to trust but tends to be deeply loyal once committed.',
-  Sagittarius: 'Tends to need space and adventure in love — may connect through shared experiences and philosophical conversation.',
-  Capricorn:   'Often reserved in expressing affection — may show love through commitment, reliability, and quiet devotion.',
-  Aquarius:    'Tends to approach love unconventionally — may value friendship, independence, and intellectual connection as the basis of intimacy.',
-  Pisces:      'Often deeply empathetic and emotionally open — may love without boundaries and absorb a partner\'s feelings easily.',
+  Aries:       'Tends to be direct and impulsive in love. May act on attraction quickly and value honesty over subtlety.',
+  Taurus:      'Often drawn to comfort, sensuality, and lasting loyalty. May show love through physical presence and steadiness.',
+  Gemini:      'Tends to connect through conversation and mental spark. May need variety and intellectual stimulation in love.',
+  Cancer:      'Often nurturing and emotionally invested. May build love around a sense of home and emotional safety.',
+  Leo:         'Tends to be warm and generous in love. May need to feel appreciated and often expresses affection openly.',
+  Virgo:       'Often shows love through thoughtful gestures and attention to detail. May express care more through doing than saying.',
+  Libra:       'Tends to seek harmony and beauty in relationships. May prioritize partnership and go out of their way to avoid conflict.',
+  Scorpio:     'Often loves with depth and intensity. May take time to trust but tends to be deeply loyal once committed.',
+  Sagittarius: 'Tends to need space and adventure in love. May connect through shared experiences and philosophical conversation.',
+  Capricorn:   'Often reserved in expressing affection. May show love through commitment, reliability, and quiet devotion.',
+  Aquarius:    'Tends to approach love unconventionally. May value friendship, independence, and intellectual connection as the basis of intimacy.',
+  Pisces:      'Often deeply empathetic and emotionally open. May love without boundaries and absorb a partner\'s feelings easily.',
 }
 
 const MARS_SIGN_BLURB = {
-  Aries:       'Tends to act quickly and directly — may be the first to take initiative and can bring high energy to any situation.',
-  Taurus:      'Often slow to start but persistent once moving — may surprise others with quiet determination and staying power.',
-  Gemini:      'Tends to channel energy through ideas and conversation — may approach challenges mentally before physically.',
-  Cancer:      'Often driven by emotion and a protective instinct — may fight hardest when someone they care about is affected.',
-  Leo:         'Tends to bring warmth and confidence to action — may need recognition for their efforts and often leads naturally.',
-  Virgo:       'Often precise and methodical in how they apply effort — may channel energy into getting things right rather than getting them fast.',
-  Libra:       'Tends to approach conflict through dialogue and diplomacy — may be uncomfortable with direct confrontation but firm on fairness.',
-  Scorpio:     'Often focused and deeply committed once engaged — may approach goals with quiet intensity and persistence.',
-  Sagittarius: 'Tends to bring enthusiasm and optimism to challenges — may need a meaningful goal to sustain effort over time.',
-  Capricorn:   'Often strategic and disciplined — may take a long-term approach and work steadily without needing external motivation.',
-  Aquarius:    'Tends to be driven by ideas and principles — may channel energy into innovation or challenging established systems.',
-  Pisces:      'Often motivated by compassion and creative vision — may direct energy toward helping, imagining, or connecting on a deeper level.',
+  Aries:       'Tends to act quickly and directly. May be the first to take initiative and can bring high energy to any situation.',
+  Taurus:      'Often slow to start but persistent once moving. May surprise others with quiet determination and staying power.',
+  Gemini:      'Tends to channel energy through ideas and conversation. May approach challenges mentally before physically.',
+  Cancer:      'Often driven by emotion and a protective instinct. May fight hardest when someone they care about is affected.',
+  Leo:         'Tends to bring warmth and confidence to action. May need recognition for their efforts and often leads naturally.',
+  Virgo:       'Often precise and methodical in how they apply effort. May channel energy into getting things right rather than getting them fast.',
+  Libra:       'Tends to approach conflict through dialogue and diplomacy. May be uncomfortable with direct confrontation but firm on fairness.',
+  Scorpio:     'Often focused and deeply committed once engaged. May approach goals with quiet intensity and persistence.',
+  Sagittarius: 'Tends to bring enthusiasm and optimism to challenges. May need a meaningful goal to sustain effort over time.',
+  Capricorn:   'Often strategic and disciplined. May take a long-term approach and work steadily without needing external motivation.',
+  Aquarius:    'Tends to be driven by ideas and principles. May channel energy into innovation or challenging established systems.',
+  Pisces:      'Often motivated by compassion and creative vision. May direct energy toward helping, imagining, or connecting on a deeper level.',
 }
 
 const ELEMENT_THREAD_BLURB = {
@@ -139,12 +139,12 @@ const ELEMENT_THREAD_BLURB = {
 }
 
 const SIBLING_ADAPTABILITY = {
-  'Cardinal-Cardinal': 'both initiators — may compete for direction, but together spark real momentum',
-  'Cardinal-Fixed':    'initiation meets endurance — one starts it, one sees it through',
-  'Cardinal-Mutable':  'spark meets flow — one launches, one shapes the path',
-  'Fixed-Fixed':       'immovable force — deep loyalty, shared stubbornness, and lasting bonds',
-  'Fixed-Mutable':     'anchor meets adapter — one holds steady while the other evolves',
-  'Mutable-Mutable':   'highly adaptable together — fluid, curious, and ever-shifting',
+  'Cardinal-Cardinal': 'both initiators. May compete for direction, but together spark real momentum.',
+  'Cardinal-Fixed':    'initiation meets endurance. One starts it, one sees it through.',
+  'Cardinal-Mutable':  'spark meets flow. One launches, one shapes the path.',
+  'Fixed-Fixed':       'immovable force. Deep loyalty, shared stubbornness, and lasting bonds.',
+  'Fixed-Mutable':     'anchor meets adapter. One holds steady while the other evolves.',
+  'Mutable-Mutable':   'highly adaptable together. Fluid, curious, and ever-shifting.',
 }
 
 const PLUTO_GENS = {
@@ -228,33 +228,33 @@ const MOON_STYLE = {
 }
 
 const ZODIAC_THREAD_BLURB = {
-  Aries:       'A streak of boldness runs in this family — independent thinkers who act on instinct and resist being told what to do',
-  Taurus:      'A deep rootedness passes through the generations — this family prizes stability, comfort, and building things that last',
-  Gemini:      'Curiosity is the family inheritance — quick minds, a gift for conversation, and a need to keep learning',
-  Cancer:      'The home and its memory bind this family — emotional attunement, loyalty, and a fierce protectiveness of those they love',
-  Leo:         'A warmth and need for self-expression flows through — this family carries a natural light and doesn\'t shrink from being seen',
-  Virgo:       'A thread of precision and quiet devotion — these are the ones who notice the details, show up consistently, and fix things without being asked',
-  Libra:       'A need for harmony and fairness is woven through — this family values beauty, balance, and keeping the peace, sometimes to a fault',
-  Scorpio:     'Emotional depth and perception run strong — this family feels things fully, sees beneath the surface, and is shaped by transformation',
-  Sagittarius: 'An expansive, searching spirit recurs — this family is restless with meaning, drawn to big ideas, travel, and the question of why',
-  Capricorn:   'An ambition to build something lasting runs in the blood — this family respects discipline, earns trust slowly, and plays the long game',
-  Aquarius:    'An independent streak and a vision that runs ahead of its time — this family thinks differently and doesn\'t follow trends',
-  Pisces:      'A deep empathy and sensitivity recurs across the line — this family feels the world more than most and carries a strong imaginative inner life',
+  Aries:       'A streak of boldness runs in this family. Independent thinkers who act on instinct and resist being told what to do.',
+  Taurus:      'A deep rootedness passes through the generations. This family prizes stability, comfort, and building things that last.',
+  Gemini:      'Curiosity is the family inheritance. Quick minds, a gift for conversation, and a need to keep learning.',
+  Cancer:      'The home and its memory bind this family. Emotional attunement, loyalty, and a fierce protectiveness of those they love.',
+  Leo:         'A warmth and need for self-expression flows through. This family carries a natural light and doesn\'t shrink from being seen.',
+  Virgo:       'A thread of precision and quiet devotion. These are the ones who notice the details, show up consistently, and fix things without being asked.',
+  Libra:       'A need for harmony and fairness is woven through. This family values beauty, balance, and keeping the peace, sometimes to a fault.',
+  Scorpio:     'Emotional depth and perception run strong. This family feels things fully, sees beneath the surface, and is shaped by transformation.',
+  Sagittarius: 'An expansive, searching spirit recurs. This family is restless with meaning, drawn to big ideas, travel, and the question of why.',
+  Capricorn:   'An ambition to build something lasting runs in the blood. This family respects discipline, earns trust slowly, and plays the long game.',
+  Aquarius:    'An independent streak and a vision that runs ahead of its time. This family thinks differently and doesn\'t follow trends.',
+  Pisces:      'A deep empathy and sensitivity recurs across the line. This family feels the world more than most and carries a strong imaginative inner life.',
 }
 
 const SIGN_SHORT = {
-  Aries:       'acts first, thinks later — instinctive and driven by impulse',
-  Taurus:      'patient and deeply rooted — values stability and comfort above all',
-  Gemini:      'wired for connection and ideas — mentally restless, rarely still',
-  Cancer:      'nurturing and emotionally attuned — home and family come first',
-  Leo:         'warm and expressive — needs to be seen and loves to make others shine',
-  Virgo:       'precise and quietly devoted — notices what everyone else misses',
-  Libra:       'harmony-seeking and fair-minded — hates conflict, needs balance',
-  Scorpio:     'perceptive and emotionally intense — feels everything deeply',
-  Sagittarius: 'expansive and freedom-seeking — always chasing meaning and the horizon',
-  Capricorn:   'disciplined and driven — plays the long game, built to endure',
-  Aquarius:    'independent and ahead of their time — marches to their own beat',
-  Pisces:      'empathic and dreamy — moved by the unseen, feels others\' emotions',
+  Aries:       'energetic and bold, but can be impulsive. Acts first, thinks later.',
+  Taurus:      'reliable and patient, but can be stubborn. Values stability above all.',
+  Gemini:      'social and curious, but can be scattered. Mentally restless, rarely still.',
+  Cancer:      'nurturing and sensitive, but can be moody. Home and family come first.',
+  Leo:         'loyal and generous, but can be demanding. Needs to be seen and to make others shine.',
+  Virgo:       'organized and devoted, but can be a perfectionist. Notices what everyone else misses.',
+  Libra:       'charming and fair-minded, but can be indecisive. Needs balance, avoids conflict.',
+  Scorpio:     'perceptive and magnetic, but can be intense. Feels everything deeply.',
+  Sagittarius: 'candid and freedom-loving, but can be blunt. Always chasing meaning and the horizon.',
+  Capricorn:   'disciplined and ambitious, but can be serious. Plays the long game, built to endure.',
+  Aquarius:    'independent and innovative, but can be distant. Marches to their own beat.',
+  Pisces:      'empathic and intuitive, but can be detached. Absorbs the feelings of the room.',
 }
 
 function getArrivalStory(child, parents, elderSiblings) {
@@ -267,22 +267,22 @@ function getArrivalStory(child, parents, elderSiblings) {
   let main
   if (elCountBefore === 0) {
     const elsBefore = new Set(pool.map(n => n.data.element))
-    if (elsBefore.size + 1 === 4) main = `rounded out the family — brought a quality none of the others had`
+    if (elsBefore.size + 1 === 4) main = `rounded out the family. Brought a quality none of the others had.`
     else if (elderSiblings.length === 0) main = `brought ${qual} energy to a family that didn't have it yet`
-    else main = `introduced something new — ${qual}, a quality no one else here carries`
+    else main = `introduced something new. ${qual}, a quality no one else here carries.`
   } else {
     const matchingParent = parents.find(p => p.data.element === el)
     const matchingSibling = elderSiblings.find(s => s.data.element === el)
     const totalAfter = pool.length + 1
     const countAfter = elCountBefore + 1
     if (parents.length >= 2 && parents.every(p => p.data.element === el)) {
-      main = `born into it on both sides — ${qual} runs through this whole family`
+      main = `born into it on both sides. ${qual} runs through this whole family.`
     } else if (matchingParent && !matchingSibling) {
-      main = `took after ${matchingParent.data.name} — ${qual}, cut from the same cloth`
+      main = `took after ${matchingParent.data.name}. ${qual}, cut from the same cloth.`
     } else if (matchingSibling && !matchingParent) {
-      main = `shares ${qual} energy with ${matchingSibling.data.name} — the two carry the same thread`
+      main = `shares ${qual} energy with ${matchingSibling.data.name}. The two carry the same thread.`
     } else {
-      main = `${qual} — now ${countAfter} of ${totalAfter} in this family share this`
+      main = `${qual}. Now ${countAfter} of ${totalAfter} in this family share this.`
     }
   }
 
@@ -324,7 +324,7 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
       </p>
       {missingElements.length > 0 && (
         <p className="insight-note signature-missing">
-          No {missingElements.join(' or ')} energy — the {g} may seek this outside
+          No {missingElements.join(' or ')} energy. The {g} may seek this outside.
         </p>
       )}
     </div>
@@ -332,13 +332,13 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
 }
 
 const COMPAT_EXPLAIN = {
-  'Cosmic Echo':           'All four personal planets aligned — an extraordinarily rare resonance.',
-  'Rare Triple Alignment': 'Three shared placements — an uncommon and deep connection.',
-  'Soul Twins':            'Same Sun and Moon — they tend to express and feel in the same way.',
-  'Cosmic Twins':          'Same Sun sign — they may see their own qualities reflected in each other.',
-  'Mirror Signs':          'Opposite signs — complementary qualities that can feel magnetic or challenging.',
-  'Lunar Bond':            'Same Moon sign — similar emotional instincts and inner needs.',
-  'Sun-Moon Reflection':   'One person\'s Sun falls on the other\'s Moon — a natural sense of comfort.',
+  'Cosmic Echo':           'All four personal planets aligned. An extraordinarily rare resonance.',
+  'Rare Triple Alignment': 'Three shared placements. An uncommon and deep connection.',
+  'Soul Twins':            'Same Sun and Moon. They tend to express and feel in the same way.',
+  'Cosmic Twins':          'Same Sun sign. They may see their own qualities reflected in each other.',
+  'Mirror Signs':          'Opposite signs. Complementary qualities that can create a strong pull.',
+  'Lunar Bond':            'Same Moon sign. Similar emotional instincts and inner needs.',
+  'Sun-Moon Reflection':   'One person\'s Sun falls on the other\'s Moon. A natural sense of comfort.',
 }
 
 function FullCompatPairs({ pairs, title, isExporting, generationLevel }) {
@@ -389,7 +389,7 @@ function FullCompatPairs({ pairs, title, isExporting, generationLevel }) {
       )}
       {trimmedCount > 0 && (
         <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.2rem' }}>
-          + {trimmedCount} more pair{trimmedCount !== 1 ? 's' : ''} from younger generations — see full panel
+          + {trimmedCount} more pair{trimmedCount !== 1 ? 's' : ''} from younger generations (see full panel)
         </p>
       )}
     </div>
@@ -463,7 +463,7 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
       })}
       {trimmedCount > 0 && (
         <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.2rem' }}>
-          + {trimmedCount} younger {trimmedCount === 1 ? 'member' : 'members'} — see full panel for all roles
+          + {trimmedCount} younger {trimmedCount === 1 ? 'member' : 'members'} (see full panel for all roles)
         </p>
       )}
     </div>
@@ -568,51 +568,51 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     const bSunAMoon = srcMoon === tgt.data.sign
     if (aSunBMoon && bSunAMoon) {
       insights.push({ score: 10, tagline: 'Rare Mirror Bond', color: 'var(--gold)',
-        text: `${src.data.name}'s ${src.data.sign} sun falls on ${tgt.data.name}'s moon, and ${tgt.data.name}'s ${tgt.data.sign} sun falls on ${src.data.name}'s — they each embody what the other feels most deeply. Extraordinarily rare.` })
+        text: `${src.data.name}'s ${src.data.sign} sun falls on ${tgt.data.name}'s moon, and ${tgt.data.name}'s ${tgt.data.sign} sun falls on ${src.data.name}'s. They each embody what the other feels most deeply. Extraordinarily rare.` })
     } else if (aSunBMoon) {
       insights.push({ score: 8, tagline: 'Sun-Moon Connection', color: '#c4a8d4',
-        text: `${src.data.name}'s ${src.data.sign} sun falls on ${tgt.data.name}'s moon — ${src.data.name} naturally embodies what ${tgt.data.name} feels most deeply.` })
+        text: `${src.data.name}'s ${src.data.sign} sun falls on ${tgt.data.name}'s moon. ${src.data.name} naturally embodies what ${tgt.data.name} feels most deeply.` })
     } else if (bSunAMoon) {
       insights.push({ score: 8, tagline: 'Sun-Moon Connection', color: '#c4a8d4',
-        text: `${tgt.data.name}'s ${tgt.data.sign} sun falls on ${src.data.name}'s moon — ${tgt.data.name} naturally embodies what ${src.data.name} feels most deeply.` })
+        text: `${tgt.data.name}'s ${tgt.data.sign} sun falls on ${src.data.name}'s moon. ${tgt.data.name} naturally embodies what ${src.data.name} feels most deeply.` })
     }
 
     // Venus in partner's sun sign — deep admiration
     if (srcVenus && srcVenus === tgt.data.sign)
       insights.push({ score: 7, tagline: 'Venus Connection', color: 'var(--rose)',
-        text: `${src.data.name}'s Venus is in ${tgt.data.sign} — ${src.data.name} is drawn to exactly who ${tgt.data.name} is.` })
+        text: `${src.data.name}'s Venus is in ${tgt.data.sign}. ${src.data.name} is drawn to exactly who ${tgt.data.name} is.` })
     if (tgtVenus && tgtVenus === src.data.sign)
       insights.push({ score: 7, tagline: 'Venus Connection', color: 'var(--rose)',
-        text: `${tgt.data.name}'s Venus is in ${src.data.sign} — ${tgt.data.name} is drawn to exactly who ${src.data.name} is.` })
+        text: `${tgt.data.name}'s Venus is in ${src.data.sign}. ${tgt.data.name} is drawn to exactly who ${src.data.name} is.` })
 
     // Same moon sign — emotional twins
     if (srcMoon && tgtMoon && srcMoon === tgtMoon)
       insights.push({ score: 7, tagline: 'Emotional Twins', color: '#9dbbd4',
-        text: `Both ${srcMoon} moons — they feel and process the same way, an almost wordless emotional understanding.` })
+        text: `Both ${srcMoon} moons. They feel and process the same way, an almost wordless emotional understanding.` })
 
     // Same Venus sign — identical love language
     if (srcVenus && tgtVenus && srcVenus === tgtVenus)
       insights.push({ score: 6, tagline: 'Same Love Language', color: 'var(--rose)',
-        text: `Both Venus in ${srcVenus} — they show love the same way and want the same things from each other.` })
+        text: `Both Venus in ${srcVenus}. They show love the same way and want the same things from each other.` })
 
     // Compatible moons (different signs)
     if (srcMoon && tgtMoon && srcMoon !== tgtMoon) {
       const compat = areCompatible(getElement(srcMoon).element, getElement(tgtMoon).element)
       if (compat)
         insights.push({ score: 5, tagline: 'Emotionally Attuned', color: '#9dbbd4',
-          text: `${srcMoon} and ${tgtMoon} moons — compatible emotional styles. ${src.data.name} ${MOON_STYLE[srcMoon] ?? ''}; ${tgt.data.name} ${MOON_STYLE[tgtMoon] ?? ''}.` })
+          text: `${srcMoon} and ${tgtMoon} moons, compatible emotional styles. ${src.data.name} ${MOON_STYLE[srcMoon] ?? ''}; ${tgt.data.name} ${MOON_STYLE[tgtMoon] ?? ''}.` })
       else
         insights.push({ score: 2, tagline: 'Different Emotional Rhythms', color: '#c9a84c',
-          text: `${srcMoon} and ${tgtMoon} moons — they process feelings differently. ${src.data.name} ${MOON_STYLE[srcMoon] ?? ''}; ${tgt.data.name} ${MOON_STYLE[tgtMoon] ?? ''}.` })
+          text: `${srcMoon} and ${tgtMoon} moons, they process feelings differently. ${src.data.name} ${MOON_STYLE[srcMoon] ?? ''}; ${tgt.data.name} ${MOON_STYLE[tgtMoon] ?? ''}.` })
     }
 
     // Mars ↔ Venus elemental pull
     if (srcMars && tgtVenus && areCompatible(getElement(srcMars).element, getElement(tgtVenus).element))
       insights.push({ score: 4, tagline: 'Natural Pull', color: 'var(--rose)',
-        text: `${src.data.name}'s ${srcMars} Mars aligns with ${tgt.data.name}'s ${tgtVenus} Venus — natural attraction dynamic.` })
+        text: `${src.data.name}'s ${srcMars} Mars aligns with ${tgt.data.name}'s ${tgtVenus} Venus. A natural attraction dynamic.` })
     else if (tgtMars && srcVenus && areCompatible(getElement(tgtMars).element, getElement(srcVenus).element))
       insights.push({ score: 4, tagline: 'Natural Pull', color: 'var(--rose)',
-        text: `${tgt.data.name}'s ${tgtMars} Mars aligns with ${src.data.name}'s ${srcVenus} Venus — natural attraction dynamic.` })
+        text: `${tgt.data.name}'s ${tgtMars} Mars aligns with ${src.data.name}'s ${srcVenus} Venus. A natural attraction dynamic.` })
 
     if (insights.length === 0) {
       const compat = areCompatible(src.data.element, tgt.data.element)
@@ -1177,10 +1177,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <p className="bulk-hint">Add at least two members to reveal your celestial patterns.</p>
         <div className="insight-card insight-coming-soon">
           <h3 className="insight-heading">What you'll unlock</h3>
-          <p className="insight-note">🔥 <strong>Elemental makeup</strong> — which elements dominate your group</p>
-          <p className="insight-note">♊ <strong>Shared signs</strong> — who carries the same cosmic energy</p>
-          <p className="insight-note">💞 <strong>Partner harmony</strong> — elemental compatibility for couples</p>
-          <p className="insight-note">🔁 <strong>Sign &amp; element threads</strong> — cosmic patterns across generations</p>
+          <p className="insight-note">🔥 <strong>Elemental makeup</strong>: which elements dominate your group</p>
+          <p className="insight-note">♊ <strong>Shared signs</strong>: who carries the same cosmic energy</p>
+          <p className="insight-note">💞 <strong>Partner harmony</strong>: elemental flow for couples</p>
+          <p className="insight-note">🔁 <strong>Sign &amp; element threads</strong>: cosmic patterns across generations</p>
         </div>
       </div>
     )
@@ -1193,7 +1193,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <div className="insight-card insight-connect-prompt">
           <h3 className="insight-heading">One step away</h3>
           <p className="insight-note">
-            Your members are in — now <strong>connect them</strong> to unlock partner harmony, sign threads, compatibility scores, and more.
+            Your members are in. Now <strong>connect them</strong> to unlock partner harmony, sign threads, and more.
           </p>
           {(onEditFirst || onAddMore) && (
             <button type="button" className="insights-connect-cta" onClick={onEditFirst ?? onAddMore}>
@@ -1276,7 +1276,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <div className="dig-section">
           <div className="dig-section-header">
             <h3 className="dig-section-title">✦ The DIG</h3>
-            <p className="dig-section-desc">Your family's cosmic story — a Spotify Wrapped-style experience of your family's astrological DNA.</p>
+            <p className="dig-section-desc">Your family's cosmic story. A Wrapped-style experience of your family's astrological DNA.</p>
           </div>
           {nodes.length < 3 ? (
             <div className="dig-section-gate">
@@ -1334,7 +1334,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                   if (isMobile && navigator.share) {
                     const file = new File([blob], filename, { type: 'image/png' })
                     if (navigator.canShare?.({ files: [file] })) {
-                      await navigator.share({ files: [file], title: 'The DIG — AstroDig', text: 'My family\'s cosmic story ✦' })
+                      await navigator.share({ files: [file], title: 'The DIG, AstroDig', text: 'My family\'s cosmic story ✦' })
                       setDigExporting(false)
                       return
                     }
@@ -1397,7 +1397,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                 if (isMobile && navigator.share) {
                   const file = new File([blob], `the-dig-${slug}-summary.png`, { type: 'image/png' })
                   if (navigator.canShare?.({ files: [file] })) {
-                    await navigator.share({ files: [file], title: 'The DIG — AstroDig', text: 'My family\'s cosmic story ✦' })
+                    await navigator.share({ files: [file], title: 'The DIG, AstroDig', text: 'My family\'s cosmic story ✦' })
                     setDigExporting(false)
                     return
                   }
@@ -1435,7 +1435,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {insightsTab === 'insights' && (<>
 
       <p className="insight-whisper insight-whisper--standalone" style={{ textAlign: 'center', padding: '0.2rem 1rem 0.4rem' }}>
-        These insights describe tendencies and patterns, not certainties. A birth chart is one layer of a much bigger picture — how you live it evolves over time.
+        These insights describe tendencies and patterns, not certainties. A birth chart is one layer of a much bigger picture, and how you live it evolves over time.
       </p>
 
       {/* 1. Family Signature */}
@@ -1492,7 +1492,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           )
         })()}
         <p className="insight-whisper" style={{ marginTop: '0.4rem' }}>
-          Sun sign reflects how you tend to show up in the world — your outward identity and the energy others notice first.
+          Sun sign reflects how you tend to show up in the world. Your outward identity and the energy others notice first.
         </p>
       </div>
 
@@ -1544,7 +1544,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             )
           })()}
           <p className="insight-whisper" style={{ marginTop: '0.4rem' }}>
-            Moon sign speaks to emotional needs and inner rhythms — it often tells a different story than the Sun sign, and that tension is part of what makes a chart interesting.
+            Moon sign speaks to emotional needs and inner rhythms. It often tells a different story than the Sun sign, and that tension is part of what makes a chart interesting.
           </p>
         </div>
       )}
@@ -1553,7 +1553,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {groupElementMap.total >= 4 && (
         <div className="insight-card">
           <h3 className="insight-heading">Collective Element Map</h3>
-          <p className="insight-whisper">Counting personal planets — Sun, Moon, Mercury, Venus, and Mars — across every member.</p>
+          <p className="insight-whisper">Counting personal planets (Sun, Moon, Mercury, Venus, and Mars) across every member.</p>
           {ELEMENTS.map(el => {
             const count = groupElementMap[el]
             const pct = Math.round(count / groupElementMap.total * 100)
@@ -1580,7 +1580,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           })}
           {groupElementMap.missing.length > 0 && (
             <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.3rem' }}>
-              Missing {groupElementMap.missing.join(' and ')} — those qualities may be sought outside the {isGroupOnly ? 'group' : 'family'}.
+              Missing {groupElementMap.missing.join(' and ')}. Those qualities may be sought outside the {isGroupOnly ? 'group' : 'family'}.
             </p>
           )}
           <p className="insight-whisper" style={{ marginTop: '0.4rem' }}>
@@ -1648,7 +1648,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             moonNodes.filter(n => n.data.moonSign === sign).some(m => warningsPerNode.get(m.id)?.has('moon'))
           ) && (
             <p className="insight-note" style={{ marginTop: '0.15rem', color: 'var(--text-muted)', fontSize: '0.7rem' }}>
-              ⚠ Moon near sign boundary — add birth time for certainty
+              ⚠ Moon near sign boundary, add birth time for certainty
             </p>
           )}
         </div>
@@ -1660,7 +1660,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         const items = [
           topBonds.length > 0 && { icon: '✦', label: `${topBonds.length} Notable Bond${topBonds.length > 1 ? 's' : ''}`, detail: rareCount > 0 ? `including ${rareCount} rare` : `between ${topBonds[0]?.a.data.name} & others` },
           (sharedVenusSigns.length + sharedMarsSigns.length) > 0 && { icon: '♀♂', label: 'Venus & Mars Shared Signs', detail: `${sharedVenusSigns.length + sharedMarsSigns.length} match${sharedVenusSigns.length + sharedMarsSigns.length > 1 ? 'es' : ''} found` },
-          couples.length > 0 && { icon: '💕', label: 'Partner Compatibility', detail: `${couples.length} pair${couples.length > 1 ? 's' : ''} — ${couples[0]?.src.data.name} & ${couples[0]?.tgt.data.name}${couples.length > 1 ? ' + more' : ''}` },
+          couples.length > 0 && { icon: '💕', label: 'Partner Harmony', detail: `${couples.length} pair${couples.length > 1 ? 's' : ''} — ${couples[0]?.src.data.name} & ${couples[0]?.tgt.data.name}${couples.length > 1 ? ' + more' : ''}` },
           signThreadList.length > 0 && { icon: '🧬', label: 'Zodiac Threads', detail: `${signThreadList.length} sign${signThreadList.length > 1 ? 's' : ''} running through generations` },
           { icon: '★', label: 'Planetary Patterns', detail: 'sign concentrations across the group' },
           { icon: '🎭', label: `${isGroupOnly ? 'Group' : 'Family'} Roles & Archetypes`, detail: `${nodes.length} members analyzed` },
@@ -1697,14 +1697,14 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* 4. Notable Bonds (premium) */}
       {topBonds.length > 0 && (() => {
         const BOND_EXPLAIN = {
-          'cosmic-echo': 'Multiple personal planets in the same sign is extraordinarily rare — it suggests a deep, almost fated resonance between these two.',
+          'cosmic-echo': 'Multiple personal planets in the same sign is extraordinarily rare. It suggests a deep resonance between these two.',
           'rare-alignment': 'Three shared sign placements is uncommon and tends to create a feeling of being fundamentally understood by the other person.',
-          'soul-twins': 'Sharing both Sun and Moon signs means their outward identity and inner emotional world are built from the same material — they may instinctively understand each other.',
-          'cosmic-twins': 'Same Sun sign means they tend to express themselves in similar ways — they may see parts of themselves reflected in each other.',
-          'lunar-bond': 'Shared Moon sign suggests similar emotional needs and instincts — they may process feelings in the same way without having to explain.',
-          'mirror': 'Opposite signs sit across the zodiac from each other — they often represent complementary qualities that can feel magnetic or challenging.',
-          'sun-moon-reflection': 'When one person\'s Sun lands on the other\'s Moon, it can create a natural sense of comfort — one embodies outwardly what the other feels inwardly.',
-          'natural-flow': 'Compatible elements (Fire-Air or Earth-Water) tend to support and amplify each other — these two may find it easy to get along.',
+          'soul-twins': 'Sharing both Sun and Moon signs means their outward identity and inner emotional world are built from the same material. They may instinctively understand each other.',
+          'cosmic-twins': 'Same Sun sign means they tend to express themselves in similar ways. They may see parts of themselves reflected in each other.',
+          'lunar-bond': 'Shared Moon sign suggests similar emotional needs and instincts. They may process feelings in the same way without having to explain.',
+          'mirror': 'Opposite signs sit across the zodiac from each other. They often represent complementary qualities that can create a strong pull.',
+          'sun-moon-reflection': 'When one person\'s Sun lands on the other\'s Moon, it can create a natural sense of comfort. One embodies outwardly what the other feels inwardly.',
+          'natural-flow': 'Compatible elements (Fire-Air or Earth-Water) tend to support and amplify each other. These two may find it easy to get along.',
         }
         return (
         <div className="insight-card">
@@ -1836,7 +1836,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <div className="insight-card">
           <h3 className="insight-heading">Zodiac Threads<span className="insight-pro-tag">✦</span></h3>
           <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.1rem' }}>
-            Like a gene that runs in families — this sign keeps showing up across generations, carried through different planets in different people.
+            Like a gene that runs in families. This sign keeps showing up across generations, carried through different planets in different people.
           </p>
           {topZodiacThreads.map(({ sign, byGen, gens }) => (
             <div key={sign} style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
@@ -1884,7 +1884,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <div className="insight-card">
           <h3 className="insight-heading">✦ Family Arrivals<span className="insight-pro-tag">✦</span></h3>
           <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem' }}>
-            What each child brought to the mix — in energy, personality, and the family dynamic.
+            What each child brought to the mix, in energy, personality, and the family dynamic.
           </p>
           {arrivalGroups.map((group, gi) => {
             const coupleLabel = `${group.parents[0].data.name} & ${group.parents[1].data.name}`
@@ -1957,16 +1957,16 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {groupHotspots.length > 0 && (() => {
         function describeHotspot(spot) {
           const SIGN_THEMES = {
-            Aries:       { core: 'initiative and action', daily: 'Conversations may move fast. New ideas tend to spark quickly — follow-through may be the challenge.' },
+            Aries:       { core: 'initiative and action', daily: 'Conversations may move fast. New ideas tend to spark quickly, and follow-through may be the challenge.' },
             Taurus:      { core: 'comfort and stability', daily: 'Shared meals, familiar routines, and creating physical warmth together may be a recurring theme.' },
-            Gemini:      { core: 'communication and ideas', daily: 'Gatherings probably run long. The group may process everything by talking it through — sometimes at the same time.' },
+            Gemini:      { core: 'communication and ideas', daily: 'Gatherings probably run long. The group may process everything by talking it through, sometimes at the same time.' },
             Cancer:      { core: 'emotional safety and home', daily: 'Loyalty runs deep here. Family traditions, shared memories, and a strong protective instinct may define the group dynamic.' },
             Leo:         { core: 'self-expression and warmth', daily: 'Celebrating each other may come naturally. The group might be drawn to big moments and making sure no one feels overlooked.' },
-            Virgo:       { core: 'precision and service', daily: 'Helping each other is a love language here. Standards may run high — both for the group and for themselves.' },
-            Libra:       { core: 'harmony and fairness', daily: 'Conflict avoidance may be a pattern. Real effort goes into keeping things balanced — sometimes at the cost of directness.' },
+            Virgo:       { core: 'precision and service', daily: 'Helping each other is a love language here. Standards may run high, both for the group and for themselves.' },
+            Libra:       { core: 'harmony and fairness', daily: 'Conflict avoidance may be a pattern. Real effort goes into keeping things balanced, sometimes at the cost of directness.' },
             Scorpio:     { core: 'depth and honesty', daily: 'Surface-level interactions may not satisfy this group. There\'s likely a preference for truth, even when it\'s uncomfortable.' },
-            Sagittarius: { core: 'meaning and expansion', daily: 'Big questions, new experiences, and a restless need to keep growing may bring the group together — and pull it in new directions.' },
-            Capricorn:   { core: 'responsibility and structure', daily: 'The group may naturally organize around goals and timelines. Long-term planning might be a shared strength — and a shared pressure.' },
+            Sagittarius: { core: 'meaning and expansion', daily: 'Big questions, new experiences, and a restless need to keep growing may bring the group together, and pull it in new directions.' },
+            Capricorn:   { core: 'responsibility and structure', daily: 'The group may naturally organize around goals and timelines. Long-term planning might be a shared strength, and a shared pressure.' },
             Aquarius:    { core: 'independence and innovation', daily: 'Doing things differently may be a point of pride. The group might resist convention and gravitate toward unconventional approaches.' },
             Pisces:      { core: 'empathy and sensitivity', daily: 'Unspoken feelings may carry a lot of weight. Creative or spiritual pursuits might be where the group feels most connected.' },
           }
@@ -1985,7 +1985,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         return (
         <div className="insight-card">
           <h3 className="insight-heading">Group Hotspots<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-whisper">Zones of the zodiac where multiple people's planets concentrate — these themes tend to echo through the group's daily life.</p>
+          <p className="insight-whisper">Zones of the zodiac where multiple people's planets concentrate. These themes tend to echo through the group's daily life.</p>
           {groupHotspots.slice(0, 3).map((spot, i) => (
             <div key={i} style={{ marginBottom: '0.6rem' }}>
               <p className="insight-note">
@@ -2017,7 +2017,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                 </p>
               )}
               <p className="insight-whisper" style={{ marginTop: '0.2rem' }}>
-                Gaps aren't weaknesses — they're areas where the group may seek those qualities in others or develop them over time.
+                Gaps aren't weaknesses. They're areas where the group may seek those qualities in others or develop them over time.
               </p>
             </div>
           )}
@@ -2142,7 +2142,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           onClick={() => onInsightsTabChange?.('dig')}
         >
           <span className="dig-teaser-label">✦ The DIG</span>
-          <span className="dig-teaser-text">See your family's cosmic story — Wrapped-style slides, shareable highlights, and more.</span>
+          <span className="dig-teaser-text">See your family's cosmic story. Wrapped-style slides, shareable highlights, and more.</span>
           <span className="dig-teaser-arrow">View The DIG →</span>
         </button>
       )}
@@ -2153,7 +2153,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* 14. Consult CTA — only on insights tab */}
       {insightsTab === 'insights' && <div className="insight-consult-cta">
         <p className="insight-consult-cta-text">
-          <strong>Want a deeper reading?</strong> Book a personal astrology consultation with Christina — explore your chart, your family's patterns, and what the stars reveal about your connections.
+          <strong>Want a deeper reading?</strong> Book a personal astrology consultation with Christina. Explore your chart, your family's patterns, and what the stars reveal about your connections.
         </p>
         {exporting ? (
           <p className="insight-consult-contact">

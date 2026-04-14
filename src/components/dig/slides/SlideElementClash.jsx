@@ -8,7 +8,7 @@ const CLASH_FLAVOR = {
 export default function SlideElementClash({ data }) {
   const { nodeA, nodeB, elementA, elementB, clashScore } = data
   const key = [elementA, elementB].sort().join('-')
-  const flavor = CLASH_FLAVOR[key] || { tension: 'cosmic friction', desc: 'Different elements, different wavelengths — but that\'s what makes it interesting.' }
+  const flavor = CLASH_FLAVOR[key] || { tension: 'cosmic friction', desc: 'Different elements, different wavelengths, but that\'s what makes it interesting.' }
 
   return (
     <div className="dig-slide-content dig-sparkles">

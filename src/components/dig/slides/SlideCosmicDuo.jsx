@@ -1,11 +1,11 @@
 const DUO_LABELS = {
-  'cosmic-echo':         { title: 'Cosmically Linked', sub: 'their charts are basically copy-paste', badge: '✦✦✦ INSANELY RARE' },
-  'rare-alignment':      { title: 'Written in the Stars', sub: 'this alignment almost never happens', badge: '✦✦ VERY RARE' },
-  'soul-twins':          { title: 'Soul Twins', sub: 'same sun AND same moon — they just get each other', badge: 'TWIN FLAME ENERGY' },
-  'cosmic-twins':        { title: 'Cosmic Twins', sub: 'same sun sign — they speak the same language', badge: 'MATCHING ENERGY' },
-  'lunar-bond':          { title: 'Emotional Twins', sub: 'same moon sign — they feel things the same way', badge: 'DEEP CONNECTION' },
-  'mirror':              { title: 'Mirror Match', sub: 'opposite signs that complete each other', badge: 'YIN & YANG' },
-  'sun-moon-reflection': { title: 'Sun-Moon Reflection', sub: 'one shines where the other feels — perfect balance', badge: 'COSMIC BALANCE' },
+  'cosmic-echo':         { title: 'Cosmic Echo', sub: 'their charts are basically copy-paste', badge: '✦✦✦ INSANELY RARE' },
+  'rare-alignment':      { title: 'Rare Alignment', sub: 'this kind of overlap almost never happens', badge: '✦✦ VERY RARE' },
+  'soul-twins':          { title: 'Soul Twins', sub: 'same sun AND same moon. They just get each other.', badge: 'DEEP CONNECTION' },
+  'cosmic-twins':        { title: 'Cosmic Twins', sub: 'same sun sign. They speak the same language.', badge: 'MATCHING ENERGY' },
+  'lunar-bond':          { title: 'Emotional Twins', sub: 'same moon sign. They feel things the same way.', badge: 'DEEP CONNECTION' },
+  'mirror':              { title: 'Mirror Match', sub: 'opposite signs that tend to balance each other out', badge: 'YIN & YANG' },
+  'sun-moon-reflection': { title: 'Sun-Moon Reflection', sub: 'one shines where the other feels. A natural balance.', badge: 'COSMIC BALANCE' },
 }
 
 export default function SlideCosmicDuo({ data }) {

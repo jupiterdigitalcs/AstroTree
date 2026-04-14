@@ -1,8 +1,8 @@
 const VENUS_ELEMENT_DESC = {
-  Fire:  'love through action — direct, passionate, and unafraid to go after what they want',
-  Earth: 'love through presence — steady, sensual, and built on loyalty and comfort',
-  Air:   'love through connection — mental spark, conversation, and shared ideas',
-  Water: 'love through feeling — intuitive, nurturing, and emotionally open',
+  Fire:  'love through action. Direct, passionate, and unafraid to go after what they want',
+  Earth: 'love through presence. Steady, sensual, and built on loyalty and comfort',
+  Air:   'love through connection. Mental spark, conversation, and shared ideas',
+  Water: 'love through feeling. Intuitive, nurturing, and emotionally open',
 }
 
 export default function SlideVenusVibes({ data }) {
@@ -20,12 +20,12 @@ export default function SlideVenusVibes({ data }) {
       <p className="dig-body dig-fly-in" style={{ '--i': 2 }}>
         {topCount >= 2
           ? `${topNames?.join(' and ')} tend to express ${VENUS_ELEMENT_DESC[topElement] || 'affection in their own way'}.`
-          : `${nodes?.length || 0} people, each with a different way of connecting — your group covers a wide range of love languages.`
+          : `${nodes?.length || 0} people, each with a different way of connecting. Your group covers a wide range of love languages.`
         }
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3, fontSize: '0.75rem', opacity: 0.6 }}>
-        Venus reflects how each person tends to give and receive love — not what they say, but what they value.
+        Venus reflects how each person tends to give and receive love. Not what they say, but what they value.
       </p>
     </div>
   )

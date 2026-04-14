@@ -17,7 +17,7 @@ export default function SlideMoonMirror({ data }) {
         </p>
         <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
         <p className="dig-body dig-fade-in" style={{ '--i': 3, fontSize: '0.8rem', opacity: 0.7 }}>
-          This means the group covers a wide range of emotional styles — and may need to work a little harder to understand each other's inner worlds.
+          This means the group covers a wide range of emotional styles, and may need to work a little harder to understand each other's inner worlds.
         </p>
       </div>
     )
@@ -38,10 +38,10 @@ export default function SlideMoonMirror({ data }) {
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3 }}>
-        They tend to process emotions in similar ways — a shared inner rhythm that often runs deeper than surface compatibility.
+        They tend to process emotions in similar ways. A shared inner rhythm that often runs deeper than what's on the surface.
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.75rem', opacity: 0.5, marginTop: '0.6rem' }}>
-        Moon sign reflects emotional needs — sharing one can create a quiet, unspoken understanding.
+        Moon sign reflects emotional needs. Sharing one can create a quiet, unspoken understanding.
       </p>
     </div>
   )

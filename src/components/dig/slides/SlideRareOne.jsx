@@ -17,11 +17,11 @@ export default function SlideRareOne({ data }) {
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3 }}>
         The only {d.sign} in a chart of {totalMembers}.
-        Nobody else carries this energy — {d.name.split(' ')[0]} brings something
+        Nobody else carries this energy. {d.name.split(' ')[0]} brings something
         no one else can.
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.75rem', opacity: 0.5, marginTop: '0.6rem' }}>
-        Sole {d.sign} — irreplaceable cosmic fingerprint
+        Sole {d.sign} — an irreplaceable cosmic fingerprint
       </p>
     </div>
   )

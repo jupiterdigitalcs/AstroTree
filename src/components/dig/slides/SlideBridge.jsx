@@ -19,7 +19,7 @@ export default function SlideBridge({ data }) {
         {node.data?.name}
       </h2>
       <p className="dig-body dig-fly-in" style={{ '--i': 2 }}>
-        Their chart makes connections to {connectedTo?.length || 0} other people — the person whose planets tend to touch everyone else's.
+        Their chart makes connections to {connectedTo?.length || 0} other people. The person whose planets tend to touch everyone else's.
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3, fontSize: '0.8rem' }}>

@@ -38,24 +38,24 @@ export const POLARITY_GROUP = {
 
 export const FAMILY_SIGNATURE_DESCRIPTIONS = {
   Fire: {
-    Cardinal: 'leads with bold, pioneering energy — a family of starters and spark-setters',
-    Fixed:    'burns with fierce loyalty and unstoppable will — a family of champions',
-    Mutable:  'blazes with adaptable passion — a family of adventurers and seekers',
+    Cardinal: 'leads with bold, pioneering energy. A family of starters and spark-setters.',
+    Fixed:    'burns with fierce loyalty and unstoppable will. A family of champions.',
+    Mutable:  'blazes with adaptable passion. A family of adventurers and seekers.',
   },
   Earth: {
-    Cardinal: 'builds with purposeful ambition — a family of founders and architects',
-    Fixed:    'stands with immovable strength — a family of providers and guardians',
-    Mutable:  'flows with practical wisdom — a family of craftspeople and healers',
+    Cardinal: 'builds with purposeful ambition. A family of founders and architects.',
+    Fixed:    'stands with immovable strength. A family of providers and guardians.',
+    Mutable:  'flows with practical wisdom. A family of craftspeople and healers.',
   },
   Air: {
-    Cardinal: 'leads through ideas and connection — a family of visionaries and communicators',
-    Fixed:    'holds to intellectual convictions — a family of thinkers and idealists',
-    Mutable:  'dances with wit and curiosity — a family of learners and connectors',
+    Cardinal: 'leads through ideas and connection. A family of visionaries and communicators.',
+    Fixed:    'holds to intellectual convictions. A family of thinkers and idealists.',
+    Mutable:  'moves with wit and curiosity. A family of learners and connectors.',
   },
   Water: {
-    Cardinal: 'leads with deep emotional intelligence — a family of nurturers and protectors',
-    Fixed:    'runs deep with resilient feeling — a family of keepers and loyal hearts',
-    Mutable:  'flows with empathy and openness — a family of dreamers and sensitives',
+    Cardinal: 'leads with deep emotional intelligence. A family of nurturers and protectors.',
+    Fixed:    'runs deep with resilient feeling. A family of keepers and loyal hearts.',
+    Mutable:  'flows with empathy and openness. A family of dreamers and sensitives.',
   },
 }
 

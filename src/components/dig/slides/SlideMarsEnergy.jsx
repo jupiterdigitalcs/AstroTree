@@ -1,8 +1,8 @@
 const MARS_ELEMENT_DESC = {
-  Fire:  'drive through action — direct, competitive, and quick to move',
-  Earth: 'drive through persistence — steady, determined, and quietly unstoppable',
-  Air:   'drive through ideas — strategic, communicative, and mentally agile',
-  Water: 'drive through feeling — emotionally motivated and fiercely protective',
+  Fire:  'drive through action. Direct, competitive, and quick to move',
+  Earth: 'drive through persistence. Steady, determined, and quietly unstoppable',
+  Air:   'drive through ideas. Strategic, communicative, and mentally agile',
+  Water: 'drive through feeling. Emotionally motivated and fiercely protective',
 }
 
 export default function SlideMarsEnergy({ data }) {
@@ -20,7 +20,7 @@ export default function SlideMarsEnergy({ data }) {
       <p className="dig-body dig-fly-in" style={{ '--i': 2 }}>
         {topCount >= 2
           ? `${topNames?.join(' and ')} tend to express ${MARS_ELEMENT_DESC[topElement] || 'energy in their own way'}.`
-          : `${nodes?.length || 0} people, each with a different source of drive — this group covers many approaches to getting things done.`
+          : `${nodes?.length || 0} people, each with a different source of drive. This group covers many approaches to getting things done.`
         }
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />

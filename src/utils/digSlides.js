@@ -52,26 +52,26 @@ function totalPlanetCount(node) {
 
 // Data-derived superlatives — titles earned from chart math, not sign lookups
 const ELEMENT_SUPERLATIVES = {
-  Fire:  { title: 'The Spark', sub: 'The most Fire energy in the group — tends to be the one who gets things started.' },
-  Earth: { title: 'The Anchor', sub: 'The most Earth energy in the group — often the steadying presence others rely on.' },
-  Air:   { title: 'The Connector', sub: 'The most Air energy in the group — tends to be the one linking people and ideas.' },
-  Water: { title: 'The Empath', sub: 'The most Water energy in the group — often the first to sense what others are feeling.' },
+  Fire:  { title: 'The Spark', sub: 'The most Fire energy in the group. Tends to be the one who gets things started.' },
+  Earth: { title: 'The Anchor', sub: 'The most Earth energy in the group. Often the steadying presence others rely on.' },
+  Air:   { title: 'The Connector', sub: 'The most Air energy in the group. Tends to be the one linking people and ideas.' },
+  Water: { title: 'The Empath', sub: 'The most Water energy in the group. Often the first to sense what others are feeling.' },
 }
 
 // Moon-based emotional processing styles — genuine, hedging
 const MOON_VIBES = {
-  Aries:       'tends to process emotions quickly — may need action or movement to work through feelings',
-  Taurus:      'takes time to open up — may need comfort, routine, and physical reassurance to feel safe',
-  Gemini:      'tends to process feeling through conversation — often needs a sounding board to make sense of things',
-  Cancer:      'deeply attuned to emotional undercurrents — may carry feelings for others without realizing it',
-  Leo:         'often needs to feel seen and valued — may express emotions more openly than most',
-  Virgo:       'tends to analyze feelings before expressing them — may show care through practical gestures',
-  Libra:       'often processes emotions in relationship to others — may need dialogue to find their own center',
-  Scorpio:     'feels things with unusual intensity — tends to hold emotions close and process privately',
-  Sagittarius: 'may need space and perspective to process — tends to look for meaning in difficult feelings',
-  Capricorn:   'often keeps emotions contained — may process through structure, work, or taking responsibility',
-  Aquarius:    'tends to step back and observe emotions before engaging — may need intellectual space to process',
-  Pisces:      'highly permeable to the feelings of others — may need solitude to distinguish their own emotions',
+  Aries:       'tends to process emotions quickly. May need action or movement to work through feelings.',
+  Taurus:      'takes time to open up. May need comfort, routine, and physical reassurance to feel safe.',
+  Gemini:      'tends to process feeling through conversation. Often needs a sounding board to make sense of things.',
+  Cancer:      'deeply attuned to emotional undercurrents. May carry feelings for others without realizing it.',
+  Leo:         'often needs to feel seen and valued. May express emotions more openly than most.',
+  Virgo:       'tends to analyze feelings before expressing them. May show care through practical gestures.',
+  Libra:       'often processes emotions in relationship to others. May need dialogue to find their own center.',
+  Scorpio:     'feels things with unusual intensity. Tends to hold emotions close and process privately.',
+  Sagittarius: 'may need space and perspective to process. Tends to look for meaning in difficult feelings.',
+  Capricorn:   'often keeps emotions contained. May process through structure, work, or taking responsibility.',
+  Aquarius:    'tends to step back and observe emotions before engaging. May need intellectual space to process.',
+  Pisces:      'highly permeable to the feelings of others. May need solitude to distinguish their own emotions.',
 }
 
 // ── Helpers for new slides ──────────────────────────────────────────────────

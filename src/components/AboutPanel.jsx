@@ -32,18 +32,18 @@ export default function AboutPanel() {
       <div className="about-card">
         <h3 className="about-heading">Meet the Astrologer</h3>
         <p className="about-bio">
-          Hi, I'm Christina — astrologer and creator behind Jupiter Digital.
+          Hi, I'm Christina, astrologer and creator behind Jupiter Digital.
           I believe the planets mirror the patterns of our lives, and that
           the signs we share with the people around us reveal something
           real about how we connect. AstroDig is my way of making those
-          patterns visible — so you can see your family, friends, and
+          patterns visible so you can see your family, friends, and
           partners through a cosmic lens.
         </p>
       </div>
 
       {/* ── App note ──────────────────────────────────────────────────── */}
       <p className="about-app-note">
-        Enjoying AstroDig? Follow us on social or visit the shop — it means the world.
+        Enjoying AstroDig? Follow us on social or visit the shop. It means the world.
       </p>
 
       {/* ── Social links ──────────────────────────────────────────────── */}
@@ -103,44 +103,50 @@ export default function AboutPanel() {
 
       {/* ── How It Works ──────────────────────────────────────────────── */}
       <div className="about-card">
-        <h3 className="about-heading">How It Works — The Astrology</h3>
+        <h3 className="about-heading">How It Works</h3>
         <p className="about-bio">
-          AstroDig uses birth dates to calculate planetary placements for each person. Here's what each planet actually tells us:
+          Astrology is the study of how the planets mirror human behavior on earth. The planets aren't doing anything "to you." They reflect patterns, and it's up to you what you do with that awareness. You are way more than just your sun sign!
+        </p>
+        <p className="about-bio" style={{ marginTop: '0.5rem' }}>
+          AstroDig uses birth dates to calculate planetary placements for each person. Here's what each planet represents:
         </p>
         <div className="about-howit-list">
           <div className="about-howit-item">
             <span className="about-howit-glyph">☀</span>
             <div>
-              <strong>Sun Sign</strong> — your core identity, the version of yourself that shows up most naturally. The sign most people know ("I'm a Scorpio").
+              <strong>Sun</strong> — direction, purpose, ego, identity. The sign most people know ("I'm a Scorpio"), but only one piece of the full picture.
             </div>
           </div>
           <div className="about-howit-item">
             <span className="about-howit-glyph">☽</span>
             <div>
-              <strong>Moon Sign</strong> — your emotional inner world. How you feel, react, and what you need to feel safe. Requires birth date only — no time needed.
+              <strong>Moon</strong> — emotions, body, inner world. How you feel, react, and what you need to feel safe. Requires birth date only, no time needed.
             </div>
           </div>
           <div className="about-howit-item">
             <span className="about-howit-glyph">☿</span>
             <div>
-              <strong>Mercury</strong> — how you think and communicate. Quick or deliberate? Detail-focused or big-picture? Two people with the same Mercury understand each other's logic instantly.
+              <strong>Mercury</strong> — communication, mind, thinking. Quick or deliberate? Detail-focused or big-picture? Two people with the same Mercury understand each other's logic instantly.
             </div>
           </div>
           <div className="about-howit-item">
             <span className="about-howit-glyph">♀</span>
             <div>
-              <strong>Venus</strong> — how you love and what you value. Your relationship style, what you're drawn to, and how you express affection.
+              <strong>Venus</strong> — love, values, finances, beauty. Your relationship style, what you're drawn to, and how you express affection.
             </div>
           </div>
           <div className="about-howit-item">
             <span className="about-howit-glyph">♂</span>
             <div>
-              <strong>Mars</strong> — your drive and how you act on it. Your energy, ambition, and how you handle conflict or desire.
+              <strong>Mars</strong> — actions, physical energy, drive. How you go after what you want and how you handle conflict.
             </div>
           </div>
         </div>
         <p className="about-bio" style={{ marginTop: '0.75rem' }}>
-          Each sign belongs to an <strong>element</strong> (Fire, Earth, Air, Water) and a <strong>modality</strong> (Cardinal, Fixed, Mutable), which is how AstroDig spots patterns across a whole group. <strong>Compatibility</strong> scores how many of these placements two people share — the more align, the deeper the bond.
+          Each sign belongs to an <strong>element</strong> (Fire, Earth, Air, Water) and a <strong>modality</strong> (Cardinal, Fixed, Mutable), which is how AstroDig spots patterns across a whole group. When two people share placements, it often shows up as a natural understanding between them.
+        </p>
+        <p className="about-bio" style={{ marginTop: '0.5rem', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+          Note that humans have free will and choice. Astrology provides awareness of the energy present and how it might manifest. It is up to you what you do with those energies.
         </p>
       </div>
 
@@ -203,7 +209,7 @@ export default function AboutPanel() {
 
         <p className="about-data-subhead">Astrology Disclaimer</p>
         <p className="about-bio">
-          AstroDig is for entertainment and self-reflection purposes. Astrological insights are based on planetary calculations and general interpretations — they are not professional advice of any kind. A birth chart is a starting point, not the whole story.
+          AstroDig is for entertainment and personal reflection. Everything shared is based on ancient astrological practice combined with general interpretations. It is not professional advice of any kind. A birth chart is a starting point, not the whole story.
         </p>
 
         <p className="about-data-subhead">Limitation of Liability</p>
@@ -218,7 +224,7 @@ export default function AboutPanel() {
 
       {/* ── Disclaimer ────────────────────────────────────────────── */}
       <p className="about-disclaimer">
-        Jupiter Digital provides astrology content for entertainment and personal reflection. We assume no liability for actions taken based on the information provided.
+        Everything shared is based on ancient astrological practice. Jupiter Digital provides astrology content for entertainment and personal reflection and assumes no liability for actions taken based on the information provided.
       </p>
 
     </div>

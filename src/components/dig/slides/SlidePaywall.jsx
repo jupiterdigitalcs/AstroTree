@@ -41,7 +41,7 @@ export default function SlidePaywall({ data, onUpgrade }) {
 
       <div className="dig-fade-in" style={{ '--i': 3, textAlign: 'center', margin: '1rem 0 0.6rem' }}>
         <span style={{ fontFamily: 'Cinzel, serif', fontSize: '1.6rem', color: 'var(--gold)' }}>$9.99</span>
-        <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.2rem' }}>one-time — yours forever</p>
+        <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.2rem' }}>one-time, yours forever</p>
       </div>
       {onUpgrade && (
         <button

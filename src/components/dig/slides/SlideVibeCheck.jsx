@@ -29,7 +29,7 @@ export default function SlideVibeCheck({ data }) {
         {dominant}
       </h2>
       <p className="dig-body dig-fly-in" style={{ '--i': 2 }}>
-        The dominant energy across your group is <strong style={{ color: 'var(--gold)' }}>{dominant}</strong> — {qualities}.
+        The dominant energy across your group is <strong style={{ color: 'var(--gold)' }}>{dominant}</strong>. {qualities}.
         {modNote && <><br /><span style={{ opacity: 0.7 }}>{modNote}</span></>}
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
@@ -46,7 +46,7 @@ export default function SlideVibeCheck({ data }) {
       )}
       {data.missingElements?.length > 0 && (
         <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.75rem', opacity: 0.5, marginTop: '0.4rem' }}>
-          No {data.missingElements.join(' or ')} — those qualities may be sought outside the group.
+          No {data.missingElements.join(' or ')}. Those qualities may be sought outside the group.
         </p>
       )}
     </div>

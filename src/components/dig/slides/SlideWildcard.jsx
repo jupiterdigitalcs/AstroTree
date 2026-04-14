@@ -22,7 +22,7 @@ export default function SlideWildcard({ data }) {
         to a completely different cosmic beat.
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.82rem', marginTop: '0.5rem' }}>
-        Pure <strong style={{ color: ELEMENT_COLOR[d.element] }}>{d.element}</strong> — the one
+        Pure <strong style={{ color: ELEMENT_COLOR[d.element] }}>{d.element}</strong>. The one
         who keeps this {familyElement.toLowerCase()}-heavy chart honest.
       </p>
     </div>

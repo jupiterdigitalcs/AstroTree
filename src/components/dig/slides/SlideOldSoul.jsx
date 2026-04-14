@@ -15,7 +15,7 @@ export default function SlideOldSoul({ data, active }) {
         {d.name}
       </h2>
       <p className="dig-body dig-fly-in" style={{ '--i': 2, color: '#7ec845', fontWeight: 500, fontSize: '1rem' }}>
-        Born 40, Still Acts Like It
+        The Most Grounded One Here
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3 }}>

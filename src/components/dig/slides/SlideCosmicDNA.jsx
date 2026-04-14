@@ -1,17 +1,17 @@
 const PLANET_LABELS = { sun: 'sun sign', moon: 'moon sign' }
 const SIGN_FLAVOR = {
-  Aries: 'bold, impulsive fire',
-  Taurus: 'steady, grounded energy',
+  Aries: 'bold, impulsive energy',
+  Taurus: 'steady, grounded patience',
   Gemini: 'restless curiosity',
-  Cancer: 'deep emotional intuition',
-  Leo: 'warm, expressive heart',
-  Virgo: 'sharp, devoted care',
+  Cancer: 'deep emotional attunement',
+  Leo: 'warm, generous confidence',
+  Virgo: 'sharp, devoted precision',
   Libra: 'a need for harmony',
-  Scorpio: 'intense, all-or-nothing depth',
-  Sagittarius: 'restless, truth-seeking spirit',
+  Scorpio: 'intense, perceptive depth',
+  Sagittarius: 'restless, truth-seeking drive',
   Capricorn: 'quiet, determined ambition',
-  Aquarius: 'independent, unconventional mind',
-  Pisces: 'dreamy, intuitive soul',
+  Aquarius: 'independent, unconventional thinking',
+  Pisces: 'sensitive, empathetic feeling',
 }
 
 export default function SlideCosmicDNA({ data, active }) {
@@ -32,7 +32,7 @@ export default function SlideCosmicDNA({ data, active }) {
         The {thread.sign} Line
       </h2>
       <p className="dig-body dig-fly-in" style={{ '--i': 2 }}>
-        {names[0]} passed down {flavor} — and it stuck.
+        {names[0]} passed down {flavor}, and it stuck.
         The same {planetLabel} runs through {generationWord}.
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />

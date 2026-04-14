@@ -24,7 +24,7 @@ export default function SlideGenBridge({ data }) {
         {child.data.name.split(' ')[0]}'s {PLANET_GLYPH[childPlanet]} {childPlanet} in {sign}.
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.78rem', opacity: 0.6, marginTop: '0.5rem' }}>
-        Same energy, different expression — passed down through the cosmic bloodline.
+        Same energy, different expression, passed down through the cosmic bloodline.
       </p>
     </div>
   )
