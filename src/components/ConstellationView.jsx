@@ -299,12 +299,19 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
                 key={n.id}
                 onClick={() => {
                   if (dragMoved.current) return
-                  // On touch: first tap shows tooltip, second tap opens edit
-                  if ('ontouchstart' in window && hoveredNode !== n.id) {
-                    setHoveredNode(n.id)
-                    return
-                  }
                   onSelectNode?.(n.id)
+                }}
+                onPointerUp={(e) => {
+                  if (dragMoved.current) return
+                  // On touch: first tap shows tooltip, second tap opens edit
+                  if (e.pointerType === 'touch') {
+                    if (hoveredNode !== n.id) {
+                      setHoveredNode(n.id)
+                    } else {
+                      setHoveredNode(null)
+                      onSelectNode?.(n.id)
+                    }
+                  }
                 }}
                 onMouseEnter={() => setHoveredNode(n.id)}
                 onMouseLeave={() => setHoveredNode(null)}

@@ -211,7 +211,7 @@ export default function EditMemberPanel({
       <div className="edit-panel-title-row">
         <h2 className="form-title">✦ Edit Member</h2>
       </div>
-      {savedFlash && <div className="edit-saved-toast">✓ Saved</div>}
+      {savedFlash && <div className="edit-saved-toast" key={Date.now()}>✓ Changes saved</div>}
 
       <div className="name-date-row">
         <label>

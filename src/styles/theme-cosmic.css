@@ -1572,7 +1572,7 @@
   }
 
   .app--cosmic .tables-canvas-wrap {
-    padding-top: 3.5rem;
+    padding-top: 0.75rem;
     padding-bottom: calc(80px + env(safe-area-inset-bottom) + 2rem);
   }
 }

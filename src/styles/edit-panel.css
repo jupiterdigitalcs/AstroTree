@@ -66,25 +66,28 @@
 .edit-panel-title-row .form-title { margin-bottom: 0; }
 
 .edit-saved-toast {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  font-size: 0.78rem;
-  color: #6bda8e;
-  letter-spacing: 0.04em;
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom) + 1rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  font-size: 0.82rem;
+  color: #fff;
   font-family: 'Raleway', sans-serif;
   font-weight: 600;
-  background: rgba(107, 218, 142, 0.12);
-  padding: 0.4rem 0.75rem;
-  border-radius: 8px;
-  border: 1px solid rgba(107, 218, 142, 0.3);
+  background: rgba(107, 218, 142, 0.92);
+  padding: 0.5rem 1.2rem;
+  border-radius: 20px;
   text-align: center;
-  animation: saved-toast-in 0.25s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  animation: saved-toast-in 0.3s ease;
+  pointer-events: none;
 }
 
 @keyframes saved-toast-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 .cancel-btn {

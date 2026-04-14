@@ -1199,7 +1199,7 @@ export default function App() {
                 onUpgrade={() => setShowUpgradePrompt(true)}
               />
             )}
-            <TablesPanel nodes={nodes} chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null} />
+            <TablesPanel nodes={nodes} chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null} onChangeView={isCosmic ? setTreeView : undefined} />
           </div>
         ) : treeView === 'zodiac' && nodes.length > 0 ? (
           <div style={{ position: 'relative', flex: 1 }}>
@@ -1253,8 +1253,8 @@ export default function App() {
       {/* ── Cosmic mode: bottom nav, floating pills, bottom sheets ────── */}
       {isCosmic && (
         <>
-          {/* Floating pills — chart type switcher on canvas */}
-          {nodes.length > 0 && activeTab === 'tree' && !editingNodeId && (
+          {/* Floating pills — chart type switcher on canvas (hidden on tables — column toggles take their place) */}
+          {nodes.length > 0 && activeTab === 'tree' && !editingNodeId && treeView !== 'tables' && (
             <FloatingPills
               treeView={treeView}
               setTreeView={setTreeView}
