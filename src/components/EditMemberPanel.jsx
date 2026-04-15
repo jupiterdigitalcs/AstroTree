@@ -138,18 +138,18 @@ export default function EditMemberPanel({
   function getValidRelationships(otherId) {
     const types = []
 
-    // Parent of me: only if I have < 2 parents, and other is not my descendant
+    // Parent: only if current member has < 2 parents, and other is not a descendant
     if (parentEdges.length < 2 && !descendants.has(otherId)) {
-      types.push({ key: 'parent', label: 'Parent of me', action: () => addConn(otherId, node.id) })
+      types.push({ key: 'parent', label: 'Parent', action: () => addConn(otherId, node.id) })
     }
 
-    // My child: only if other has < 2 parents, and other is not my ancestor
+    // Child: only if other has < 2 parents, and other is not an ancestor
     if (parentCountOf(otherId) < 2 && !ancestors.has(otherId)) {
-      types.push({ key: 'child', label: 'My child', action: () => addConn(node.id, otherId) })
+      types.push({ key: 'child', label: 'Child', action: () => addConn(node.id, otherId) })
     }
 
     // Spouse: always valid (non-hierarchical)
-    types.push({ key: 'spouse', label: 'Spouse / partner', action: () => addConn(node.id, otherId, 'spouse') })
+    types.push({ key: 'spouse', label: 'Partner', action: () => addConn(node.id, otherId, 'spouse') })
 
     // Friend: always valid
     types.push({ key: 'friend', label: 'Friend', action: () => addConn(node.id, otherId, 'friend') })
@@ -209,7 +209,7 @@ export default function EditMemberPanel({
   return (
     <div className="add-form edit-panel">
       <div className="edit-panel-title-row">
-        <h2 className="form-title">✦ Edit Member</h2>
+        <h2 className="form-title">✦ {node.data.name || 'Edit Member'}</h2>
       </div>
       {savedFlash && <div className="edit-saved-toast" key={Date.now()}>✓ Changes saved</div>}
 
@@ -391,7 +391,7 @@ export default function EditMemberPanel({
               {connectTarget && (
                 <div className="conn-type-row">
                   <span className="conn-type-label">
-                    {connectTarget.data.symbol} {connectTarget.data.name} is my:
+                    {connectTarget.data.symbol} {connectTarget.data.name} is {node.data.name}'s:
                   </span>
                   <div className="conn-type-pills">
                     {connectOptions.map(opt => (

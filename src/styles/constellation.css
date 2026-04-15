@@ -37,6 +37,8 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 200;
+  white-space: normal;
+  max-width: min(300px, 85vw);
 }
 
 .constellation-tooltip-connections {
@@ -44,6 +46,8 @@
   color: var(--text-muted);
   margin-top: 0.15rem;
   line-height: 1.4;
+  white-space: normal;
+  max-width: 260px;
 }
 
 /* Controls — zoom, reset — matches React Flow controls position */
