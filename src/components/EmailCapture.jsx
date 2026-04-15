@@ -144,6 +144,9 @@ export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, ini
           <p className="email-capture-sub">
             We sent a sign-in link to <strong>{email}</strong>. Click it to connect your account.
           </p>
+          <p className="email-capture-sub" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+            Look for a message from <strong>Supabase</strong> or <strong>AstroDig</strong>. Check spam if you don't see it within a minute.
+          </p>
           <div className="save-dialog-btns">
             <button type="button" className="save-dialog-save" onClick={onDismiss}>Got it</button>
           </div>

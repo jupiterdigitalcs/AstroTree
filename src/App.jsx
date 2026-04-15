@@ -266,11 +266,11 @@ export default function App() {
   // ── Re-fetch charts + entitlements after auth sign-in ───────────────────
   // Only navigate on the first sign-in, not on token refreshes or session
   // restores — otherwise users get yanked to the charts tab unexpectedly.
-  const authHandledRef = useRef(false)
+  const authHandledRef = useRef(null) // stores the user ID we already handled
   useEffect(() => {
-    if (!authUser) { authHandledRef.current = false; return }
-    if (authHandledRef.current) return // Already handled this session
-    authHandledRef.current = true
+    if (!authUser) { authHandledRef.current = null; return }
+    if (authHandledRef.current === authUser.id) return // Already handled this user
+    authHandledRef.current = authUser.id
     let cancelled = false
     refreshAfterAuth().then(() => {
       if (cancelled) return
