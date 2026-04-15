@@ -31,7 +31,7 @@ function runForceLayout(nodes, edges, width, height) {
   })
 
   const pad = 60
-  const padBottom = 180 // extra bottom padding to avoid legend overlap
+  const padBottom = 80
 
   for (let iter = 0; iter < iterations; iter++) {
     const alpha = Math.pow(1 - iter / iterations, 1.5) // ease-out cooling
@@ -117,7 +117,6 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
   const [dragging, setDragging] = useState(null) // index of node being dragged
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
-  const [legendCollapsed, setLegendCollapsed] = useState(false)
   const [isPanning, setIsPanning] = useState(false)
   const panStart = useRef(null)
   const svgRef = useRef(null)
@@ -241,10 +240,6 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
   // wheel zoom handled by non-passive useEffect listener above
 
   // Active edge types for compact legend
-  const activeEdgeTypes = [...new Set(
-    edges.map(e => e.data?.relationType || 'parent-child')
-  )]
-
   return (
     <div
       className="constellation-wrap"
@@ -408,47 +403,6 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
         )
       })()}
 
-      {/* Compact legend — inline, bottom of view */}
-      <div className={`constellation-legend${legendCollapsed ? ' constellation-legend--collapsed' : ''}`}>
-        <button
-          type="button"
-          className="constellation-legend-toggle"
-          onClick={() => setLegendCollapsed(c => !c)}
-          title={legendCollapsed ? 'Show legend' : 'Hide legend'}
-        >
-          {legendCollapsed ? '▲ Legend' : '▼ Hide'}
-        </button>
-        {!legendCollapsed && (
-          <>
-            <p className="constellation-sun-note">☀ Nodes colored by Sun sign</p>
-            {activeEdgeTypes.length > 0 && (
-              <div className="constellation-legend-edges">
-                {activeEdgeTypes.map(type => (
-                  <span key={type} className="constellation-legend-edge">
-                    <svg width="16" height="8"><line x1="0" y1="4" x2="16" y2="4" stroke={EDGE_COLORS[type]} strokeWidth="2" strokeDasharray={EDGE_DASH[type]} /></svg>
-                    <span style={{ color: `${EDGE_COLORS[type]}bb` }}>{EDGE_LABELS[type]}</span>
-                  </span>
-                ))}
-              </div>
-            )}
-            <div className="constellation-legend-nodes">
-              {nodes.map(n => (
-                <span
-                  key={n.id}
-                  className={`constellation-legend-chip${hoveredNode === n.id ? ' constellation-legend-chip--active' : ''}`}
-                  onMouseEnter={() => setHoveredNode(n.id)}
-                  onMouseLeave={() => setHoveredNode(null)}
-                  onClick={() => onSelectNode?.(n.id)}
-                  style={{ borderColor: `${n.data.elementColor}44` }}
-                >
-                  <span style={{ color: n.data.elementColor }}>{n.data.symbol}</span>
-                  <span>{n.data.name}</span>
-                </span>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
     </div>
   )
 }

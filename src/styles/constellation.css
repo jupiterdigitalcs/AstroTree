@@ -46,23 +46,24 @@
   line-height: 1.4;
 }
 
-/* Controls — zoom, reset, lock */
+/* Controls — zoom, reset — matches React Flow controls position */
 .constellation-controls {
   position: absolute;
-  bottom: 5.5rem;
-  left: 0.6rem;
+  bottom: 1rem;
+  left: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
   z-index: 5;
 }
 
 .constellation-controls button {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   color: var(--gold);
+  fill: var(--gold);
   font-size: 1rem;
   line-height: 1;
   cursor: pointer;
@@ -77,23 +78,19 @@
 .constellation-controls button:hover { background: var(--surface-3); }
 .constellation-ctrl--active { background: rgba(201,168,76,0.15) !important; }
 
-/* Compact legend — fixed at bottom */
-.constellation-legend {
-  position: absolute;
-  bottom: 0.6rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-  background: rgba(9,7,26,0.88);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 0.5rem 0.9rem;
-  backdrop-filter: blur(8px);
-  max-width: calc(100% - 4rem);
-  z-index: 5;
+/* Constellation legend explainer — ? button wrapper (like TreeLegend) */
+.constellation-legend-explainer {
+  position: relative;
+}
+
+.constellation-legend-preview {
+  color: var(--gold);
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+
+.constellation-legend-panel {
+  width: 260px;
 }
 
 .constellation-legend-edges {
@@ -140,41 +137,17 @@
 }
 
 @media (max-width: 768px) {
-  .constellation-legend {
-    bottom: calc(0.6rem + 85px + env(safe-area-inset-bottom));
-    max-width: calc(100% - 2rem);
-    font-size: 0.6rem;
-  }
   .constellation-legend-chip {
     max-width: 100px;
     font-size: 0.6rem;
     padding: 0.15rem 0.45rem;
   }
   .constellation-controls {
-    bottom: calc(5.5rem + 85px + env(safe-area-inset-bottom));
+    bottom: calc(60px + env(safe-area-inset-bottom) + 0.5rem);
+    left: max(0.75rem, env(safe-area-inset-left) + 0.5rem);
   }
 }
 
-/* Collapsed legend — just the toggle button */
-.constellation-legend--collapsed {
-  padding: 0.3rem 0.7rem;
-}
-
-.constellation-legend-toggle {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-family: 'Raleway', sans-serif;
-  font-size: 0.6rem;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
-  transition: color 0.15s;
-}
-.constellation-legend-toggle:hover {
-  color: var(--gold-light);
-}
 
 .constellation-sun-note {
   font-family: 'Raleway', sans-serif;

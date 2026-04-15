@@ -51,6 +51,7 @@ import { BottomSheet } from './components/BottomSheet.jsx'
 import { FloatingPills } from './components/FloatingPills.jsx'
 import { CanvasOnboarding } from './components/CanvasOnboarding.jsx'
 import { TreeLegend } from './components/TreeLegend.jsx'
+import { ConstellationLegend } from './components/ConstellationLegend.jsx'
 
 const NODE_TYPES = { astro: AstroNode }
 
@@ -1084,6 +1085,9 @@ export default function App() {
             {treeView === 'tree' && nodes.some(n => n.data?.innerPlanets) && (
               <TreeLegend onGoToTables={() => setTreeView('tables')} />
             )}
+            {treeView === 'constellation' && (
+              <ConstellationLegend nodes={nodes} edges={edges} onSelectNode={(id) => setEditingNodeId(id)} />
+            )}
             {treeView === 'tree' && (
               <button type="button" className="cosmic-action-btn" onClick={handleRelayout} title="Re-layout">⟳</button>
             )}
@@ -1101,6 +1105,9 @@ export default function App() {
           <div className="canvas-panel-btns">
             {treeView === 'tree' && nodes.some(n => n.data?.innerPlanets) && (
               <TreeLegend onGoToTables={() => setTreeView('tables')} />
+            )}
+            {treeView === 'constellation' && (
+              <ConstellationLegend nodes={nodes} edges={edges} onSelectNode={(id) => setEditingNodeId(id)} />
             )}
             <button type="button" className="relayout-btn relayout-btn--insights" onClick={() => goTab('insights')}>✦ Insights</button>
             <ShareButton savedChartId={savedChartId} syncStatus={syncStatus} />

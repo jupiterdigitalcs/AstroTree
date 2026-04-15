@@ -682,7 +682,22 @@
 .compat-pair-list {
   display: flex;
   flex-direction: column;
+  gap: 0.15rem;
   padding-bottom: 0.5rem;
+}
+
+.compat-tier-group {
+  padding-top: 0.45rem;
+}
+.compat-tier-group:first-child {
+  padding-top: 0;
+}
+
+.compat-tier-label {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.1rem;
 }
 
 .compat-pair-row {
@@ -693,7 +708,7 @@
   gap: 0.1rem;
 }
 
-.compat-pair-row:first-child {
+.compat-tier-group .compat-pair-row:first-of-type {
   border-top: none;
   padding-top: 0;
 }
@@ -716,7 +731,7 @@
 
 .compat-pair-amp {
   color: var(--text-muted);
-  font-size: 0.72rem;
+  font-size: inherit;
 }
 
 .compat-pair-rel {

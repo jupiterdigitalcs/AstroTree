@@ -331,60 +331,196 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
   )
 }
 
-const COMPAT_EXPLAIN = {
-  'Cosmic Echo':           'All four personal planets aligned. An extraordinarily rare resonance.',
-  'Rare Triple Alignment': 'Three shared placements. An uncommon and deep connection.',
-  'Soul Twins':            'Same Sun and Moon. They tend to express and feel in the same way.',
-  'Cosmic Twins':          'Same Sun sign. They may see their own qualities reflected in each other.',
-  'Mirror Signs':          'Opposite signs. Complementary qualities that can create a strong pull.',
-  'Lunar Bond':            'Same Moon sign. Similar emotional instincts and inner needs.',
-  'Sun-Moon Reflection':   'One person\'s Sun falls on the other\'s Moon. A natural sense of comfort.',
+// Tier definitions: label, explanation, and grouping order
+const COMPAT_TIERS = {
+  'Cosmic Echo':           { order: 1, explain: 'All four personal planets (Sun, Moon, Venus, Mars) land in the same signs. This is extraordinarily rare — it means these two share the same outward identity, emotional instincts, love language, and drive.' },
+  'Rare Triple Alignment': { order: 2, explain: 'Three of their four personal planets match signs. Most people share one placement at most, so three is a remarkably deep resonance.' },
+  'Soul Twins':            { order: 3, explain: 'Same Sun and Moon signs. Sun is how you show up in the world; Moon is your emotional core. Sharing both means they tend to express and feel in very similar ways.' },
+  'Cosmic Twins':          { order: 4, explain: 'Same Sun sign. The Sun represents outward identity and ego — they may recognize their own qualities reflected in each other.' },
+  'Mirror Signs':          { order: 5, explain: 'Their Sun signs sit directly opposite each other on the zodiac wheel. Opposite signs carry complementary qualities — what one lacks, the other tends to embody.' },
+  'Lunar Bond':            { order: 6, explain: 'Same Moon sign. The Moon governs emotional needs, instincts, and how someone processes feelings. These two may understand each other without much explanation.' },
+  'Sun-Moon Reflection':   { order: 7, explain: 'One person\'s Sun sign matches the other\'s Moon sign. The Sun person outwardly embodies what the Moon person feels inwardly, which can create a natural sense of comfort.' },
 }
 
-function FullCompatPairs({ pairs, title, isExporting, generationLevel }) {
+const BOND_EXPLAIN = {
+  'cosmic-echo': 'Multiple personal planets in the same sign is extraordinarily rare. It suggests a deep resonance between these two.',
+  'rare-alignment': 'Three shared sign placements is uncommon and tends to create a feeling of being fundamentally understood by the other person.',
+  'soul-twins': 'Sharing both Sun and Moon signs means their outward identity and inner emotional world are built from the same material. They may instinctively understand each other.',
+  'cosmic-twins': 'Same Sun sign means they tend to express themselves in similar ways. They may see parts of themselves reflected in each other.',
+  'lunar-bond': 'Shared Moon sign suggests similar emotional needs and instincts. They may process feelings in the same way without having to explain.',
+  'mirror': 'Opposite signs sit across the zodiac from each other. They often represent complementary qualities that can create a strong pull.',
+  'sun-moon-reflection': 'When one person\'s Sun lands on the other\'s Moon, it can create a natural sense of comfort. One embodies outwardly what the other feels inwardly.',
+  'natural-flow': 'Compatible elements (Fire-Air or Earth-Water) tend to support and amplify each other. These two may find it easy to get along.',
+}
+
+const BOND_COLOR = {
+  'cosmic-echo': 'var(--gold)',
+  'rare-alignment': 'var(--gold)',
+  'soul-twins': 'var(--gold)',
+  'cosmic-twins': 'var(--gold)',
+  'lunar-bond': '#9dbbd4',
+  'mirror': 'var(--rose)',
+  'sun-moon-reflection': '#c4a8d4',
+  'natural-flow': '#7ec845',
+}
+
+function FullCompatPairs({ pairs, title, isExporting, generationLevel, notableBonds = [] }) {
   const [showAll, setShowAll] = useState(false)
   // Export: trim to oldest 2 generations for large families
   const exportPairs = isExporting && pairs.length > 12
     ? pairs.filter(p => (generationLevel?.[p.a.id] ?? 0) <= 1 && (generationLevel?.[p.b.id] ?? 0) <= 1)
     : pairs
   const trimmedCount = pairs.length - exportPairs.length
-  const displayed = showAll ? exportPairs : exportPairs.slice(0, 8)
+
+  // Build a set of notable bond pair keys so we can exclude them from the tier list
+  const bondKeys = new Set(notableBonds.map(b => pairKey(b.a, b.b)))
+
+  // Group remaining pairs by compatibility tier (excluding notable bonds)
+  const tierGroups = {}
+  exportPairs.filter(p => !bondKeys.has(pairKey(p.a, p.b))).forEach(pair => {
+    const label = pair.compatLabel
+    if (!tierGroups[label]) tierGroups[label] = []
+    tierGroups[label].push(pair)
+  })
+  const sortedTiers = Object.entries(tierGroups)
+    .sort(([a], [b]) => (COMPAT_TIERS[a]?.order ?? 99) - (COMPAT_TIERS[b]?.order ?? 99))
+
+  // Summary counts (include notable bonds in the count)
+  const allTierCounts = {}
+  notableBonds.forEach(b => {
+    // Map noteType to a display label for the summary
+    const label = b.noteType === 'cosmic-echo' ? 'Cosmic Echo'
+      : b.noteType === 'rare-alignment' ? 'Rare Triple Alignment'
+      : b.noteType === 'soul-twins' ? 'Soul Twins'
+      : b.noteType === 'cosmic-twins' ? 'Cosmic Twins'
+      : b.noteType === 'lunar-bond' ? 'Lunar Bond'
+      : b.noteType === 'mirror' ? 'Mirror Signs'
+      : b.noteType === 'sun-moon-reflection' ? 'Sun-Moon Reflection'
+      : b.noteType === 'natural-flow' ? 'Kindred Spirits'
+      : null
+    if (label) allTierCounts[label] = (allTierCounts[label] || 0) + 1
+  })
+  exportPairs.filter(p => !bondKeys.has(pairKey(p.a, p.b))).forEach(p => {
+    allTierCounts[p.compatLabel] = (allTierCounts[p.compatLabel] || 0) + 1
+  })
+  const tierOrder = ['Cosmic Echo', 'Rare Triple Alignment', 'Soul Twins', 'Cosmic Twins', 'Mirror Signs', 'Lunar Bond', 'Sun-Moon Reflection']
+  const summaryParts = tierOrder
+    .filter(label => allTierCounts[label])
+    .map(label => `${allTierCounts[label]} ${label}${allTierCounts[label] > 1 ? 's' : ''}`)
+
+  const totalPairs = notableBonds.length + exportPairs.filter(p => !bondKeys.has(pairKey(p.a, p.b))).length
+
+  // For show-more on the tier section: limit to 8 if collapsed
+  const allGrouped = sortedTiers.flatMap(([, items]) => items)
+  const isLong = allGrouped.length > 8
+  const visibleLimit = showAll ? allGrouped.length : 8
+  let visibleCount = 0
+
   return (
     <div className="insight-card insight-full-compat">
       <h3 className="insight-heading">{title}<span className="insight-pro-tag">✦</span></h3>
-      <p className="insight-note compat-pair-count">{exportPairs.length} notable pair{exportPairs.length !== 1 ? 's' : ''}</p>
-      <p className="insight-whisper" style={{ marginBottom: '0.3rem' }}>
-        Cosmic Echo = 4 shared placements · Soul Twins = same Sun + Moon · Cosmic Twins = same Sun · Mirror Signs = opposite signs · Lunar Bond = same Moon · Kindred Spirits = compatible elements
-      </p>
-      <div className="compat-pair-list">
-        {displayed.map(pair => (
-          <div key={pairKey(pair.a, pair.b)} className="compat-pair-row">
-            <div className="compat-pair-names">
-              <span>{pair.a.data.symbol} <strong>{pair.a.data.name}</strong></span>
-              <span className="compat-pair-amp">&amp;</span>
-              <span>{pair.b.data.symbol} <strong>{pair.b.data.name}</strong></span>
-              <span className="compat-pair-rel">{pair.relationLabel}</span>
+      <p className="insight-note compat-pair-count">{totalPairs} notable pair{totalPairs !== 1 ? 's' : ''}</p>
+      {summaryParts.length > 1 && (
+        <p className="insight-whisper" style={{ marginBottom: '0.4rem' }}>
+          {summaryParts.join(' · ')}
+        </p>
+      )}
+
+      {/* ── Notable Bonds — highlights section ────────────────────────── */}
+      {notableBonds.length > 0 && (
+        <div style={{ marginBottom: '0.5rem' }}>
+          <p className="compat-tier-label" style={{ color: 'var(--gold)' }}>Notable Bonds</p>
+          <p className="insight-whisper" style={{ marginBottom: '0.3rem' }}>
+            The strongest connections in the group, ranked by how many personal planets align.
+          </p>
+          {notableBonds.map(({ a, b, note, noteType, rel, needsTimeCheck }) => {
+            const isRare = noteType === 'cosmic-echo' || noteType === 'rare-alignment'
+            const color = BOND_COLOR[noteType] || '#7ec845'
+            return (
+              <div key={pairKey(a, b)} className={`insight-couple${isRare ? ' insight-couple--rare' : ''}`}>
+                {isRare && (
+                  <p className="insight-rare-badge">
+                    {noteType === 'cosmic-echo' ? '✦✦✦ Extremely Rare' : '✦✦ Rare'}
+                  </p>
+                )}
+                <p className="insight-note">
+                  <strong>{a.data.name}</strong> & <strong>{b.data.name}</strong>
+                  {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> — {rel}</span>}
+                </p>
+                <p className="insight-compat" style={{ color }}>{note}</p>
+                {BOND_EXPLAIN[noteType] && (
+                  <p className="insight-whisper" style={{ marginTop: '0.1rem' }}>
+                    {BOND_EXPLAIN[noteType]}
+                  </p>
+                )}
+                {needsTimeCheck && (
+                  <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
+                    ⚠ Confirm with exact birth time
+                  </p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* ── All other pairs, grouped by tier ──────────────────────────── */}
+      {sortedTiers.length > 0 && (
+        <>
+          {notableBonds.length > 0 && (
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.45rem', marginBottom: '0.15rem' }}>
+              <p className="compat-tier-label" style={{ color: 'var(--text-soft)' }}>All Pairs</p>
             </div>
-            <p className="insight-compat" style={{ color: pair.color }}>{pair.compatLabel}</p>
-            {COMPAT_EXPLAIN[pair.compatLabel] && (
-              <p className="insight-whisper" style={{ marginTop: '0.05rem' }}>{COMPAT_EXPLAIN[pair.compatLabel]}</p>
-            )}
-            {pair.moonNote && (
-              <p className="insight-compat" style={{ color: '#9dbbd4', fontSize: '0.72rem', marginTop: '0.1rem' }}>
-                ☽ {pair.moonNote}
-              </p>
-            )}
-            {pair.needsTimeCheck && (
-              <p className="insight-compat" style={{ color: 'var(--text-muted)', fontSize: '0.68rem', fontStyle: 'italic', marginTop: '0.1rem' }}>
-                ⚠ Confirm with exact birth time
-              </p>
-            )}
+          )}
+          <div className="compat-pair-list">
+            {sortedTiers.map(([tierLabel, items]) => {
+              const tierInfo = COMPAT_TIERS[tierLabel]
+              const pairsToShow = items.filter(() => {
+                if (visibleCount >= visibleLimit) return false
+                visibleCount++
+                return true
+              })
+              if (pairsToShow.length === 0) return null
+              return (
+                <div key={tierLabel} className="compat-tier-group">
+                  <p className="compat-tier-label" style={{ color: items[0].color }}>{tierLabel}</p>
+                  {tierInfo?.explain && (
+                    <p className="insight-whisper" style={{ marginBottom: '0.3rem' }}>{tierInfo.explain}</p>
+                  )}
+                  {pairsToShow.map(pair => (
+                    <div key={pairKey(pair.a, pair.b)} className="compat-pair-row">
+                      <div className="compat-pair-names">
+                        <span>{pair.a.data.symbol} <strong>{pair.a.data.name}</strong></span>
+                        <span className="compat-pair-amp">&</span>
+                        <span>{pair.b.data.symbol} <strong>{pair.b.data.name}</strong></span>
+                        <span className="compat-pair-rel">{pair.relationLabel}</span>
+                      </div>
+                      {pair.sharedPlacements?.length > 0 && (
+                        <p className="insight-note" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.05rem' }}>
+                          {pair.sharedPlacements.join(' · ')}
+                        </p>
+                      )}
+                      {pair.moonNote && (
+                        <p className="insight-note" style={{ color: '#9dbbd4', fontSize: '0.72rem', marginTop: '0.1rem' }}>
+                          ☽ {pair.moonNote}
+                        </p>
+                      )}
+                      {pair.needsTimeCheck && (
+                        <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.68rem', fontStyle: 'italic', marginTop: '0.1rem' }}>
+                          ⚠ Confirm with exact birth time
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )
+            })}
           </div>
-        ))}
-      </div>
-      {exportPairs.length > 8 && (
+        </>
+      )}
+      {isLong && (
         <button type="button" className="compat-show-more-btn" onClick={() => setShowAll(v => !v)}>
-          {showAll ? 'Show less' : `Show all ${exportPairs.length} pairs`}
+          {showAll ? 'Show less' : `Show all ${allGrouped.length} pairs`}
         </button>
       )}
       {trimmedCount > 0 && (
@@ -1075,7 +1211,20 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           (sameMars        && (warnA.has('mars')  || warnB.has('mars')))  ||
           (sunMoonMirror   && (warnA.has('moon')  || warnB.has('moon')))
         )
-        allCompatPairs.push({ a, b, relationLabel, score, compatLabel, color, moonNote, needsTimeCheck })
+        // Build readable list of what they share
+        const sharedPlacements = []
+        if (sameSun)        sharedPlacements.push(`☀ ${a.data.sign} Sun`)
+        if (sameMoon)       sharedPlacements.push(`☽ ${aMoon} Moon`)
+        if (sameVenus)      sharedPlacements.push(`♀ ${aVenus} Venus`)
+        if (sameMars)       sharedPlacements.push(`♂ ${aMars} Mars`)
+        if (oppSun)         sharedPlacements.push(`☀ ${a.data.sign} ↔ ${b.data.sign}`)
+        if (sunMoonMirror && !sameSun && !sameMoon) {
+          const who = aMoon === b.data.sign
+            ? `${a.data.name}'s ☽ Moon = ${b.data.name}'s ☀ Sun`
+            : `${b.data.name}'s ☽ Moon = ${a.data.name}'s ☀ Sun`
+          sharedPlacements.push(who)
+        }
+        allCompatPairs.push({ a, b, relationLabel, score, compatLabel, color, moonNote, needsTimeCheck, sharedPlacements })
       }
     }
   }
@@ -1084,7 +1233,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   // Select mode for large families: only show highest-scoring pairs
   const isSelectMode = allCompatPairs.length > 12
   const compatDisplayPairs = isSelectMode ? allCompatPairs.filter(p => p.score >= 3) : allCompatPairs
-  const compatTitle = isSelectMode ? 'Select Compatibility' : 'Full Compatibility Report'
+  const compatTitle = isSelectMode ? 'Select Compatibility' : 'Compatibility Map'
 
   // ── Member roles (Feature 3) ─────────────────────────────────────────────────
   const distinctEls = new Set(nodes.map(n => n.data.element)).size
@@ -1654,18 +1803,30 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
+      {/* ── Nudge when free cards are thin ─────────────────────────────── */}
+      {(() => {
+        const hints = []
+        if (moonNodes.length < 2) hints.push('add birth times to reveal moon signs and deeper element patterns')
+        if (nodes.length < 4 && moonNodes.length >= 2) hints.push('add more members to uncover shared signs and element threads')
+        if (hints.length === 0) return null
+        const msg = hints.join(', or ')
+        return (
+          <p className="insight-whisper" style={{ textAlign: 'center', margin: '0.3rem 0 0.5rem' }}>
+            {msg.charAt(0).toUpperCase() + msg.slice(1)}.
+          </p>
+        )
+      })()}
+
       {/* ── Premium insights gate ───────────────────────────────────────── */}
       {!hasAdvanced && (() => {
-        const rareCount = topBonds.filter(b => b.noteType === 'cosmic-echo' || b.noteType === 'rare-alignment').length
         const items = [
-          topBonds.length > 0 && { icon: '✦', label: `${topBonds.length} Notable Bond${topBonds.length > 1 ? 's' : ''}`, detail: rareCount > 0 ? `including ${rareCount} rare` : `between ${topBonds[0]?.a.data.name} & others` },
           (sharedVenusSigns.length + sharedMarsSigns.length) > 0 && { icon: '♀♂', label: 'Venus & Mars Shared Signs', detail: `${sharedVenusSigns.length + sharedMarsSigns.length} match${sharedVenusSigns.length + sharedMarsSigns.length > 1 ? 'es' : ''} found` },
           couples.length > 0 && { icon: '💕', label: 'Partner Harmony', detail: `${couples.length} pair${couples.length > 1 ? 's' : ''} — ${couples[0]?.src.data.name} & ${couples[0]?.tgt.data.name}${couples.length > 1 ? ' + more' : ''}` },
-          signThreadList.length > 0 && { icon: '🧬', label: 'Zodiac Threads', detail: `${signThreadList.length} sign${signThreadList.length > 1 ? 's' : ''} running through generations` },
+          (signThreadList.length > 0 || topZodiacThreads.length > 0) && { icon: '🧬', label: 'Zodiac Threads', detail: 'signs echoing through generations' },
           { icon: '★', label: 'Planetary Patterns', detail: 'sign concentrations across the group' },
           { icon: '🎭', label: `${isGroupOnly ? 'Group' : 'Family'} Roles & Archetypes`, detail: `${nodes.length} members analyzed` },
           { icon: '🌸', label: `${isGroupOnly ? 'Group' : 'Family'} Arrivals`, detail: 'seasonal birth patterns' },
-          { icon: '📊', label: 'Full Compatibility Report', detail: 'deep dive for every connection' },
+          { icon: '📊', label: 'Compatibility Map', detail: topBonds.length > 0 ? `${topBonds.length} notable bond${topBonds.length > 1 ? 's' : ''} + all pairs` : 'every notable pair at a glance' },
           { icon: '🪐', label: 'Pluto Generations', detail: 'generational themes & shifts' },
           groupHotspots.length > 0 && { icon: '★', label: 'Group Hotspots', detail: `${groupHotspots.length} concentration zone${groupHotspots.length > 1 ? 's' : ''} found` },
           groupGaps && { icon: '◌', label: 'The Gaps', detail: 'what the group may be missing' },
@@ -1694,58 +1855,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       })()}
 
       {hasAdvanced && (<>
-      {/* 4. Notable Bonds (premium) */}
-      {topBonds.length > 0 && (() => {
-        const BOND_EXPLAIN = {
-          'cosmic-echo': 'Multiple personal planets in the same sign is extraordinarily rare. It suggests a deep resonance between these two.',
-          'rare-alignment': 'Three shared sign placements is uncommon and tends to create a feeling of being fundamentally understood by the other person.',
-          'soul-twins': 'Sharing both Sun and Moon signs means their outward identity and inner emotional world are built from the same material. They may instinctively understand each other.',
-          'cosmic-twins': 'Same Sun sign means they tend to express themselves in similar ways. They may see parts of themselves reflected in each other.',
-          'lunar-bond': 'Shared Moon sign suggests similar emotional needs and instincts. They may process feelings in the same way without having to explain.',
-          'mirror': 'Opposite signs sit across the zodiac from each other. They often represent complementary qualities that can create a strong pull.',
-          'sun-moon-reflection': 'When one person\'s Sun lands on the other\'s Moon, it can create a natural sense of comfort. One embodies outwardly what the other feels inwardly.',
-          'natural-flow': 'Compatible elements (Fire-Air or Earth-Water) tend to support and amplify each other. These two may find it easy to get along.',
-        }
-        return (
-        <div className="insight-card">
-          <h3 className="insight-heading">Notable Bonds<span className="insight-pro-tag">✦</span></h3>
-          {topBonds.map(({ a, b, note, noteType, rel, needsTimeCheck }) => {
-            const isRare = noteType === 'cosmic-echo' || noteType === 'rare-alignment'
-            const color  = isRare                             ? 'var(--gold)'
-                         : noteType === 'soul-twins'          ? 'var(--gold)'
-                         : noteType === 'cosmic-twins'        ? 'var(--gold)'
-                         : noteType === 'lunar-bond'          ? '#9dbbd4'
-                         : noteType === 'mirror'              ? 'var(--rose)'
-                         : noteType === 'sun-moon-reflection' ? '#c4a8d4'
-                         : '#7ec845'
-            return (
-              <div key={pairKey(a, b)} className={`insight-couple${isRare ? ' insight-couple--rare' : ''}`}>
-                {isRare && (
-                  <p className="insight-rare-badge">
-                    {noteType === 'cosmic-echo' ? '✦✦✦ Extremely Rare' : '✦✦ Rare'}
-                  </p>
-                )}
-                <p className="insight-note">
-                  <strong>{a.data.name}</strong> &amp; <strong>{b.data.name}</strong>
-                  {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> — {rel}</span>}
-                </p>
-                <p className="insight-compat" style={{ color }}>{note}</p>
-                {BOND_EXPLAIN[noteType] && (
-                  <p className="insight-whisper" style={{ marginTop: '0.1rem' }}>
-                    {BOND_EXPLAIN[noteType]}
-                  </p>
-                )}
-                {needsTimeCheck && (
-                  <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
-                    ⚠ Confirm with exact birth time
-                  </p>
-                )}
-              </div>
-            )
-          })}
-        </div>
-        )
-      })()}
 
       {/* 6. Shared Venus & Mars Signs (premium) */}
       {(sharedVenusSigns.length > 0 || sharedMarsSigns.length > 0) && (
@@ -1813,65 +1922,79 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* 9. Sign Threads */}
-      {signThreadList.length > 0 && (
-        <div className="insight-card">
-          <h3 className="insight-heading">Sign Threads<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.3rem' }}>
-            The same sun or moon sign running through a parent-child line.
-          </p>
-          {signThreadList.map(({ sign, chain, planet }) => (
-            <p key={`${planet}-${sign}`} className="insight-note">
-              {planet === 'sun' ? '☀' : '☽'}{' '}
-              <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>{' '}
-              {chain.length === 2 ? 'across 2 generations' : `through ${chain.length} generations`}:{' '}
-              {chain.map(n => n.data.name).join(' → ')}
-            </p>
-          ))}
-        </div>
-      )}
-
-      {/* 9. Zodiac Threads */}
-      {topZodiacThreads.length > 0 && (
+      {/* 9. Zodiac Threads (includes generational echoes — parent-child sign lines) */}
+      {(topZodiacThreads.length > 0 || signThreadList.length > 0) && (
         <div className="insight-card">
           <h3 className="insight-heading">Zodiac Threads<span className="insight-pro-tag">✦</span></h3>
           <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.1rem' }}>
-            Like a gene that runs in families. This sign keeps showing up across generations, carried through different planets in different people.
+            Like a gene that runs in families. These signs keep showing up across generations, carried through different planets in different people.
           </p>
-          {topZodiacThreads.map(({ sign, byGen, gens }) => (
-            <div key={sign} style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-              <p className="insight-note">
-                <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>
-                {' '}—{' '}
-                {gens.map((gen, gi) => (
-                  <span key={gen}>
-                    {gi > 0 && <span style={{ color: 'var(--text-muted)' }}> → </span>}
-                    {byGen[gen].map((n, ni) => {
-                      const glyphs = getSignPlanetGlyphs(n, sign)
-                      return (
-                        <span key={n.id}>
-                          {ni > 0 && ', '}
-                          <strong>{n.data.name}</strong>
-                          {glyphs && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> ({glyphs})</span>}
-                        </span>
-                      )
-                    })}
-                  </span>
-                ))}
+
+          {/* Generational Echoes — direct parent→child sign lines */}
+          {signThreadList.length > 0 && (
+            <div style={{ marginBottom: topZodiacThreads.length > 0 ? '0.5rem' : 0 }}>
+              <p className="insight-note" style={{ fontWeight: 500, marginBottom: '0.15rem' }}>Generational Echoes</p>
+              <p className="insight-whisper" style={{ marginBottom: '0.2rem' }}>
+                The same Sun or Moon sign passed directly from parent to child.
               </p>
-              {ZODIAC_THREAD_BLURB[sign] && (
-                <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem' }}>
-                  {isGroupOnly ? ZODIAC_THREAD_BLURB[sign].replace(/\bthis family\b/gi, 'this group').replace(/\bthe family\b/gi, 'the group') : ZODIAC_THREAD_BLURB[sign]}
+              {signThreadList.map(({ sign, chain, planet }) => (
+                <p key={`${planet}-${sign}`} className="insight-note">
+                  {planet === 'sun' ? '☀' : '☽'}{' '}
+                  <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>{' '}
+                  {chain.length === 2 ? 'across 2 generations' : `through ${chain.length} generations`}:{' '}
+                  {chain.map(n => n.data.name).join(' → ')}
+                </p>
+              ))}
+            </div>
+          )}
+
+          {/* Broader zodiac threads — sign across generations via any planet */}
+          {topZodiacThreads.length > 0 && (
+            <div>
+              {signThreadList.length > 0 && (
+                <p className="insight-note" style={{ fontWeight: 500, marginBottom: '0.15rem' }}>Wider Patterns</p>
+              )}
+              {signThreadList.length > 0 && (
+                <p className="insight-whisper" style={{ marginBottom: '0.2rem' }}>
+                  Signs that echo across generations through any personal planet, not just Sun or Moon.
                 </p>
               )}
+              {topZodiacThreads.map(({ sign, byGen, gens }) => (
+                <div key={sign} style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                  <p className="insight-note">
+                    <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>
+                    {' '}—{' '}
+                    {gens.map((gen, gi) => (
+                      <span key={gen}>
+                        {gi > 0 && <span style={{ color: 'var(--text-muted)' }}> → </span>}
+                        {byGen[gen].map((n, ni) => {
+                          const glyphs = getSignPlanetGlyphs(n, sign)
+                          return (
+                            <span key={n.id}>
+                              {ni > 0 && ', '}
+                              <strong>{n.data.name}</strong>
+                              {glyphs && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> ({glyphs})</span>}
+                            </span>
+                          )
+                        })}
+                      </span>
+                    ))}
+                  </p>
+                  {ZODIAC_THREAD_BLURB[sign] && (
+                    <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem' }}>
+                      {isGroupOnly ? ZODIAC_THREAD_BLURB[sign].replace(/\bthis family\b/gi, 'this group').replace(/\bthe family\b/gi, 'the group') : ZODIAC_THREAD_BLURB[sign]}
+                    </p>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
 
-      {/* 10. Full Compatibility Report */}
-      {compatDisplayPairs.length > 0 && hasFullCompat && (
-        <FullCompatPairs pairs={compatDisplayPairs} title={compatTitle} isExporting={exporting} generationLevel={generationLevel} />
+      {/* 10. Compatibility Map (includes Notable Bonds as highlights) */}
+      {(compatDisplayPairs.length > 0 || topBonds.length > 0) && hasFullCompat && (
+        <FullCompatPairs pairs={compatDisplayPairs} title={compatTitle} isExporting={exporting} generationLevel={generationLevel} notableBonds={topBonds} />
       )}
 
       {/* 11. Family Roles */}

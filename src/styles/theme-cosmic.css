@@ -1167,6 +1167,12 @@
   left: 1rem !important;
 }
 
+/* Constellation zoom controls — match React Flow controls position */
+.app--cosmic .constellation-controls {
+  bottom: 1rem;
+  left: 1rem;
+}
+
 /* Hide classic action buttons in cosmic mode */
 .app--cosmic .canvas-panel-btns {
   display: none !important;
@@ -1356,6 +1362,13 @@
     top: auto !important;
     right: auto !important;
     z-index: 150 !important;
+  }
+
+  .app--cosmic .constellation-controls {
+    position: fixed;
+    bottom: calc(80px + env(safe-area-inset-bottom) + 0.6rem);
+    left: max(0.6rem, env(safe-area-inset-left));
+    z-index: 150;
   }
 
   /* DIG FAB — left side, above zoom controls */
