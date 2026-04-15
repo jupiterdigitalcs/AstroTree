@@ -2273,7 +2273,20 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       </>)}
       {/* ── end insight cards ─────────────────────────────────────────── */}
 
-      {/* 14. Consult CTA — only on insights tab */}
+      {/* Download button — placed above consult CTA so it's visible */}
+      {onExport && insightsTab === 'insights' && (
+        <button
+          type="button"
+          className="relayout-btn relayout-btn--share insights-export-btn insights-export-btn--bottom"
+          onClick={onExport}
+          disabled={exporting}
+          style={{ width: '100%' }}
+        >
+          {exporting ? '…' : '↓ Download Insights'}
+        </button>
+      )}
+
+      {/* Consult CTA */}
       {insightsTab === 'insights' && <div className="insight-consult-cta">
         <p className="insight-consult-cta-text">
           <strong>Want a deeper reading?</strong> Book a personal astrology consultation with Christina. Explore your chart, your family's patterns, and what the stars reveal about your connections.
@@ -2293,19 +2306,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           </a>
         )}
       </div>}
-
-      {/* Bottom download button */}
-      {onExport && insightsTab === 'insights' && (
-        <button
-          type="button"
-          className="relayout-btn relayout-btn--share insights-export-btn insights-export-btn--bottom"
-          onClick={onExport}
-          disabled={exporting}
-          style={{ width: '100%', marginTop: '0.5rem' }}
-        >
-          {exporting ? '…' : '↓ Download Insights'}
-        </button>
-      )}
 
       {/* Brand footer — hidden normally, shown during export */}
       <div className="insights-brand-footer">
