@@ -59,10 +59,10 @@
   background: rgba(255, 255, 255, 0.1);
   border: none;
   color: white;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -203,7 +203,7 @@
 
 .dig-slide-brand-sep {
   color: rgba(255, 255, 255, 0.15);
-  font-size: 0.5rem;
+  font-size: 0.6rem;
 }
 
 .dig-slide-brand-studio {

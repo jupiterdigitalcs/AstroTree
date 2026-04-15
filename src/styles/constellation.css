@@ -146,6 +146,10 @@
     bottom: calc(60px + env(safe-area-inset-bottom) + 0.5rem);
     left: max(0.75rem, env(safe-area-inset-left) + 0.5rem);
   }
+  .constellation-controls button {
+    width: 36px;
+    height: 36px;
+  }
 }
 
 
