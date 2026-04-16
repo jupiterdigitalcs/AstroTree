@@ -193,6 +193,7 @@ export default function App() {
     nodes, edges,
     setNodes, setEdges,
     setFitTick, setEditingNodeId,
+    onNodeClickNav: useCallback(() => setActiveTab('add'), []),
   })
 
   // ── Group vs family label — all edges are friend/coworker ────────────────
@@ -847,7 +848,7 @@ export default function App() {
                         <span className="pill-sign" style={{ color: n.data.elementColor }}>
                           {n.data.sign}
                           {n.data.birthdate && (
-                            <span className="pill-year"> · {n.data.birthdate.slice(0, 4)}</span>
+                            <span className="pill-year"> · {parseInt(n.data.birthdate.slice(5, 7))}/{parseInt(n.data.birthdate.slice(8, 10))}/{n.data.birthdate.slice(0, 4)}</span>
                           )}
                         </span>
                         {nodeIngressWarnings[n.id] && (
@@ -1394,7 +1395,7 @@ export default function App() {
                           <span>{n.data.name}</span>
                           <span className="pill-sign" style={{ color: n.data.elementColor }}>
                             {n.data.sign}
-                            {n.data.birthdate && <span className="pill-year"> · {n.data.birthdate.slice(0, 4)}</span>}
+                            {n.data.birthdate && <span className="pill-year"> · {parseInt(n.data.birthdate.slice(5, 7))}/{parseInt(n.data.birthdate.slice(8, 10))}/{n.data.birthdate.slice(0, 4)}</span>}
                           </span>
                           {nodeIngressWarnings[n.id] && (
                             <span className="pill-warning" title="Tap to edit — birth time may affect sign accuracy">⚠</span>

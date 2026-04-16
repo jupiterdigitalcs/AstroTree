@@ -53,6 +53,14 @@ export function applyDagreLayout(nodes, edges) {
     roots = [nodes[0].id]
   }
 
+  // Build name lookup for debug logging
+  const nameOf = {}
+  nodes.forEach(n => { nameOf[n.id] = n.data?.name || n.id })
+
+  console.log('[layout] roots:', roots.map(id => nameOf[id]))
+  console.log('[layout] parent→child edges:', parentChildEdges.map(e => `${nameOf[e.source]} → ${nameOf[e.target]}`))
+  console.log('[layout] spouse pairs:', edges.filter(e => e.data?.relationType === 'spouse').map(e => `${nameOf[e.source]} ↔ ${nameOf[e.target]}`))
+
   // BFS down parent→child edges only
   roots.forEach(id => { generation[id] = 0 })
   const queue = [...roots]
@@ -74,19 +82,58 @@ export function applyDagreLayout(nodes, edges) {
     })
   }
 
+  console.log('[layout] after BFS:', Object.entries(generation).map(([id, g]) => `${nameOf[id]}=${g}`).join(', '))
+
+  // ── Step 1b: Validate parent gen < child gen for all parent-child edges ─
+  // The BFS may assign incorrect generations when nodes are discovered
+  // bottom-up first. Walk all edges and push children down if needed.
+  let validated = true
+  while (validated) {
+    validated = false
+    parentChildEdges.forEach(e => {
+      const pGen = generation[e.source]
+      const cGen = generation[e.target]
+      if (pGen != null && cGen != null && pGen >= cGen) {
+        generation[e.target] = pGen + 1
+        validated = true
+      }
+    })
+  }
+
+  console.log('[layout] after validation:', Object.entries(generation).map(([id, g]) => `${nameOf[id]}=${g}`).join(', '))
+
   // ── Step 2: Propagate generation to spouses ─────────────────────────────
-  // A spouse always inherits their partner's generation
+  // Spouses share a generation row. Use the deeper (higher number) generation
+  // so a spouse-only node (e.g. Dante) aligns with their partner who has a
+  // parent-child chain placing them lower in the tree.
   let changed = true
   while (changed) {
     changed = false
     nodes.forEach(n => {
       if (generation[n.id] != null) {
         ;(spouseOf[n.id] || []).forEach(sid => {
-          if (generation[sid] == null) {
-            generation[sid] = generation[n.id]
+          const target = generation[n.id]
+          if (generation[sid] == null || generation[sid] < target) {
+            generation[sid] = target
             changed = true
           }
         })
+      }
+    })
+  }
+
+  console.log('[layout] after spouse align:', Object.entries(generation).map(([id, g]) => `${nameOf[id]}=${g}`).join(', '))
+
+  // Re-validate parent gen < child gen after spouse alignment may have shifted nodes
+  validated = true
+  while (validated) {
+    validated = false
+    parentChildEdges.forEach(e => {
+      const pGen = generation[e.source]
+      const cGen = generation[e.target]
+      if (pGen != null && cGen != null && pGen >= cGen) {
+        generation[e.target] = pGen + 1
+        validated = true
       }
     })
   }
@@ -105,6 +152,8 @@ export function applyDagreLayout(nodes, edges) {
   if (minGen !== 0) {
     Object.keys(generation).forEach(id => { generation[id] -= minGen })
   }
+
+  console.log('[layout] FINAL generations:', Object.entries(generation).map(([id, g]) => `${nameOf[id]}=${g}`).join(', '))
 
   // ── Run Dagre for X positions (family edges only) ──────────────────────
   const g = new dagre.graphlib.Graph()

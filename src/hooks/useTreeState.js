@@ -11,6 +11,7 @@ export function useTreeState({
   nodes, edges,
   setNodes, setEdges,
   setFitTick, setEditingNodeId,
+  onNodeClickNav,
 }) {
   // ── Layout on edge / node count changes ──────────────────────────────────
   useEffect(() => {
@@ -136,7 +137,8 @@ export function useTreeState({
   const onNodeClick = useCallback((_e, node) => {
     if (nodeDragMoved.current) return
     setEditingNodeId(id => id === node.id ? null : node.id)
-  }, [setEditingNodeId])
+    if (onNodeClickNav) onNodeClickNav()
+  }, [setEditingNodeId, onNodeClickNav])
 
   const onConnect = useCallback(
     (params) => setEdges(eds => addEdge({ ...params, animated: true, style: EDGE_STYLE, type: 'smoothstep' }, eds)),
