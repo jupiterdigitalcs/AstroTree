@@ -62,7 +62,7 @@ export default function EditMemberPanel({
     if (m !== 0) return false
     return originalWarnings.some(w => Math.abs(h - w.ingressHour) <= 1)
   }, [birthTime, originalWarnings])
-  const [showBirthTime, setShowBirthTime] = useState(!!node.data.birthTime)
+  const [showBirthTime, setShowBirthTime] = useState(!!node.data.birthTime || originalWarnings.length > 0)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [connectTo,     setConnectTo]     = useState(null) // id of node being connected
   const [connSearch,    setConnSearch]    = useState('')

@@ -2,6 +2,7 @@ import { Handle, Position } from '@xyflow/react'
 import { PlanetSign } from './PlanetSign.jsx'
 
 const EL_COLORS = { Fire: '#e8634a', Earth: '#7ab648', Air: '#5bc8f5', Water: '#6b8dd6' }
+const SIGN_ELEMENTS = { Aries: 'Fire', Leo: 'Fire', Sagittarius: 'Fire', Taurus: 'Earth', Virgo: 'Earth', Capricorn: 'Earth', Gemini: 'Air', Libra: 'Air', Aquarius: 'Air', Cancer: 'Water', Scorpio: 'Water', Pisces: 'Water' }
 
 function elementCounts(d) {
   const signs = { Fire: ['Aries','Leo','Sagittarius'], Earth: ['Taurus','Virgo','Capricorn'], Air: ['Gemini','Libra','Aquarius'], Water: ['Cancer','Scorpio','Pisces'] }
@@ -59,11 +60,18 @@ export default function AstroNode({ data, selected }) {
           <span className="node-element-badge" style={{ background: `${glow}22`, borderColor: `${glow}44`, color: glow }}>{element}</span>
         )}
       </div>
-      {moonSign && moonSign !== 'Unknown' && (
-        <div className="node-moon">
-          <PlanetSign planet="moon" symbol={moonSymbol} sign={moonSign} />
-        </div>
-      )}
+      {moonSign && moonSign !== 'Unknown' && (() => {
+        const moonEl = SIGN_ELEMENTS[moonSign]
+        const moonColor = moonEl ? EL_COLORS[moonEl] : null
+        return (
+          <div className="node-moon" style={moonColor ? {
+            background: `${moonColor}28`,
+            borderColor: `${moonColor}88`,
+          } : undefined}>
+            <PlanetSign planet="moon" symbol={moonSymbol} sign={moonSign} />
+          </div>
+        )
+      })()}
       {data.innerPlanets && (
         <div className="node-element-dots">
           {['Fire', 'Earth', 'Air', 'Water'].map(el => {
