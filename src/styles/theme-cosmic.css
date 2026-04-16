@@ -725,8 +725,6 @@
   z-index: 14;
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  padding: 0.7rem 1rem;
   max-width: min(440px, calc(100% - 1.5rem));
   background: linear-gradient(135deg, rgba(212,168,76,0.18) 0%, rgba(155,142,196,0.14) 100%);
   border: 1px solid rgba(212,168,76,0.5);
@@ -736,8 +734,66 @@
   color: var(--a-text);
   font-family: 'Plus Jakarta Sans', sans-serif;
   text-align: left;
-  cursor: pointer;
   animation: tree-reminder-pulse 3.5s ease-in-out infinite;
+}
+
+.tree-connect-reminder-body {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.5rem 0.7rem 1rem;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.tree-connect-reminder-close {
+  padding: 0.5rem 0.65rem;
+  background: none;
+  border: none;
+  border-left: 1px solid rgba(212,168,76,0.25);
+  color: var(--a-text-soft);
+  font-size: 0.75rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  border-radius: 0 14px 14px 0;
+  transition: background 0.15s, color 0.15s;
+}
+.tree-connect-reminder-close:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--a-text);
+}
+
+.tree-nudge-mini {
+  position: absolute;
+  top: calc(0.75rem + 42px + 0.6rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 14;
+  padding: 0.35rem 0.85rem;
+  background: rgba(212,168,76,0.12);
+  border: 1px solid rgba(212,168,76,0.35);
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  color: var(--a-gold, #d4a84c);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.tree-nudge-mini:hover {
+  background: rgba(212,168,76,0.2);
+  border-color: rgba(212,168,76,0.55);
 }
 
 .tree-connect-reminder:hover {

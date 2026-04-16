@@ -1,10 +1,27 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 
 const EL_COLORS = { Fire: '#e8634a', Earth: '#7ab648', Air: '#5bc8f5', Water: '#6b8dd6' }
 
-export function TreeLegend({ onGoToTables }) {
+export function TreeLegend({ onGoToTables, nodes }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
+
+  // Collect all sibling group symbol+color combos present in the tree
+  const siblingGlyphs = useMemo(() => {
+    if (!nodes) return []
+    const combos = []
+    const seen = new Set()
+    nodes.forEach(n => {
+      const sym = n.data?.siblingGroupSymbol
+      const col = n.data?.siblingGroupColor
+      if (!sym || !col) return
+      const key = `${sym}|${col}`
+      if (seen.has(key)) return
+      seen.add(key)
+      combos.push({ symbol: sym, color: col })
+    })
+    return combos
+  }, [nodes])
 
   // Close on outside click
   useEffect(() => {
@@ -36,7 +53,7 @@ export function TreeLegend({ onGoToTables }) {
         <div className="tree-legend-panel">
           <p className="tree-legend-title">Reading the Nodes</p>
           <p className="tree-legend-desc">
-            The <strong>element badge</strong> (Fire, Earth, Air, Water) is based on the sun sign. The <strong>colored dots</strong> show the element breakdown across all 5 planets (Sun, Moon, Mercury, Venus, Mars). Brighter = more placements in that element.
+            <strong>Element badge</strong> — sun sign element. <strong>Colored dots</strong> — element breakdown across Sun, Moon, Mercury, Venus, Mars. Brighter = more placements.
           </p>
           <div className="tree-legend-elements">
             {Object.entries(EL_COLORS).map(([el, color]) => (
@@ -49,6 +66,14 @@ export function TreeLegend({ onGoToTables }) {
           <button type="button" className="tree-legend-tables-link" onClick={() => { setOpen(false); onGoToTables() }}>
             See full planet breakdown in Tables ✦
           </button>
+          {siblingGlyphs.length > 0 && (
+            <p className="tree-legend-sibling-note">
+              {siblingGlyphs.map(({ symbol, color }) => (
+                <span key={`${symbol}-${color}`} className="tree-legend-sibling-sym" style={{ color }}>{symbol}</span>
+              ))}
+              <span className="tree-legend-label"> = siblings (shared parents)</span>
+            </p>
+          )}
         </div>
       )}
     </div>

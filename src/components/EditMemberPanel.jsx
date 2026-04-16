@@ -62,6 +62,7 @@ export default function EditMemberPanel({
     if (m !== 0) return false
     return originalWarnings.some(w => Math.abs(h - w.ingressHour) <= 1)
   }, [birthTime, originalWarnings])
+  const [showBirthTime, setShowBirthTime] = useState(!!node.data.birthTime)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [connectTo,     setConnectTo]     = useState(null) // id of node being connected
   const [connSearch,    setConnSearch]    = useState('')
@@ -230,100 +231,108 @@ export default function EditMemberPanel({
         </label>
       </div>
 
-      {/* ── Birth time ────────────────────────────────────────────────────── */}
-      <div className="birthtime-field">
-        <div className="birthtime-field-header">
-          <span className="birthtime-field-label">Birth time <span className="birthtime-optional">(optional)</span></span>
-          {birthTimeInput && (
-            <button
-              type="button"
-              className="birthtime-clear-btn"
-              onClick={() => { setBirthTimeInput(''); setBirthTimeAmPm('AM'); setExactBirthTime(false); doSave({ birthTime: null, exactBirthTime: false }) }}
-            >Clear</button>
-          )}
-        </div>
-        <div className="birthtime-row">
-          <input
-            type="text"
-            inputMode="numeric"
-            className="row-input birthtime-input"
-            placeholder="HH:MM"
-            value={birthTimeInput}
-            onChange={e => {
-              const digits = e.target.value.replace(/\D/g, '').slice(0, 4)
-              let formatted = digits
-              if (digits.length >= 3) formatted = digits.slice(0, -2) + ':' + digits.slice(-2)
-              else if (digits.length === 2 && birthTimeInput.length < e.target.value.length) formatted = digits + ':'
-              setBirthTimeInput(formatted)
-              setExactBirthTime(false)
-            }}
-            onBlur={() => {
-              if (!birthTimeInput) { doSave({ birthTime: null }); return }
-              const t24 = to24h(birthTimeInput, birthTimeAmPm)
-              if (!t24) { setBirthTimeInput(''); doSave({ birthTime: null }) }
-              else {
-                const { display } = to12h(t24)
-                setBirthTimeInput(display) // normalize display
-                doSave({ birthTime: t24 })
-              }
-            }}
-          />
-          <div className="birthtime-ampm-pills">
-            {['AM', 'PM'].map(v => (
-              <button
-                key={v}
-                type="button"
-                className={`birthtime-ampm-pill${birthTimeAmPm === v ? ' active' : ''}`}
-                onClick={() => {
-                  setBirthTimeAmPm(v)
-                  const t24 = to24h(birthTimeInput, v)
-                  if (t24) doSave({ birthTime: t24 })
-                }}
-              >{v}</button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Ingress context — only shown when astrologically relevant */}
-      {originalWarnings.length > 0 && (
-        <div className={`ingress-context${birthTime && !ingressWarnings.length ? ' ingress-context--resolved' : ''}`}>
-          {birthTime && !ingressWarnings.length ? (
-            <span className="ingress-context-ok">✓ Sign confirmed for this birth time</span>
-          ) : (
-            <>
-              <span className="ingress-context-note">
-                {originalWarnings.length === 1
-                  ? `${originalWarnings[0].name} changes sign on this date — birth time helps confirm which sign`
-                  : `${originalWarnings.length} planets change sign on this date — birth time helps confirm the signs`}
-              </span>
-              {originalWarnings.map(w => (
-                <span key={w.name} className="ingress-warning-planet">
-                  <PlanetSign planet={w.planet} sign={w.signStart} />
-                  <span className="ingress-warning-arrow">→</span>
-                  <PlanetSign planet={w.planet} sign={w.signEnd} />
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>
-                    (changes at {w.ingressTime})
-                  </span>
-                </span>
-              ))}
-            </>
-          )}
-          {showExactCheckbox && (
-            <label className="birthtime-exact-label">
+      {/* ── Birth time (collapsible) ────────────────────────────────────── */}
+      {!showBirthTime ? (
+        <button type="button" className="birthtime-expand-btn" onClick={() => setShowBirthTime(true)}>
+          + Add birth time <span className="birthtime-optional">(optional)</span>
+        </button>
+      ) : (
+        <>
+          <div className="birthtime-field">
+            <div className="birthtime-field-header">
+              <span className="birthtime-field-label">Birth time <span className="birthtime-optional">(optional)</span></span>
+              {birthTimeInput && (
+                <button
+                  type="button"
+                  className="birthtime-clear-btn"
+                  onClick={() => { setBirthTimeInput(''); setBirthTimeAmPm('AM'); setExactBirthTime(false); doSave({ birthTime: null, exactBirthTime: false }) }}
+                >Clear</button>
+              )}
+            </div>
+            <div className="birthtime-row">
               <input
-                type="checkbox"
-                checked={exactBirthTime}
-                onChange={e => { setExactBirthTime(e.target.checked); doSave({ exactBirthTime: e.target.checked }) }}
-                style={{ accentColor: 'var(--gold)' }}
+                type="text"
+                inputMode="numeric"
+                className="row-input birthtime-input"
+                placeholder="HH:MM"
+                value={birthTimeInput}
+                onChange={e => {
+                  const digits = e.target.value.replace(/\D/g, '').slice(0, 4)
+                  let formatted = digits
+                  if (digits.length >= 3) formatted = digits.slice(0, -2) + ':' + digits.slice(-2)
+                  else if (digits.length === 2 && birthTimeInput.length < e.target.value.length) formatted = digits + ':'
+                  setBirthTimeInput(formatted)
+                  setExactBirthTime(false)
+                }}
+                onBlur={() => {
+                  if (!birthTimeInput) { doSave({ birthTime: null }); return }
+                  const t24 = to24h(birthTimeInput, birthTimeAmPm)
+                  if (!t24) { setBirthTimeInput(''); doSave({ birthTime: null }) }
+                  else {
+                    const { display } = to12h(t24)
+                    setBirthTimeInput(display) // normalize display
+                    doSave({ birthTime: t24 })
+                  }
+                }}
               />
-              This time is exact
-              <span className="ingress-warning-note" style={{ fontStyle: 'normal' }}>
-                (Round number near a sign change — confirm from records if unsure)
-              </span>
-            </label>
+              <div className="birthtime-ampm-pills">
+                {['AM', 'PM'].map(v => (
+                  <button
+                    key={v}
+                    type="button"
+                    className={`birthtime-ampm-pill${birthTimeAmPm === v ? ' active' : ''}`}
+                    onClick={() => {
+                      setBirthTimeAmPm(v)
+                      const t24 = to24h(birthTimeInput, v)
+                      if (t24) doSave({ birthTime: t24 })
+                    }}
+                  >{v}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Ingress context — only shown when astrologically relevant */}
+          {originalWarnings.length > 0 && (
+            <div className={`ingress-context${birthTime && !ingressWarnings.length ? ' ingress-context--resolved' : ''}`}>
+              {birthTime && !ingressWarnings.length ? (
+                <span className="ingress-context-ok">✓ Sign confirmed for this birth time</span>
+              ) : (
+                <>
+                  <span className="ingress-context-note">
+                    {originalWarnings.length === 1
+                      ? `${originalWarnings[0].name} changes sign on this date — birth time helps confirm which sign`
+                      : `${originalWarnings.length} planets change sign on this date — birth time helps confirm the signs`}
+                  </span>
+                  {originalWarnings.map(w => (
+                    <span key={w.name} className="ingress-warning-planet">
+                      <PlanetSign planet={w.planet} sign={w.signStart} />
+                      <span className="ingress-warning-arrow">→</span>
+                      <PlanetSign planet={w.planet} sign={w.signEnd} />
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>
+                        (changes at {w.ingressTime})
+                      </span>
+                    </span>
+                  ))}
+                </>
+              )}
+              {showExactCheckbox && (
+                <label className="birthtime-exact-label">
+                  <input
+                    type="checkbox"
+                    checked={exactBirthTime}
+                    onChange={e => { setExactBirthTime(e.target.checked); doSave({ exactBirthTime: e.target.checked }) }}
+                    style={{ accentColor: 'var(--gold)' }}
+                  />
+                  This time is exact
+                  <span className="ingress-warning-note" style={{ fontStyle: 'normal' }}>
+                    (Round number near a sign change — confirm from records if unsure)
+                  </span>
+                </label>
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
 
       {error && <p className="form-error">{error}</p>}
@@ -412,6 +421,21 @@ export default function EditMemberPanel({
           )}
         </div>
       )}
+
+      {/* Sibling hint — show when this member has siblings (inferred from shared parents) */}
+      {parentEdges.length > 0 && (() => {
+        const parentIds = parentEdges.map(e => e.source)
+        const siblings = allNodes.filter(n =>
+          n.id !== node.id &&
+          edges.some(e => e.data?.relationType === 'parent-child' && e.target === n.id && parentIds.includes(e.source))
+        )
+        if (siblings.length === 0) return null
+        return (
+          <p className="sibling-hint">
+            Sibling{siblings.length > 1 ? 's' : ''}: {siblings.map(s => s.data.name).join(', ')} — detected automatically from shared parents
+          </p>
+        )
+      })()}
 
       <div className="edit-cta-row">
         {onGoToInsights && allNodes.length >= 2 && edges.length > 0 && (

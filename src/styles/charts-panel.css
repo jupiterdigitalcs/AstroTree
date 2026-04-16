@@ -670,7 +670,7 @@
 .tree-legend-elements {
   display: flex;
   gap: 0.6rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .tree-legend-row {
@@ -707,6 +707,21 @@
   transition: background 0.15s;
 }
 .tree-legend-tables-link:hover { background: rgba(201,168,76,0.15); }
+
+.tree-legend-sibling-note {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.45rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.tree-legend-sibling-sym {
+  font-size: 0.85rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
 
 .canvas-brand {
   position: absolute;

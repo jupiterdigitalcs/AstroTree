@@ -85,7 +85,9 @@ export default function App() {
     try { const draft = loadDraft(); return (draft?.nodes?.length > 0) ? (cosmic ? 'tree' : 'add') : 'tree' } catch { return cosmic ? 'tree' : 'add' }
   })
   const [showAddMore,       setShowAddMore]       = useState(false)
-  const [showConnectPrompt, setShowConnectPrompt] = useState(false)
+  const [nudgeDismissed,    setNudgeDismissed]    = useState(false)
+  // Reset nudge when tree membership changes or user leaves tree tab
+  useEffect(() => { setNudgeDismissed(false) }, [nodes.length, edges.length, activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
   const [fitTick,           setFitTick]           = useState(0)
   const { hasUsedApp, insightsSeen, setInsightsSeen, returnVisit, setReturnVisit, markUsed } = useOnboardingState()
   // Auto-dismiss return visit card after 6 seconds
@@ -358,7 +360,6 @@ export default function App() {
 
   // ── Auto-dismiss connect prompt once first edge is added ─────────────────
   useEffect(() => {
-    if (edges.length > 0 && showConnectPrompt) setShowConnectPrompt(false)
   }, [edges.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Re-layout when edges are added (e.g. spouse connected to gen 2 node) ──
@@ -1023,55 +1024,7 @@ export default function App() {
           </div>
         )}
 
-        {/* ── Connect prompt — shown after first add ───────────────────── */}
-        {showConnectPrompt && edges.length === 0 && nodes.length > 0 && (
-          <div className="connect-prompt">
-            <span className="connect-prompt-icon">🔗</span>
-            <span>Connect your {familyLabelLower} members as parents, children, or partners</span>
-            <button
-              type="button"
-              className="connect-prompt-action"
-              onClick={() => { goTab('add'); setShowConnectPrompt(false) }}
-            >Go to {familyLabel} →</button>
-            <button
-              type="button"
-              className="connect-prompt-close"
-              onClick={() => setShowConnectPrompt(false)}
-            >Got it</button>
-          </div>
-        )}
 
-        {/* ── Persistent no-connections nudge (tree view only) ─────────── */}
-        {!showConnectPrompt && treeView === 'tree' && nodes.length > 0 && edges.length === 0 && (
-          <>
-            <div className="no-connections-nudge no-connections-nudge--top">
-              <span>No connections yet —</span>
-              <button
-                type="button"
-                className="no-connections-btn"
-                onClick={() => goTab('add')}
-              >Add Relationships →</button>
-            </div>
-            <div className="no-connections-nudge">
-              <span>No connections yet —</span>
-              <button
-                type="button"
-                className="no-connections-btn"
-                onClick={() => goTab('add')}
-              >Add Relationships →</button>
-            </div>
-          </>
-        )}
-
-        {/* ── Chart view explanation ─────────────────────────────────── */}
-        {nodes.length > 0 && (
-          <div className="chart-view-explain">
-            {treeView === 'tree' && 'Hierarchical family tree — drag to rearrange, click to edit.'}
-            {treeView === 'constellation' && 'Force-directed network — see friends, coworkers, and all connections as a star map.'}
-            {treeView === 'zodiac' && 'Zodiac wheel — members placed by sun sign with moon and planetary rings.'}
-            {treeView === 'tables' && 'Data tables — every member\'s sun, moon, and planetary signs at a glance.'}
-          </div>
-        )}
 
         {/* ── Sync indicator (non-intrusive, doesn't shift buttons) ──── */}
         {nodes.length > 0 && (
@@ -1084,7 +1037,7 @@ export default function App() {
         {nodes.length > 0 && isCosmic && (
           <div className="cosmic-action-bar">
             {treeView === 'tree' && nodes.some(n => n.data?.innerPlanets) && (
-              <TreeLegend onGoToTables={() => setTreeView('tables')} />
+              <TreeLegend onGoToTables={() => setTreeView('tables')} nodes={nodes} />
             )}
             {treeView === 'constellation' && (
               <ConstellationLegend nodes={nodes} edges={edges} onSelectNode={(id) => setEditingNodeId(id)} />
@@ -1105,7 +1058,7 @@ export default function App() {
         {nodes.length > 0 && !isCosmic && (
           <div className="canvas-panel-btns">
             {treeView === 'tree' && nodes.some(n => n.data?.innerPlanets) && (
-              <TreeLegend onGoToTables={() => setTreeView('tables')} />
+              <TreeLegend onGoToTables={() => setTreeView('tables')} nodes={nodes} />
             )}
             {treeView === 'constellation' && (
               <ConstellationLegend nodes={nodes} edges={edges} onSelectNode={(id) => setEditingNodeId(id)} />
@@ -1277,20 +1230,44 @@ export default function App() {
             />
           )}
 
-          {/* On-tree reminder when the user has members but no relationships yet */}
-          {activeTab === 'tree' && treeView === 'tree' && nodes.length >= 2 && edges.length === 0 && !editingNodeId && (
-            <button
-              type="button"
-              className="tree-connect-reminder"
-              onClick={() => goTab('add')}
-            >
-              <span className="tree-connect-reminder-icon">✦</span>
-              <span className="tree-connect-reminder-text">
-                <strong>No relationships yet</strong>
-                <span>Tap a person here to add parents, partners, or friends</span>
-              </span>
-              <span className="tree-connect-reminder-arrow">→</span>
-            </button>
+          {/* On-tree nudge: 1 person → add more, 2+ unconnected → connect them */}
+          {activeTab === 'tree' && treeView === 'tree' && !editingNodeId && nodes.length === 1 && (
+            nudgeDismissed ? (
+              <button type="button" className="tree-nudge-mini" onClick={() => { setShowAddMore(true); goTab('add') }}>
+                ＋ Add people
+              </button>
+            ) : (
+              <div className="tree-connect-reminder">
+                <button type="button" className="tree-connect-reminder-body" onClick={() => { setShowAddMore(true); goTab('add') }}>
+                  <span className="tree-connect-reminder-icon">＋</span>
+                  <span className="tree-connect-reminder-text">
+                    <strong>Add more people</strong>
+                    <span>Add family, friends, or coworkers to see how your signs connect</span>
+                  </span>
+                  <span className="tree-connect-reminder-arrow">→</span>
+                </button>
+                <button type="button" className="tree-connect-reminder-close" onClick={() => setNudgeDismissed(true)}>▾</button>
+              </div>
+            )
+          )}
+          {activeTab === 'tree' && treeView === 'tree' && !editingNodeId && nodes.length >= 2 && edges.length === 0 && (
+            nudgeDismissed ? (
+              <button type="button" className="tree-nudge-mini" onClick={() => { setActiveTab('add'); setEditingNodeId(nodes[0].id) }}>
+                ✦ Connect people
+              </button>
+            ) : (
+              <div className="tree-connect-reminder">
+                <button type="button" className="tree-connect-reminder-body" onClick={() => { setActiveTab('add'); setEditingNodeId(nodes[0].id) }}>
+                  <span className="tree-connect-reminder-icon">✦</span>
+                  <span className="tree-connect-reminder-text">
+                    <strong>Connect your people</strong>
+                    <span>Tap to open {nodes[0].data.name}'s connections and add relationships</span>
+                  </span>
+                  <span className="tree-connect-reminder-arrow">→</span>
+                </button>
+                <button type="button" className="tree-connect-reminder-close" onClick={() => setNudgeDismissed(true)}>▾</button>
+              </div>
+            )
           )}
 
           {/* Canvas onboarding — replaces welcome screen */}

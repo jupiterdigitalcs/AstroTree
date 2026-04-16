@@ -33,20 +33,27 @@ export function useTreeState({
         if (!groups[key]) groups[key] = []
         groups[key].push(childId)
       })
-      // Only groups with 2+ siblings get a matching symbol
-      const SIBLING_SYMBOLS = ['★', '◆', '●', '▲', '✦', '■', '◇', '▼']
-      const symbolMap = {}
+      // Only groups with 2+ siblings get a matching symbol + color.
+      // 3 symbols × 3 colors = 9 unique combos before repeating.
+      const SIBLING_SYMBOLS = ['❖', '✿', '▪']
+      const SIBLING_COLORS  = ['#b8845c', '#5a9e8f', '#a8587a']  // sienna, teal, magenta
+      const siblingMap = {}
       let si = 0
       Object.values(groups).forEach(children => {
         if (children.length < 2) return
-        const sym = SIBLING_SYMBOLS[si % SIBLING_SYMBOLS.length]
-        children.forEach(id => { symbolMap[id] = sym })
+        const symbol = SIBLING_SYMBOLS[si % SIBLING_SYMBOLS.length]
+        const color  = SIBLING_COLORS[(si + Math.floor(si / SIBLING_SYMBOLS.length)) % SIBLING_COLORS.length]
+        children.forEach(id => { siblingMap[id] = { symbol, color } })
         si++
       })
 
       return laid.map(n => ({
         ...n,
-        data: { ...n.data, siblingGroupSymbol: symbolMap[n.id] || null }
+        data: {
+          ...n.data,
+          siblingGroupSymbol: siblingMap[n.id]?.symbol || null,
+          siblingGroupColor: siblingMap[n.id]?.color || null,
+        }
       }))
     })
     setFitTick(t => t + 1)
