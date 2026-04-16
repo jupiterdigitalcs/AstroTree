@@ -606,6 +606,126 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
   )
 }
 
+// ── Sibling Dynamics ──────────────────────────────────────────────────────────
+
+const SIBLING_ELEMENT_DYNAMIC = {
+  'Fire-Fire':   'double fire — passionate, competitive, and rarely boring together.',
+  'Fire-Earth':  'fire meets earth — one ignites, the other grounds. Friction that builds something real.',
+  'Fire-Air':    'fire and air fuel each other — big ideas, fast energy, and natural creative spark.',
+  'Fire-Water':  'fire and water — steam. Intense emotional dynamics but deep mutual growth.',
+  'Earth-Earth': 'double earth — shared practicality, stubbornness, and quiet strength.',
+  'Earth-Air':   'earth and air — different languages. One thinks, one does. Complementary when patient.',
+  'Earth-Water': 'earth and water — nurturing ground. Emotional depth meets steady support.',
+  'Air-Air':     'double air — endless conversation, shared curiosity, and a world of ideas.',
+  'Air-Water':   'air and water — mind meets heart. Can feel mismatched but balance each other beautifully.',
+  'Water-Water': 'double water — deep emotional bond, intuitive understanding, shared sensitivity.',
+}
+
+function getSiblingElementKey(el1, el2) {
+  const order = ['Fire', 'Earth', 'Air', 'Water']
+  const sorted = [el1, el2].sort((a, b) => order.indexOf(a) - order.indexOf(b))
+  return sorted.join('-')
+}
+
+function SiblingDynamics({ siblingGroups, isExporting }) {
+  const [expanded, setExpanded] = useState(null)
+  if (siblingGroups.length === 0) return null
+  return (
+    <div className="insight-card">
+      <h3 className="insight-heading">Sibling Dynamics<span className="insight-pro-tag">✦</span></h3>
+      <p className="insight-note" style={{ marginBottom: '0.4rem' }}>How siblings' sun sign energies play off each other</p>
+      {siblingGroups.map((group, gi) => {
+        const isOpen = isExporting || expanded === gi
+        const elements = group.children.map(n => n.data.element)
+        const elCounts = {}
+        elements.forEach(e => { elCounts[e] = (elCounts[e] || 0) + 1 })
+        const modalities = group.children.map(n => SIGN_MODALITY[n.data.sign]).filter(Boolean)
+        const modCounts = {}
+        modalities.forEach(m => { modCounts[m] = (modCounts[m] || 0) + 1 })
+
+        return (
+          <div
+            key={gi}
+            className={`family-role-item${isOpen ? ' family-role-item--open' : ''}`}
+            onClick={isExporting ? undefined : () => setExpanded(v => v === gi ? null : gi)}
+          >
+            <div className="family-role-header">
+              <span className="family-role-symbol">{group.children.map(c => c.data.symbol).join(' ')}</span>
+              <span className="family-role-name"><strong>{group.children.map(c => c.data.name).join(', ')}</strong></span>
+              <span className="family-role-chevron">{isOpen ? '▲' : '▼'}</span>
+            </div>
+            {isOpen && (
+              <div className="family-role-body">
+                {/* Element balance */}
+                <p className="insight-note" style={{ marginBottom: '0.2rem' }}>
+                  {Object.entries(elCounts).map(([el, count], i) => (
+                    <span key={el}>
+                      {i > 0 && ' · '}
+                      <span style={{ color: ELEMENT_COLORS[el] }}>{count > 1 ? `${count}× ` : ''}{el}</span>
+                    </span>
+                  ))}
+                </p>
+
+                {/* Pairwise element dynamics for small groups */}
+                {group.children.length <= 4 && group.children.map((child, ci) =>
+                  group.children.slice(ci + 1).map(other => {
+                    const key = getSiblingElementKey(child.data.element, other.data.element)
+                    const blurb = SIBLING_ELEMENT_DYNAMIC[key]
+                    return blurb ? (
+                      <p key={`${child.id}-${other.id}`} className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                        {child.data.name} & {other.data.name} — {blurb}
+                      </p>
+                    ) : null
+                  })
+                )}
+
+                {/* Modality dynamic */}
+                {group.children.length >= 2 && (() => {
+                  const mods = [...new Set(modalities)].sort()
+                  if (mods.length === 1) {
+                    const key = `${mods[0]}-${mods[0]}`
+                    const blurb = SIBLING_ADAPTABILITY[key]
+                    return blurb ? <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Modality: {blurb}</p> : null
+                  }
+                  // Show pairwise for 2-3 siblings
+                  if (mods.length >= 2 && group.children.length <= 3) {
+                    const key = mods.slice(0, 2).join('-')
+                    const blurb = SIBLING_ADAPTABILITY[key]
+                    return blurb ? <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Modality: {blurb}</p> : null
+                  }
+                  return (
+                    <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                      Modality mix: {Object.entries(modCounts).map(([m, c]) => `${c}× ${m}`).join(', ')}
+                    </p>
+                  )
+                })()}
+
+                {/* Moon sign emotional bond */}
+                {group.children.filter(c => c.data.moonSign && c.data.moonSign !== 'Unknown').length >= 2 && (() => {
+                  const moonEls = group.children
+                    .filter(c => c.data.moonSign && c.data.moonSign !== 'Unknown')
+                    .map(c => ({ name: c.data.name, moonSign: c.data.moonSign, moonEl: getElement(c.data.moonSign).element }))
+                  const sameMoonEl = moonEls.filter((m, _, arr) => arr.filter(a => a.moonEl === m.moonEl).length > 1)
+                  if (sameMoonEl.length >= 2) {
+                    const el = sameMoonEl[0].moonEl
+                    const names = [...new Set(sameMoonEl.map(m => m.name))].join(' & ')
+                    return (
+                      <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                        ☽ {names} share {el} moons — a similar emotional wavelength beneath the surface.
+                      </p>
+                    )
+                  }
+                  return null
+                })()}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements, chartTitle, insightsTab = 'insights', onInsightsTabChange, showDig, onShowDig, onCloseDig }) {
@@ -1256,6 +1376,39 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       contributions:    derived?.contributions || [],
     }
   }).sort(byAgeNode)
+
+  // ── Sibling groups — children sharing at least one parent ────────────────────
+  const siblingGroups = (() => {
+    const parentToChildren = {}
+    parentChildEdges.forEach(e => {
+      if (!parentToChildren[e.source]) parentToChildren[e.source] = []
+      if (!parentToChildren[e.source].includes(e.target)) parentToChildren[e.source].push(e.target)
+    })
+    // Group by sorted parent set (so siblings from same couple are one group)
+    const groupsByKey = {}
+    Object.entries(parentToChildren).forEach(([parentId, childIds]) => {
+      if (childIds.length < 2) return
+      childIds.forEach(cid => {
+        const parents = (parentMap[cid] || []).sort()
+        const key = parents.join('|')
+        if (!groupsByKey[key]) groupsByKey[key] = new Set()
+        groupsByKey[key].add(cid)
+      })
+    })
+    return Object.values(groupsByKey)
+      .filter(set => set.size >= 2)
+      .map(set => ({
+        children: [...set]
+          .map(id => nodes.find(n => n.id === id))
+          .filter(Boolean)
+          .sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999')),
+      }))
+      .sort((a, b) => {
+        const genA = Math.min(...a.children.map(c => generationLevel[c.id] ?? 0))
+        const genB = Math.min(...b.children.map(c => generationLevel[c.id] ?? 0))
+        return genA - genB
+      })
+  })()
 
   // ── Arrival groups — driven by spouse edges so all children of a couple appear
   // even if some kids are only connected to one parent in the tree
@@ -1920,6 +2073,11 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             )
           })}
         </div>
+      )}
+
+      {/* 7b. Sibling Dynamics */}
+      {siblingGroups.length > 0 && (
+        <SiblingDynamics siblingGroups={siblingGroups} isExporting={exporting} />
       )}
 
       {/* 9. Zodiac Threads (includes generational echoes — parent-child sign lines) */}

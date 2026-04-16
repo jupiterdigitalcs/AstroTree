@@ -74,6 +74,11 @@ export default function AstroNode({ data, selected }) {
           })}
         </div>
       )}
+      {data.siblingGroupSymbol && (
+        <div className="node-sibling-badge" title="Siblings share matching symbols">
+          {data.siblingGroupSymbol}
+        </div>
+      )}
     </div>
   )
 }

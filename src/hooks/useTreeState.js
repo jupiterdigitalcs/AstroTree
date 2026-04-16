@@ -16,7 +16,39 @@ export function useTreeState({
   // ── Layout on edge / node count changes ──────────────────────────────────
   useEffect(() => {
     if (nodes.length === 0) return
-    setNodes(prev => applyDagreLayout(prev, edges))
+    setNodes(prev => {
+      const laid = applyDagreLayout(prev, edges)
+
+      // ── Tag nodes with sibling-group symbol ────────────────────────────
+      const pcEdges = edges.filter(e => e.data?.relationType === 'parent-child' || !e.data?.relationType)
+      const childToParents = {}
+      pcEdges.forEach(e => {
+        if (!childToParents[e.target]) childToParents[e.target] = []
+        childToParents[e.target].push(e.source)
+      })
+      // Group children by sorted parent key
+      const groups = {}
+      Object.entries(childToParents).forEach(([childId, parents]) => {
+        const key = [...parents].sort().join('|')
+        if (!groups[key]) groups[key] = []
+        groups[key].push(childId)
+      })
+      // Only groups with 2+ siblings get a matching symbol
+      const SIBLING_SYMBOLS = ['★', '◆', '●', '▲', '✦', '■', '◇', '▼']
+      const symbolMap = {}
+      let si = 0
+      Object.values(groups).forEach(children => {
+        if (children.length < 2) return
+        const sym = SIBLING_SYMBOLS[si % SIBLING_SYMBOLS.length]
+        children.forEach(id => { symbolMap[id] = sym })
+        si++
+      })
+
+      return laid.map(n => ({
+        ...n,
+        data: { ...n.data, siblingGroupSymbol: symbolMap[n.id] || null }
+      }))
+    })
     setFitTick(t => t + 1)
   }, [edges, nodes.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
