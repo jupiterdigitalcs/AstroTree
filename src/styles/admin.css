@@ -862,6 +862,35 @@
 
 .chart-action-icon:hover { color: var(--gold); }
 
+.chart-action-text {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-family: 'Raleway', sans-serif;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
+  transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.chart-action-text:hover { color: var(--gold); border-color: var(--gold); }
+
+.chart-action-text--danger { color: var(--red); border-color: var(--red); opacity: 0.7; }
+.chart-action-text--danger:hover { color: var(--red); border-color: var(--red); opacity: 1; }
+
+/* highlight pulse for newly duplicated chart */
+@keyframes chart-new-pulse {
+  0%   { background: rgba(201,168,76,0.15); }
+  100% { background: transparent; }
+}
+
+.chart-item--new {
+  animation: chart-new-pulse 0.6s ease-out;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    TREE VIEW TOGGLE
    ═══════════════════════════════════════════════════════════════ */

@@ -17,6 +17,7 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
   const [pendingDeleteId, setPendingDeleteId] = useState(null)
   const [renamingId,      setRenamingId]      = useState(null)
   const [renameValue,     setRenameValue]     = useState('')
+  const [highlightId,     setHighlightId]     = useState(null)
   const savedEmail = getSavedEmail()
 
   useEffect(() => {
@@ -46,6 +47,17 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
     onDeleteCloud?.(id)
     setPendingDeleteId(null)
     reloadLocal()
+  }
+
+  function handleDuplicateAndRename(chart) {
+    const newId = onDuplicate(chart)
+    reloadLocal()
+    setHighlightId(newId)
+    setTimeout(() => {
+      setRenamingId(newId)
+      setRenameValue(`${chart.title} (copy)`)
+      setHighlightId(null)
+    }, 600)
   }
 
   function startRename(chart) {
@@ -133,13 +145,13 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
           {sorted.map((c, idx) => {
             const isLocked = idx >= chartLimit && c.id !== savedChartId
             return (
-            <div key={c.id} className={`chart-item${c.id === savedChartId ? ' chart-item--active' : ''}${isLocked ? ' chart-item--locked' : ''}`} onClick={isLocked ? onUpgrade : undefined}>
+            <div key={c.id} className={`chart-item${c.id === savedChartId ? ' chart-item--active' : ''}${isLocked ? ' chart-item--locked' : ''}${highlightId === c.id ? ' chart-item--new' : ''}`} onClick={isLocked ? onUpgrade : undefined}>
               {pendingDeleteId === c.id ? (
                 <div className="chart-item-confirm">
                   <span className="chart-item-confirm-text">Delete "{c.title}"?</span>
                   <div className="chart-item-confirm-btns">
-                    <button type="button" className="connection-remove-btn" onClick={() => handleDelete(c.id)}>Delete</button>
-                    <button type="button" className="connection-add-btn" onClick={() => setPendingDeleteId(null)}>Cancel</button>
+                    <button type="button" className="chart-action-text chart-action-text--danger" onClick={() => handleDelete(c.id)}>Delete</button>
+                    <button type="button" className="chart-action-text" onClick={() => setPendingDeleteId(null)}>Cancel</button>
                   </div>
                 </div>
               ) : renamingId === c.id ? (
@@ -155,8 +167,8 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
                     onBlur={() => commitRename(c.id)}
                     onKeyDown={e => e.key === 'Escape' && setRenamingId(null)}
                   />
-                  <button type="submit" className="connection-add-btn">Save</button>
-                  <button type="button" className="connection-remove-btn" onClick={() => setRenamingId(null)}>✕</button>
+                  <button type="submit" className="chart-action-text">Save</button>
+                  <button type="button" className="chart-action-text" onClick={() => setRenamingId(null)}>Cancel</button>
                 </form>
               ) : (
                 <>
@@ -173,8 +185,8 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
                     {c.id !== savedChartId && (
                       <button type="button" className="connection-add-btn" onClick={() => onLoad(c)}>Load</button>
                     )}
-                    <button type="button" className="chart-action-icon" title="Rename" onClick={() => startRename(c)}>✎</button>
-                    {onDuplicate && <button type="button" className="chart-action-icon" title="Duplicate" onClick={() => onDuplicate(c)}>⎘</button>}
+                    <button type="button" className="chart-action-text" onClick={() => startRename(c)}>Rename</button>
+                    {onDuplicate && <button type="button" className="chart-action-text" onClick={() => handleDuplicateAndRename(c)}>Copy</button>}
                     <button type="button" className="connection-remove-btn" onClick={() => setPendingDeleteId(c.id)} aria-label="Delete">×</button>
                   </div>
                 </>
@@ -192,7 +204,7 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
       <div className="chart-ideas">
         {charts.length > 0 && (
           <p className="chart-ideas-hint">
-            Use <strong>⎘</strong> on any chart above to duplicate it, then rename and edit from there.
+            <strong>New Chart</strong> starts fresh. <strong>Copy</strong> duplicates an existing chart — handy if you want a version with just one side of the family or a smaller group.
           </p>
         )}
         {charts.length >= 1 && charts.length <= 2 && (

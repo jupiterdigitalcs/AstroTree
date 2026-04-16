@@ -92,8 +92,8 @@ export function useChartManager({
     }
     saveChart(newChart)
     syncChart(newChart)
-    handleLoadChart(newChart)
-  }, [handleLoadChart, syncChart])
+    return newId
+  }, [syncChart])
 
   async function handleSaveChart(e) {
     e.preventDefault()

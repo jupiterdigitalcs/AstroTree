@@ -1624,6 +1624,22 @@
   color: var(--a-text);
 }
 
+.app--cosmic .chart-action-text {
+  border-color: var(--a-border);
+  color: var(--a-text-muted);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.55rem;
+}
+
+.app--cosmic .chart-action-text:hover {
+  border-color: var(--a-border-glow);
+  color: var(--a-text);
+}
+
+.app--cosmic .chart-action-text--danger { color: #c45; border-color: #c45; }
+.app--cosmic .chart-action-text--danger:hover { color: #e56; border-color: #e56; }
+
 /* ── Form title ──────────────────────────────────────────────────────────── */
 .app--cosmic .form-title {
   color: var(--a-gold-soft);
