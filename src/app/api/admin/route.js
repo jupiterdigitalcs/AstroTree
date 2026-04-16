@@ -121,6 +121,56 @@ async function handleDowngradeUser(request) {
   return NextResponse.json({ ok: true })
 }
 
+async function handleFunnel(request) {
+  if (!requireAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { searchParams } = new URL(request.url)
+  const dateFrom = searchParams.get('dateFrom')
+  const dateTo   = searchParams.get('dateTo')
+  const since    = dateFrom ? new Date(dateFrom).toISOString() : new Date(Date.now() - 30 * 86400000).toISOString()
+  const excludeDevices = searchParams.get('excludeDevices') ?? ''
+  const sb = getSupabase()
+
+  // Get test device IDs to exclude (email = 'test@internal')
+  const { data: testDevices } = await sb.from('devices').select('id').eq('email', 'test@internal')
+  const testIds = new Set((testDevices ?? []).map(d => d.id))
+
+  // Also exclude any device IDs passed from the client (e.g. the admin's own device)
+  if (excludeDevices) {
+    for (const id of excludeDevices.split(',')) {
+      const trimmed = id.trim()
+      if (trimmed) testIds.add(trimmed)
+    }
+  }
+
+  let query = sb
+    .from('device_events')
+    .select('event_name, device_id, created_at')
+    .gte('created_at', since)
+    .order('created_at', { ascending: false })
+    .limit(5000)
+  if (dateTo) query = query.lte('created_at', new Date(dateTo + 'T23:59:59').toISOString())
+
+  const { data, error } = await query
+  if (error) return NextResponse.json([], { status: 500 })
+
+  // Filter out test/owner devices
+  const filtered = (data ?? []).filter(r => !testIds.has(r.device_id))
+
+  // Aggregate: count of unique devices per event
+  const byEvent = {}
+  const countByEvent = {}
+  for (const row of filtered) {
+    if (!byEvent[row.event_name]) { byEvent[row.event_name] = new Set(); countByEvent[row.event_name] = 0 }
+    byEvent[row.event_name].add(row.device_id)
+    countByEvent[row.event_name]++
+  }
+  const result = Object.entries(byEvent).map(([event, devices]) => ({
+    event, uniqueDevices: devices.size, totalCount: countByEvent[event],
+  }))
+  result.sort((a, b) => b.uniqueDevices - a.uniqueDevices)
+  return NextResponse.json(result)
+}
+
 async function handlePaywallConfig(request) {
   if (!requireAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { data, error } = await getSupabase().from('paywall_config').select('key, value, updated_at')
@@ -149,7 +199,7 @@ async function handlePurchases(request) {
 const ROUTES = {
   login: handleLogin, charts: handleCharts, stats: handleStats,
   devices: handleDevices, 'trees-per-day': handleTreesPerDay,
-  engagement: handleEngagement, 'paywall-config': handlePaywallConfig,
+  engagement: handleEngagement, funnel: handleFunnel, 'paywall-config': handlePaywallConfig,
   'paywall-config-set': handlePaywallConfigSet, purchases: handlePurchases,
   'mark-test': handleMarkTest, 'celestial-users': handleCelestialUsers,
   'downgrade-user': handleDowngradeUser,

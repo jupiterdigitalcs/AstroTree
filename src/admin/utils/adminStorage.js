@@ -155,6 +155,18 @@ export async function downgradeUser(authUserId, email) {
   }
 }
 
+export async function fetchFunnel({ dateFrom = '', dateTo = '', excludeDevices = '' } = {}) {
+  try {
+    const params = new URLSearchParams({ dateFrom, dateTo, excludeDevices })
+    const res = await fetch(`/api/admin?action=funnel&${params}`, { headers: adminHeaders() })
+    if (!res.ok) return []
+    return await res.json()
+  } catch (e) {
+    console.error('fetchFunnel exception:', e)
+    return []
+  }
+}
+
 export async function fetchEngagementStats() {
   try {
     const res = await fetch('/api/admin?action=engagement', { headers: adminHeaders() })

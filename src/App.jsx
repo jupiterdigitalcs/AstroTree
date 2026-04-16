@@ -425,9 +425,11 @@ export default function App() {
     if (wasEmpty) {
       // Stay on the add tab so they can add more members
       setActiveTab('add')
+      logEvent('first_member_added')
     } else {
       setActiveTab('tree')
       setEditingNodeId(null)
+      logEvent(`member_added_${Math.min(nextNodes.length, 10)}`)
     }
     markUsed()
 
@@ -460,6 +462,7 @@ export default function App() {
   function goTab(tab) {
     setActiveTab(tab)
     setEditingNodeId(null)
+    logEvent(`tab_${tab}`)
     if (tab !== 'insights') setShowDig(false)
     if (tab === 'tree') setFitTick(t => t + 1)
     if (tab === 'insights' && edges.length > 0) {
@@ -488,6 +491,7 @@ export default function App() {
     setActiveTab('tree')
     setFitTick(t => t + 1)
     markUsed()
+    logEvent('demo_loaded')
   }
 
   async function handleLoadDemoCrew() {
@@ -501,6 +505,7 @@ export default function App() {
     setActiveTab('tree')
     setFitTick(t => t + 1)
     markUsed()
+    logEvent('demo_loaded')
   }
 
   // Exit sample chart: load saved charts if user has any, else start fresh.
@@ -645,10 +650,10 @@ export default function App() {
       {nodes.length > 0 && !panelOpen && (
         <nav className="top-subnav" aria-label="Chart type">
           <div className="top-subnav-brand">Cosmic Connections</div>
-          <button className={`top-subnav-btn${treeView === 'tree' ? ' active' : ''}`} onClick={() => { setTreeView('tree'); goTab('tree') }}>🌳 Family Tree</button>
-          <button className={`top-subnav-btn${treeView === 'constellation' ? ' active' : ''}`} onClick={() => { setTreeView('constellation'); goTab('tree') }}>✦ Constellation</button>
-          <button className={`top-subnav-btn${treeView === 'zodiac' ? ' active' : ''}`} onClick={() => { setTreeView('zodiac'); goTab('tree') }}>☉ Zodiac{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">✦</span> : !canAccess('zodiac_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
-          <button className={`top-subnav-btn${treeView === 'tables' ? ' active' : ''}`} onClick={() => { setTreeView('tables'); goTab('tree') }}>☽ Tables{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">✦</span> : !canAccess('tables_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
+          <button className={`top-subnav-btn${treeView === 'tree' ? ' active' : ''}`} onClick={() => { setTreeView('tree'); logEvent('view_tree'); goTab('tree') }}>🌳 Family Tree</button>
+          <button className={`top-subnav-btn${treeView === 'constellation' ? ' active' : ''}`} onClick={() => { setTreeView('constellation'); logEvent('view_constellation'); goTab('tree') }}>✦ Constellation</button>
+          <button className={`top-subnav-btn${treeView === 'zodiac' ? ' active' : ''}`} onClick={() => { setTreeView('zodiac'); logEvent('view_zodiac'); goTab('tree') }}>☉ Zodiac{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">✦</span> : !canAccess('zodiac_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
+          <button className={`top-subnav-btn${treeView === 'tables' ? ' active' : ''}`} onClick={() => { setTreeView('tables'); logEvent('view_tables'); goTab('tree') }}>☽ Tables{entitlements?.tier === 'premium' ? <span className="pro-tag pro-tag--subtle">✦</span> : !canAccess('tables_view', entitlements?.tier, entitlements?.config) && <span className="tab-lock-icon">🔒</span>}</button>
         </nav>
       )}
       {activeTab === 'insights' && edges.length > 0 && (
@@ -734,7 +739,7 @@ export default function App() {
               insightsTab={insightsTab}
               onInsightsTabChange={setInsightsTab}
               showDig={showDig}
-              onShowDig={() => setShowDig(true)}
+              onShowDig={() => { setShowDig(true); logEvent('dig_opened') }}
               onCloseDig={() => { setShowDig(false); setInsightsTab('insights') }}
             />
 
@@ -1154,7 +1159,7 @@ export default function App() {
               insightsTab={insightsTab}
               onInsightsTabChange={setInsightsTab}
               showDig={showDig}
-              onShowDig={() => setShowDig(true)}
+              onShowDig={() => { setShowDig(true); logEvent('dig_opened') }}
               onCloseDig={() => { setShowDig(false); setInsightsTab('insights') }}
             />
           </div>
@@ -1417,7 +1422,7 @@ export default function App() {
               insightsTab={insightsTab}
               onInsightsTabChange={setInsightsTab}
               showDig={showDig}
-              onShowDig={() => setShowDig(true)}
+              onShowDig={() => { setShowDig(true); logEvent('dig_opened') }}
               onCloseDig={() => { setShowDig(false); setInsightsTab('insights') }}
             />
           </BottomSheet>
