@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { fetchAllCharts } from './utils/adminStorage.js'
 
-export default function AdminTreeList({ onSelectTree }) {
+export default function AdminTreeList({ onSelectTree, excludeEmail }) {
   const [charts,   setCharts]   = useState([])
   const [search,   setSearch]   = useState('')
   const [email,    setEmail]    = useState('')
@@ -95,7 +95,9 @@ export default function AdminTreeList({ onSelectTree }) {
       )}
 
       <div className="admin-table-wrap">
-        {charts.length > 0 && (
+        {charts.length > 0 && (() => {
+          const filtered = excludeEmail ? charts.filter(c => c.email !== excludeEmail) : charts
+          return (
           <table className="admin-table">
             <thead>
               <tr>
@@ -109,7 +111,7 @@ export default function AdminTreeList({ onSelectTree }) {
               </tr>
             </thead>
             <tbody>
-              {charts.map(c => (
+              {filtered.map(c => (
                 <tr key={c.id} className="admin-table-row">
                   <td className="admin-td-title">
                     {c.title || <em>Untitled</em>}
@@ -140,7 +142,8 @@ export default function AdminTreeList({ onSelectTree }) {
               ))}
             </tbody>
           </table>
-        )}
+          )
+        })()}
       </div>
 
       {loading && <p className="admin-loading">Loading…</p>}

@@ -6,9 +6,12 @@ import AdminTreePreview from './AdminTreePreview.jsx'
 import AdminPaywallPanel from './AdminPaywallPanel.jsx'
 import { fetchAllCharts } from './utils/adminStorage.js'
 
+const OWNER_EMAIL = 'chrissysoll@gmail.com'
+
 export default function AdminDashboard() {
   const [view,         setView]         = useState('trees') // 'trees' | 'users' | 'paywall'
   const [selectedTree, setSelectedTree] = useState(null)
+  const [excludeOwner, setExcludeOwner] = useState(true)
 
   async function handleSelectDevice(deviceId, title) {
     // Load all trees for device then find the matching one by title
@@ -19,7 +22,14 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
-      <AdminStatsPanel />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+        <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer' }}>
+          <input type="checkbox" checked={excludeOwner} onChange={e => setExcludeOwner(e.target.checked)} />
+          Exclude chrissysoll from everything
+        </label>
+      </div>
+
+      <AdminStatsPanel excludeOwner={excludeOwner} ownerEmail={OWNER_EMAIL} />
 
       <div className="admin-view-toggle">
         <button
@@ -45,8 +55,8 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      {view === 'trees' && <AdminTreeList onSelectTree={setSelectedTree} />}
-      {view === 'users' && <AdminUserList onSelectDevice={handleSelectDevice} />}
+      {view === 'trees' && <AdminTreeList onSelectTree={setSelectedTree} excludeEmail={excludeOwner ? OWNER_EMAIL : null} />}
+      {view === 'users' && <AdminUserList onSelectDevice={handleSelectDevice} excludeEmail={excludeOwner ? OWNER_EMAIL : null} />}
       {view === 'paywall' && <AdminPaywallPanel />}
 
       {selectedTree && (

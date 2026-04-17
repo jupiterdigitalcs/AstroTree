@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { fetchDevicesGrouped } from './utils/adminStorage.js'
 
-export default function AdminUserList({ onSelectDevice }) {
+export default function AdminUserList({ onSelectDevice, excludeEmail }) {
   const [devices, setDevices] = useState([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(null)
@@ -13,9 +13,11 @@ export default function AdminUserList({ onSelectDevice }) {
   if (loading) return <p className="admin-loading">Loading…</p>
   if (!devices.length) return <p className="admin-empty">No users found.</p>
 
+  const filtered = excludeEmail ? devices.filter(d => d.email !== excludeEmail) : devices
+
   return (
     <div className="admin-user-list">
-      {devices.map(d => {
+      {filtered.map(d => {
         const label = d.email ?? `Anonymous · ${d.deviceId.slice(0, 8)}…`
         const location = [d.city, d.country].filter(Boolean).join(', ') || d.timezone || '—'
         const isOpen = expanded === d.deviceId
