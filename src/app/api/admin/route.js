@@ -128,11 +128,30 @@ async function handleFunnel(request) {
   const dateTo   = searchParams.get('dateTo')
   const since    = dateFrom ? new Date(dateFrom).toISOString() : new Date(Date.now() - 30 * 86400000).toISOString()
   const excludeDevices = searchParams.get('excludeDevices') ?? ''
+  const excludeEmails  = searchParams.get('excludeEmails') ?? ''
   const sb = getSupabase()
 
   // Get test device IDs to exclude (email = 'test@internal')
   const { data: testDevices } = await sb.from('devices').select('id').eq('email', 'test@internal')
   const testIds = new Set((testDevices ?? []).map(d => d.id))
+
+  // Exclude devices linked to specific emails (e.g. the owner's account)
+  if (excludeEmails) {
+    for (const email of excludeEmails.split(',')) {
+      const trimmed = email.trim()
+      if (!trimmed) continue
+      // Find auth users with this email, then find their linked devices
+      const { data: { users } } = await sb.auth.admin.listUsers({ perPage: 1000 })
+      const matchedAuthIds = (users ?? []).filter(u => u.email === trimmed).map(u => u.id)
+      if (matchedAuthIds.length) {
+        const { data: linked } = await sb.from('devices').select('id').in('auth_user_id', matchedAuthIds)
+        for (const d of linked ?? []) testIds.add(d.id)
+      }
+      // Also match devices by email field directly
+      const { data: byEmail } = await sb.from('devices').select('id').eq('email', trimmed)
+      for (const d of byEmail ?? []) testIds.add(d.id)
+    }
+  }
 
   // Also exclude any device IDs passed from the client (e.g. the admin's own device)
   if (excludeDevices) {

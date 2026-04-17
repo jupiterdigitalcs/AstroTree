@@ -10,7 +10,8 @@ export default function AdminStatsPanel() {
   const [funnel,     setFunnel]     = useState([])
   const [dateFrom,   setDateFrom]   = useState('')
   const [dateTo,     setDateTo]     = useState('')
-  const [excludeMe,  setExcludeMe]  = useState(true)
+  const [excludeMe,      setExcludeMe]      = useState(true)
+  const [excludeChrissy, setExcludeChrissy] = useState(true)
   const [allCharts,  setAllCharts]  = useState(null) // loaded on demand for date filtering
 
   const myDeviceId = typeof localStorage !== 'undefined' ? localStorage.getItem(DEVICE_ID_KEY) ?? '' : ''
@@ -24,12 +25,13 @@ export default function AdminStatsPanel() {
   // Reload funnel + charts when filters change
   useEffect(() => {
     const excludeDevices = excludeMe && myDeviceId ? myDeviceId : ''
-    fetchFunnel({ dateFrom, dateTo, excludeDevices }).then(setFunnel)
+    const excludeEmails = excludeChrissy ? 'chrissysoll@gmail.com' : ''
+    fetchFunnel({ dateFrom, dateTo, excludeDevices, excludeEmails }).then(setFunnel)
     if (!dateFrom) { setAllCharts(null); return }
     fetchAllCharts({ dateFrom, dateTo }).then(charts => {
       if (Array.isArray(charts)) setAllCharts(charts)
     })
-  }, [dateFrom, dateTo, excludeMe]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dateFrom, dateTo, excludeMe, excludeChrissy]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter per-day chart data by date
   const filteredPerDay = useMemo(() => {
@@ -86,6 +88,10 @@ export default function AdminStatsPanel() {
         <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer' }}>
           <input type="checkbox" checked={excludeMe} onChange={e => setExcludeMe(e.target.checked)} />
           Exclude my device
+        </label>
+        <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer' }}>
+          <input type="checkbox" checked={excludeChrissy} onChange={e => setExcludeChrissy(e.target.checked)} />
+          Exclude chrissysoll
         </label>
         {(dateFrom || dateTo) && (
           <button

@@ -155,9 +155,9 @@ export async function downgradeUser(authUserId, email) {
   }
 }
 
-export async function fetchFunnel({ dateFrom = '', dateTo = '', excludeDevices = '' } = {}) {
+export async function fetchFunnel({ dateFrom = '', dateTo = '', excludeDevices = '', excludeEmails = '' } = {}) {
   try {
-    const params = new URLSearchParams({ dateFrom, dateTo, excludeDevices })
+    const params = new URLSearchParams({ dateFrom, dateTo, excludeDevices, excludeEmails })
     const res = await fetch(`/api/admin?action=funnel&${params}`, { headers: adminHeaders() })
     if (!res.ok) return []
     return await res.json()
