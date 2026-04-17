@@ -94,6 +94,32 @@
   letter-spacing: 0.03em;
 }
 
+.connect-hint-banner--action {
+  display: block;
+  width: 100%;
+  background: linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(140,80,200,0.07) 100%);
+  border: 1px solid rgba(201,168,76,0.35);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: var(--gold-light);
+  opacity: 1;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s;
+  animation: connect-hint-pulse 2s ease-in-out 1;
+}
+.connect-hint-banner--action:hover {
+  background: linear-gradient(135deg, rgba(201,168,76,0.17) 0%, rgba(140,80,200,0.12) 100%);
+  border-color: rgba(201,168,76,0.55);
+}
+@keyframes connect-hint-pulse {
+  0%, 100% { border-color: rgba(201,168,76,0.35); }
+  50% { border-color: rgba(201,168,76,0.7); box-shadow: 0 0 12px rgba(201,168,76,0.15); }
+}
+
 /* ── Tree tab count badge ───────────────────────────────────────────────── */
 .bottom-tab-badge {
   position: absolute;

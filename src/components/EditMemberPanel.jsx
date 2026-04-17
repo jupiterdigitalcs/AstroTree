@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { DateInput } from './DateInput.jsx'
 import { PlanetSign } from './PlanetSign.jsx'
 
@@ -64,10 +64,12 @@ export default function EditMemberPanel({
   }, [birthTime, originalWarnings])
   const [showBirthTime, setShowBirthTime] = useState(!!node.data.birthTime || originalWarnings.length > 0)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showDetails,   setShowDetails]   = useState(false) // collapsed in first-connect mode
   const [connectTo,     setConnectTo]     = useState(null) // id of node being connected
   const [connSearch,    setConnSearch]    = useState('')
   const [savedFlash,    setSavedFlash]    = useState(false)
   const savedTimerRef = useRef(null)
+  const connSectionRef = useRef(null)
 
   function showSaved() {
     clearTimeout(savedTimerRef.current)
@@ -206,6 +208,17 @@ export default function EditMemberPanel({
   const hasConnections = parentEdges.length > 0 || childEdges.length > 0 ||
                          spouseEdges.length > 0 || friendEdges.length > 0 ||
                          coworkerEdges.length > 0 || eligibleNodes.length > 0
+  const isFirstConnect = edges.length === 0 && eligibleNodes.length > 0
+
+  // Auto-scroll to connections section when this is the first connect opportunity
+  useEffect(() => {
+    if (isFirstConnect && connSectionRef.current) {
+      const timer = setTimeout(() => {
+        connSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [isFirstConnect])
 
   return (
     <div className="add-form edit-panel">
@@ -214,6 +227,17 @@ export default function EditMemberPanel({
       </div>
       {savedFlash && <div className="edit-saved-toast" key={Date.now()}>✓ Changes saved</div>}
 
+      {/* In first-connect mode, collapse name/date into a compact summary */}
+      {isFirstConnect && !showDetails ? (
+        <div className="edit-compact-summary">
+          <span className="edit-compact-info">
+            {node.data.symbol} {node.data.name}
+            {node.data.birthdate && <span className="edit-compact-date"> · {node.data.birthdate}</span>}
+          </span>
+          <button type="button" className="edit-compact-expand" onClick={() => setShowDetails(true)}>Edit</button>
+        </div>
+      ) : (
+      <>
       <div className="name-date-row">
         <label>
           Name
@@ -336,11 +360,17 @@ export default function EditMemberPanel({
       )}
 
       {error && <p className="form-error">{error}</p>}
+      </>
+      )}
 
       {/* ── Connections ─────────────────────────────────────────────────── */}
       {hasConnections && (
-        <div className="connections-section">
-          <span className="parent-select-label">Connections</span>
+        <div className={`connections-section${isFirstConnect ? ' connections-section--highlight' : ''}`} ref={connSectionRef}>
+          {isFirstConnect ? (
+            <span className="conn-first-prompt">Connect {node.data.name} — tap a name below</span>
+          ) : (
+            <span className="parent-select-label">Connections</span>
+          )}
 
           {parentEdges.length > 0 && (
             <ConnGroup label="Parents" edgeList={parentEdges}

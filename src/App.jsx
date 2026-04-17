@@ -128,6 +128,26 @@ export default function App() {
     return map
   }, [nodes])
 
+  // After first connection: go to tree if the edited node has no more eligible connections
+  const prevEdgeCountForNav = useRef(edges.length)
+  useEffect(() => {
+    const prev = prevEdgeCountForNav.current
+    prevEdgeCountForNav.current = edges.length
+    if (prev === 0 && edges.length > 0 && editingNodeId) {
+      const connectedIds = new Set()
+      edges.forEach(e => {
+        if (e.source === editingNodeId) connectedIds.add(e.target)
+        if (e.target === editingNodeId) connectedIds.add(e.source)
+      })
+      const remaining = nodes.filter(n => n.id !== editingNodeId && !connectedIds.has(n.id))
+      if (remaining.length === 0) {
+        setEditingNodeId(null)
+        setActiveTab('tree')
+        setFitTick(t => t + 1)
+      }
+    }
+  }, [edges.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Mobile panel is open when not on the tree tab, or when editing a node
   const panelOpen = activeTab !== 'tree' || !!editingNodeId
 
@@ -422,8 +442,13 @@ export default function App() {
     setShowAddMore(false)
     setFitTick(t => t + 1)
     setNewMembersForChart(prev => prev + members.length)
-    if (wasEmpty) {
-      // Stay on the add tab so they can add more members
+    if (nextEdges.length === 0 && nextNodes.length >= 2) {
+      // 2+ people, no connections yet — go straight to connecting the first member
+      setActiveTab('add')
+      setEditingNodeId(nextNodes[0].id)
+      logEvent(wasEmpty ? 'first_member_added' : `member_added_${Math.min(nextNodes.length, 10)}`)
+    } else if (wasEmpty) {
+      // Only 1 person so far — stay on add tab to add more
       setActiveTab('add')
       logEvent('first_member_added')
     } else {
@@ -780,6 +805,7 @@ export default function App() {
                 edges={edges}
                 onGoToTree={() => goTab('tree')}
                 onGoToInsights={() => goTab('insights')}
+                onConnectFirst={nodes.length >= 2 && edges.length === 0 ? () => setEditingNodeId(nodes[0].id) : undefined}
               />
               {nodes.length === 0 ? (
                 <>
@@ -840,8 +866,14 @@ export default function App() {
                       {showAddMore && <AddMembersForm onAdd={handleAdd} initialRows={1} />}
                     </div>
 
-                    {edges.length === 0 && (
-                      <p className="connect-hint-banner">Tap a name below to connect family members on the tree ↓</p>
+                    {edges.length === 0 && nodes.length >= 2 && (
+                      <button
+                        type="button"
+                        className="connect-hint-banner connect-hint-banner--action"
+                        onClick={() => setEditingNodeId(nodes[0].id)}
+                      >
+                        Ready to connect! Tap here to link {nodes[0].data.name} to others →
+                      </button>
                     )}
 
                     {[...nodes].sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999')).map(n => (
@@ -1267,6 +1299,25 @@ export default function App() {
                   <span className="tree-connect-reminder-text">
                     <strong>Connect your people</strong>
                     <span>Tap to open {nodes[0].data.name}'s connections and add relationships</span>
+                  </span>
+                  <span className="tree-connect-reminder-arrow">→</span>
+                </button>
+                <button type="button" className="tree-connect-reminder-close" onClick={() => setNudgeDismissed(true)}>▾</button>
+              </div>
+            )
+          )}
+          {activeTab === 'tree' && !editingNodeId && !insightsSeen && nodes.length >= 2 && edges.length > 0 && (
+            nudgeDismissed ? (
+              <button type="button" className="tree-nudge-mini" onClick={() => goTab('insights')}>
+                ✦ See Insights
+              </button>
+            ) : (
+              <div className="tree-connect-reminder">
+                <button type="button" className="tree-connect-reminder-body" onClick={() => goTab('insights')}>
+                  <span className="tree-connect-reminder-icon">✦</span>
+                  <span className="tree-connect-reminder-text">
+                    <strong>See your {familyLabelLower}'s insights</strong>
+                    <span>Discover shared signs, elemental balance, and cosmic patterns</span>
                   </span>
                   <span className="tree-connect-reminder-arrow">→</span>
                 </button>

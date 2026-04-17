@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 
 const STORAGE_KEY = 'astrotree_insights_seen'
 
-export function OnboardingProgress({ nodes, edges, onGoToTree, onGoToInsights }) {
+export function OnboardingProgress({ nodes, edges, onGoToTree, onGoToInsights, onConnectFirst }) {
   const [insightsSeen, setInsightsSeen] = useState(() => {
     try { return localStorage.getItem(STORAGE_KEY) === '1' } catch { return false }
   })
@@ -22,7 +22,7 @@ export function OnboardingProgress({ nodes, edges, onGoToTree, onGoToInsights })
   if (allDone || wellUsed) return null
 
   function handleStepClick(step) {
-    if (step === 2) onGoToTree?.()
+    if (step === 2) { onConnectFirst ? onConnectFirst() : onGoToTree?.() }
     if (step === 3) {
       try { localStorage.setItem(STORAGE_KEY, '1') } catch {}
       setInsightsSeen(true)
