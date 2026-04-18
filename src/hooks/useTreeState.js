@@ -33,6 +33,43 @@ export function useTreeState({
         if (!groups[key]) groups[key] = []
         groups[key].push(childId)
       })
+      // Also include explicit sibling edges (siblings without parents)
+      const sibEdges = edges.filter(e => e.data?.relationType === 'sibling')
+      if (sibEdges.length > 0) {
+        const sibAdj = {}
+        sibEdges.forEach(e => {
+          if (!sibAdj[e.source]) sibAdj[e.source] = new Set()
+          if (!sibAdj[e.target]) sibAdj[e.target] = new Set()
+          sibAdj[e.source].add(e.target)
+          sibAdj[e.target].add(e.source)
+        })
+        const visited = new Set()
+        Object.keys(sibAdj).forEach(startId => {
+          if (visited.has(startId)) return
+          const component = []
+          const q = [startId]
+          while (q.length > 0) {
+            const id = q.pop()
+            if (visited.has(id)) continue
+            visited.add(id)
+            component.push(id)
+            sibAdj[id].forEach(nid => { if (!visited.has(nid)) q.push(nid) })
+          }
+          if (component.length >= 2) {
+            let merged = false
+            for (const [key, children] of Object.entries(groups)) {
+              if (component.some(id => children.includes(id))) {
+                component.forEach(id => { if (!children.includes(id)) children.push(id) })
+                merged = true
+                break
+              }
+            }
+            if (!merged) {
+              groups[`sibling-${startId}`] = component
+            }
+          }
+        })
+      }
       // Only groups with 2+ siblings get a matching symbol + color.
       // 3 symbols × 3 colors = 9 unique combos before repeating.
       const SIBLING_SYMBOLS = ['❖', '✿', '▪']
@@ -60,8 +97,9 @@ export function useTreeState({
   }, [edges, nodes.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Spouse edges: route straight across using side handles ────────────────
+  // Sibling edges are not drawn on the tree — siblings use group symbols instead
   const edgesForDisplay = useMemo(() =>
-    edges.map(edge => {
+    edges.filter(edge => edge.data?.relationType !== 'sibling').map(edge => {
       if (edge.data?.relationType !== 'spouse') return edge
       const src = nodes.find(n => n.id === edge.source)
       const tgt = nodes.find(n => n.id === edge.target)

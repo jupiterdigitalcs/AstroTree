@@ -828,6 +828,41 @@
   opacity: 0.85;
 }
 
+/* ── Sibling Dynamics sections ─────────────────────────────────── */
+.sibling-dynamics-body {
+  padding: 0.45rem 0 0.3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.sibling-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sibling-section-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  opacity: 0.7;
+}
+
+.sibling-section-content {
+  font-size: 0.78rem;
+  color: var(--text-secondary, rgba(255,255,255,0.72));
+  line-height: 1.45;
+  margin: 0;
+}
+
+.sibling-section-content strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
 /* ── Chart item rename + icon actions ─────────────────────────── */
 .chart-item-rename {
   display: flex;

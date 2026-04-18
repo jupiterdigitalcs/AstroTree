@@ -697,6 +697,11 @@
   border-color: var(--gold);
   color: var(--gold);
 }
+.conn-type-pill--sibling:hover {
+  background: rgba(184,132,92,0.08);
+  border-color: #b8845c;
+  color: #b8845c;
+}
 .conn-type-pill--friend:hover {
   background: rgba(91,200,245,0.08);
   border-color: #5bc8f5;

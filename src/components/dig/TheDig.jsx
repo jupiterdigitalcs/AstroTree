@@ -60,35 +60,12 @@ export default function TheDig({ digData, onClose, chartTitle, isPremium = true,
     onSwipeRight: () => go('back'),
   })
 
-  // Convert a data URL to a Blob
-  function dataUrlToBlob(dataUrl) {
-    const parts = dataUrl.split(',')
-    const mime = parts[0].match(/:(.*?);/)[1]
-    const bin = atob(parts[1])
-    const arr = new Uint8Array(bin.length)
-    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i)
-    return new Blob([arr], { type: mime })
-  }
-
-  // Download a blob as a file
-  function downloadBlob(blob, filename) {
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.download = filename
-    link.href = url
-    link.style.display = 'none'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
-
   // Share the current slide (mobile: native share, desktop/fallback: download)
   async function handleShare() {
     if (sharing) return
     setSharing(true)
     try {
-      const { getToPng } = await import('../../hooks/useExport.js')
+      const { getToPng, shareOrDownload } = await import('../../hooks/useExport.js')
       const toPng = await getToPng()
       const slug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family'
       const filename = `the-dig-${slug}-${current + 1}.png`
@@ -110,26 +87,14 @@ export default function TheDig({ digData, onClose, chartTitle, isPremium = true,
       await toPng(el, captureOpts).catch(() => {})
       await new Promise(r => setTimeout(r, 120))
       const dataUrl = await toPng(el, captureOpts)
-      const blob = dataUrlToBlob(dataUrl)
 
-      // Try native share on mobile
-      if (navigator.share) {
-        try {
-          const file = new File([blob], filename, { type: 'image/png' })
-          if (navigator.canShare?.({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'The DIG — AstroDig', text: 'My family\'s cosmic story ✦ astrodig.com' })
-            setSharing(false)
-            return
-          }
-        } catch (e) {
-          if (e?.name === 'AbortError') { setSharing(false); return }
-          // Fall through to download
-        }
-      }
-
-      // Fallback: download the image
-      downloadBlob(blob, filename)
+      await shareOrDownload(
+        dataUrl, filename,
+        'The DIG — AstroDig',
+        'My family\'s cosmic story ✦ astrodig.com',
+      )
     } catch (e) {
+      if (e?.name === 'AbortError') { setSharing(false); return }
       console.error('[dig] share error:', e)
     }
     setSharing(false)

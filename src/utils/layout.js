@@ -31,6 +31,15 @@ export function applyDagreLayout(nodes, edges) {
     spouseOf[e.target].push(e.source)
   })
 
+  // Sibling edges — same generation (align like spouses but don't pair tightly)
+  const siblingOf = {}
+  edges.filter(e => e.data?.relationType === 'sibling').forEach(e => {
+    if (!siblingOf[e.source]) siblingOf[e.source] = []
+    siblingOf[e.source].push(e.target)
+    if (!siblingOf[e.target]) siblingOf[e.target] = []
+    siblingOf[e.target].push(e.source)
+  })
+
   // ── Step 1: Assign generations from parent-child edges only ─────────────
   // True roots = have children but no parents
   const generation = {}
@@ -122,9 +131,28 @@ export function applyDagreLayout(nodes, edges) {
     })
   }
 
+  // ── Step 2b: Propagate generation to siblings ──────────────────────────
+  // Siblings share a generation row; use the deeper (higher number) so a
+  // sibling linked to a parent-chain lines up correctly.
+  changed = true
+  while (changed) {
+    changed = false
+    nodes.forEach(n => {
+      if (generation[n.id] != null) {
+        ;(siblingOf[n.id] || []).forEach(sid => {
+          const target = generation[n.id]
+          if (generation[sid] == null || generation[sid] < target) {
+            generation[sid] = target
+            changed = true
+          }
+        })
+      }
+    })
+  }
+
   console.log('[layout] after spouse align:', Object.entries(generation).map(([id, g]) => `${nameOf[id]}=${g}`).join(', '))
 
-  // Re-validate parent gen < child gen after spouse alignment may have shifted nodes
+  // Re-validate parent gen < child gen after spouse/sibling alignment may have shifted nodes
   validated = true
   while (validated) {
     validated = false
@@ -182,6 +210,11 @@ export function applyDagreLayout(nodes, edges) {
   edges
     .filter(e => e.data?.relationType === 'spouse')
     .forEach(e => g.setEdge(e.source, e.target, { weight: 2, minlen: 1 }))
+
+  // Sibling edges — keep siblings near each other
+  edges
+    .filter(e => e.data?.relationType === 'sibling')
+    .forEach(e => g.setEdge(e.source, e.target, { weight: 1, minlen: 1 }))
 
   dagre.layout(g)
 

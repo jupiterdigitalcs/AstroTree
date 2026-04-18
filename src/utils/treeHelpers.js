@@ -5,12 +5,14 @@ import { computeAstrology, computeAstrologyBatch } from './astrologyAPI.js'
 export const EDGE_STYLE        = { stroke: '#c9a84c', strokeWidth: 1.5 }
 export const SPOUSE_STYLE      = { stroke: '#d4a0bc', strokeWidth: 1.5, strokeDasharray: '6,4' }
 export const STEP_PARENT_STYLE = { stroke: '#c9a84c', strokeWidth: 1.5, strokeDasharray: '6,4' }
+export const SIBLING_STYLE     = { stroke: '#b8845c', strokeWidth: 1.5, strokeDasharray: '6,4' }
 export const FRIEND_STYLE      = { stroke: '#5bc8f5', strokeWidth: 1.5, strokeDasharray: '4,4' }
 export const COWORKER_STYLE    = { stroke: '#a0a0b8', strokeWidth: 1.5, strokeDasharray: '4,4' }
 
 export const EDGE_STYLES = {
   'parent-child': EDGE_STYLE,
   'step-parent':  STEP_PARENT_STYLE,
+  'sibling':      SIBLING_STYLE,
   'spouse':       SPOUSE_STYLE,
   'friend':       FRIEND_STYLE,
   'coworker':     COWORKER_STYLE,
@@ -20,6 +22,7 @@ export const EDGE_STYLES = {
 export const EDGE_COLORS = {
   'parent-child': '#c9a84c',
   'step-parent':  '#c9a84c',
+  'sibling':      '#b8845c',
   'spouse':       '#d4a0bc',
   'friend':       '#5bc8f5',
   'coworker':     '#a0a0b8',
@@ -28,6 +31,7 @@ export const EDGE_COLORS = {
 export const EDGE_LABELS = {
   'parent-child': 'family',
   'step-parent':  'step-family',
+  'sibling':      'sibling',
   'spouse':       'partner',
   'friend':       'friend',
   'coworker':     'coworker',
@@ -36,6 +40,7 @@ export const EDGE_LABELS = {
 export const EDGE_DASH = {
   'parent-child': 'none',
   'step-parent':  '6,4',
+  'sibling':      '6,4',
   'spouse':       '6,4',
   'friend':       '4,4',
   'coworker':     '4,4',

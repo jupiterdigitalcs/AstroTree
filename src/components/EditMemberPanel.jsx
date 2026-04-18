@@ -108,6 +108,9 @@ export default function EditMemberPanel({
   const friendEdges = edges.filter(e =>
     (e.source === node.id || e.target === node.id) && e.data?.relationType === 'friend'
   )
+  const siblingEdges = edges.filter(e =>
+    (e.source === node.id || e.target === node.id) && e.data?.relationType === 'sibling'
+  )
   const coworkerEdges = edges.filter(e =>
     (e.source === node.id || e.target === node.id) && e.data?.relationType === 'coworker'
   )
@@ -169,6 +172,9 @@ export default function EditMemberPanel({
     // Step-child: always valid
     types.push({ key: 'step-child', label: 'Step-Child', action: () => addConn(node.id, otherId, 'step-parent') })
 
+    // Sibling: always valid (non-hierarchical, no parent needed)
+    types.push({ key: 'sibling', label: 'Sibling', action: () => addConn(node.id, otherId, 'sibling') })
+
     // Spouse: always valid (non-hierarchical)
     types.push({ key: 'spouse', label: 'Partner', action: () => addConn(node.id, otherId, 'spouse') })
 
@@ -225,8 +231,9 @@ export default function EditMemberPanel({
 
   const hasConnections = parentEdges.length > 0 || childEdges.length > 0 ||
                          stepParentEdges.length > 0 || stepChildEdges.length > 0 ||
-                         spouseEdges.length > 0 || friendEdges.length > 0 ||
-                         coworkerEdges.length > 0 || eligibleNodes.length > 0
+                         siblingEdges.length > 0 || spouseEdges.length > 0 ||
+                         friendEdges.length > 0 || coworkerEdges.length > 0 ||
+                         eligibleNodes.length > 0
   const isFirstConnect = edges.length === 0 && eligibleNodes.length > 0
 
   // Auto-scroll to connections section when this is the first connect opportunity
@@ -482,6 +489,11 @@ export default function EditMemberPanel({
             <ConnGroup label="Step-Children" edgeList={stepChildEdges}
               getOther={e => e.target} allNodes={allNodes} onRemove={removeConn} accentColor="#c9a84c" />
           )}
+          {siblingEdges.length > 0 && (
+            <ConnGroup label="Siblings" edgeList={siblingEdges}
+              getOther={e => e.source === node.id ? e.target : e.source}
+              allNodes={allNodes} onRemove={removeConn} accentColor="#b8845c" />
+          )}
           {spouseEdges.length > 0 && (
             <ConnGroup label="Spouse / Partner" edgeList={spouseEdges}
               getOther={e => e.source === node.id ? e.target : e.source}
@@ -554,17 +566,18 @@ export default function EditMemberPanel({
         </div>
       )}
 
-      {/* Sibling hint — show when this member has siblings (inferred from shared parents) */}
+      {/* Sibling hint — show inferred siblings (from shared parents) that aren't already explicit */}
       {parentEdges.length > 0 && (() => {
         const parentIds = parentEdges.map(e => e.source)
+        const explicitSibIds = new Set(siblingEdges.map(e => e.source === node.id ? e.target : e.source))
         const siblings = allNodes.filter(n =>
-          n.id !== node.id &&
+          n.id !== node.id && !explicitSibIds.has(n.id) &&
           edges.some(e => e.data?.relationType === 'parent-child' && e.target === n.id && parentIds.includes(e.source))
         )
         if (siblings.length === 0) return null
         return (
           <p className="sibling-hint">
-            Sibling{siblings.length > 1 ? 's' : ''}: {siblings.map(s => s.data.name).join(', ')} — detected automatically from shared parents
+            Also sibling{siblings.length > 1 ? 's' : ''}: {siblings.map(s => s.data.name).join(', ')} — detected from shared parents
           </p>
         )
       })()}

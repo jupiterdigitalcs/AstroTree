@@ -633,7 +633,7 @@ function SiblingDynamics({ siblingGroups, isExporting }) {
   return (
     <div className="insight-card">
       <h3 className="insight-heading">Sibling Dynamics<span className="insight-pro-tag">✦</span></h3>
-      <p className="insight-note" style={{ marginBottom: '0.4rem' }}>How siblings' sun sign energies play off each other</p>
+      <p className="insight-note" style={{ marginBottom: '0.5rem' }}>How siblings' cosmic wiring shapes the way they relate</p>
       {siblingGroups.map((group, gi) => {
         const isOpen = isExporting || expanded === gi
         const elements = group.children.map(n => n.data.element)
@@ -655,48 +655,95 @@ function SiblingDynamics({ siblingGroups, isExporting }) {
               <span className="family-role-chevron">{isOpen ? '▲' : '▼'}</span>
             </div>
             {isOpen && (
-              <div className="family-role-body">
+              <div className="sibling-dynamics-body">
                 {/* Element balance */}
-                <p className="insight-note" style={{ marginBottom: '0.2rem' }}>
-                  {Object.entries(elCounts).map(([el, count], i) => (
-                    <span key={el}>
-                      {i > 0 && ' · '}
-                      <span style={{ color: ELEMENT_COLORS[el] }}>{count > 1 ? `${count}× ` : ''}{el}</span>
-                    </span>
-                  ))}
-                </p>
+                <div className="sibling-section">
+                  <span className="sibling-section-label">Elements</span>
+                  <p className="sibling-section-content">
+                    {Object.entries(elCounts).map(([el, count], i) => (
+                      <span key={el}>
+                        {i > 0 && ' · '}
+                        <span style={{ color: ELEMENT_COLORS[el] }}>{count > 1 ? `${count}× ` : ''}{el}</span>
+                      </span>
+                    ))}
+                  </p>
+                </div>
 
                 {/* Pairwise element dynamics for small groups */}
-                {group.children.length <= 4 && group.children.map((child, ci) =>
-                  group.children.slice(ci + 1).map(other => {
-                    const key = getSiblingElementKey(child.data.element, other.data.element)
-                    const blurb = SIBLING_ELEMENT_DYNAMIC[key]
-                    return blurb ? (
-                      <p key={`${child.id}-${other.id}`} className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                        {child.data.name} & {other.data.name} — {blurb}
-                      </p>
-                    ) : null
-                  })
-                )}
-
-                {/* Modality dynamic */}
-                {group.children.length >= 2 && (() => {
-                  const mods = [...new Set(modalities)].sort()
-                  if (mods.length === 1) {
-                    const key = `${mods[0]}-${mods[0]}`
-                    const blurb = SIBLING_ADAPTABILITY[key]
-                    return blurb ? <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Modality: {blurb}</p> : null
-                  }
-                  // Show pairwise for 2-3 siblings
-                  if (mods.length >= 2 && group.children.length <= 3) {
-                    const key = mods.slice(0, 2).join('-')
-                    const blurb = SIBLING_ADAPTABILITY[key]
-                    return blurb ? <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Modality: {blurb}</p> : null
-                  }
+                {group.children.length <= 4 && (() => {
+                  const pairs = []
+                  group.children.forEach((child, ci) =>
+                    group.children.slice(ci + 1).forEach(other => {
+                      const key = getSiblingElementKey(child.data.element, other.data.element)
+                      const blurb = SIBLING_ELEMENT_DYNAMIC[key]
+                      if (blurb) pairs.push({ child, other, blurb })
+                    })
+                  )
+                  if (pairs.length === 0) return null
                   return (
-                    <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                      Modality mix: {Object.entries(modCounts).map(([m, c]) => `${c}× ${m}`).join(', ')}
-                    </p>
+                    <div className="sibling-section">
+                      <span className="sibling-section-label">Dynamics</span>
+                      {pairs.map(({ child, other, blurb }) => (
+                        <p key={`${child.id}-${other.id}`} className="sibling-section-content">
+                          <strong>{child.data.name} & {other.data.name}</strong> — {blurb}
+                        </p>
+                      ))}
+                    </div>
+                  )
+                })()}
+
+                {/* Group vibe — element balance + polarity + rhythm */}
+                {group.children.length >= 2 && (() => {
+                  const n = group.children.length
+                  const parts = []
+
+                  // Element balance
+                  const elEntries = Object.entries(elCounts).sort((a, b) => b[1] - a[1])
+                  const topEl = elEntries[0]
+                  if (topEl[1] >= Math.ceil(n * 0.6) && n >= 2) {
+                    parts.push(`Heavy on ${topEl[0]} — ${topEl[0] === 'Fire' ? 'high energy and competition' : topEl[0] === 'Earth' ? 'grounded and dependable together' : topEl[0] === 'Air' ? 'idea-driven and talkative' : 'emotionally attuned and intuitive'}.`)
+                  } else if (elEntries.length >= 3 && elEntries[2][1] > 0) {
+                    parts.push('An eclectic elemental mix — they stretch each other in different directions.')
+                  } else if (elEntries.length === 2 && elEntries[1][1] > 0) {
+                    const [a, b] = elEntries.map(e => e[0])
+                    const PAIR_VIBE = {
+                      'Fire+Earth': 'Ambition meets follow-through.',
+                      'Fire+Air':   'Big ideas and the energy to chase them.',
+                      'Fire+Water': 'Passion and sensitivity in tension.',
+                      'Earth+Air':  'Practicality and imagination side by side.',
+                      'Earth+Water':'Nurturing and reliable — a solid emotional core.',
+                      'Air+Water':  'Head and heart in constant dialogue.',
+                    }
+                    const key = [a, b].sort().join('+')
+                    if (PAIR_VIBE[key]) parts.push(PAIR_VIBE[key])
+                  }
+
+                  // Polarity — outward (fire/air) vs inward (earth/water)
+                  const outward = (elCounts.Fire || 0) + (elCounts.Air || 0)
+                  const inward = (elCounts.Earth || 0) + (elCounts.Water || 0)
+                  if (outward > 0 && inward > 0 && Math.abs(outward - inward) <= 1) {
+                    parts.push('Balanced between outward and inward energy.')
+                  } else if (outward >= inward + 2) {
+                    parts.push('Mostly outward energy — expressive, social, and action-oriented.')
+                  } else if (inward >= outward + 2) {
+                    parts.push('Mostly inward energy — reflective, steady, and emotionally deep.')
+                  }
+
+                  // Rhythm — how they approach change
+                  const topMod = Object.entries(modCounts).sort((a, b) => b[1] - a[1])
+                  if (topMod.length === 1 || (topMod[0] && topMod[0][1] > n / 2)) {
+                    const m = topMod[0][0]
+                    parts.push(m === 'Cardinal' ? 'Natural initiators — they push each other to start things.' : m === 'Fixed' ? 'Steady and loyal, but watch for stubbornness standoffs.' : 'Highly adaptable together — they flow with change easily.')
+                  } else if (topMod.length >= 3 && topMod[2][1] > 0) {
+                    parts.push('A mix of starters, holders, and adapters — all bases covered.')
+                  }
+
+                  if (parts.length === 0) return null
+                  return (
+                    <div className="sibling-section">
+                      <span className="sibling-section-label">Group Vibe</span>
+                      <p className="sibling-section-content">{parts.slice(0, 2).join(' ')}</p>
+                    </div>
                   )
                 })()}
 
@@ -706,16 +753,17 @@ function SiblingDynamics({ siblingGroups, isExporting }) {
                     .filter(c => c.data.moonSign && c.data.moonSign !== 'Unknown')
                     .map(c => ({ name: c.data.name, moonSign: c.data.moonSign, moonEl: getElement(c.data.moonSign).element }))
                   const sameMoonEl = moonEls.filter((m, _, arr) => arr.filter(a => a.moonEl === m.moonEl).length > 1)
-                  if (sameMoonEl.length >= 2) {
-                    const el = sameMoonEl[0].moonEl
-                    const names = [...new Set(sameMoonEl.map(m => m.name))].join(' & ')
-                    return (
-                      <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                  if (sameMoonEl.length < 2) return null
+                  const el = sameMoonEl[0].moonEl
+                  const names = [...new Set(sameMoonEl.map(m => m.name))].join(' & ')
+                  return (
+                    <div className="sibling-section">
+                      <span className="sibling-section-label">Moon Bond</span>
+                      <p className="sibling-section-content">
                         ☽ {names} share {el} moons — a similar emotional wavelength beneath the surface.
                       </p>
-                    )
-                  }
-                  return null
+                    </div>
+                  )
                 })()}
               </div>
             )}
@@ -736,7 +784,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const isGroupOnly = edges.length > 0 && edges.every(e => {
     const t = e.data?.relationType
     return t === 'friend' || t === 'coworker'
-  }) // step-parent, parent-child, spouse are all family types
+  }) // step-parent, parent-child, sibling, spouse are all family types
   const panelTitle = isGroupOnly ? 'Group Insights' : 'Family Insights'
   const tooFewNodes = nodes.length < 2
   const noEdges = !tooFewNodes && edges.length === 0
@@ -1140,6 +1188,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       for (let j = i + 1; j < children.length; j++)
         siblingKeys.add([children[i], children[j]].sort().join('|'))
   })
+  // Also include explicit sibling edges (siblings added without parents)
+  edges.filter(e => e.data?.relationType === 'sibling').forEach(e => {
+    siblingKeys.add([e.source, e.target].sort().join('|'))
+  })
   const cousinKeys = new Set()
   ;[...siblingKeys].forEach(sibKey => {
     const [pA, pB] = sibKey.split('|')
@@ -1171,6 +1223,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const shownKeys = new Set()
   parentChildEdges.forEach(e => shownKeys.add([e.source, e.target].sort().join('|')))
   spouseEdges.forEach(e => shownKeys.add([e.source, e.target].sort().join('|')))
+  edges.filter(e => e.data?.relationType === 'sibling').forEach(e => shownKeys.add([e.source, e.target].sort().join('|')))
 
   const notableBonds = []
   for (let i = 0; i < nodes.length; i++) {
@@ -1377,7 +1430,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     }
   }).sort(byAgeNode)
 
-  // ── Sibling groups — children sharing at least one parent ────────────────────
+  // ── Sibling groups — children sharing at least one parent OR explicit sibling edges
   const siblingGroups = (() => {
     const parentToChildren = {}
     parentChildEdges.forEach(e => {
@@ -1395,6 +1448,49 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         groupsByKey[key].add(cid)
       })
     })
+
+    // Merge explicit sibling edges into groups via union-find
+    const explicitSibEdges = edges.filter(e => e.data?.relationType === 'sibling')
+    if (explicitSibEdges.length > 0) {
+      // Build adjacency from explicit sibling edges
+      const sibAdj = {}
+      explicitSibEdges.forEach(e => {
+        if (!sibAdj[e.source]) sibAdj[e.source] = new Set()
+        if (!sibAdj[e.target]) sibAdj[e.target] = new Set()
+        sibAdj[e.source].add(e.target)
+        sibAdj[e.target].add(e.source)
+      })
+      // BFS to find connected components of explicit siblings
+      const visited = new Set()
+      Object.keys(sibAdj).forEach(startId => {
+        if (visited.has(startId)) return
+        const component = new Set()
+        const q = [startId]
+        while (q.length > 0) {
+          const id = q.pop()
+          if (visited.has(id)) continue
+          visited.add(id)
+          component.add(id)
+          ;(sibAdj[id] || []).forEach(nid => { if (!visited.has(nid)) q.push(nid) })
+        }
+        if (component.size >= 2) {
+          // Check if any member is already in a parent-based group; if so, merge into it
+          let merged = false
+          for (const [key, group] of Object.entries(groupsByKey)) {
+            if ([...component].some(id => group.has(id))) {
+              component.forEach(id => group.add(id))
+              merged = true
+              break
+            }
+          }
+          if (!merged) {
+            const key = `sibling-explicit-${startId}`
+            groupsByKey[key] = component
+          }
+        }
+      })
+    }
+
     return Object.values(groupsByKey)
       .filter(set => set.size >= 2)
       .map(set => ({
