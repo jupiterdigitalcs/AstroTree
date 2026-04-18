@@ -80,6 +80,7 @@ export function useTreeState({
   const handleUpdate = useCallback((id, patch, { keepOpen = false } = {}) => {
     const bdChanged = !!patch.birthdate
     const btChanged = 'birthTime' in patch
+    const tzChanged = 'birthTimezone' in patch
 
     // Synchronous sun sign update (pure lookup, no API call)
     setNodes(prev => prev.map(n => {
@@ -94,14 +95,15 @@ export function useTreeState({
     }))
     if (!keepOpen) setEditingNodeId(null)
 
-    // Async: fetch moon/planets/ingress from server when birthdate or time changes
-    if (bdChanged || btChanged) {
-      // Find the current node to get the right birthdate/time
+    // Async: fetch moon/planets/ingress from server when birthdate, time, or timezone changes
+    if (bdChanged || btChanged || tzChanged) {
+      // Find the current node to get the right birthdate/time/timezone
       const node = nodes.find(n => n.id === id)
       const bd = patch.birthdate || node?.data?.birthdate
       const bt = btChanged ? patch.birthTime : node?.data?.birthTime
+      const btz = tzChanged ? patch.birthTimezone : node?.data?.birthTimezone
       if (bd) {
-        computeAstrology(bd, bt ?? null).then(astro => {
+        computeAstrology(bd, bt ?? null, btz ?? null).then(astro => {
           if (!astro) return
           setNodes(prev => prev.map(n => {
             if (n.id !== id) return n
@@ -109,6 +111,7 @@ export function useTreeState({
             if (astro.moon) Object.assign(enriched, astro.moon)
             if (astro.innerPlanets) enriched.innerPlanets = astro.innerPlanets
             if (astro.ingressWarnings) enriched.ingressWarnings = astro.ingressWarnings
+            if (astro.timezoneWarnings) enriched.timezoneWarnings = astro.timezoneWarnings
             if (astro.sunAtTime?.sign) {
               const { element, color } = getElement(astro.sunAtTime.sign)
               Object.assign(enriched, { sign: astro.sunAtTime.sign, symbol: astro.sunAtTime.symbol, element, elementColor: color })

@@ -2,13 +2,15 @@ import { getSunSign, getElement } from './astrology.js'
 import { computeAstrology, computeAstrologyBatch } from './astrologyAPI.js'
 
 // ── Edge style constants ─────────────────────────────────────────────────────
-export const EDGE_STYLE      = { stroke: '#c9a84c', strokeWidth: 1.5 }
-export const SPOUSE_STYLE    = { stroke: '#d4a0bc', strokeWidth: 1.5, strokeDasharray: '6,4' }
-export const FRIEND_STYLE    = { stroke: '#5bc8f5', strokeWidth: 1.5, strokeDasharray: '4,4' }
-export const COWORKER_STYLE  = { stroke: '#a0a0b8', strokeWidth: 1.5, strokeDasharray: '4,4' }
+export const EDGE_STYLE        = { stroke: '#c9a84c', strokeWidth: 1.5 }
+export const SPOUSE_STYLE      = { stroke: '#d4a0bc', strokeWidth: 1.5, strokeDasharray: '6,4' }
+export const STEP_PARENT_STYLE = { stroke: '#c9a84c', strokeWidth: 1.5, strokeDasharray: '6,4' }
+export const FRIEND_STYLE      = { stroke: '#5bc8f5', strokeWidth: 1.5, strokeDasharray: '4,4' }
+export const COWORKER_STYLE    = { stroke: '#a0a0b8', strokeWidth: 1.5, strokeDasharray: '4,4' }
 
 export const EDGE_STYLES = {
   'parent-child': EDGE_STYLE,
+  'step-parent':  STEP_PARENT_STYLE,
   'spouse':       SPOUSE_STYLE,
   'friend':       FRIEND_STYLE,
   'coworker':     COWORKER_STYLE,
@@ -17,6 +19,7 @@ export const EDGE_STYLES = {
 // Derived maps for ConstellationView
 export const EDGE_COLORS = {
   'parent-child': '#c9a84c',
+  'step-parent':  '#c9a84c',
   'spouse':       '#d4a0bc',
   'friend':       '#5bc8f5',
   'coworker':     '#a0a0b8',
@@ -24,6 +27,7 @@ export const EDGE_COLORS = {
 
 export const EDGE_LABELS = {
   'parent-child': 'family',
+  'step-parent':  'step-family',
   'spouse':       'partner',
   'friend':       'friend',
   'coworker':     'coworker',
@@ -31,6 +35,7 @@ export const EDGE_LABELS = {
 
 export const EDGE_DASH = {
   'parent-child': 'none',
+  'step-parent':  '6,4',
   'spouse':       '6,4',
   'friend':       '4,4',
   'coworker':     '4,4',
@@ -40,9 +45,9 @@ export const EDGE_DASH = {
 export async function buildNodeData(member) {
   const { sign, symbol }   = getSunSign(member.birthdate)
   const { element, color } = getElement(sign)
-  const base = { name: member.name, birthdate: member.birthdate, birthTime: member.birthTime ?? null, exactBirthTime: member.exactBirthTime ?? false, sign, symbol, element, elementColor: color, moonSign: 'Unknown', moonSymbol: '☽' }
+  const base = { name: member.name, birthdate: member.birthdate, birthTime: member.birthTime ?? null, exactBirthTime: member.exactBirthTime ?? false, birthTimezone: member.birthTimezone ?? null, sign, symbol, element, elementColor: color, moonSign: 'Unknown', moonSymbol: '☽' }
 
-  const astro = await computeAstrology(member.birthdate, member.birthTime ?? null)
+  const astro = await computeAstrology(member.birthdate, member.birthTime ?? null, member.birthTimezone ?? null)
   if (astro) {
     if (astro.moon) Object.assign(base, astro.moon)
     if (astro.innerPlanets) {
@@ -51,6 +56,7 @@ export async function buildNodeData(member) {
     }
     if (astro.outerPlanets) base.outerPlanets = astro.outerPlanets
     if (astro.ingressWarnings) base.ingressWarnings = astro.ingressWarnings
+    if (astro.timezoneWarnings) base.timezoneWarnings = astro.timezoneWarnings
     if (astro.sunAtTime?.sign) {
       const { element: el, color: c } = getElement(astro.sunAtTime.sign)
       Object.assign(base, { sign: astro.sunAtTime.sign, symbol: astro.sunAtTime.symbol, element: el, elementColor: c })
@@ -65,7 +71,7 @@ export async function hydrateNodes(nodes) {
   if (needsHydration.length === 0) return nodes
 
   const batch = await computeAstrologyBatch(
-    needsHydration.map(n => ({ id: n.id, birthdate: n.data.birthdate, birthTime: n.data.birthTime ?? null }))
+    needsHydration.map(n => ({ id: n.id, birthdate: n.data.birthdate, birthTime: n.data.birthTime ?? null, birthTimezone: n.data.birthTimezone ?? null }))
   )
 
   return nodes.map(n => {
@@ -79,17 +85,19 @@ export async function hydrateNodes(nodes) {
     }
     if (astro.outerPlanets) enriched.outerPlanets = astro.outerPlanets
     if (astro.ingressWarnings) enriched.ingressWarnings = astro.ingressWarnings
+    if (astro.timezoneWarnings) enriched.timezoneWarnings = astro.timezoneWarnings
     return { ...n, data: enriched }
   })
 }
 
 export function makeEdge(source, target, relationType = 'parent-child') {
   const isFamily = relationType === 'parent-child'
+  const isHierarchical = relationType === 'parent-child' || relationType === 'step-parent'
   return {
     id: `e-${source}-${target}`, source, target,
     data:     { relationType },
     animated: isFamily,
     style:    EDGE_STYLES[relationType] || EDGE_STYLE,
-    type:     isFamily ? 'step' : 'smoothstep',
+    type:     isHierarchical ? 'step' : 'smoothstep',
   }
 }

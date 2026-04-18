@@ -18,6 +18,7 @@ function sanitizeNode(node) {
       name: typeof data.name === 'string' ? data.name.slice(0, MAX_NAME_LEN) : '',
       birthdate: typeof data.birthdate === 'string' && BIRTHDATE_RE.test(data.birthdate)
         ? data.birthdate : '',
+      birthTimezone: typeof data.birthTimezone === 'string' ? data.birthTimezone.slice(0, 100) : undefined,
     },
   }
 }

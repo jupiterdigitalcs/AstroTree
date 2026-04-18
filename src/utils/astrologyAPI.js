@@ -4,7 +4,7 @@
  */
 
 /** Compute astrology data for a single member */
-export async function computeAstrology(birthdate, birthTime = null) {
+export async function computeAstrology(birthdate, birthTime = null, birthTimezone = null) {
   try {
     const res = await fetch('/api/astrology', {
       method: 'POST',
@@ -12,7 +12,8 @@ export async function computeAstrology(birthdate, birthTime = null) {
       body: JSON.stringify({
         birthdate,
         birthTime,
-        calculations: ['moon', 'innerPlanets', 'outerPlanets', 'sunAtTime', 'ingressWarnings'],
+        birthTimezone,
+        calculations: ['moon', 'innerPlanets', 'outerPlanets', 'sunAtTime', 'ingressWarnings', 'timezoneWarnings'],
       }),
     })
     if (!res.ok) return null
@@ -30,7 +31,7 @@ export async function computeAstrologyBatch(members) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         members,
-        calculations: ['moon', 'innerPlanets', 'outerPlanets', 'ingressWarnings'],
+        calculations: ['moon', 'innerPlanets', 'outerPlanets', 'ingressWarnings', 'timezoneWarnings'],
       }),
     })
     if (!res.ok) return {}

@@ -385,7 +385,6 @@
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s, color 0.15s;
-  max-width: 11rem;
 }
 .birthtime-expand-btn:hover {
   border-color: rgba(255,255,255,0.2);
@@ -397,18 +396,18 @@
   flex-direction: column;
   gap: 0.3rem;
   min-width: 0;
-  max-width: 11rem;
 }
 
 .birthtime-field-header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.25rem;
   font-size: 0.68rem;
   font-family: 'Raleway', sans-serif;
   color: var(--text-muted);
   letter-spacing: 0.06em;
+  min-width: 0;
 }
 
 .birthtime-field-label {
@@ -416,6 +415,10 @@
   font-family: 'Raleway', sans-serif;
   color: var(--text-muted);
   letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .birthtime-clear-btn {
@@ -423,10 +426,13 @@
   border: none;
   color: var(--text-muted);
   font-family: 'Raleway', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   cursor: pointer;
-  padding: 0;
+  padding: 0 0 0 0.4rem;
+  margin-left: auto;
   transition: color 0.15s;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .birthtime-clear-btn:hover { color: var(--red, #ff6b7a); }
 
@@ -685,6 +691,12 @@
   border-color: #e879a8;
   color: #e879a8;
 }
+.conn-type-pill--step-parent:hover,
+.conn-type-pill--step-child:hover {
+  background: rgba(201,168,76,0.08);
+  border-color: var(--gold);
+  color: var(--gold);
+}
 .conn-type-pill--friend:hover {
   background: rgba(91,200,245,0.08);
   border-color: #5bc8f5;
@@ -726,3 +738,122 @@
 .parent-checkbox input[type="checkbox"] { accent-color: var(--gold); width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; }
 .parent-checkbox-symbol { font-size: 1rem; }
 .parent-checkbox-role { margin-left: auto; font-size: 0.62rem; color: var(--text-muted); }
+
+/* ── Birth time + timezone combined row ─────────────────────────────────── */
+.birthtime-tz-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+.birthtime-tz-row .birthtime-field { flex: 1; min-width: 0; }
+.birthtime-tz-row .tz-field { flex: 1; min-width: 0; }
+
+.tz-picker-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tz-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.tz-search-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tz-quick-btn {
+  background: none;
+  border: 1px dashed rgba(201,168,76,0.3);
+  border-radius: 8px;
+  padding: 0.35rem 0.6rem;
+  color: var(--text-soft);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.tz-quick-btn:hover {
+  background: rgba(201,168,76,0.07);
+  border-color: rgba(201,168,76,0.6);
+  color: var(--gold-light);
+}
+
+.tz-results {
+  display: flex;
+  flex-direction: column;
+  max-height: 10rem;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.tz-results:empty { display: none; }
+
+.tz-option {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  padding: 0.4rem 0.6rem;
+  color: var(--text-soft);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.tz-option:last-child { border-bottom: none; }
+.tz-option:hover {
+  background: rgba(201,168,76,0.07);
+  color: var(--gold-light);
+}
+.tz-option--selected {
+  background: rgba(201,168,76,0.1);
+  color: var(--gold-light);
+  font-weight: 600;
+}
+.tz-option--detected {
+  color: var(--text-soft);
+}
+
+.tz-select-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0.35rem 0.5rem;
+  color: var(--text-soft);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.tz-select-btn:hover {
+  border-color: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.06);
+}
+.tz-select-value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.tz-select-arrow {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  line-height: 1;
+}
+.tz-select-btn--warn {
+  border-color: rgba(201,168,76,0.4);
+  color: var(--gold-light);
+}

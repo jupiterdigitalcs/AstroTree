@@ -736,7 +736,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const isGroupOnly = edges.length > 0 && edges.every(e => {
     const t = e.data?.relationType
     return t === 'friend' || t === 'coworker'
-  })
+  }) // step-parent, parent-child, spouse are all family types
   const panelTitle = isGroupOnly ? 'Group Insights' : 'Family Insights'
   const tooFewNodes = nodes.length < 2
   const noEdges = !tooFewNodes && edges.length === 0
@@ -1008,7 +1008,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     .filter(Boolean)
 
   // ── Build child→parents map ──────────────────────────────────────────────────
-  const parentChildEdges = edges.filter(e => e.data?.relationType === 'parent-child')
+  const parentChildEdges = edges.filter(e => e.data?.relationType === 'parent-child' || e.data?.relationType === 'step-parent')
   const parentMap = {}
   parentChildEdges.forEach(e => {
     if (!parentMap[e.target]) parentMap[e.target] = []

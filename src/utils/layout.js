@@ -11,7 +11,7 @@ export function applyDagreLayout(nodes, edges) {
   // ── Build relationship maps ─────────────────────────────────────────────
   const parentChildEdges = edges.filter(e => {
     const rt = e.data?.relationType
-    return rt === 'parent-child' || !rt
+    return rt === 'parent-child' || rt === 'step-parent' || !rt
   })
 
   const childToParents = {}

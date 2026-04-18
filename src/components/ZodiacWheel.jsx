@@ -109,7 +109,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
 
   // ── Generation levels from parent-child edges ──────────────────────────────
   const genLevels = useMemo(() => {
-    const pcEdges = (edges || []).filter(e => e.data?.relationType === 'parent-child')
+    const pcEdges = (edges || []).filter(e => e.data?.relationType === 'parent-child' || e.data?.relationType === 'step-parent')
     const parentMap = {}
     nodes.forEach(n => { parentMap[n.id] = [] })
     pcEdges.forEach(e => { if (parentMap[e.target]) parentMap[e.target].push(e.source) })

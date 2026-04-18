@@ -34,7 +34,7 @@ export default function AddMembersForm({ onAdd, initialRows = 2 }) {
     if (!valid.length) { setError('Fill in at least one name and birthdate.'); return }
 
     onAdd({
-      members: valid.map(r => ({ name: r.name.trim(), birthdate: r.birthdate })),
+      members: valid.map(r => ({ name: r.name.trim(), birthdate: r.birthdate, birthTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone })),
       relationships: {},
     })
 

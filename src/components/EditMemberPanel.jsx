@@ -62,10 +62,19 @@ export default function EditMemberPanel({
     if (m !== 0) return false
     return originalWarnings.some(w => Math.abs(h - w.ingressHour) <= 1)
   }, [birthTime, originalWarnings])
-  const [showBirthTime, setShowBirthTime] = useState(!!node.data.birthTime || originalWarnings.length > 0)
+  const [showBirthTime, setShowBirthTime] = useState(true) // always show — timezone is always visible
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [showDetails,   setShowDetails]   = useState(false) // collapsed in first-connect mode
   const [connectTo,     setConnectTo]     = useState(null) // id of node being connected
+
+  // Timezone
+  const [birthTimezone,   setBirthTimezone]   = useState(node.data.birthTimezone ?? null)
+  const [tzSearch,        setTzSearch]        = useState('')
+  const [showTzPicker,    setShowTzPicker]    = useState(false)
+  const [tzConfirmed,     setTzConfirmed]     = useState(false) // dismiss tz warning after user opens picker
+  const timezoneWarnings = node.data?.timezoneWarnings ?? []
+  const hasTzWarnings = timezoneWarnings.length > 0 && !tzConfirmed
+  const [showTzSection, setShowTzSection] = useState(!!birthTimezone || timezoneWarnings.length > 0)
   const [connSearch,    setConnSearch]    = useState('')
   const [savedFlash,    setSavedFlash]    = useState(false)
   const savedTimerRef = useRef(null)
@@ -83,13 +92,16 @@ export default function EditMemberPanel({
     if (!n || !bd) return
     const bt  = overrides.birthTime      !== undefined ? overrides.birthTime      : (birthTime || null)
     const ebt = overrides.exactBirthTime !== undefined ? overrides.exactBirthTime : exactBirthTime
-    onUpdate(node.id, { name: n, birthdate: bd, birthTime: bt, exactBirthTime: ebt }, { keepOpen: true })
+    const btz = overrides.birthTimezone  !== undefined ? overrides.birthTimezone  : birthTimezone
+    onUpdate(node.id, { name: n, birthdate: bd, birthTime: bt, exactBirthTime: ebt, birthTimezone: btz }, { keepOpen: true })
     showSaved()
   }
 
   // ── Derive connections fresh from props every render ──────────────────────
   const parentEdges = edges.filter(e => e.target === node.id && e.data?.relationType === 'parent-child')
   const childEdges  = edges.filter(e => e.source === node.id && e.data?.relationType === 'parent-child')
+  const stepParentEdges = edges.filter(e => e.target === node.id && e.data?.relationType === 'step-parent')
+  const stepChildEdges  = edges.filter(e => e.source === node.id && e.data?.relationType === 'step-parent')
   const spouseEdges = edges.filter(e =>
     (e.source === node.id || e.target === node.id) && e.data?.relationType === 'spouse'
   )
@@ -151,6 +163,12 @@ export default function EditMemberPanel({
       types.push({ key: 'child', label: 'Child', action: () => addConn(node.id, otherId) })
     }
 
+    // Step-parent: always valid (non-biological, no 2-parent limit)
+    types.push({ key: 'step-parent', label: 'Step-Parent', action: () => addConn(otherId, node.id, 'step-parent') })
+
+    // Step-child: always valid
+    types.push({ key: 'step-child', label: 'Step-Child', action: () => addConn(node.id, otherId, 'step-parent') })
+
     // Spouse: always valid (non-hierarchical)
     types.push({ key: 'spouse', label: 'Partner', action: () => addConn(node.id, otherId, 'spouse') })
 
@@ -206,6 +224,7 @@ export default function EditMemberPanel({
   }
 
   const hasConnections = parentEdges.length > 0 || childEdges.length > 0 ||
+                         stepParentEdges.length > 0 || stepChildEdges.length > 0 ||
                          spouseEdges.length > 0 || friendEdges.length > 0 ||
                          coworkerEdges.length > 0 || eligibleNodes.length > 0
   const isFirstConnect = edges.length === 0 && eligibleNodes.length > 0
@@ -255,86 +274,161 @@ export default function EditMemberPanel({
         </label>
       </div>
 
-      {/* ── Birth time (collapsible) ────────────────────────────────────── */}
-      {!showBirthTime ? (
-        <button type="button" className="birthtime-expand-btn" onClick={() => setShowBirthTime(true)}>
-          + Add birth time <span className="birthtime-optional">(optional)</span>
+      {/* ── Birth time + timezone (collapsible, same row) ──────────────── */}
+      {!showBirthTime && !showTzSection ? (
+        <button type="button" className="birthtime-expand-btn" onClick={() => { setShowBirthTime(true); setShowTzSection(true) }}>
+          + Add birth time / timezone <span className="birthtime-optional">(optional)</span>
         </button>
       ) : (
         <>
-          <div className="birthtime-field">
-            <div className="birthtime-field-header">
-              <span className="birthtime-field-label">Birth time <span className="birthtime-optional">(optional)</span></span>
-              {birthTimeInput && (
-                <button
-                  type="button"
-                  className="birthtime-clear-btn"
-                  onClick={() => { setBirthTimeInput(''); setBirthTimeAmPm('AM'); setExactBirthTime(false); doSave({ birthTime: null, exactBirthTime: false }) }}
-                >Clear</button>
-              )}
-            </div>
-            <div className="birthtime-row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="row-input birthtime-input"
-                placeholder="HH:MM"
-                value={birthTimeInput}
-                onChange={e => {
-                  const digits = e.target.value.replace(/\D/g, '').slice(0, 4)
-                  let formatted = digits
-                  if (digits.length >= 3) formatted = digits.slice(0, -2) + ':' + digits.slice(-2)
-                  else if (digits.length === 2 && birthTimeInput.length < e.target.value.length) formatted = digits + ':'
-                  setBirthTimeInput(formatted)
-                  setExactBirthTime(false)
-                }}
-                onBlur={() => {
-                  if (!birthTimeInput) { doSave({ birthTime: null }); return }
-                  const t24 = to24h(birthTimeInput, birthTimeAmPm)
-                  if (!t24) { setBirthTimeInput(''); doSave({ birthTime: null }) }
-                  else {
-                    const { display } = to12h(t24)
-                    setBirthTimeInput(display) // normalize display
-                    doSave({ birthTime: t24 })
-                  }
-                }}
-              />
-              <div className="birthtime-ampm-pills">
-                {['AM', 'PM'].map(v => (
+          <div className="birthtime-tz-row">
+            <div className="birthtime-field">
+              <div className="birthtime-field-header">
+                <span className="birthtime-field-label">Time</span>
+                {birthTimeInput && (
                   <button
-                    key={v}
                     type="button"
-                    className={`birthtime-ampm-pill${birthTimeAmPm === v ? ' active' : ''}`}
-                    onClick={() => {
-                      setBirthTimeAmPm(v)
-                      const t24 = to24h(birthTimeInput, v)
-                      if (t24) doSave({ birthTime: t24 })
-                    }}
-                  >{v}</button>
-                ))}
+                    className="birthtime-clear-btn"
+                    onClick={() => { setBirthTimeInput(''); setBirthTimeAmPm('AM'); setExactBirthTime(false); doSave({ birthTime: null, exactBirthTime: false }) }}
+                  >Clear</button>
+                )}
               </div>
+              <div className="birthtime-row">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  className="row-input birthtime-input"
+                  placeholder="HH:MM"
+                  value={birthTimeInput}
+                  onChange={e => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 4)
+                    let formatted = digits
+                    if (digits.length >= 3) formatted = digits.slice(0, -2) + ':' + digits.slice(-2)
+                    else if (digits.length === 2 && birthTimeInput.length < e.target.value.length) formatted = digits + ':'
+                    setBirthTimeInput(formatted)
+                    setExactBirthTime(false)
+                  }}
+                  onBlur={() => {
+                    if (!birthTimeInput) { doSave({ birthTime: null }); return }
+                    const t24 = to24h(birthTimeInput, birthTimeAmPm)
+                    if (!t24) { setBirthTimeInput(''); doSave({ birthTime: null }) }
+                    else {
+                      const { display } = to12h(t24)
+                      setBirthTimeInput(display)
+                      doSave({ birthTime: t24 })
+                    }
+                  }}
+                />
+                <div className="birthtime-ampm-pills">
+                  {['AM', 'PM'].map(v => (
+                    <button
+                      key={v}
+                      type="button"
+                      className={`birthtime-ampm-pill${birthTimeAmPm === v ? ' active' : ''}`}
+                      onClick={() => {
+                        setBirthTimeAmPm(v)
+                        const t24 = to24h(birthTimeInput, v)
+                        if (t24) doSave({ birthTime: t24 })
+                      }}
+                    >{v}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="tz-field">
+              <div className="birthtime-field-header">
+                <span className="birthtime-field-label">Timezone</span>
+              </div>
+              <button type="button" className={`tz-select-btn${hasTzWarnings ? ' tz-select-btn--warn' : ''}`} onClick={() => { setShowTzPicker(!showTzPicker); setTzConfirmed(true) }}>
+                <span className="tz-select-value">{birthTimezone ? birthTimezone.split('/').pop().replace(/_/g, ' ') : 'New York'}</span>
+                <span className="tz-select-arrow">▾</span>
+              </button>
             </div>
           </div>
 
-          {/* Ingress context — only shown when astrologically relevant */}
-          {originalWarnings.length > 0 && (
-            <div className={`ingress-context${birthTime && !ingressWarnings.length ? ' ingress-context--resolved' : ''}`}>
-              {birthTime && !ingressWarnings.length ? (
-                <span className="ingress-context-ok">✓ Sign confirmed for this birth time</span>
+          {/* Timezone picker dropdown — only when open */}
+          {showTzPicker && (
+            <div className="tz-picker-dropdown">
+              <input
+                type="text"
+                className="row-input tz-search-input"
+                placeholder="Search timezone..."
+                value={tzSearch}
+                onChange={e => setTzSearch(e.target.value)}
+                autoFocus
+              />
+              {(() => {
+                const browser = Intl.DateTimeFormat().resolvedOptions().timeZone
+                return (
+                  <button
+                    type="button"
+                    className="tz-quick-btn"
+                    onClick={() => { setBirthTimezone(browser); setTzSearch(''); setShowTzPicker(false); doSave({ birthTimezone: browser }) }}
+                  >
+                    Use my timezone ({browser.replace(/_/g, ' ')})
+                  </button>
+                )
+              })()}
+              <div className="tz-results">
+                {(() => {
+                  try {
+                    const all = Intl.supportedValuesOf('timeZone')
+                    const q = tzSearch.toLowerCase().replace(/\s+/g, '_')
+                    const filtered = q ? all.filter(tz => tz.toLowerCase().includes(q)) : all
+                    const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone
+                    return filtered.slice(0, 12).map(tz => (
+                      <button
+                        key={tz}
+                        type="button"
+                        className={`tz-option${tz === birthTimezone ? ' tz-option--selected' : ''}${tz === browserTz ? ' tz-option--detected' : ''}`}
+                        onClick={() => { setBirthTimezone(tz); setTzSearch(''); setShowTzPicker(false); doSave({ birthTimezone: tz }) }}
+                      >
+                        {tz.replace(/_/g, ' ').replace(/\//g, ' / ')}
+                        {tz === browserTz && ' (detected)'}
+                      </button>
+                    ))
+                  } catch { return null }
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* Combined sign accuracy warnings — time ingress + timezone sensitivity */}
+          {(hasTzWarnings || originalWarnings.length > 0) && (
+            <div className={`ingress-context${birthTime && !ingressWarnings.length && !hasTzWarnings ? ' ingress-context--resolved' : ''}`}>
+              {birthTime && !ingressWarnings.length && !hasTzWarnings ? (
+                <span className="ingress-context-ok">✓ Signs confirmed</span>
               ) : (
                 <>
-                  <span className="ingress-context-note">
-                    {originalWarnings.length === 1
-                      ? `${originalWarnings[0].name} changes sign on this date — birth time helps confirm which sign`
-                      : `${originalWarnings.length} planets change sign on this date — birth time helps confirm the signs`}
-                  </span>
-                  {originalWarnings.map(w => (
-                    <span key={w.name} className="ingress-warning-planet">
+                  {hasTzWarnings && (
+                    <span className="ingress-context-note">
+                      Timezone-sensitive — verify timezone is correct for birth location
+                    </span>
+                  )}
+                  {ingressWarnings.length > 0 && (
+                    <span className="ingress-context-note">
+                      {originalWarnings.length === 1
+                        ? `${originalWarnings[0].name} changes sign on this date — birth time helps confirm`
+                        : `${originalWarnings.length} planets change sign on this date — birth time helps confirm`}
+                    </span>
+                  )}
+                  {hasTzWarnings && timezoneWarnings.map(w => (
+                    <span key={`tz-${w.planet}`} className="ingress-warning-planet">
+                      <span>{w.glyph}</span>
+                      <span>{w.signWest}</span>
+                      <span className="ingress-warning-arrow">or</span>
+                      <span>{w.signEast}</span>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.6rem' }}>(timezone)</span>
+                    </span>
+                  ))}
+                  {ingressWarnings.length > 0 && originalWarnings.map(w => (
+                    <span key={`ig-${w.name}`} className="ingress-warning-planet">
                       <PlanetSign planet={w.planet} sign={w.signStart} />
                       <span className="ingress-warning-arrow">→</span>
                       <PlanetSign planet={w.planet} sign={w.signEnd} />
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>
-                        (changes at {w.ingressTime})
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.6rem' }}>
+                        ({w.ingressTime})
                       </span>
                     </span>
                   ))}
@@ -379,6 +473,14 @@ export default function EditMemberPanel({
           {childEdges.length > 0 && (
             <ConnGroup label="Children" edgeList={childEdges}
               getOther={e => e.target} allNodes={allNodes} onRemove={removeConn} />
+          )}
+          {stepParentEdges.length > 0 && (
+            <ConnGroup label="Step-Parents" edgeList={stepParentEdges}
+              getOther={e => e.source} allNodes={allNodes} onRemove={removeConn} accentColor="#c9a84c" />
+          )}
+          {stepChildEdges.length > 0 && (
+            <ConnGroup label="Step-Children" edgeList={stepChildEdges}
+              getOther={e => e.target} allNodes={allNodes} onRemove={removeConn} accentColor="#c9a84c" />
           )}
           {spouseEdges.length > 0 && (
             <ConnGroup label="Spouse / Partner" edgeList={spouseEdges}

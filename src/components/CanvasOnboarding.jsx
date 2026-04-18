@@ -10,7 +10,7 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNe
     e.preventDefault()
     if (!name.trim() || !birthdate) return
     onAdd({
-      members: [{ name: name.trim(), birthdate }],
+      members: [{ name: name.trim(), birthdate, birthTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone }],
     })
   }
 
