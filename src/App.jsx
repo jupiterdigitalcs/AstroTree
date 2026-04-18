@@ -1231,11 +1231,12 @@ export default function App() {
               onSelectNode={(id) => setEditingNodeId(id)}
               layoutTick={constellationTick}
               onRelayout={() => setConstellationTick(t => t + 1)}
+              isGroupOnly={isGroupOnly}
             />
           </Suspense>
         ) : (
         <ReactFlow
-          nodes={nodes} edges={edgesForDisplay}
+          nodes={nodes} edges={isGroupOnly ? [] : edgesForDisplay}
           onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
           onConnect={onConnect} onNodeClick={onNodeClick}
           onNodeDragStart={onNodeDragStart} onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}

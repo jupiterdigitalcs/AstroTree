@@ -170,7 +170,7 @@
   .mode-tab { font-size: 0.7rem; }
   .insights-tab-btn { font-size: 0.72rem; }
   .astro-node { min-width: 130px; padding: 0.8rem 0.9rem; }
-  .node-name { font-size: 0.84rem; }
+  .node-name { font-size: 1rem; }
 
   .welcome-cta { display: none; }
   .welcome-cta--secondary { display: none; }

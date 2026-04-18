@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { DateInput } from './DateInput.jsx'
 
 
@@ -10,6 +10,7 @@ export default function AddMembersForm({ onAdd, initialRows = 2 }) {
   const [error,      setError]      = useState('')
   // touched tracks which fields the user has blurred on each row
   const [touched,    setTouched]    = useState({})
+  const formRef = useRef(null)
 
   function markTouched(id, field) {
     setTouched(prev => ({ ...prev, [id]: { ...prev[id], [field]: true } }))
@@ -18,6 +19,11 @@ export default function AddMembersForm({ onAdd, initialRows = 2 }) {
   function addRow() {
     setRows(prev => [...prev, { id: rowCounter, name: '', birthdate: '' }])
     setRowCounter(c => c + 1)
+    // Scroll the submit button into view so the user can see the new row + bottom
+    setTimeout(() => {
+      const btn = formRef.current?.querySelector('.add-btn')
+      btn?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }, 50)
   }
 
   function removeRow(id) {
@@ -48,7 +54,7 @@ export default function AddMembersForm({ onAdd, initialRows = 2 }) {
   const namedNoDate  = rows.filter(r => r.name.trim() && !r.birthdate).length
 
   return (
-    <form className="add-form" onSubmit={handleSubmit}>
+    <form className="add-form" ref={formRef} onSubmit={handleSubmit}>
       <h2 className="form-title">Add Family Members</h2>
 
       <div className="member-rows">

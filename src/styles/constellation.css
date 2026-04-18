@@ -95,6 +95,16 @@
 
 .constellation-legend-panel {
   width: 260px;
+  /* Override tree-legend-panel centering — anchor to right so it doesn't clip viewport edge */
+  left: auto;
+  right: 0;
+  transform: none;
+  animation: legend-pop-right 0.15s ease-out;
+}
+
+@keyframes legend-pop-right {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .constellation-legend-edges {

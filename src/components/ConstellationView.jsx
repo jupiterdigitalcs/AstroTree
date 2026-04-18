@@ -9,8 +9,8 @@ function runForceLayout(nodes, edges, width, height) {
 
   // Scale layout params to node count
   const n = nodes.length
-  const idealEdgeLen = Math.max(80, Math.min(140, 300 / Math.sqrt(n)))
-  const repulseK = Math.max(4000, 1200 * n)
+  const idealEdgeLen = Math.max(100, Math.min(160, 340 / Math.sqrt(n)))
+  const repulseK = Math.max(6000, 1600 * n)
   const iterations = Math.min(400, 150 + n * 15)
 
   // Initialize in a circle
@@ -83,7 +83,7 @@ function runForceLayout(nodes, edges, width, height) {
 
   // Post-process: separate any remaining overlaps (min distance between nodes)
   // Use larger minDist to account for node radius + name label below
-  const minDist = 65
+  const minDist = 95
   for (let pass = 0; pass < 30; pass++) {
     let moved = false
     for (let i = 0; i < n; i++) {
@@ -111,7 +111,7 @@ function runForceLayout(nodes, edges, width, height) {
   return positions
 }
 
-export default function ConstellationView({ nodes, edges, onSelectNode, layoutTick, onRelayout }) {
+export default function ConstellationView({ nodes, edges, onSelectNode, layoutTick, onRelayout, isGroupOnly }) {
   const [hoveredNode, setHoveredNode] = useState(null)
   const [positions, setPositions] = useState([])
   const [dragging, setDragging] = useState(null) // index of node being dragged
@@ -267,7 +267,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
             ))}
           </defs>
 
-          {/* Edges */}
+          {/* Edges — curved to reduce intersections, highlight on hover */}
           {positions.length === nodes.length && edges.map(e => {
             const si = nodeIndex[e.source]
             const ti = nodeIndex[e.target]
@@ -275,15 +275,25 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
             const relType = e.data?.relationType || 'parent-child'
             const color = EDGE_COLORS[relType] || '#c9a84c'
             const dash = EDGE_DASH[relType] || 'none'
+            const isHoveredEdge = hoveredNode && (e.source === hoveredNode || e.target === hoveredNode)
+            const x1 = positions[si].x, y1 = positions[si].y
+            const x2 = positions[ti].x, y2 = positions[ti].y
+            // Curved path — offset control point perpendicular to the edge midpoint
+            const mx = (x1 + x2) / 2, my = (y1 + y2) / 2
+            const dx = x2 - x1, dy = y2 - y1
+            const len = Math.sqrt(dx * dx + dy * dy) || 1
+            const curveAmount = Math.min(30, len * 0.15)
+            const cx = mx + (-dy / len) * curveAmount
+            const cy = my + (dx / len) * curveAmount
             return (
-              <line
+              <path
                 key={e.id}
-                x1={positions[si].x} y1={positions[si].y}
-                x2={positions[ti].x} y2={positions[ti].y}
+                d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
                 stroke={color}
-                strokeWidth={1.2}
+                strokeWidth={isHoveredEdge ? 1.6 : 1.2}
                 strokeDasharray={dash}
-                opacity={0.5}
+                fill="none"
+                opacity={isHoveredEdge ? 0.7 : 0.4}
               />
             )
           })}
@@ -364,7 +374,7 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
             fill="rgba(201,168,76,0.12)"
             style={{ fontSize: '11px', fontFamily: 'Cinzel, serif', letterSpacing: '0.15em', pointerEvents: 'none' }}
           >
-            ✦ CONSTELLATION
+            {isGroupOnly ? '✦ GROUP' : '✦ CONSTELLATION'}
           </text>
         </g>
       </svg>

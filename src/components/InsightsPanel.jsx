@@ -331,6 +331,234 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
   )
 }
 
+// ── Squad Energy — friend-group card using all personal planets ────────────
+const SQUAD_ELEMENT_VIBE = {
+  Fire:  { label: 'The Spark Squad', vibe: 'Your crew runs hot. There\'s always someone ready to start something, rally people, or turn a quiet night into an event. This group moves fast and feeds off each other\'s energy.' },
+  Earth: { label: 'The Anchor Crew', vibe: 'This group keeps things real. You\'re the ones who follow through, show up when it matters, and build something lasting together. Reliable, grounded, and probably good at splitting the check.' },
+  Air:   { label: 'The Idea Table', vibe: 'Conversation is the connective tissue here. Your group trades ideas, stays curious, and probably has three group chats going at once. You connect through what you think, not just what you do.' },
+  Water: { label: 'The Deep End', vibe: 'This group goes beneath the surface. You know each other\'s real stories, not just the highlights. Emotionally tuned in, sometimes to a fault, but that\'s what makes the bond rare.' },
+}
+
+const SQUAD_MODALITY_VIBE = {
+  Cardinal: 'initiators — always planning the next thing, pushing each other to start',
+  Fixed:    'ride-or-die loyal — once this group forms, it holds. Not easily shaken',
+  Mutable:  'adaptable and flexible — this group goes with the flow and rarely gets stuck',
+}
+
+const SQUAD_POLARITY_NOTE = {
+  active:    'Leans active (Fire + Air). This group tends toward doing, talking, and going — not a crew that sits still for long.',
+  receptive: 'Leans receptive (Earth + Water). This group tends toward depth, steadiness, and processing — you recharge each other.',
+  balanced:  'Balanced between active and receptive energy. This group can rally and also know when to slow down.',
+}
+
+function SquadEnergyCard({ nodes, allPlanetCounts, dominant, dominantModality, innerPlanetMap, warningsPerNode }) {
+  const mascPct = (allPlanetCounts.masc + allPlanetCounts.fem) > 0
+    ? Math.round(allPlanetCounts.masc / (allPlanetCounts.masc + allPlanetCounts.fem) * 100)
+    : 50
+  const polKey = mascPct >= 60 ? 'active' : mascPct <= 40 ? 'receptive' : 'balanced'
+  const vibe = SQUAD_ELEMENT_VIBE[dominant]
+  const modVibe = SQUAD_MODALITY_VIBE[dominantModality]
+
+  // Per-person planet element breakdown
+  const memberBreakdowns = nodes.map(n => {
+    const warned = warningsPerNode.get(n.id) ?? new Set()
+    const inner = innerPlanetMap.get(n.id)
+    const placements = [
+      !warned.has('sun') && n.data.sign ? getElement(n.data.sign).element : null,
+      !warned.has('moon') && n.data.moonSign && n.data.moonSign !== 'Unknown' ? getElement(n.data.moonSign).element : null,
+      !warned.has('mercury') && inner?.mercury?.sign ? getElement(inner.mercury.sign).element : null,
+      !warned.has('venus') && inner?.venus?.sign ? getElement(inner.venus.sign).element : null,
+      !warned.has('mars') && inner?.mars?.sign ? getElement(inner.mars.sign).element : null,
+    ].filter(Boolean)
+    const elCount = {}
+    placements.forEach(el => { elCount[el] = (elCount[el] || 0) + 1 })
+    const topEl = Object.entries(elCount).sort((a, b) => b[1] - a[1])[0]
+    return { name: n.data.name, topElement: topEl?.[0], topCount: topEl?.[1], total: placements.length }
+  })
+
+  return (
+    <div className="insight-card">
+      <h3 className="insight-heading">⚡ Squad Energy</h3>
+      <div className="signature-hero" style={{ marginBottom: '0.3rem' }}>
+        <span className="signature-element" style={{ color: ELEMENT_COLORS[dominant] }}>{vibe?.label}</span>
+      </div>
+      <p className="insight-note">{vibe?.vibe}</p>
+      <p className="insight-note" style={{ marginTop: '0.35rem' }}>
+        <strong>{dominantModality}</strong> — {modVibe}.
+      </p>
+      <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.74rem', marginTop: '0.3rem' }}>
+        {SQUAD_POLARITY_NOTE[polKey]}
+      </p>
+      <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+        <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
+          What each person brings to the group:
+        </p>
+        {memberBreakdowns.map(m => {
+          const desc = { Fire: 'energy and initiative', Earth: 'stability and follow-through', Air: 'ideas and conversation', Water: 'empathy and intuition' }
+          return (
+            <p key={m.name} className="insight-note" style={{ fontSize: '0.78rem' }}>
+              <strong>{m.name}</strong>
+              <span style={{ color: ELEMENT_COLORS[m.topElement] }}> — {desc[m.topElement] || m.topElement}</span>
+            </p>
+          )
+        })}
+      </div>
+      <p className="insight-whisper" style={{ marginTop: '0.4rem' }}>
+        Based on Sun, Moon, Mercury, Venus, and Mars — not just sun signs.
+      </p>
+    </div>
+  )
+}
+
+// ── Social Chemistry — Venus/Mars dynamics across friend group ─────────────
+const VENUS_ELEMENT_STYLE = {
+  Fire:  'bold and direct — shows affection openly, loves through enthusiasm and big gestures',
+  Earth: 'steady and physical — shows love through presence, touch, and reliability',
+  Air:   'social and cerebral — connects through conversation, humor, and ideas',
+  Water: 'deep and intuitive — bonds emotionally, picks up on what\'s unspoken',
+}
+const MARS_ELEMENT_STYLE = {
+  Fire:  'charges in head-first, brings energy and momentum to the group',
+  Earth: 'steady and persistent, the one who actually follows through',
+  Air:   'channels drive through strategy and conversation, thinks before acting',
+  Water: 'motivated by emotion and instinct, fights for what they feel',
+}
+
+function SocialChemistryCard({ nodes, innerPlanetMap, edges }) {
+  // Gather Venus + Mars data for each member
+  const members = nodes.map(n => {
+    const inner = innerPlanetMap.get(n.id)
+    const venusSign = inner?.venus?.sign ?? null
+    const marsSign = inner?.mars?.sign ?? null
+    return {
+      node: n,
+      name: n.data.name,
+      venusSign,
+      marsSign,
+      venusElement: venusSign ? getElement(venusSign).element : null,
+      marsElement: marsSign ? getElement(marsSign).element : null,
+    }
+  })
+
+  const withVenus = members.filter(m => m.venusSign)
+  const withMars = members.filter(m => m.marsSign)
+  if (withVenus.length < 2 && withMars.length < 2) return null
+
+  // Find "the glue" — Venus in a social/connecting element (Air/Water), most connections
+  const glue = withVenus.length >= 2 ? (() => {
+    const scored = withVenus.map(m => {
+      // Count how many other members' sun signs are compatible with this person's Venus element
+      const compatCount = nodes.filter(n => n.id !== m.node.id && areCompatible(m.venusElement, n.data.element)).length
+      return { ...m, compatCount }
+    }).sort((a, b) => b.compatCount - a.compatCount)
+    return scored[0]?.compatCount > 0 ? scored[0] : null
+  })() : null
+
+  // Find "the spark" — Mars in Fire/Air, the energizer
+  const spark = withMars.length >= 2 ? (() => {
+    const fireAir = withMars.filter(m => m.marsElement === 'Fire' || m.marsElement === 'Air')
+    if (fireAir.length > 0) return fireAir.sort((a, b) => (b.marsElement === 'Fire' ? 1 : 0) - (a.marsElement === 'Fire' ? 1 : 0))[0]
+    return withMars.sort((a, b) => {
+      const aScore = { Fire: 4, Air: 3, Earth: 2, Water: 1 }
+      return (aScore[b.marsElement] || 0) - (aScore[a.marsElement] || 0)
+    })[0]
+  })() : null
+
+  // Venus-Mars cross-connections between friends
+  const crossPulls = []
+  const friendEdges = edges.filter(e => e.data?.relationType === 'friend')
+  friendEdges.forEach(e => {
+    const a = members.find(m => m.node.id === e.source)
+    const b = members.find(m => m.node.id === e.target)
+    if (!a || !b) return
+    if (a.marsElement && b.venusElement && areCompatible(a.marsElement, b.venusElement))
+      crossPulls.push({ driver: a, drawn: b, type: 'mars-venus' })
+    if (b.marsElement && a.venusElement && areCompatible(b.marsElement, a.venusElement))
+      crossPulls.push({ driver: b, drawn: a, type: 'mars-venus' })
+  })
+
+  // Venus element distribution
+  const venusElements = {}
+  withVenus.forEach(m => { venusElements[m.venusElement] = (venusElements[m.venusElement] || 0) + 1 })
+  const topVenusEl = Object.entries(venusElements).sort((a, b) => b[1] - a[1])[0]
+
+  return (
+    <div className="insight-card">
+      <h3 className="insight-heading">♀♂ Social Chemistry</h3>
+      <p className="insight-whisper" style={{ marginBottom: '0.3rem' }}>
+        Venus is how you connect. Mars is how you show up. Together they shape the social energy of the group.
+      </p>
+
+      {topVenusEl && withVenus.length >= 2 && (
+        <div style={{ marginBottom: '0.5rem' }}>
+          <p className="insight-note">
+            <strong style={{ color: ELEMENT_COLORS[topVenusEl[0]] }}>
+              {topVenusEl[0]} Venus dominates
+            </strong>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.74rem' }}> ({topVenusEl[1]} of {withVenus.length})</span>
+          </p>
+          <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+            {VENUS_ELEMENT_STYLE[topVenusEl[0]]}.
+          </p>
+        </div>
+      )}
+
+      {glue && (
+        <div style={{ marginBottom: '0.4rem' }}>
+          <p className="insight-note">
+            <strong>The Glue:</strong> {glue.name}
+          </p>
+          <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+            Venus in {glue.venusSign} — {VENUS_ELEMENT_STYLE[glue.venusElement]}. Naturally compatible with the most people in this group.
+          </p>
+        </div>
+      )}
+
+      {spark && (
+        <div style={{ marginBottom: '0.4rem' }}>
+          <p className="insight-note">
+            <strong>The Spark:</strong> {spark.name}
+          </p>
+          <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+            Mars in {spark.marsSign} — {MARS_ELEMENT_STYLE[spark.marsElement]}.
+          </p>
+        </div>
+      )}
+
+      {crossPulls.length > 0 && (
+        <div style={{ marginTop: '0.3rem' }}>
+          <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>
+            Natural draws — pairs where one person's drive energy clicks with what the other values:
+          </p>
+          {crossPulls.slice(0, 4).map((cp, i) => (
+            <p key={i} className="insight-note" style={{ fontSize: '0.76rem' }}>
+              <strong>{cp.driver.name}</strong> → <strong>{cp.drawn.name}</strong>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>
+                {' '}— {cp.driver.name} brings the energy {cp.drawn.name} is drawn to
+              </span>
+            </p>
+          ))}
+        </div>
+      )}
+
+      {withVenus.length >= 2 && (
+        <div style={{ marginTop: '0.45rem', display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+          <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.1rem' }}>
+            How each person connects (♀) and shows up (♂):
+          </p>
+          {withVenus.map(m => (
+            <p key={m.node.id} className="insight-note" style={{ fontSize: '0.76rem' }}>
+              <strong>{m.name}</strong>
+              <span style={{ color: 'var(--rose)' }}> connects through {m.venusElement || '—'}</span>
+              {m.marsElement && <span style={{ color: '#e07a5f' }}> · drives with {m.marsElement}</span>}
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Tier definitions: label, explanation, and grouping order
 const COMPAT_TIERS = {
   'Cosmic Echo':           { order: 1, explain: 'All four personal planets (Sun, Moon, Venus, Mars) land in the same signs. This is extraordinarily rare — it means these two share the same outward identity, emotional instincts, love language, and drive.' },
@@ -1846,6 +2074,27 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         missingElements={missingElements}
         isGroupOnly={isGroupOnly}
       />
+
+      {/* Squad Energy — friend groups only */}
+      {isGroupOnly && (
+        <SquadEnergyCard
+          nodes={nodes}
+          allPlanetCounts={allPlanetCounts}
+          dominant={dominant}
+          dominantModality={dominantModality}
+          innerPlanetMap={innerPlanetMap}
+          warningsPerNode={warningsPerNode}
+        />
+      )}
+
+      {/* Social Chemistry — friend groups only */}
+      {isGroupOnly && (
+        <SocialChemistryCard
+          nodes={nodes}
+          innerPlanetMap={innerPlanetMap}
+          edges={edges}
+        />
+      )}
 
       {/* 2. Sun Element Makeup */}
       <div className="insight-card">
