@@ -1,12 +1,33 @@
 import dagre from '@dagrejs/dagre'
 
-const NODE_WIDTH  = 250
-const NODE_HEIGHT = 165
-const SPOUSE_GAP  = 270
-const MIN_GAP_X   = NODE_WIDTH + 35
+function getDescendantCount(nodeId, parentToChildren) {
+  let count = 0
+  const queue = [...(parentToChildren[nodeId] || [])]
+  const seen = new Set()
+  while (queue.length) {
+    const id = queue.shift()
+    if (seen.has(id)) continue
+    seen.add(id)
+    count++
+    for (const child of (parentToChildren[id] || [])) queue.push(child)
+  }
+  return count
+}
 
-export function applyDagreLayout(nodes, edges) {
+export function applyDagreLayout(nodes, edges, options = {}) {
+  const { collapsedIds = new Set(), forceExpandedIds = new Set() } = options
   if (nodes.length === 0) return nodes
+
+  // ── Responsive dimensions ──────────────────────────────────────────────
+  const compact = typeof window !== 'undefined' && window.innerWidth < 768
+  const NODE_WIDTH  = compact ? 160 : 250
+  const NODE_HEIGHT = compact ? 120 : 165
+  const SPOUSE_GAP  = compact ? 185 : 270
+  const MIN_GAP_X   = NODE_WIDTH + (compact ? 25 : 35)
+  const GEN_GAP     = compact ? 80 : 120
+  const UNIT_GAP    = compact ? 40 : 60
+  const DAGRE_NSEP  = compact ? 70 : 110
+  const DAGRE_RSEP  = compact ? 100 : 140
 
   // ── Build relationship maps ─────────────────────────────────────────────
   const parentChildEdges = edges.filter(e => {
@@ -39,6 +60,33 @@ export function applyDagreLayout(nodes, edges) {
     if (!siblingOf[e.target]) siblingOf[e.target] = []
     siblingOf[e.target].push(e.source)
   })
+
+  // ── Compute hidden descendants from collapsed nodes ────────────────────
+  const hiddenIds = new Set()
+  for (const cid of collapsedIds) {
+    const queue = [...(parentToChildren[cid] || [])]
+    while (queue.length) {
+      const id = queue.shift()
+      if (hiddenIds.has(id)) continue
+      hiddenIds.add(id)
+      for (const child of (parentToChildren[id] || [])) queue.push(child)
+    }
+  }
+
+  // ── Force-expand: un-hide children of explicitly expanded nodes ────────
+  // This lets a visible spouse override an ancestor's collapse to show their kids
+  for (const fid of forceExpandedIds) {
+    const queue = [...(parentToChildren[fid] || [])]
+    while (queue.length) {
+      const id = queue.shift()
+      if (!hiddenIds.has(id)) continue
+      hiddenIds.delete(id)
+      // Stop recursing into children of nodes that are themselves collapsed
+      if (!collapsedIds.has(id)) {
+        for (const child of (parentToChildren[id] || [])) queue.push(child)
+      }
+    }
+  }
 
   // ── Step 1: Assign generations from parent-child edges only ─────────────
   // True roots = have children but no parents
@@ -186,7 +234,7 @@ export function applyDagreLayout(nodes, edges) {
   // ── Run Dagre for X positions (family edges only) ──────────────────────
   const g = new dagre.graphlib.Graph()
   g.setDefaultEdgeLabel(() => ({}))
-  g.setGraph({ rankdir: 'TB', ranksep: 140, nodesep: 110 })
+  g.setGraph({ rankdir: 'TB', ranksep: DAGRE_RSEP, nodesep: DAGRE_NSEP })
 
   nodes.forEach(node => g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT }))
 
@@ -234,7 +282,7 @@ export function applyDagreLayout(nodes, edges) {
   })
   const sortedGens = Object.keys(genGroups).map(Number).sort((a, b) => a - b)
   sortedGens.forEach((gen, gi) => {
-    const targetY = gi * (NODE_HEIGHT + 120)
+    const targetY = gi * (NODE_HEIGHT + GEN_GAP)
     genGroups[gen].forEach(id => {
       posMap[id].y = targetY
     })
@@ -252,7 +300,8 @@ export function applyDagreLayout(nodes, edges) {
   })
 
   // For each generation, build ordered list of "units" (single nodes or spouse pairs)
-  // and lay them out left-to-right
+  // and lay them out left-to-right. Track max units for LR detection.
+  let maxUnitsInRow = 0
   sortedGens.forEach(gen => {
     const row = genGroups[gen] || []
     if (row.length === 0) return
@@ -279,14 +328,15 @@ export function applyDagreLayout(nodes, edges) {
       }
     })
 
+    maxUnitsInRow = Math.max(maxUnitsInRow, units.length)
+
     // Sort units by their Dagre center X
     units.sort((a, b) => a.x - b.x)
 
     // Lay out units left-to-right with proper spacing
     // First, compute total width needed
     const unitWidths = units.map(u => u.isPair ? SPOUSE_GAP + NODE_WIDTH : NODE_WIDTH)
-    const unitGap = 60
-    const totalWidth = unitWidths.reduce((s, w) => s + w, 0) + (units.length - 1) * unitGap
+    const totalWidth = unitWidths.reduce((s, w) => s + w, 0) + (units.length - 1) * UNIT_GAP
     // Center the row around the average Dagre X
     const avgX = units.reduce((s, u) => s + u.x, 0) / units.length
     let cursor = avgX - totalWidth / 2
@@ -299,7 +349,7 @@ export function applyDagreLayout(nodes, edges) {
       } else {
         posMap[unit.ids[0]].x = cursor
       }
-      cursor += unitWidths[ui] + unitGap
+      cursor += unitWidths[ui] + UNIT_GAP
     })
   })
 
@@ -341,39 +391,48 @@ export function applyDagreLayout(nodes, edges) {
         return (na?.data?.birthdate ?? '') < (nb?.data?.birthdate ?? '') ? -1 : 1
       })
 
+      // Build child units: pair each child with their spouse (if in same gen)
+      const childVisited = new Set()
+      const childUnits = []
+      children.forEach(cid => {
+        if (childVisited.has(cid)) return
+        childVisited.add(cid)
+        const partner = pairedWith[cid]
+        if (partner && generation[partner] === gen && !childVisited.has(partner)) {
+          // Partner is a spouse-only node (not in children list) or a sibling
+          const partnerIsChild = children.includes(partner)
+          if (!partnerIsChild) {
+            childVisited.add(partner)
+            childUnits.push({ ids: [cid, partner], isPair: true })
+          } else {
+            // Both are siblings — place as separate units, they'll each get their own spouses
+            childUnits.push({ ids: [cid], isPair: false })
+          }
+        } else {
+          childUnits.push({ ids: [cid], isPair: false })
+        }
+      })
+
       const parentCenterX = parents.reduce((s, id) => s + (posMap[id]?.x ?? 0) + NODE_WIDTH / 2, 0) / parents.length
-      const totalWidth = children.length * MIN_GAP_X
+      const unitWidths = childUnits.map(u => u.isPair ? NODE_WIDTH + SPOUSE_GAP : NODE_WIDTH)
+      const totalWidth = unitWidths.reduce((s, w) => s + w, 0) + (childUnits.length - 1) * UNIT_GAP
       let startX = parentCenterX - totalWidth / 2
 
       if (startX < cursor) startX = cursor
 
-      children.forEach((cid, ci) => {
-        posMap[cid].x = startX + ci * MIN_GAP_X
+      let unitCursor = startX
+      childUnits.forEach((unit, ui) => {
+        if (unit.isPair) {
+          posMap[unit.ids[0]].x = unitCursor
+          posMap[unit.ids[1]].x = unitCursor + SPOUSE_GAP
+          posMap[unit.ids[1]].y = posMap[unit.ids[0]].y
+        } else {
+          posMap[unit.ids[0]].x = unitCursor
+        }
+        unitCursor += unitWidths[ui] + UNIT_GAP
       })
 
-      cursor = startX + totalWidth + 70  // extra gap so sibling-group parent lines don't converge
-    })
-
-    // After centering children, re-seat any spouse pairs in this row
-    // (a child who has a spouse needs to stay next to them)
-    ;(genGroups[gen] || []).forEach(id => {
-      const partner = pairedWith[id]
-      if (partner && generation[partner] === gen && posMap[partner]) {
-        const dx = Math.abs(posMap[id].x - posMap[partner].x)
-        if (dx > SPOUSE_GAP + 10 || dx < SPOUSE_GAP - 10) {
-          // Re-align: keep the child in place, pull spouse next to them
-          const childHasParents = (childToParents[id] || []).length > 0
-          const partnerHasParents = (childToParents[partner] || []).length > 0
-          if (childHasParents && !partnerHasParents) {
-            // Child was positioned by parent centering, pull spouse next to them
-            posMap[partner].x = posMap[id].x + SPOUSE_GAP
-            posMap[partner].y = posMap[id].y
-          } else if (!childHasParents && partnerHasParents) {
-            posMap[id].x = posMap[partner].x + SPOUSE_GAP
-            posMap[id].y = posMap[partner].y
-          }
-        }
-      }
+      cursor = unitCursor + (compact ? 40 : 70) - UNIT_GAP
     })
   })
 
@@ -413,8 +472,37 @@ export function applyDagreLayout(nodes, edges) {
     if (!moved) break
   }
 
-  return nodes.map(node => ({
-    ...node,
-    position: posMap[node.id] ?? node.position,
-  }))
+  // ── Auto LR: transpose for wide trees on mobile ───────────────────────
+  const isLR = compact && maxUnitsInRow >= 3
+  if (isLR) {
+    Object.keys(posMap).forEach(id => {
+      const { x, y } = posMap[id]
+      posMap[id] = { x: y, y: x }
+    })
+  }
+
+  // ── Return nodes with positions + layout metadata ─────────────────────
+  return nodes.map(node => {
+    const children = parentToChildren[node.id] || []
+    const visibleChildren = children.filter(cid => !hiddenIds.has(cid))
+    const isSelfCollapsed = collapsedIds.has(node.id)
+    const childrenHidden = children.length > 0 && visibleChildren.length === 0
+    // isCollapsed = this node's collapse is actively hiding children (not overridden by force-expand)
+    const isCollapsed = isSelfCollapsed && childrenHidden
+    // isAutoCollapsed = children hidden by someone else's collapse (e.g. spouse's parent collapsed)
+    const isAutoCollapsed = childrenHidden && !isSelfCollapsed && !forceExpandedIds.has(node.id)
+    return {
+      ...node,
+      position: posMap[node.id] ?? node.position,
+      hidden: hiddenIds.has(node.id),
+      data: {
+        ...node.data,
+        layoutDirection: isLR ? 'LR' : 'TB',
+        hasChildren: children.length > 0,
+        isCollapsed,
+        isAutoCollapsed,
+        hiddenCount: (isCollapsed || isAutoCollapsed) ? getDescendantCount(node.id, parentToChildren) : 0,
+      },
+    }
+  })
 }

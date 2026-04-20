@@ -123,6 +123,57 @@
 
 .astro-node:hover .node-handle--side { opacity: 1; }
 
+/* ──────────────────────── Collapse/expand toggle ──────────────────────── */
+/* TB mode: button at bottom center (where child edges exit) */
+.node-collapse-btn {
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 14, 44, 0.95);
+  border: 1px solid var(--gold-dim, #c9a84c44);
+  border-radius: 12px;
+  padding: 2px 10px;
+  cursor: pointer;
+  font-size: 0.72rem;
+  color: var(--gold, #c9a84c);
+  transition: background 0.15s, border-color 0.15s;
+  z-index: 5;
+  line-height: 1.5;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* LR mode: button on right side (where child edges exit) */
+.node-collapse-btn--lr {
+  bottom: auto;
+  left: auto;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.node-collapse-btn:hover {
+  background: rgba(40, 28, 80, 0.95);
+  border-color: var(--gold, #c9a84c);
+}
+
+.node-collapse-icon {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.node-collapse-label {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Collapsed node gets a subtle dashed border to indicate hidden content */
+.astro-node--collapsed {
+  border-style: dashed;
+}
+
 /* React Flow controls dark overrides */
 .react-flow__controls button {
   background: var(--surface-2);

@@ -12,12 +12,14 @@ export function useTreeState({
   setNodes, setEdges,
   setFitTick, setEditingNodeId,
   onNodeClickNav,
+  collapsedIds,
+  forceExpandedIds,
 }) {
   // ── Layout on edge / node count changes ──────────────────────────────────
   useEffect(() => {
     if (nodes.length === 0) return
     setNodes(prev => {
-      const laid = applyDagreLayout(prev, edges)
+      const laid = applyDagreLayout(prev, edges, { collapsedIds, forceExpandedIds })
 
       // ── Tag nodes with sibling-group symbol ────────────────────────────
       const pcEdges = edges.filter(e => e.data?.relationType === 'parent-child' || !e.data?.relationType)
@@ -94,25 +96,59 @@ export function useTreeState({
       }))
     })
     setFitTick(t => t + 1)
-  }, [edges, nodes.length]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [edges, nodes.length, collapsedIds, forceExpandedIds]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Spouse edges: route straight across using side handles ────────────────
+  // ── Edge display: handle routing, hiding, and LR mode ────────────────────
   // Sibling edges are not drawn on the tree — siblings use group symbols instead
-  const edgesForDisplay = useMemo(() =>
-    edges.filter(edge => edge.data?.relationType !== 'sibling').map(edge => {
-      if (edge.data?.relationType !== 'spouse') return edge
-      const src = nodes.find(n => n.id === edge.source)
-      const tgt = nodes.find(n => n.id === edge.target)
-      if (!src || !tgt) return edge
-      const srcLeft = src.position.x <= tgt.position.x
-      return {
-        ...edge, type: 'straight',
-        sourceHandle: srcLeft ? 'right-src' : 'left-src',
-        targetHandle: srcLeft ? 'left-tgt'  : 'right-tgt',
-      }
-    }),
-    [edges, nodes]
-  )
+  const edgesForDisplay = useMemo(() => {
+    const hiddenIds = new Set(nodes.filter(n => n.hidden).map(n => n.id))
+    const layoutDir = nodes.find(n => !n.hidden)?.data?.layoutDirection || 'TB'
+
+    return edges
+      .filter(edge => edge.data?.relationType !== 'sibling')
+      .filter(edge => !hiddenIds.has(edge.source) && !hiddenIds.has(edge.target))
+      .map(edge => {
+        const isSpouse = edge.data?.relationType === 'spouse'
+        const isHierarchical = !isSpouse
+
+        if (layoutDir === 'LR') {
+          // LR mode: parent-child edges use side handles, spouse edges use top/bottom
+          if (isHierarchical) {
+            const src = nodes.find(n => n.id === edge.source)
+            const tgt = nodes.find(n => n.id === edge.target)
+            if (!src || !tgt) return edge
+            const srcLeftOf = src.position.x <= tgt.position.x
+            return {
+              ...edge,
+              sourceHandle: srcLeftOf ? 'right-src' : 'left-src',
+              targetHandle: srcLeftOf ? 'left-tgt'  : 'right-tgt',
+            }
+          }
+          // Spouse in LR — vertically stacked
+          const src = nodes.find(n => n.id === edge.source)
+          const tgt = nodes.find(n => n.id === edge.target)
+          if (!src || !tgt) return edge
+          const srcAbove = src.position.y <= tgt.position.y
+          return {
+            ...edge, type: 'straight',
+            sourceHandle: srcAbove ? undefined : 'top-src',
+            targetHandle: srcAbove ? undefined : 'bottom-tgt',
+          }
+        }
+
+        // TB mode: spouse edges use side handles (existing behavior)
+        if (!isSpouse) return edge
+        const src = nodes.find(n => n.id === edge.source)
+        const tgt = nodes.find(n => n.id === edge.target)
+        if (!src || !tgt) return edge
+        const srcLeft = src.position.x <= tgt.position.x
+        return {
+          ...edge, type: 'straight',
+          sourceHandle: srcLeft ? 'right-src' : 'left-src',
+          targetHandle: srcLeft ? 'left-tgt'  : 'right-tgt',
+        }
+      })
+  }, [edges, nodes])
 
   // ── Update / delete ───────────────────────────────────────────────────────
   const handleUpdate = useCallback((id, patch, { keepOpen = false } = {}) => {

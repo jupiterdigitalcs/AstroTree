@@ -89,6 +89,8 @@ export default function App() {
   // Reset nudge when tree membership changes or user leaves tree tab
   useEffect(() => { setNudgeDismissed(false) }, [nodes.length, edges.length, activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
   const [fitTick,           setFitTick]           = useState(0)
+  const [collapsedNodeIds,  setCollapsedNodeIds]  = useState(new Set())
+  const [forceExpandedIds,  setForceExpandedIds]  = useState(new Set())
   const { hasUsedApp, insightsSeen, setInsightsSeen, returnVisit, setReturnVisit, markUsed } = useOnboardingState()
   // Auto-dismiss return visit card after 6 seconds
   useEffect(() => {
@@ -189,6 +191,8 @@ export default function App() {
     syncChart,
     viewOnly,
     onChartLimitHit: () => setShowUpgradePrompt(true),
+    setCollapsedNodeIds,
+    setForceExpandedIds,
   })
 
   // Wrap handleLoadChart to set isDemoChart when loading a sample chart
@@ -216,6 +220,8 @@ export default function App() {
     setNodes, setEdges,
     setFitTick, setEditingNodeId,
     onNodeClickNav: useCallback(() => setActiveTab('add'), []),
+    collapsedIds: collapsedNodeIds,
+    forceExpandedIds,
   })
 
   // ── Group vs family label — all edges are friend/coworker ────────────────
@@ -386,7 +392,7 @@ export default function App() {
   const prevEdgeCountRef = useRef(0)
   useEffect(() => {
     if (edges.length > prevEdgeCountRef.current && nodes.length > 0) {
-      setNodes(prev => applyDagreLayout(prev, edges))
+      setNodes(prev => applyDagreLayout(prev, edges, { collapsedIds: collapsedNodeIds, forceExpandedIds }))
       setFitTick(t => t + 1)
       setNewEdgesForInsights(prev => prev + (edges.length - prevEdgeCountRef.current))
     }
@@ -436,7 +442,7 @@ export default function App() {
       ...spouseIds.map(s => makeEdge(primaryId, s, 'spouse')),
     ]
     const nextCounter = counter + members.length
-    setNodes(applyDagreLayout(nextNodes, nextEdges))
+    setNodes(applyDagreLayout(nextNodes, nextEdges, { collapsedIds: collapsedNodeIds, forceExpandedIds }))
     setEdges(nextEdges)
     setCounter(nextCounter)
     setShowAddMore(false)
@@ -478,10 +484,10 @@ export default function App() {
     if (treeView === 'constellation') {
       setConstellationTick(t => t + 1)
     } else {
-      setNodes(prev => applyDagreLayout(prev, edges))
+      setNodes(prev => applyDagreLayout(prev, edges, { collapsedIds: collapsedNodeIds, forceExpandedIds }))
       setFitTick(t => t + 1)
     }
-  }, [edges, setNodes, treeView])
+  }, [edges, setNodes, treeView, collapsedNodeIds])
 
   // ── Navigation helpers ────────────────────────────────────────────────────
   function goTab(tab) {
@@ -507,6 +513,8 @@ export default function App() {
   // ── Load demo tree ────────────────────────────────────────────────────────
   async function handleLoadDemo() {
     const demo = await buildDemoChart()
+    setCollapsedNodeIds(new Set())
+    setForceExpandedIds(new Set())
     setNodes(applyDagreLayout(demo.nodes, demo.edges))
     setEdges(demo.edges)
     setCounter(demo.counter)
@@ -521,6 +529,8 @@ export default function App() {
 
   async function handleLoadDemoCrew() {
     const demo = await buildDemoCrewChart()
+    setCollapsedNodeIds(new Set())
+    setForceExpandedIds(new Set())
     setNodes(applyDagreLayout(demo.nodes, demo.edges))
     setEdges(demo.edges)
     setCounter(demo.counter)
@@ -1238,7 +1248,34 @@ export default function App() {
         <ReactFlow
           nodes={nodes} edges={isGroupOnly ? [] : edgesForDisplay}
           onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
-          onConnect={onConnect} onNodeClick={onNodeClick}
+          onConnect={onConnect} onNodeClick={(e, node) => {
+            if (e.target.closest('.node-collapse-btn')) {
+              const d = node.data
+              if (d.isCollapsed || d.isAutoCollapsed) {
+                // EXPAND: show children
+                if (d.isCollapsed) {
+                  setCollapsedNodeIds(prev => { const n = new Set(prev); n.delete(node.id); return n })
+                }
+                if (d.isAutoCollapsed) {
+                  setForceExpandedIds(prev => { const n = new Set(prev); n.add(node.id); return n })
+                }
+              } else {
+                // COLLAPSE: hide children + clear co-parent force-expands
+                setCollapsedNodeIds(prev => { const n = new Set(prev); n.add(node.id); return n })
+                const spouseIds = edges
+                  .filter(ed => ed.data?.relationType === 'spouse' && (ed.source === node.id || ed.target === node.id))
+                  .map(ed => ed.source === node.id ? ed.target : ed.source)
+                setForceExpandedIds(prev => {
+                  const n = new Set(prev)
+                  n.delete(node.id)
+                  spouseIds.forEach(sid => n.delete(sid))
+                  return n
+                })
+              }
+              return
+            }
+            onNodeClick(e, node)
+          }}
           onNodeDragStart={onNodeDragStart} onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}
           // 6px threshold so finger taps with natural jitter on touch screens
           // aren't treated as drags. Without this, mobile taps fired onNodeDrag

@@ -30,7 +30,7 @@ export default function AstroNode({ data, selected }) {
 
   return (
     <div
-      className="astro-node"
+      className={`astro-node${data.isCollapsed || data.isAutoCollapsed ? ' astro-node--collapsed' : ''}`}
       style={{
         borderColor: border,
         background: `linear-gradient(155deg,
@@ -44,11 +44,14 @@ export default function AstroNode({ data, selected }) {
     >
       <Handle type="target" position={Position.Top}    className="node-handle" />
       <Handle type="source" position={Position.Bottom} className="node-handle" />
-      {/* Side handles need both source+target so spouse edges work in either direction */}
+      {/* Side handles for spouse edges (TB) and parent-child edges (LR) */}
       <Handle type="source" position={Position.Right}  className="node-handle node-handle--side" id="right-src" />
       <Handle type="target" position={Position.Right}  className="node-handle node-handle--side" id="right-tgt" />
       <Handle type="source" position={Position.Left}   className="node-handle node-handle--side" id="left-src" />
       <Handle type="target" position={Position.Left}   className="node-handle node-handle--side" id="left-tgt" />
+      {/* Extra handles for LR spouse edges (vertical connections) */}
+      <Handle type="source" position={Position.Top}    className="node-handle node-handle--side" id="top-src" />
+      <Handle type="target" position={Position.Bottom} className="node-handle node-handle--side" id="bottom-tgt" />
 
       <div className="node-symbol" style={{ color: glow, filter: `drop-shadow(0 0 10px ${glow}99)` }}>
         {symbol}
@@ -86,6 +89,20 @@ export default function AstroNode({ data, selected }) {
         <div className="node-sibling-badge" style={{ color: data.siblingGroupColor }} title="Sibling group — shares same parent(s)">
           {data.siblingGroupSymbol}
         </div>
+      )}
+
+      {/* Collapse/expand toggle for nodes with children — positioned where child edges exit */}
+      {data.hasChildren && (
+        <button
+          className={`node-collapse-btn${data.layoutDirection === 'LR' ? ' node-collapse-btn--lr' : ''}`}
+          title={data.isCollapsed || data.isAutoCollapsed ? `Show ${data.hiddenCount} hidden` : 'Collapse branch'}
+        >
+          {data.isCollapsed || data.isAutoCollapsed ? (
+            <span className="node-collapse-label">+{data.hiddenCount}</span>
+          ) : (
+            <span className="node-collapse-icon">−</span>
+          )}
+        </button>
       )}
     </div>
   )

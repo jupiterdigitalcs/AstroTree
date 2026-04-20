@@ -15,6 +15,8 @@ export function useChartManager({
   syncChart,
   viewOnly,
   onChartLimitHit,
+  setCollapsedNodeIds,
+  setForceExpandedIds,
 }) {
   const [savedChartId,       setSavedChartId]       = useState(null)
   const [showSaveDialog,     setShowSaveDialog]     = useState(false)
@@ -65,6 +67,8 @@ export function useChartManager({
 
   const handleLoadChart = useCallback(async (chart) => {
     const hydrated = await hydrateNodes(chart.nodes)
+    if (setCollapsedNodeIds) setCollapsedNodeIds(new Set())
+    if (setForceExpandedIds) setForceExpandedIds(new Set())
     setNodes(applyDagreLayout(hydrated, chart.edges))
     setEdges(chart.edges); setCounter(chart.counter)
     setSavedChartId(chart.isSample ? null : chart.id)
