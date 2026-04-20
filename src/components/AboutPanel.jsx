@@ -177,6 +177,11 @@ export default function AboutPanel() {
           <li>Sell your data or share it with third parties</li>
         </ul>
 
+        <p className="about-data-subhead">Adding other people</p>
+        <p className="about-bio">
+          AstroDig lets you enter birth information for people in your life. By doing so, you acknowledge that this information is shared with you personally and that you are entering it at your own discretion. We encourage you to get permission from the people you add when possible. Jupiter Digital LLC does not verify consent between users and is not responsible for information entered on behalf of others.
+        </p>
+
         <p className="about-bio" style={{ marginTop: '0.5rem' }}>
           You can delete individual charts from the Saved tab, or request full data removal by
           contacting us at <a className="about-inline-link" href="mailto:jupreturns@gmail.com">jupreturns@gmail.com</a>.
