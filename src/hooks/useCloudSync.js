@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { uploadChart, deleteChartCloud as _deleteCloud, fetchCharts, isCloudEnabled, upsertDevice, fetchEntitlements } from '../utils/cloudStorage.js'
+import { uploadChart, deleteChartCloud as _deleteCloud, fetchCharts, isCloudEnabled, upsertDevice, fetchEntitlements, restoreChartsByEmail } from '../utils/cloudStorage.js'
 import { saveChart, loadCharts } from '../utils/storage.js'
 import { setCachedEntitlements } from '../utils/entitlements.js'
 
@@ -69,6 +69,9 @@ export function useCloudSync({ onMergeCharts, authUser }) {
     } else if (result.error === 'chart_limit_reached') {
       setSyncStatus('idle')
       return result
+    } else if (result.error === 'conflict') {
+      setSyncStatus('idle')
+      return { ...result, conflict: true }
     } else {
       setSyncStatus('error')
     }
@@ -106,6 +109,19 @@ export function useCloudSync({ onMergeCharts, authUser }) {
       await mergeCloudCharts()
     } catch (err) {
       console.error('[cloud] mergeCloudCharts failed after auth:', err)
+    }
+    // If no charts found after merge, attempt email-based restore (handles cookie-clear scenario)
+    try {
+      const local = loadCharts()
+      if (local.length === 0) {
+        const email = localStorage.getItem('astrotree_user_email')
+        if (email) {
+          const result = await restoreChartsByEmail(email)
+          if (result?.ok && result.count > 0) await mergeCloudCharts()
+        }
+      }
+    } catch (err) {
+      console.error('[cloud] chart restore by email failed:', err)
     }
   }, [mergeCloudCharts])
 

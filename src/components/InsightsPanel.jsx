@@ -1013,6 +1013,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     const t = e.data?.relationType
     return t === 'friend' || t === 'coworker'
   }) // step-parent, parent-child, sibling, spouse are all family types
+  const hasFriendEdges = !isGroupOnly && edges.some(e => {
+    const t = e.data?.relationType
+    return t === 'friend' || t === 'coworker'
+  })
   const panelTitle = isGroupOnly ? 'Group Insights' : 'Family Insights'
   const tooFewNodes = nodes.length < 2
   const noEdges = !tooFewNodes && edges.length === 0
@@ -2075,26 +2079,52 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         isGroupOnly={isGroupOnly}
       />
 
-      {/* Squad Energy — friend groups only */}
-      {isGroupOnly && (
-        <SquadEnergyCard
-          nodes={nodes}
-          allPlanetCounts={allPlanetCounts}
-          dominant={dominant}
-          dominantModality={dominantModality}
-          innerPlanetMap={innerPlanetMap}
-          warningsPerNode={warningsPerNode}
-        />
-      )}
+      {/* Squad Energy — friend/coworker groups (including friend subgroups in mixed trees) */}
+      {(isGroupOnly || hasFriendEdges) && (() => {
+        // In mixed trees, narrow to friend subgraph
+        const friendEdgesOnly = hasFriendEdges
+          ? edges.filter(e => e.data?.relationType === 'friend' || e.data?.relationType === 'coworker')
+          : edges
+        const friendIds = hasFriendEdges
+          ? new Set(friendEdgesOnly.flatMap(e => [e.source, e.target]))
+          : null
+        const friendNodes = friendIds ? nodes.filter(n => friendIds.has(n.id)) : nodes
+        if (friendNodes.length < 2) return null
 
-      {/* Social Chemistry — friend groups only */}
-      {isGroupOnly && (
-        <SocialChemistryCard
-          nodes={nodes}
-          innerPlanetMap={innerPlanetMap}
-          edges={edges}
-        />
-      )}
+        // Recompute element aggregates for this subgroup
+        const subElC = Object.fromEntries(ELEMENTS.map(e => [e, 0]))
+        const subModC = { Cardinal: 0, Fixed: 0, Mutable: 0 }
+        let subMasc = 0, subFem = 0
+        friendNodes.forEach(n => {
+          const el = n.data.element
+          if (subElC[el] !== undefined) subElC[el]++
+          const mod = SIGN_MODALITY[n.data.sign]
+          if (mod) subModC[mod]++
+          if (POLARITY_GROUP[n.data.sign] === 'masculine') subMasc++
+          else subFem++
+        })
+        const subDominant = ELEMENTS.reduce((a, b) => subElC[a] >= subElC[b] ? a : b)
+        const subDominantModality = Object.entries(subModC).reduce((a, b) => b[1] > a[1] ? b : a)[0]
+        const subAllPlanetCounts = { ...allPlanetCounts, elC: subElC, modC: subModC, masc: subMasc, fem: subFem }
+
+        return (
+          <>
+            <SquadEnergyCard
+              nodes={friendNodes}
+              allPlanetCounts={subAllPlanetCounts}
+              dominant={subDominant}
+              dominantModality={subDominantModality}
+              innerPlanetMap={innerPlanetMap}
+              warningsPerNode={warningsPerNode}
+            />
+            <SocialChemistryCard
+              nodes={friendNodes}
+              innerPlanetMap={innerPlanetMap}
+              edges={friendEdgesOnly}
+            />
+          </>
+        )
+      })()}
 
       {/* 2. Sun Element Makeup */}
       <div className="insight-card">
@@ -2194,6 +2224,11 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             Moon sign speaks to emotional needs and inner rhythms. It often tells a different story than the Sun sign, and that tension is part of what makes a chart interesting.
           </p>
         </div>
+      )}
+
+      {/* Hint: moon data missing */}
+      {!(moonNodes.length >= 2 && moonDominant) && nodes.length >= 2 && (
+        <p className="insight-hint">☽ Add birth times to unlock moon element insights</p>
       )}
 
       {/* Collective Element Map — FREE, all planets across all members */}
@@ -2420,9 +2455,19 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
+      {/* Hint: no partner edges */}
+      {couples.length === 0 && edges.length > 0 && !isGroupOnly && (
+        <p className="insight-hint">💞 Connect partners to see relationship harmony</p>
+      )}
+
       {/* 7b. Sibling Dynamics */}
       {siblingGroups.length > 0 && (
         <SiblingDynamics siblingGroups={siblingGroups} isExporting={exporting} />
+      )}
+
+      {/* Hint: no parent-child edges for generational insights */}
+      {!isGroupOnly && !edges.some(e => e.data?.relationType === 'parent-child') && edges.length > 0 && (
+        <p className="insight-hint">🔁 Add parent-child connections to see generational threads</p>
       )}
 
       {/* 9. Zodiac Threads (includes generational echoes — parent-child sign lines) */}

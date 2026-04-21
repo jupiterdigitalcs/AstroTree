@@ -63,6 +63,21 @@ async function handleSave(request) {
   const limitErr = await checkChartLimit(sb, deviceId, chart.id)
   if (limitErr) return NextResponse.json(limitErr, { status: 403 })
 
+  // Optimistic concurrency: reject if chart was updated by another device since we loaded it
+  if (chart.lastKnownSavedAt) {
+    const { data: existing } = await sb
+      .from('charts')
+      .select('updated_at')
+      .eq('id', chart.id)
+      .maybeSingle()
+    if (existing && new Date(existing.updated_at) > new Date(chart.lastKnownSavedAt)) {
+      return NextResponse.json(
+        { ok: false, error: 'conflict', serverSavedAt: existing.updated_at },
+        { status: 409 },
+      )
+    }
+  }
+
   const row = {
     id: chart.id, device_id: deviceId,
     title:      typeof chart.title === 'string' ? chart.title.slice(0, MAX_TITLE_LEN) : '',

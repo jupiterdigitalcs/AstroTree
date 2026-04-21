@@ -41,6 +41,7 @@ export async function uploadChart(chart) {
       },
       body: JSON.stringify({
         ...chart,
+        lastKnownSavedAt: chart.savedAt,
         referrer: getReferrer(),
       }),
     })

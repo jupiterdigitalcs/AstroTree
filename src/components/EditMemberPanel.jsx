@@ -524,6 +524,11 @@ export default function EditMemberPanel({
             </button>
           )}
 
+          {/* ── All connected hint ── */}
+          {eligibleNodes.length === 0 && allNodes.length > 1 && (
+            <p className="conn-all-connected-hint">All members connected. Remove a connection to change its type.</p>
+          )}
+
           {/* ── Add connections: person chips → inline relationship pills ── */}
           {eligibleNodes.length > 0 && (
             <div className="conn-add-section">
@@ -605,7 +610,10 @@ export default function EditMemberPanel({
         </button>
       ) : (
         <div className="delete-confirm">
-          <p>Remove {node.data.name}?</p>
+          <p>Remove {node.data.name}?{(() => {
+            const count = edges.filter(e => e.source === node.id || e.target === node.id).length
+            return count > 0 ? <span className="delete-cascade-note"> {count} connection{count !== 1 ? 's' : ''} will be removed</span> : null
+          })()}</p>
           <div className="delete-confirm-actions">
             <button type="button" className="delete-btn" onClick={() => onDelete(node.id)}>Yes, Remove</button>
             <button type="button" className="cancel-btn" onClick={() => setConfirmDelete(false)}>Cancel</button>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { addEdge } from '@xyflow/react'
 import { getSunSign, getElement } from '../utils/astrology.js'
 import { computeAstrology } from '../utils/astrologyAPI.js'
@@ -120,6 +120,7 @@ export function useTreeState({
             const srcLeftOf = src.position.x <= tgt.position.x
             return {
               ...edge,
+              type: 'smoothstep',
               sourceHandle: srcLeftOf ? 'right-src' : 'left-src',
               targetHandle: srcLeftOf ? 'left-tgt'  : 'right-tgt',
             }
@@ -197,11 +198,34 @@ export function useTreeState({
     }
   }, [setNodes, setEditingNodeId, nodes])
 
+  // ── Delete with undo support ──────────────────────────────────────────────
+  const [undoToast, setUndoToast] = useState(null)
+  const undoRef = useRef(null)
+
   const handleDelete = useCallback((id) => {
+    const deletedNode = nodes.find(n => n.id === id)
+    const deletedEdges = edges.filter(e => e.source === id || e.target === id)
+
     setNodes(prev => prev.filter(n => n.id !== id))
     setEdges(prev => prev.filter(e => e.source !== id && e.target !== id))
     setEditingNodeId(null)
-  }, [setNodes, setEdges, setEditingNodeId])
+
+    // Set up 8-second undo window
+    if (undoRef.current) clearTimeout(undoRef.current.timer)
+    const timer = setTimeout(() => { setUndoToast(null); undoRef.current = null }, 8000)
+    undoRef.current = { node: deletedNode, edges: deletedEdges, timer }
+    setUndoToast({ name: deletedNode?.data?.name || 'Member', connectionCount: deletedEdges.length })
+  }, [nodes, edges, setNodes, setEdges, setEditingNodeId])
+
+  const handleUndo = useCallback(() => {
+    if (!undoRef.current) return
+    const { node, edges: restoredEdges, timer } = undoRef.current
+    clearTimeout(timer)
+    if (node) setNodes(prev => [...prev, node])
+    if (restoredEdges.length) setEdges(prev => [...prev, ...restoredEdges])
+    setUndoToast(null)
+    undoRef.current = null
+  }, [setNodes, setEdges])
 
   // ── Edge management ───────────────────────────────────────────────────────
   const handleAddEdge = useCallback((source, target, relationType = 'parent-child') => {
@@ -263,7 +287,7 @@ export function useTreeState({
 
   return {
     edgesForDisplay,
-    handleUpdate, handleDelete,
+    handleUpdate, handleDelete, handleUndo, undoToast,
     handleAddEdge, handleRemoveEdge,
     onNodeClick, onNodeDragStart, onNodeDrag, onNodeDragStop, onConnect,
   }

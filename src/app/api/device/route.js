@@ -43,11 +43,18 @@ async function handleEntitlements(request) {
   if (configRows) configRows.forEach(r => { config[r.key] = r.value })
 
   // Tier is account-bound. Premium follows the auth user, NOT the device.
-  // A device alone never has effective premium — even if devices.tier='premium'
-  // (legacy data, Stripe webhook write, etc), the server doesn't read it here.
-  // Sign in is required to access premium.
+  // Exception: if the device itself has tier='premium' (e.g. just purchased but
+  // hasn't signed in yet), honour that so the user sees features immediately.
   const authUser = await getAuthUser(request)
   if (!authUser) {
+    const deviceId = request.headers.get('x-device-id')
+    if (deviceId) {
+      const { data: device } = await sb.from('devices')
+        .select('tier').eq('id', deviceId).maybeSingle()
+      if (device?.tier === 'premium') {
+        return NextResponse.json({ tier: 'premium', config })
+      }
+    }
     return NextResponse.json({ tier: 'free', config })
   }
 
@@ -73,6 +80,14 @@ async function handleLinkAuth(request) {
     p_email: email.trim().slice(0, 254),
   })
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+
+  // Migrate device-only charts to this auth user so they aren't orphaned
+  const { error: migrateErr } = await sb
+    .from('charts')
+    .update({ auth_user_id: authUserId })
+    .eq('device_id', deviceId)
+    .is('auth_user_id', null)
+  if (migrateErr) console.error('[link-auth] chart migration error:', migrateErr.message)
 
   // Restore tier from user_profiles (source of truth for auth users)
   const { data: profile } = await sb.from('user_profiles').select('tier').eq('auth_user_id', authUserId).single()

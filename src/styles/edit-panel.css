@@ -202,6 +202,49 @@
   border-color: var(--red);
 }
 
+.delete-cascade-note {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 0.2rem;
+}
+
+/* ── Undo delete toast ───────────────────────────────────────────────────── */
+.undo-toast {
+  position: fixed;
+  bottom: calc(1.2rem + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, rgba(30, 25, 55, 0.95) 0%, rgba(20, 15, 40, 0.98) 100%);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 10px;
+  padding: 0.6rem 1.2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: toast-in 0.3s ease-out;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.undo-toast button {
+  background: none;
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  color: var(--gold);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.undo-toast button:hover {
+  background: rgba(201, 168, 76, 0.12);
+}
+
 /* ── Ingress warning — shown in EditMemberPanel when a planet changes sign ── */
 .ingress-warning {
   display: flex;
@@ -571,6 +614,14 @@
 }
 
 /* ── Quick-connect chips + inline relationship pills ─────────────────────── */
+.conn-all-connected-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 0.3rem 0;
+  margin: 0;
+  opacity: 0.7;
+}
 .conn-add-section {
   display: flex;
   flex-direction: column;

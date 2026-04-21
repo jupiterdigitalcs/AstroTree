@@ -25,6 +25,7 @@ export function useChartManager({
   const [showNewTreeConfirm, setShowNewTreeConfirm] = useState(false)
   const [showEmailCapture,   setShowEmailCapture]   = useState(false)
   const [lastSavedAt,        setLastSavedAt]        = useState(null)
+  const [syncConflict,       setSyncConflict]       = useState(false)
 
   // ── Restore draft on first load ───────────────────────────────────────────
   useEffect(() => {
@@ -54,13 +55,17 @@ export function useChartManager({
   // ── Auto-save to named chart when tree has been saved once ────────────────
   useEffect(() => {
     if (!savedChartId || nodes.length === 0) return
-    const t = setTimeout(() => {
+    const t = setTimeout(async () => {
       const existing = loadCharts().find(c => c.id === savedChartId)
       if (!existing) return
       const updated = { ...existing, nodes, edges, counter, savedAt: new Date().toISOString() }
       saveChart(updated)
-      syncChart(updated)
-      setLastSavedAt(new Date())
+      const result = await syncChart(updated)
+      if (result?.conflict) {
+        setSyncConflict(true)
+      } else {
+        setLastSavedAt(new Date())
+      }
     }, 800)
     return () => clearTimeout(t)
   }, [nodes, edges, counter, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -145,5 +150,6 @@ export function useChartManager({
     handleSaveChart, handleNewChart, handleLoadChart,
     handleRenameChart, handleDuplicateChart,
     handleNewTreeClick,
+    syncConflict, setSyncConflict,
   }
 }

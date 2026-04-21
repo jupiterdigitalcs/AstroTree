@@ -183,6 +183,7 @@ export default function App() {
     handleSaveChart, handleNewChart, handleLoadChart,
     handleRenameChart, handleDuplicateChart,
     handleNewTreeClick,
+    syncConflict, setSyncConflict,
   } = useChartManager({
     nodes, edges, counter,
     setNodes, setEdges, setCounter,
@@ -212,7 +213,7 @@ export default function App() {
   const { exporting, exportError, handleExport, handleZodiacExport, handleConstellationExport, handleInsightsExport, handleTablesExport } = useExport({ savedChartId, fitViewRef })
   const {
     edgesForDisplay,
-    handleUpdate, handleDelete,
+    handleUpdate, handleDelete, handleUndo, undoToast,
     handleAddEdge, handleRemoveEdge,
     onNodeClick, onNodeDragStart, onNodeDrag, onNodeDragStop, onConnect,
   } = useTreeState({
@@ -593,6 +594,23 @@ export default function App() {
         <div className="premium-toast">
           <p className="premium-toast-title">✦ Welcome to Celestial</p>
           <p className="premium-toast-sub">The full cosmos is yours — all views, insights, and The DIG unlocked.</p>
+        </div>
+      )}
+
+      {/* ── Sync conflict toast ─────────────────────────────────────────── */}
+      {syncConflict && (
+        <div className="undo-toast">
+          <span>This chart was updated elsewhere</span>
+          <button type="button" onClick={() => { setSyncConflict(false); window.location.reload() }}>Reload</button>
+          <button type="button" onClick={() => setSyncConflict(false)}>Dismiss</button>
+        </div>
+      )}
+
+      {/* ── Undo delete toast ───────────────────────────────────────────── */}
+      {undoToast && (
+        <div className="undo-toast">
+          <span>{undoToast.name} removed{undoToast.connectionCount > 0 ? ` (${undoToast.connectionCount} connection${undoToast.connectionCount !== 1 ? 's' : ''})` : ''}</span>
+          <button type="button" onClick={handleUndo}>Undo</button>
         </div>
       )}
 
