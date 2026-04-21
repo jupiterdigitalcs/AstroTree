@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AstroDig Carousel Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Raleway', sans-serif;
+    background: #1a1238;
+    color: #ede6ff;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── Nav bar ── */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 60px;
+    background: rgba(9,7,26,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(160,130,220,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 100;
+  }
+
+  .nav-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #c9a84c;
+  }
+
+  .nav-slide-num {
+    font-size: 13px;
+    color: #8878aa;
+    letter-spacing: 0.06em;
+  }
+
+  .nav-download-all {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: #c9a84c;
+    font-family: 'Raleway', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  /* ── Slide wrapper (horizontal scroll) ── */
+  .slides-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-top: 60px;
+    height: 100dvh;
+  }
+
+  .slides-container::-webkit-scrollbar { display: none; }
+
+  .slide-wrapper {
+    flex: 0 0 100vw;
+    height: calc(100dvh - 60px);
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    gap: 12px;
+    position: relative;
+  }
+
+  .slide-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .slide-label-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8878aa;
+    background: rgba(160,130,220,0.08);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(160,130,220,0.12);
+  }
+
+  .download-btn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #c9a84c, #d4b057);
+    border: none;
+    color: #09071a;
+    font-family: 'Raleway', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .download-btn.saving {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* ── The actual slide canvas ── */
+  .slide {
+    width: 1080px;
+    height: 1350px;
+    background: #09071a;
+    color: #ede6ff;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    /* Scale to fit viewport */
+    transform-origin: top center;
+  }
+
+  .slide::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 15% 25%, rgba(201,168,76,0.3), transparent),
+      radial-gradient(1px 1px at 85% 15%, rgba(201,168,76,0.2), transparent),
+      radial-gradient(1px 1px at 45% 80%, rgba(212,160,188,0.2), transparent),
+      radial-gradient(1px 1px at 70% 60%, rgba(201,168,76,0.15), transparent),
+      radial-gradient(1px 1px at 25% 55%, rgba(160,130,220,0.2), transparent),
+      radial-gradient(1px 1px at 90% 85%, rgba(201,168,76,0.25), transparent),
+      radial-gradient(1px 1px at 55% 30%, rgba(212,160,188,0.15), transparent),
+      radial-gradient(1px 1px at 10% 90%, rgba(160,130,220,0.2), transparent),
+      radial-gradient(1.5px 1.5px at 30% 10%, rgba(201,168,76,0.35), transparent),
+      radial-gradient(1.5px 1.5px at 60% 95%, rgba(212,160,188,0.25), transparent),
+      radial-gradient(0.5px 0.5px at 50% 50%, rgba(201,168,76,0.2), transparent),
+      radial-gradient(0.5px 0.5px at 20% 70%, rgba(160,130,220,0.15), transparent),
+      radial-gradient(0.5px 0.5px at 80% 40%, rgba(212,160,188,0.1), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .slide > * { position: relative; z-index: 1; }
+
+  /* ── Glow effects ── */
+  .glow-top {
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.08) 0%, transparent 70%);
+    z-index: 0;
+  }
+
+  .glow-bottom {
+    position: absolute;
+    bottom: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(160,130,220,0.06) 0%, transparent 70%);
+    z-index: 0;
+  }
+
+  /* ── Typography ── */
+  .headline {
+    font-size: 64px;
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+    color: #ede6ff;
+  }
+
+  .headline em {
+    font-style: italic;
+    color: #c9a84c;
+    font-weight: 400;
+  }
+
+  .subline {
+    font-size: 28px;
+    font-weight: 400;
+    color: #b8aad4;
+    letter-spacing: 0.03em;
+    line-height: 1.5;
+  }
+
+  .label {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #c9a84c;
+  }
+
+  .divider {
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.5), transparent);
+  }
+
+  .divider-wide {
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent);
+  }
+
+  /* ── Tappable image drop zone ── */
+  .img-drop {
+    border-radius: 20px;
+    border: 2px dashed rgba(160,130,220,0.25);
+    background: linear-gradient(135deg, #110d28 0%, #1a1238 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #8878aa;
+    font-size: 20px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .img-drop:active { border-color: rgba(201,168,76,0.4); }
+
+  .img-drop.has-image {
+    border-style: solid;
+    border-color: rgba(160,130,220,0.12);
+  }
+
+  .img-drop .tap-label {
+    font-size: 22px;
+    opacity: 0.7;
+  }
+
+  .img-drop .icon {
+    font-size: 52px;
+    opacity: 0.35;
+  }
+
+  .img-drop .hint {
+    font-size: 18px;
+    opacity: 0.4;
+  }
+
+  .img-drop img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .img-drop.has-image .tap-label,
+  .img-drop.has-image .icon,
+  .img-drop.has-image .hint { display: none; }
+
+  /* ── Full-bleed photo behind text (slides 1 & 8) ── */
+  .photo-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8878aa;
+    font-size: 16px;
+    letter-spacing: 0.06em;
+    background: linear-gradient(135deg, #110d28, #1a1238);
+  }
+
+  .photo-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .photo-bg.has-image .tap-label { display: none; }
+
+  /* Floating button to add bg photo (since slide-inner covers the photo-bg) */
+  .add-photo-btn {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 10;
+    padding: 14px 28px;
+    border-radius: 30px;
+    background: rgba(160,130,220,0.12);
+    border: 1px dashed rgba(160,130,220,0.35);
+    color: #b8aad4;
+    font-family: 'Raleway', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+
+  .add-photo-btn.has-image {
+    border-style: solid;
+    background: rgba(201,168,76,0.1);
+    border-color: rgba(201,168,76,0.25);
+    color: #c9a84c;
+  }
+
+  .photo-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg,
+      rgba(9,7,26,0.4) 0%,
+      rgba(9,7,26,0.15) 30%,
+      rgba(9,7,26,0.55) 60%,
+      rgba(9,7,26,0.95) 100%
+    );
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ── Feature list ── */
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    width: auto;
+    max-width: 720px;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-align: left;
+  }
+
+  .feature-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .feature-text h4 {
+    font-size: 30px;
+    font-weight: 600;
+    color: #ede6ff;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  .feature-text p {
+    font-size: 24px;
+    color: #8878aa;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── Pricing ── */
+  .pricing-row {
+    display: flex;
+    gap: 40px;
+    width: 900px;
+  }
+
+  .pricing-col {
+    flex: 1;
+    border-radius: 20px;
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .pricing-col.free {
+    background: rgba(160,130,220,0.06);
+    border: 1px solid rgba(160,130,220,0.15);
+  }
+
+  .pricing-col.celestial {
+    background: linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(201,168,76,0.04) 100%);
+    border: 1px solid rgba(201,168,76,0.3);
+  }
+
+  .pricing-col h3 {
+    font-size: 34px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+  }
+
+  .pricing-col.free h3 { color: #b8aad4; }
+  .pricing-col.celestial h3 { color: #c9a84c; }
+
+  .pricing-col .price {
+    font-size: 26px;
+    font-weight: 400;
+    color: #8878aa;
+    letter-spacing: 0.06em;
+  }
+
+  .pricing-col.celestial .price { color: #e6c76e; }
+
+  .pricing-col ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .pricing-col ul li {
+    font-size: 26px;
+    color: #b8aad4;
+    letter-spacing: 0.03em;
+    padding-left: 32px;
+    position: relative;
+    line-height: 1.3;
+  }
+
+  .pricing-col ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .pricing-col.free ul li::before { background: rgba(160,130,220,0.4); }
+  .pricing-col.celestial ul li::before { background: #c9a84c; }
+  .pricing-col.celestial ul li { color: #ede6ff; }
+
+  /* ── Brand bar ── */
+  .brand-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, transparent, rgba(9,7,26,0.9));
+    z-index: 2;
+  }
+
+  .brand-bar span {
+    font-size: 28px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(201,168,76,0.6);
+    font-weight: 600;
+  }
+
+  /* ── CTA button ── */
+  .cta-btn {
+    display: inline-flex;
+    padding: 24px 64px;
+    border-radius: 60px;
+    background: linear-gradient(135deg, #c9a84c, #d4b057);
+    color: #09071a;
+    font-family: 'Raleway', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    box-shadow: 0 0 40px rgba(201,168,76,0.25);
+  }
+
+  /* ── Slide inner ── */
+  .slide-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px;
+    gap: 40px;
+    text-align: center;
+  }
+
+  .slide-inner.top {
+    justify-content: flex-start;
+    padding-top: 100px;
+  }
+
+  /* ── Dot indicators ── */
+  .dots {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(160,130,220,0.25);
+    transition: all 0.2s;
+  }
+
+  .dot.active {
+    background: #c9a84c;
+    transform: scale(1.3);
+  }
+
+  /* Hidden file input */
+  input[type="file"] { display: none; }
+
+  /* ── Toast notification ── */
+  .toast {
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: rgba(9,7,26,0.95);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: #c9a84c;
+    padding: 12px 28px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    z-index: 200;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── Auth gate ── */
+  .auth-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #09071a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    font-family: 'Raleway', sans-serif;
+  }
+
+  .auth-gate.hidden { display: none; }
+
+  .auth-gate h1 {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #c9a84c;
+    text-transform: uppercase;
+  }
+
+  .auth-gate p {
+    color: #8878aa;
+    font-size: 14px;
+    letter-spacing: 0.06em;
+  }
+
+  .auth-gate input {
+    width: 280px;
+    padding: 14px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(160,130,220,0.25);
+    background: #110d28;
+    color: #ede6ff;
+    font-family: 'Raleway', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.06em;
+    outline: none;
+    text-align: center;
+  }
+
+  .auth-gate input:focus {
+    border-color: rgba(201,168,76,0.4);
+  }
+
+  .auth-gate button {
+    padding: 12px 40px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #c9a84c, #d4b057);
+    border: none;
+    color: #09071a;
+    font-family: 'Raleway', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .auth-gate .auth-error {
+    color: #ff6b7a;
+    font-size: 13px;
+    min-height: 18px;
+  }
+
+  .app-content { display: none; }
+  .app-content.visible { display: contents; }
+</style>
+</head>
+<body>
+
+<!-- Auth gate -->
+<div class="auth-gate" id="authGate">
+  <h1>Carousel Builder</h1>
+  <p>Enter admin password</p>
+  <input type="password" id="authPassword" placeholder="Password" autocomplete="off">
+  <button onclick="doLogin()">Unlock</button>
+  <div class="auth-error" id="authError"></div>
+</div>
+
+<!-- App content (hidden until authed) -->
+<div class="app-content" id="appContent">
+
+<!-- Nav -->
+<div class="nav">
+  <span class="nav-title">AstroDig Carousel</span>
+  <span class="nav-slide-num" id="slideCounter">1 / 8</span>
+  <button class="nav-download-all" onclick="downloadAll()">Save All</button>
+</div>
+
+<!-- Dot indicators -->
+<div class="dots" id="dots"></div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Slides -->
+<div class="slides-container" id="slidesContainer">
+
+  <!-- ═══ SLIDE 1: COVER ═══ -->
+  <div class="slide-wrapper">
+    <div class="slide-actions">
+      <span class="slide-label-tag">1 — Cover</span>
+      <button class="download-btn" onclick="downloadSlide(0)">Save PNG</button>
+    </div>
+    <div class="slide" id="slide-0">
+      <div class="photo-bg" id="photobg-0">
+        <span class="tap-label">Add a background photo with the button above</span>
+      </div>
+      <div class="photo-overlay"></div>
+      <div class="glow-top"></div>
+      <button class="add-photo-btn" onclick="pickBgImage(0)">+ Add photo</button>
+      <div class="slide-inner" style="justify-content: flex-end; padding-bottom: 160px;">
+        <div class="label">Introducing</div>
+        <div class="divider"></div>
+        <h1 class="headline" style="font-size: 58px; max-width: 800px;">
+          What if you could see the <em>cosmic blueprint</em> of everyone you love?
+        </h1>
+        <div class="divider-wide" style="margin-top: 16px;"></div>
+        <p style="font-size: 32px; color: #c9a84c; font-weight: 600; letter-spacing: 0.1em; margin-top: 8px;">ASTRODIG</p>
+        <p class="subline" style="font-size: 22px;">astrodig.com</p>
+      </div>
+      <div class="brand-bar"><span>astrodig.com</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 2: WHAT IT IS ═══ -->
+  <div class="slide-wrapper">
+    <div class="slide-actions">
+      <span class="slide-label-tag">2 — What It Is</span>
+      <button class="download-btn" onclick="downloadSlide(1)">Save PNG</button>
+    </div>
+    <div class="slide" id="slide-1">
+      <div class="glow-top"></div>
+      <div class="glow-bottom"></div>
+      <div class="slide-inner">
+        <div class="label">What is AstroDig?</div>
+        <div class="divider"></div>
+        <h2 class="headline" style="font-size: 52px; max-width: 800px;">
+          Map the <em>stars</em> of your inner circle
+        </h2>
+        <div class="feature-list" style="margin-top: 24px;">
+          <div class="feature-item">
+            <div class="feature-icon">+</div>
+            <div class="feature-text">
+              <h4>Add your people</h4>
+              <p>Family, friends, coworkers — anyone with a birthday</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">&#9790;</div>
+            <div class="feature-text">
+              <h4>See their full chart</h4>
+              <p>Sun sign, moon sign, Mercury, Venus, Mars — calculated instantly</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">&#10038;</div>
+            <div class="feature-text">
+              <h4>Discover hidden patterns</h4>
+              <p>Shared signs, element balance, compatibility, generational connections</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="brand-bar"><span>astrodig.com</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 3: TREE VIEW ═══ -->
+  <div class="slide-wrapper">
+    <div class="slide-actions">
+      <span class="slide-label-tag">3 — Tree View</span>
+      <button class="download-btn" onclick="downloadSlide(2)">Save PNG</button>
+    </div>
+    <div class="slide" id="slide-2">
+      <div class="glow-top"></div>
+      <div class="slide-inner top">
+        <div class="label">Tree View</div>
+        <h2 class="headline" style="font-size: 48px;">
+          Your people, <em>beautifully connected</em>
+        </h2>
+        <p class="subline" style="font-size: 22px; max-width: 700px;">
+          Build your cosmic family tree with birth charts for everyone
+        </p>
+        <div class="img-drop" style="width: 900px; height: 700px; margin-top: 8px;" onclick="pickImage(this)">
+          <span class="icon">&#9734;</span>
+          <span class="tap-label">Tap to add tree view screenshot</span>
+          <span class="hint">from astrodig.com</span>
+        </div>
+      </div>
+      <div class="brand-bar"><span>astrodig.com</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 4: ZODIAC WHEEL ═══ -->
+  <div class="slide-wrapper">
+    <div class="slide-actions">
+      <span class="slide-label-tag">4 — Zodiac Wheel</span>
+      <button class="download-btn" onclick="downloadSlide(3)">Save PNG</button>
+    </div>
+    <div class="slide" id="slide-3">
+      <div class="glow-top"></div>
+      <div class="slide-inner top">
+        <div class="label">Multiple Views</div>
+        <h2 class="headline" style="font-size: 48px;">
+          See your chart <em>your way</em>
+        </h2>
+        <p class="subline" style="font-size: 22px; max-width: 700px;">
+          Tree, zodiac wheel, constellation map, or sortable tables
+        </p>
+        <div class="img-drop" style="width: 900px; height: 700px; margin-top: 8px;" onclick="pickImage(this)">
+          <span class="icon">&#9788;</span>
+          <span class="tap-label">Tap to add zodiac wheel screenshot</span>
+          <span class="hint">from astrodig.com</span>
+        </div>
+      </div>
+      <div class="brand-bar"><span>astrodig.com</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 5: THE DIG ═══ -->
+  <div class="slide-wrapper">
+    <div class="slide-actions">
+      <span class="slide-label-tag">5 — The DIG</span>
+      <button class="download-btn" onclick="downloadSlide(4)">Save PNG</button>
+    </div>
+    <div class="slide" id="slide-4">
+      <div class="glow-top"></div>
+      <div class="slide-inner top">
+        <div class="label">The DIG</div>
+        <h2 class="headline" style="font-size: 48px;">
+          Your cosmic story, <em>told in slides</em>
+        </h2>
+        <p class="subline" style="font-size: 22px; max-width: 700px;">
+          A personalized astrological Wrapped for your whole crew
+        </p>
+        <div class="img-drop" style="width: 900px; height: 700px; margin-top: 8px;" onclick="pickImage(this)">
+          <span class="icon">&#10024;</span>
+          <span class="tap-label">Tap to add DIG screenshot</span>
+          <span class="hint">Cosmic DNA or Element Balance slide works best</span>
+        </div>
+      </div>
+      <div class="brand-bar"><span>astrodig.com</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 6: INSIGHTS ═══ -->
+  <div class="slide-wrapper">
+    <div class="slide-actions">
+      <span class="slide-label-tag">6 — Insights</span>
+      <button class="download-btn" onclick="downloadSlide(5)">Save PNG</button>
+    </div>
+    <div class="slide" id="slide-5">
+      <div class="glow-top"></div>
+      <div class="slide-inner top">
+        <div class="label">Insights</div>
+        <h2 class="headline" style="font-size: 48px;">
+          Patterns <em>you never noticed</em>
+        </h2>
+        <p class="subline" style="font-size: 22px; max-width: 700px;">
+          Shared signs, compatibility, element balance, and more
+        </p>
+        <div class="img-drop" style="width: 900px; height: 700px; margin-top: 8px;" onclick="pickImage(this)">
+          <span class="icon">&#9672;</span>
+          <span class="tap-label">Tap to add insights screenshot</span>
+          <span class="hint">Show 2-3 insight cards</span>
+        </div>
+      </div>
+      <div class="brand-bar"><span>astrodig.com</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 7: FREE VS CELESTIAL ═══ -->
+  <div class="slide-wrapper">
+    <div class="slide-actions">
+      <span class="slide-label-tag">7 — Pricing</span>
+      <button class="download-btn" onclick="downloadSlide(6)">Save PNG</button>
+    </div>
+    <div class="slide" id="slide-6">
+      <div class="glow-top"></div>
+      <div class="slide-inner">
+        <div class="label">What You Get</div>
+        <div class="divider"></div>
+        <div class="pricing-row" style="margin-top: 16px;">
+          <div class="pricing-col free">
+            <h3>FREE</h3>
+            <p class="price">forever</p>
+            <ul>
+              <li>Unlimited people</li>
+              <li>Tree view</li>
+              <li>Sun, moon + inner planets</li>
+              <li>Cloud save (up to 3 charts)</li>
+              <li>Share links</li>
+              <li>Tree PNG export</li>
+              <li>3 DIG slides</li>
+            </ul>
+          </div>
+          <div class="pricing-col celestial">
+            <h3>CELESTIAL</h3>
+            <p class="price">$9.99 one-time</p>
+            <ul>
+              <li>All 4 views</li>
+              <li>The complete DIG</li>
+              <li>All insight cards</li>
+              <li>Full compatibility report</li>
+              <li>Zodiac wheel export</li>
+              <li>Up to 50 saved charts</li>
+            </ul>
+          </div>
+        </div>
+        <p class="subline" style="font-size: 20px; margin-top: 8px;">No subscription. Pay once, yours forever.</p>
+      </div>
+      <div class="brand-bar"><span>astrodig.com</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 8: CTA ═══ -->
+  <div class="slide-wrapper">
+    <div class="slide-actions">
+      <span class="slide-label-tag">8 — CTA</span>
+      <button class="download-btn" onclick="downloadSlide(7)">Save PNG</button>
+    </div>
+    <div class="slide" id="slide-7">
+      <div class="photo-bg" id="photobg-7">
+        <span class="tap-label">Add a background photo with the button above</span>
+      </div>
+      <div class="photo-overlay"></div>
+      <div class="glow-top"></div>
+      <div class="glow-bottom"></div>
+      <button class="add-photo-btn" onclick="pickBgImage(7)">+ Add photo</button>
+      <div class="slide-inner">
+        <div class="label">Start Free</div>
+        <div class="divider"></div>
+        <h2 class="headline" style="font-size: 56px; max-width: 750px;">
+          Start mapping <em>your stars</em>
+        </h2>
+        <div class="cta-btn">ASTRODIG.COM</div>
+        <p class="subline" style="font-size: 22px; margin-top: 8px;">
+          Free to start. No app to download.<br>
+          Just open your browser and go.
+        </p>
+        <div class="divider-wide" style="margin-top: 24px;"></div>
+        <p style="color: #8878aa; font-size: 18px; letter-spacing: 0.06em; margin-top: 8px;">
+          made with love by @jupiterdigital
+        </p>
+      </div>
+      <div class="brand-bar"><span>astrodig.com</span></div>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- end .app-content -->
+
+<!-- Hidden file input -->
+<input type="file" id="fileInput" accept="image/*">
+
+<script>
+  // ── Auth ──
+  const AUTH_KEY = 'admin_authed';
+  const TOKEN_KEY = 'admin_token';
+
+  function checkAuth() {
+    if (sessionStorage.getItem(AUTH_KEY) === '1' && sessionStorage.getItem(TOKEN_KEY)) {
+      unlock();
+    }
+  }
+
+  async function doLogin() {
+    const pw = document.getElementById('authPassword').value;
+    const errEl = document.getElementById('authError');
+    if (!pw) { errEl.textContent = 'Enter password'; return; }
+    try {
+      const res = await fetch('/api/admin?action=login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw }),
+      });
+      const data = await res.json();
+      if (data.ok && data.token) {
+        sessionStorage.setItem(AUTH_KEY, '1');
+        sessionStorage.setItem(TOKEN_KEY, data.token);
+        unlock();
+      } else {
+        errEl.textContent = 'Wrong password';
+      }
+    } catch { errEl.textContent = 'Error — try again'; }
+  }
+
+  // Enter key to submit
+  document.getElementById('authPassword').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  function unlock() {
+    document.getElementById('authGate').classList.add('hidden');
+    document.getElementById('appContent').classList.add('visible');
+    initApp();
+  }
+
+  // Check on load (reuse existing admin session)
+  checkAuth();
+
+  function initApp() {
+  const container = document.getElementById('slidesContainer');
+  const slideCounter = document.getElementById('slideCounter');
+  const dotsEl = document.getElementById('dots');
+  const fileInput = document.getElementById('fileInput');
+  const slides = document.querySelectorAll('.slide');
+  const TOTAL = slides.length;
+  let activeTarget = null;
+
+  // Build dots
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    dotsEl.appendChild(d);
+  }
+  const dots = dotsEl.querySelectorAll('.dot');
+
+  // Scale slides to fit viewport
+  function scaleSlides() {
+    const wrappers = document.querySelectorAll('.slide-wrapper');
+    wrappers.forEach(w => {
+      const availH = w.clientHeight - 50; // space for label + button
+      const availW = w.clientWidth - 24;
+      const scaleW = availW / 1080;
+      const scaleH = availH / 1350;
+      const scale = Math.min(scaleW, scaleH, 1);
+      const slide = w.querySelector('.slide');
+      slide.style.transform = `scale(${scale})`;
+      slide.style.marginBottom = `-${1350 * (1 - scale)}px`;
+    });
+  }
+
+  scaleSlides();
+  window.addEventListener('resize', scaleSlides);
+
+  // Track current slide
+  container.addEventListener('scroll', () => {
+    const idx = Math.round(container.scrollLeft / container.clientWidth);
+    slideCounter.textContent = `${idx + 1} / ${TOTAL}`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+  });
+
+  // Image picker for screenshot slots
+  function pickImage(el) {
+    activeTarget = el;
+    activeBgSlide = null;
+    fileInput.click();
+  }
+
+  // Image picker for full-bleed background photos (slides 1 & 8)
+  let activeBgSlide = null;
+  function pickBgImage(slideIdx) {
+    activeBgSlide = slideIdx;
+    activeTarget = null;
+    fileInput.click();
+  }
+
+  fileInput.addEventListener('change', (e) => {
+    if (!e.target.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = document.createElement('img');
+      img.src = ev.target.result;
+
+      if (activeBgSlide !== null) {
+        // Background photo for slides 1 or 8
+        const bg = document.getElementById(`photobg-${activeBgSlide}`);
+        const existing = bg.querySelector('img');
+        if (existing) existing.remove();
+        bg.appendChild(img);
+        bg.classList.add('has-image');
+        // Update button text
+        const btn = bg.closest('.slide').querySelector('.add-photo-btn');
+        if (btn) { btn.textContent = 'Change photo'; btn.classList.add('has-image'); }
+        activeBgSlide = null;
+      } else if (activeTarget) {
+        // Screenshot slot
+        const existing = activeTarget.querySelector('img');
+        if (existing) existing.remove();
+        activeTarget.appendChild(img);
+        activeTarget.classList.add('has-image');
+        activeTarget = null;
+      }
+    };
+    reader.readAsDataURL(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  // Toast
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // Download single slide
+  async function downloadSlide(idx) {
+    const btn = document.querySelectorAll('.download-btn')[idx];
+    btn.classList.add('saving');
+    btn.textContent = 'Saving...';
+
+    const slide = document.getElementById(`slide-${idx}`);
+
+    // Temporarily remove transform for full-res capture
+    const origTransform = slide.style.transform;
+    const origMargin = slide.style.marginBottom;
+    slide.style.transform = 'none';
+    slide.style.marginBottom = '0';
+
+    try {
+      const canvas = await html2canvas(slide, {
+        width: 1080,
+        height: 1350,
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#09071a',
+      });
+
+      slide.style.transform = origTransform;
+      slide.style.marginBottom = origMargin;
+
+      // Use blob download (works in mobile Chrome/Safari)
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `astrodig-carousel-${idx + 1}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast(`Slide ${idx + 1} saved!`);
+      }, 'image/png');
+    } catch (err) {
+      slide.style.transform = origTransform;
+      slide.style.marginBottom = origMargin;
+      showToast('Error saving — try again');
+    }
+
+    btn.classList.remove('saving');
+    btn.textContent = 'Save PNG';
+  }
+
+  // Download all
+  async function downloadAll() {
+    const btn = document.querySelector('.nav-download-all');
+    btn.textContent = 'Saving...';
+    for (let i = 0; i < TOTAL; i++) {
+      await downloadSlide(i);
+      // Small delay between downloads so browser doesn't block them
+      await new Promise(r => setTimeout(r, 500));
+    }
+    btn.textContent = 'Save All';
+    showToast('All slides saved!');
+  }
+
+  // Make pickImage/pickBgImage available globally (called from onclick)
+  window.pickImage = pickImage;
+  window.pickBgImage = pickBgImage;
+  window.downloadSlide = downloadSlide;
+  window.downloadAll = downloadAll;
+  } // end initApp
+</script>
+
+</body>
+</html>

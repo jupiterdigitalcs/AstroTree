@@ -29,6 +29,29 @@ export default function AdminDashboard() {
         </label>
       </div>
 
+      <a
+        href="/carousel.html"
+        target="_blank"
+        rel="noopener"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.4rem',
+          padding: '0.4rem 0.9rem',
+          marginBottom: '0.6rem',
+          borderRadius: '8px',
+          background: 'rgba(201,168,76,0.1)',
+          border: '1px solid rgba(201,168,76,0.25)',
+          color: '#c9a84c',
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          letterSpacing: '0.06em',
+          textDecoration: 'none',
+        }}
+      >
+        IG Carousel Builder
+      </a>
+
       <AdminStatsPanel excludeOwner={excludeOwner} ownerEmail={OWNER_EMAIL} />
 
       <div className="admin-view-toggle">
