@@ -11,7 +11,7 @@ const SAMPLE_CHARTS = [
 ]
 import { isPaywallEnabled, getChartLimit } from '../utils/entitlements.js'
 
-export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout, onRename, onDuplicate, entitlements, onUpgrade, authUser, authLoading, onSignIn, onSignOut, refreshTick }) {
+export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud, onAddEmail, onGoToAbout, onRename, onDuplicate, entitlements, onUpgrade, authUser, authLoading, onSignIn, onSignOut, refreshTick, cloudLoading }) {
   const [charts,          setCharts]          = useState(() => loadCharts())
   const [publicCharts,    setPublicCharts]    = useState([])
   const [pendingDeleteId, setPendingDeleteId] = useState(null)
@@ -90,7 +90,11 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
           {entitlements?.tier === 'premium' && <span className="charts-celestial-badge">✦ Celestial</span>}
           <button type="button" className="charts-signout-btn" onClick={onSignOut}>Sign out</button>
         </div>
-      ) : !authLoading && onSignIn ? (
+      ) : authLoading ? (
+        <div className="charts-account-top charts-account-top--loading">
+          <span className="charts-account-hint">Signing in…</span>
+        </div>
+      ) : onSignIn ? (
         <div className="charts-account-top charts-account-top--unsigned">
           <button type="button" className="charts-signin-link" onClick={onSignIn}>Sign in</button>
           <span className="charts-account-hint">to sync charts &amp; unlock Celestial</span>
@@ -136,7 +140,11 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         )}
       </div>
 
-      {sorted.length > 0 ? (() => {
+      {(authLoading || cloudLoading) && sorted.length === 0 ? (
+        <div className="charts-loading">
+          <p className="charts-loading-text">Loading your charts…</p>
+        </div>
+      ) : sorted.length > 0 ? (() => {
         const chartLimit = entitlements && isPaywallEnabled(entitlements.config) && entitlements.tier !== 'premium'
           ? getChartLimit(entitlements.tier, entitlements.config)
           : Infinity

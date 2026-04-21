@@ -154,7 +154,7 @@ export default function App() {
   const panelOpen = activeTab !== 'tree' || !!editingNodeId
 
   const [chartRefreshTick, setChartRefreshTick] = useState(0)
-  const { syncStatus, syncChart, deleteFromCloud, entitlements, refreshEntitlements, refreshAfterAuth, resetEntitlements } = useCloudSync({
+  const { syncStatus, syncChart, deleteFromCloud, entitlements, refreshEntitlements, refreshAfterAuth, resetEntitlements, cloudLoading } = useCloudSync({
     onMergeCharts: () => setChartRefreshTick(t => t + 1),
     authUser,
   })
@@ -819,6 +819,7 @@ export default function App() {
               onSignIn={() => setShowEmailCapture(true)}
               onSignOut={handleSignOut}
               refreshTick={chartRefreshTick}
+              cloudLoading={cloudLoading}
             />
 
           /* ── About ──────────────────────────────────────────────────── */
@@ -1555,6 +1556,7 @@ export default function App() {
               onSignIn={() => setShowEmailCapture(true)}
               onSignOut={handleSignOut}
               refreshTick={chartRefreshTick}
+              cloudLoading={cloudLoading}
             />
           </BottomSheet>
 

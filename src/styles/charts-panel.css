@@ -64,6 +64,25 @@
   background: rgba(201,168,76,0.04);
   border-color: rgba(201,168,76,0.12);
 }
+.charts-account-top--loading {
+  background: rgba(201,168,76,0.04);
+  border-color: rgba(201,168,76,0.08);
+}
+.charts-loading {
+  text-align: center;
+  padding: 1.5rem 0.75rem;
+}
+.charts-loading-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  animation: charts-pulse 1.5s ease-in-out infinite;
+  margin: 0;
+}
+@keyframes charts-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
 
 .charts-celestial-badge {
   font-family: 'Cinzel', serif;
