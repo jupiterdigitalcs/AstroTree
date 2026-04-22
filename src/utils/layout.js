@@ -493,7 +493,7 @@ export function applyDagreLayout(nodes, edges, options = {}) {
     const isAutoCollapsed = childrenHidden && !isSelfCollapsed && !forceExpandedIds.has(node.id)
     return {
       ...node,
-      position: posMap[node.id] ?? node.position,
+      position: posMap[node.id] ?? { x: 0, y: 0 },
       hidden: hiddenIds.has(node.id),
       data: {
         ...node.data,
