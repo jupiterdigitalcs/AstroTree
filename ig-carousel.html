@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AstroDig IG Carousel</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Raleway', sans-serif;
+    background: #1a1238;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 60px;
+  }
+
+  .slide-label {
+    color: #8878aa;
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: -40px;
+  }
+
+  .slide {
+    width: 1080px;
+    height: 1350px;
+    background: #09071a;
+    color: #ede6ff;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  /* ── Shared textures ── */
+  .slide::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 15% 25%, rgba(201,168,76,0.3), transparent),
+      radial-gradient(1px 1px at 85% 15%, rgba(201,168,76,0.2), transparent),
+      radial-gradient(1px 1px at 45% 80%, rgba(212,160,188,0.2), transparent),
+      radial-gradient(1px 1px at 70% 60%, rgba(201,168,76,0.15), transparent),
+      radial-gradient(1px 1px at 25% 55%, rgba(160,130,220,0.2), transparent),
+      radial-gradient(1px 1px at 90% 85%, rgba(201,168,76,0.25), transparent),
+      radial-gradient(1px 1px at 55% 30%, rgba(212,160,188,0.15), transparent),
+      radial-gradient(1px 1px at 10% 90%, rgba(160,130,220,0.2), transparent),
+      radial-gradient(1.5px 1.5px at 30% 10%, rgba(201,168,76,0.35), transparent),
+      radial-gradient(1.5px 1.5px at 60% 95%, rgba(212,160,188,0.25), transparent),
+      radial-gradient(0.5px 0.5px at 50% 50%, rgba(201,168,76,0.2), transparent),
+      radial-gradient(0.5px 0.5px at 20% 70%, rgba(160,130,220,0.15), transparent),
+      radial-gradient(0.5px 0.5px at 80% 40%, rgba(212,160,188,0.1), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .slide > * { position: relative; z-index: 1; }
+
+  /* ── Glow effects ── */
+  .glow-top {
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.08) 0%, transparent 70%);
+    z-index: 0;
+  }
+
+  .glow-bottom {
+    position: absolute;
+    bottom: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(160,130,220,0.06) 0%, transparent 70%);
+    z-index: 0;
+  }
+
+  /* ── Typography ── */
+  .headline {
+    font-size: 64px;
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+    color: #ede6ff;
+  }
+
+  .headline em {
+    font-style: italic;
+    color: #c9a84c;
+    font-weight: 400;
+  }
+
+  .headline strong {
+    color: #c9a84c;
+    font-weight: 600;
+  }
+
+  .subline {
+    font-size: 28px;
+    font-weight: 400;
+    color: #b8aad4;
+    letter-spacing: 0.03em;
+    line-height: 1.5;
+  }
+
+  .label {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #c9a84c;
+  }
+
+  .body-text {
+    font-size: 26px;
+    font-weight: 400;
+    color: #b8aad4;
+    line-height: 1.6;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── Decorative line ── */
+  .divider {
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.5), transparent);
+  }
+
+  .divider-wide {
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent);
+  }
+
+  /* ── Screenshot placeholder ── */
+  .screenshot-placeholder {
+    width: 820px;
+    height: 640px;
+    border-radius: 20px;
+    border: 2px solid rgba(160,130,220,0.18);
+    background: linear-gradient(135deg, #110d28 0%, #1a1238 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: #8878aa;
+    font-size: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  .screenshot-placeholder .icon {
+    font-size: 48px;
+    opacity: 0.4;
+  }
+
+  /* ── Pricing table ── */
+  .pricing-row {
+    display: flex;
+    gap: 40px;
+    width: 900px;
+  }
+
+  .pricing-col {
+    flex: 1;
+    border-radius: 20px;
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .pricing-col.free {
+    background: rgba(160,130,220,0.06);
+    border: 1px solid rgba(160,130,220,0.15);
+  }
+
+  .pricing-col.celestial {
+    background: linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(201,168,76,0.04) 100%);
+    border: 1px solid rgba(201,168,76,0.3);
+  }
+
+  .pricing-col h3 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+  }
+
+  .pricing-col.free h3 { color: #b8aad4; }
+  .pricing-col.celestial h3 { color: #c9a84c; }
+
+  .pricing-col .price {
+    font-size: 22px;
+    font-weight: 400;
+    color: #8878aa;
+    letter-spacing: 0.06em;
+  }
+
+  .pricing-col.celestial .price { color: #e6c76e; }
+
+  .pricing-col ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .pricing-col ul li {
+    font-size: 22px;
+    color: #b8aad4;
+    letter-spacing: 0.03em;
+    padding-left: 32px;
+    position: relative;
+  }
+
+  .pricing-col ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .pricing-col.free ul li::before {
+    background: rgba(160,130,220,0.4);
+  }
+
+  .pricing-col.celestial ul li::before {
+    background: #c9a84c;
+  }
+
+  .pricing-col.celestial ul li {
+    color: #ede6ff;
+  }
+
+  /* ── Brand bar ── */
+  .brand-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: linear-gradient(180deg, transparent, rgba(9,7,26,0.9));
+    z-index: 2;
+  }
+
+  .brand-bar span {
+    font-size: 18px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(201,168,76,0.5);
+    font-weight: 500;
+  }
+
+  /* ── Photo placeholder ── */
+  .photo-placeholder {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #110d28, #1a1238);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8878aa;
+    font-size: 18px;
+    letter-spacing: 0.06em;
+    z-index: 0;
+  }
+
+  .photo-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg,
+      rgba(9,7,26,0.3) 0%,
+      rgba(9,7,26,0.1) 30%,
+      rgba(9,7,26,0.5) 65%,
+      rgba(9,7,26,0.95) 100%
+    );
+    z-index: 0;
+  }
+
+  /* ── Bullet features ── */
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    width: 800px;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .feature-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .feature-text h4 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #ede6ff;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  .feature-text p {
+    font-size: 20px;
+    color: #8878aa;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── CTA button ── */
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 24px 64px;
+    border-radius: 60px;
+    background: linear-gradient(135deg, #c9a84c, #d4b057);
+    color: #09071a;
+    font-family: 'Raleway', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    box-shadow: 0 0 40px rgba(201,168,76,0.25);
+  }
+
+  /* Slide-specific layout helpers */
+  .slide-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px;
+    gap: 40px;
+    text-align: center;
+  }
+
+  .slide-inner.top {
+    justify-content: flex-start;
+    padding-top: 120px;
+  }
+
+  /* ── Mobile responsive: scale slides to fit viewport ── */
+  @media (max-width: 1120px) {
+    .slide {
+      width: 100vw;
+      height: calc(100vw * 1.25);
+      /* 1080:1350 = 1:1.25 aspect ratio */
+    }
+    .slide-label { font-size: 11px; }
+    body { padding: 20px 0; gap: 30px; }
+
+    /* Scale inner content proportionally */
+    .slide-inner { padding: 6vw; gap: 3vw; }
+    .slide-inner.top { padding-top: 9vw; }
+    .headline { font-size: clamp(24px, 5.5vw, 64px); }
+    .subline { font-size: clamp(14px, 2.4vw, 28px); }
+    .label { font-size: clamp(11px, 1.6vw, 18px); }
+    .body-text { font-size: clamp(14px, 2.2vw, 26px); }
+    .feature-list { width: 90%; }
+    .feature-icon { width: clamp(28px, 4.5vw, 48px); height: clamp(28px, 4.5vw, 48px); font-size: clamp(14px, 2vw, 22px); border-radius: 8px; }
+    .feature-text h4 { font-size: clamp(14px, 2.2vw, 24px); }
+    .feature-text p { font-size: clamp(12px, 1.8vw, 20px); }
+    .feature-item { gap: clamp(10px, 1.8vw, 20px); }
+    .screenshot-placeholder { width: 85%; height: clamp(200px, 50vw, 640px); font-size: clamp(12px, 1.8vw, 20px); border-radius: 12px; }
+    .screenshot-placeholder .icon { font-size: clamp(24px, 4vw, 48px); }
+    .pricing-row { width: 90%; gap: clamp(12px, 3vw, 40px); flex-direction: column; }
+    .pricing-col { padding: clamp(20px, 4vw, 48px) clamp(16px, 3.5vw, 40px); border-radius: 14px; }
+    .pricing-col h3 { font-size: clamp(18px, 2.6vw, 28px); }
+    .pricing-col .price { font-size: clamp(14px, 2vw, 22px); }
+    .pricing-col ul li { font-size: clamp(14px, 2vw, 22px); padding-left: 20px; }
+    .pricing-col ul { gap: 10px; }
+    .cta-btn { padding: clamp(14px, 2.2vw, 24px) clamp(32px, 6vw, 64px); font-size: clamp(16px, 2.4vw, 26px); border-radius: 40px; }
+    .brand-bar { height: clamp(36px, 6vw, 70px); }
+    .brand-bar span { font-size: clamp(11px, 1.6vw, 18px); }
+    .glow-top { width: 60%; height: 40%; top: -15%; }
+    .glow-bottom { width: 50%; height: 30%; bottom: -10%; }
+    .divider { width: 50px; }
+    .divider-wide { width: 120px; }
+  }
+
+  /* ── Export controls ── */
+  .export-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(9,7,26,0.95);
+    border-top: 1px solid rgba(201,168,76,0.2);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+
+  .export-bar button {
+    background: linear-gradient(135deg, #7a5018, #c9a84c);
+    border: none;
+    border-radius: 8px;
+    color: #1a0f02;
+    font-family: 'Raleway', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+
+  .export-bar button:active { transform: scale(0.97); }
+
+  .export-bar .slide-nav {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .export-bar .slide-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(201,168,76,0.25);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .export-bar .slide-dot.active {
+    background: #c9a84c;
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 1: COVER / HOOK                                                  -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<p class="slide-label">Slide 1 — Cover</p>
+<div class="slide">
+  <div class="photo-placeholder">[ Optional: lifestyle photo of friends/family behind text ]</div>
+  <div class="photo-overlay"></div>
+  <div class="glow-top"></div>
+  <div class="slide-inner" style="justify-content: flex-end; padding-bottom: 160px;">
+    <div class="label">Introducing</div>
+    <div class="divider"></div>
+    <h1 class="headline" style="font-size: 58px; max-width: 800px;">
+      What if you could see the <em>cosmic blueprint</em> of everyone you love?
+    </h1>
+    <div class="divider-wide" style="margin-top: 16px;"></div>
+    <p style="font-size: 32px; color: #c9a84c; font-weight: 600; letter-spacing: 0.1em; margin-top: 8px;">
+      ASTRODIG
+    </p>
+    <p class="subline" style="font-size: 22px;">astrodig.com</p>
+  </div>
+  <div class="brand-bar"><span>astrodig.com</span></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 2: WHAT IT IS                                                    -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<p class="slide-label">Slide 2 — What It Is</p>
+<div class="slide">
+  <div class="glow-top"></div>
+  <div class="glow-bottom"></div>
+  <div class="slide-inner">
+    <div class="label">What is AstroDig?</div>
+    <div class="divider"></div>
+    <h2 class="headline" style="font-size: 52px; max-width: 800px;">
+      Map the <em>stars</em> of your inner circle
+    </h2>
+    <div class="feature-list" style="margin-top: 24px;">
+      <div class="feature-item">
+        <div class="feature-icon">+</div>
+        <div class="feature-text">
+          <h4>Add your people</h4>
+          <p>Family, friends, coworkers — anyone with a birthday</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#9790;</div>
+        <div class="feature-text">
+          <h4>See their full chart</h4>
+          <p>Sun sign, moon sign, Mercury, Venus, Mars — calculated instantly</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#10038;</div>
+        <div class="feature-text">
+          <h4>Discover hidden patterns</h4>
+          <p>Shared signs, element balance, compatibility, generational connections</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="brand-bar"><span>astrodig.com</span></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 3: TREE VIEW SCREENSHOT                                          -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<p class="slide-label">Slide 3 — Tree View Screenshot</p>
+<div class="slide">
+  <div class="glow-top"></div>
+  <div class="slide-inner top">
+    <div class="label">Tree View</div>
+    <h2 class="headline" style="font-size: 48px;">
+      Your people, <em>beautifully connected</em>
+    </h2>
+    <p class="subline" style="font-size: 22px; max-width: 700px;">
+      Build your cosmic family tree with birth charts for everyone
+    </p>
+    <div class="screenshot-placeholder" style="margin-top: 16px;">
+      <div class="icon">&#9734;</div>
+      <div>[ Drop tree view screenshot here ]</div>
+      <div style="font-size: 16px; opacity: 0.6;">820 x 640px recommended</div>
+    </div>
+  </div>
+  <div class="brand-bar"><span>astrodig.com</span></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 4: ZODIAC WHEEL SCREENSHOT                                       -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<p class="slide-label">Slide 4 — Zodiac Wheel Screenshot</p>
+<div class="slide">
+  <div class="glow-top"></div>
+  <div class="slide-inner top">
+    <div class="label">Multiple Views</div>
+    <h2 class="headline" style="font-size: 48px;">
+      See your chart <em>your way</em>
+    </h2>
+    <p class="subline" style="font-size: 22px; max-width: 700px;">
+      Tree, zodiac wheel, constellation map, or sortable tables
+    </p>
+    <div class="screenshot-placeholder" style="margin-top: 16px;">
+      <div class="icon">&#9788;</div>
+      <div>[ Drop zodiac wheel screenshot here ]</div>
+      <div style="font-size: 16px; opacity: 0.6;">820 x 640px recommended</div>
+    </div>
+  </div>
+  <div class="brand-bar"><span>astrodig.com</span></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 5: THE DIG SCREENSHOT                                            -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<p class="slide-label">Slide 5 — The DIG Screenshot</p>
+<div class="slide">
+  <div class="glow-top"></div>
+  <div class="slide-inner top">
+    <div class="label">The DIG</div>
+    <h2 class="headline" style="font-size: 48px;">
+      Your cosmic story, <em>told in slides</em>
+    </h2>
+    <p class="subline" style="font-size: 22px; max-width: 700px;">
+      A personalized astrological Wrapped for your whole crew
+    </p>
+    <div class="screenshot-placeholder" style="margin-top: 16px;">
+      <div class="icon">&#10024;</div>
+      <div>[ Drop DIG slide screenshot here ]</div>
+      <div style="font-size: 16px; opacity: 0.6;">820 x 640px recommended</div>
+    </div>
+  </div>
+  <div class="brand-bar"><span>astrodig.com</span></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 6: INSIGHTS SCREENSHOT                                           -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<p class="slide-label">Slide 6 — Insights Screenshot</p>
+<div class="slide">
+  <div class="glow-top"></div>
+  <div class="slide-inner top">
+    <div class="label">Insights</div>
+    <h2 class="headline" style="font-size: 48px;">
+      Patterns <em>you never noticed</em>
+    </h2>
+    <p class="subline" style="font-size: 22px; max-width: 700px;">
+      Shared signs, compatibility, element balance, and more
+    </p>
+    <div class="screenshot-placeholder" style="margin-top: 16px;">
+      <div class="icon">&#9672;</div>
+      <div>[ Drop insights panel screenshot here ]</div>
+      <div style="font-size: 16px; opacity: 0.6;">820 x 640px recommended</div>
+    </div>
+  </div>
+  <div class="brand-bar"><span>astrodig.com</span></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 7: FREE VS CELESTIAL                                             -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<p class="slide-label">Slide 7 — Free vs Celestial</p>
+<div class="slide">
+  <div class="glow-top"></div>
+  <div class="slide-inner">
+    <div class="label">What You Get</div>
+    <div class="divider"></div>
+    <div class="pricing-row" style="margin-top: 16px;">
+      <div class="pricing-col free">
+        <h3>FREE</h3>
+        <p class="price">forever</p>
+        <ul>
+          <li>Unlimited people</li>
+          <li>Tree view</li>
+          <li>Sun signs + elements</li>
+          <li>Cloud save</li>
+          <li>Share links</li>
+          <li>PNG export</li>
+          <li>3 DIG slides</li>
+        </ul>
+      </div>
+      <div class="pricing-col celestial">
+        <h3>CELESTIAL</h3>
+        <p class="price">$9.99 one-time</p>
+        <ul>
+          <li>All 4 views</li>
+          <li>Full birth charts</li>
+          <li>The complete DIG</li>
+          <li>Full compatibility</li>
+          <li>All insight cards</li>
+          <li>PDF export</li>
+          <li>Up to 50 charts</li>
+        </ul>
+      </div>
+    </div>
+    <p class="subline" style="font-size: 20px; margin-top: 8px;">No subscription. Pay once, yours forever.</p>
+  </div>
+  <div class="brand-bar"><span>astrodig.com</span></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 8: CTA                                                           -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<p class="slide-label">Slide 8 — CTA</p>
+<div class="slide">
+  <div class="photo-placeholder">[ Optional: lifestyle photo — night sky, friend group, etc. ]</div>
+  <div class="photo-overlay"></div>
+  <div class="glow-top"></div>
+  <div class="glow-bottom"></div>
+  <div class="slide-inner">
+    <div class="label">Start Free</div>
+    <div class="divider"></div>
+    <h2 class="headline" style="font-size: 56px; max-width: 750px;">
+      Start mapping <em>your stars</em>
+    </h2>
+    <div class="cta-btn">ASTRODIG.COM</div>
+    <p class="subline" style="font-size: 22px; margin-top: 8px;">
+      Free to start. No app to download.<br>
+      Just open your browser and go.
+    </p>
+    <div class="divider-wide" style="margin-top: 24px;"></div>
+    <p style="color: #8878aa; font-size: 18px; letter-spacing: 0.06em; margin-top: 8px;">
+      made with love by @jupiterdigital
+    </p>
+  </div>
+  <div class="brand-bar"><span>astrodig.com</span></div>
+</div>
+
+<div class="export-bar">
+  <div class="slide-nav" id="slideNav"></div>
+  <button onclick="exportSlide()">Save This Slide</button>
+  <button onclick="exportAll()">Save All</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+  const slides = document.querySelectorAll('.slide')
+  const nav = document.getElementById('slideNav')
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+  // Build dot navigation
+  slides.forEach((_, i) => {
+    const dot = document.createElement('button')
+    dot.className = 'slide-dot'
+    dot.title = `Slide ${i + 1}`
+    dot.onclick = () => slides[i].scrollIntoView({ behavior: 'smooth', block: 'center' })
+    nav.appendChild(dot)
+  })
+
+  // Track which slide is visible
+  let activeSlide = 0
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        activeSlide = [...slides].indexOf(entry.target)
+        nav.querySelectorAll('.slide-dot').forEach((d, i) => d.classList.toggle('active', i === activeSlide))
+      }
+    })
+  }, { threshold: 0.5 })
+  slides.forEach(s => observer.observe(s))
+
+  async function renderSlide(slide) {
+    // Temporarily force exact IG dimensions for export
+    const origW = slide.style.width
+    const origH = slide.style.height
+    slide.style.width = '1080px'
+    slide.style.height = '1350px'
+
+    const canvas = await html2canvas(slide, {
+      width: 1080,
+      height: 1350,
+      scale: 1,
+      useCORS: true,
+      backgroundColor: '#09071a',
+    })
+
+    // Restore responsive size
+    slide.style.width = origW
+    slide.style.height = origH
+
+    return canvas
+  }
+
+  async function shareOrDownload(canvas, filename) {
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'))
+    const file = new File([blob], filename, { type: 'image/png' })
+
+    // Mobile: use native share sheet
+    if (isMobile && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file] })
+        return
+      } catch (e) {
+        if (e.name === 'AbortError') return // user cancelled
+      }
+    }
+
+    // Desktop fallback: download
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function exportSlide() {
+    const btn = event.target
+    btn.textContent = 'Rendering...'
+    btn.disabled = true
+    try {
+      const canvas = await renderSlide(slides[activeSlide])
+      await shareOrDownload(canvas, `astrodig-slide-${activeSlide + 1}.png`)
+    } finally {
+      btn.textContent = 'Save This Slide'
+      btn.disabled = false
+    }
+  }
+
+  async function exportAll() {
+    const btn = event.target
+    btn.disabled = true
+    for (let i = 0; i < slides.length; i++) {
+      btn.textContent = `Saving ${i + 1}/${slides.length}...`
+      const canvas = await renderSlide(slides[i])
+      await shareOrDownload(canvas, `astrodig-slide-${i + 1}.png`)
+      // Small delay between shares so iOS doesn't choke
+      if (isMobile && i < slides.length - 1) await new Promise(r => setTimeout(r, 500))
+    }
+    btn.textContent = 'Save All'
+    btn.disabled = false
+  }
+</script>
+
+</body>
+</html>
