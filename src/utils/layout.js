@@ -24,10 +24,10 @@ export function applyDagreLayout(nodes, edges, options = {}) {
   const NODE_HEIGHT = compact ? 120 : 165
   const SPOUSE_GAP  = compact ? 185 : 270
   const MIN_GAP_X   = NODE_WIDTH + (compact ? 25 : 35)
-  const GEN_GAP     = compact ? 80 : 120
-  const UNIT_GAP    = compact ? 40 : 60
-  const DAGRE_NSEP  = compact ? 70 : 110
-  const DAGRE_RSEP  = compact ? 100 : 140
+  const GEN_GAP     = compact ? 110 : 120
+  const UNIT_GAP    = compact ? 50 : 60
+  const DAGRE_NSEP  = compact ? 90 : 110
+  const DAGRE_RSEP  = compact ? 120 : 140
 
   // ── Build relationship maps ─────────────────────────────────────────────
   const parentChildEdges = edges.filter(e => {

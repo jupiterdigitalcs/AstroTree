@@ -137,8 +137,8 @@ export function useTreeState({
           }
         }
 
-        // TB mode: spouse edges use side handles (existing behavior)
-        if (!isSpouse) return edge
+        // TB mode: parent-child edges use default top/bottom handles with smoothstep
+        if (!isSpouse) return { ...edge, type: 'smoothstep' }
         const src = nodes.find(n => n.id === edge.source)
         const tgt = nodes.find(n => n.id === edge.target)
         if (!src || !tgt) return edge
