@@ -298,6 +298,37 @@
 
   .photo-bg.has-image .tap-label { display: none; }
 
+  /* ── Square photo (slide 1 cover) ── */
+  .cover-photo {
+    width: 500px;
+    height: 500px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #110d28, #1a1238);
+    border: 1px solid rgba(160,130,220,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .cover-photo .tap-label {
+    color: #8878aa;
+    font-size: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  .cover-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .cover-photo.has-image .tap-label { display: none; }
+
   /* Floating button to add bg photo (since slide-inner covers the photo-bg) */
   .add-photo-btn {
     position: absolute;
@@ -667,13 +698,11 @@
       <button class="download-btn" onclick="downloadSlide(0)">Save PNG</button>
     </div>
     <div class="slide" id="slide-0">
-      <div class="photo-bg" id="photobg-0">
-        <span class="tap-label">Add a background photo with the button above</span>
-      </div>
-      <div class="photo-overlay"></div>
       <div class="glow-top"></div>
-      <button class="add-photo-btn" onclick="pickBgImage(0)">+ Add photo</button>
-      <div class="slide-inner" style="justify-content: flex-end; padding-bottom: 160px;">
+      <div class="slide-inner" style="justify-content: flex-start; padding-top: 60px; gap: 32px;">
+        <div class="cover-photo" id="photobg-0" onclick="pickBgImage(0)">
+          <span class="tap-label">+ Add photo</span>
+        </div>
         <div class="label">Introducing</div>
         <div class="divider"></div>
         <h1 class="headline" style="font-size: 58px; max-width: 800px;">
@@ -1030,6 +1059,31 @@
     fileInput.click();
   }
 
+  // Apply cover-fit via inline styles so html2canvas renders correctly
+  // (html2canvas ignores object-fit: cover)
+  function applyCoverFit(img, container) {
+    img.onload = () => {
+      const cw = container.offsetWidth || 1080;
+      const ch = container.offsetHeight || 1350;
+      const iw = img.naturalWidth;
+      const ih = img.naturalHeight;
+      const scale = Math.max(cw / iw, ch / ih);
+      const w = Math.round(iw * scale);
+      const h = Math.round(ih * scale);
+      Object.assign(img.style, {
+        position: 'absolute',
+        width: w + 'px',
+        height: h + 'px',
+        left: Math.round((cw - w) / 2) + 'px',
+        top: Math.round((ch - h) / 2) + 'px',
+        objectFit: 'none',
+        maxWidth: 'none',
+      });
+    };
+    // If already loaded (cached), trigger immediately
+    if (img.complete && img.naturalWidth) img.onload();
+  }
+
   fileInput.addEventListener('change', (e) => {
     if (!e.target.files[0]) return;
     const reader = new FileReader();
@@ -1044,6 +1098,7 @@
         if (existing) existing.remove();
         bg.appendChild(img);
         bg.classList.add('has-image');
+        applyCoverFit(img, bg);
         // Update button text
         const btn = bg.closest('.slide').querySelector('.add-photo-btn');
         if (btn) { btn.textContent = 'Change photo'; btn.classList.add('has-image'); }
@@ -1054,6 +1109,7 @@
         if (existing) existing.remove();
         activeTarget.appendChild(img);
         activeTarget.classList.add('has-image');
+        applyCoverFit(img, activeTarget);
         activeTarget = null;
       }
     };
