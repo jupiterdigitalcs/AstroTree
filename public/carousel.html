@@ -299,6 +299,19 @@
   .photo-bg.has-image .tap-label { display: none; }
 
   /* ── Square photo (slide 1 cover) ── */
+  /* ── Text backing boxes (readable over photos) ── */
+  .text-box {
+    background: rgba(9,7,26,0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 14px;
+    padding: 12px 28px;
+  }
+
+  .text-box--wide {
+    padding: 20px 36px;
+  }
+
   .cover-photo {
     width: 500px;
     height: 500px;
@@ -698,19 +711,25 @@
       <button class="download-btn" onclick="downloadSlide(0)">Save PNG</button>
     </div>
     <div class="slide" id="slide-0">
+      <div class="photo-bg" id="photobg-0">
+        <span class="tap-label">Add a background photo with the button above</span>
+      </div>
+      <div class="photo-overlay"></div>
       <div class="glow-top"></div>
-      <div class="slide-inner" style="justify-content: flex-start; padding-top: 60px; gap: 32px;">
-        <div class="cover-photo" id="photobg-0" onclick="pickBgImage(0)">
-          <span class="tap-label">+ Add photo</span>
-        </div>
-        <div class="label">Introducing</div>
+      <button class="add-photo-btn" onclick="pickBgImage(0)">+ Add photo</button>
+      <div class="slide-inner" style="justify-content: flex-end; padding-bottom: 160px;">
+        <div class="text-box"><div class="label">Introducing</div></div>
         <div class="divider"></div>
-        <h1 class="headline" style="font-size: 58px; max-width: 800px;">
-          There's a reason your family is <em>like that.</em>
-        </h1>
+        <div class="text-box text-box--wide">
+          <h1 class="headline" style="font-size: 58px; max-width: 800px;">
+            There's a reason your family is <em>like that.</em>
+          </h1>
+        </div>
         <div class="divider-wide" style="margin-top: 16px;"></div>
-        <p style="font-size: 32px; color: #c9a84c; font-weight: 600; letter-spacing: 0.1em; margin-top: 8px;">ASTRODIG</p>
-        <p class="subline" style="font-size: 22px;">astrodig.com</p>
+        <div class="text-box">
+          <p style="font-size: 32px; color: #c9a84c; font-weight: 600; letter-spacing: 0.1em;">ASTRODIG</p>
+        </div>
+        <div class="text-box"><p class="subline" style="font-size: 22px;">astrodig.com</p></div>
       </div>
       <div class="brand-bar"><span>astrodig.com</span></div>
     </div>
