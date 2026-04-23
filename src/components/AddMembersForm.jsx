@@ -1,25 +1,56 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { DateInput } from './DateInput.jsx'
 
 
-const makeRows = (n) => Array.from({ length: n }, (_, i) => ({ id: i + 1, name: '', birthdate: '' }))
+const makeRow = (id, defaultRelatedTo) => ({ id, name: '', birthdate: '', relatedTo: defaultRelatedTo || '', relationType: 'child' })
+const makeRows = (n, defaultRelatedTo) => Array.from({ length: n }, (_, i) => makeRow(i + 1, defaultRelatedTo))
 
-export default function AddMembersForm({ onAdd, initialRows = 2 }) {
-  const [rows,       setRows]       = useState(() => makeRows(initialRows))
+export default function AddMembersForm({ onAdd, initialRows = 2, existingNodes = [], existingEdges = [] }) {
+  const defaultRelatedTo = existingNodes.length > 0 ? existingNodes[0].id : ''
+  const [rows,       setRows]       = useState(() => makeRows(initialRows, defaultRelatedTo))
   const [rowCounter, setRowCounter] = useState(initialRows + 1)
   const [error,      setError]      = useState('')
-  // touched tracks which fields the user has blurred on each row
   const [touched,    setTouched]    = useState({})
   const formRef = useRef(null)
+
+  const hasExisting = existingNodes.length > 0
+
+  // Build smart relationship types based on who the new person is being related to
+  function getRelTypesFor(relatedToId) {
+    if (!relatedToId) return []
+    const hasPartner = existingEdges.some(e =>
+      e.data?.relationType === 'spouse' && (e.source === relatedToId || e.target === relatedToId)
+    )
+    const parentCount = existingEdges.filter(e =>
+      e.data?.relationType === 'parent-child' && e.target === relatedToId
+    ).length
+
+    const family = []
+    family.push({ value: 'child', label: 'Child' })
+    if (parentCount < 2) family.push({ value: 'parent', label: 'Parent' })
+    family.push({ value: 'sibling', label: 'Sibling' })
+    if (!hasPartner) family.push({ value: 'spouse', label: 'Partner' })
+
+    const other = []
+    if (hasPartner) other.push({ value: 'spouse', label: 'Partner' })
+    other.push({ value: 'step-parent', label: 'Step-Parent' })
+    other.push({ value: 'step-child', label: 'Step-Child' })
+    other.push({ value: 'friend', label: 'Friend' })
+    other.push({ value: 'coworker', label: 'Coworker' })
+
+    if (other.length > 0) {
+      return [...family, { value: '_sep', separator: true }, ...other]
+    }
+    return family
+  }
 
   function markTouched(id, field) {
     setTouched(prev => ({ ...prev, [id]: { ...prev[id], [field]: true } }))
   }
 
   function addRow() {
-    setRows(prev => [...prev, { id: rowCounter, name: '', birthdate: '' }])
+    setRows(prev => [...prev, makeRow(rowCounter, defaultRelatedTo)])
     setRowCounter(c => c + 1)
-    // Scroll the submit button into view so the user can see the new row + bottom
     setTimeout(() => {
       const btn = formRef.current?.querySelector('.add-btn')
       btn?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
@@ -39,12 +70,18 @@ export default function AddMembersForm({ onAdd, initialRows = 2 }) {
     const valid = rows.filter(r => r.name.trim() && r.birthdate)
     if (!valid.length) { setError('Fill in at least one name and birthdate.'); return }
 
+    const memberRelationships = valid.map(r => {
+      if (!r.relatedTo) return null
+      return { relatedTo: r.relatedTo, relationType: r.relationType }
+    })
+
     onAdd({
       members: valid.map(r => ({ name: r.name.trim(), birthdate: r.birthdate, birthTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone })),
       relationships: {},
+      memberRelationships,
     })
 
-    setRows(makeRows(initialRows))
+    setRows(makeRows(initialRows, defaultRelatedTo))
     setRowCounter(initialRows + 1)
     setError('')
     setTouched({})
@@ -53,9 +90,15 @@ export default function AddMembersForm({ onAdd, initialRows = 2 }) {
   const validCount   = rows.filter(r => r.name.trim() && r.birthdate).length
   const namedNoDate  = rows.filter(r => r.name.trim() && !r.birthdate).length
 
+  // Find the name of the related-to person for display
+  function relatedName(nodeId) {
+    const n = existingNodes.find(x => x.id === nodeId)
+    return n?.data?.name || ''
+  }
+
   return (
     <form className="add-form" ref={formRef} onSubmit={handleSubmit}>
-      <h2 className="form-title">Add Family Members</h2>
+      <h2 className="form-title">{hasExisting ? 'Add More People' : 'Add Family Members'}</h2>
 
       <div className="member-rows">
         {rows.map((row, idx) => {
@@ -86,7 +129,6 @@ export default function AddMembersForm({ onAdd, initialRows = 2 }) {
               onBlur={() => markTouched(row.id, 'birthdate')}
               hasError={dateError}
               onComplete={() => {
-                // Focus next row's name input if one exists
                 const nextRow = rows[idx + 1]
                 if (nextRow) {
                   const el = document.querySelector(`.member-row:nth-child(${idx + 2}) input[type="text"]`)
@@ -103,6 +145,64 @@ export default function AddMembersForm({ onAdd, initialRows = 2 }) {
               tabIndex={-1}
               aria-label="Remove"
             >×</button>
+
+            {hasExisting && (
+              <div className="row-relationship">
+                <div className="row-rel-pills">
+                  {getRelTypesFor(row.relatedTo).map(t =>
+                    t.separator ? (
+                      <span key={t.value} className="row-rel-sep" />
+                    ) : (
+                      <button
+                        key={t.value}
+                        type="button"
+                        className={`row-rel-pill${row.relationType === t.value ? ' row-rel-pill--active' : ''}`}
+                        onClick={() => updateRow(row.id, 'relationType', t.value)}
+                      >{t.label}</button>
+                    )
+                  )}
+                </div>
+                <div className="row-rel-target">
+                  <span className="row-rel-of">of</span>
+                  {existingNodes.length <= 6 ? (
+                    <div className="row-rel-people-pills">
+                      {existingNodes.map(n => (
+                        <button
+                          key={n.id}
+                          type="button"
+                          className={`row-rel-person-pill${row.relatedTo === n.id ? ' row-rel-person-pill--active' : ''}`}
+                          onClick={() => updateRow(row.id, 'relatedTo', n.id)}
+                        >
+                          <span className="row-rel-person-symbol">{n.data.symbol}</span>
+                          {n.data.name}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <button type="button" className="row-rel-select-btn" onClick={() => {
+                      // Cycle through a simple dropdown approach for 7+ people
+                      const el = formRef.current?.querySelector(`[data-rel-select="${row.id}"]`)
+                      el?.showPicker?.() || el?.focus()
+                    }}>
+                      <span className="row-rel-select-value">
+                        {row.relatedTo ? `${relatedName(row.relatedTo)}` : '— select —'}
+                      </span>
+                      <span className="row-rel-select-arrow">▾</span>
+                      <select
+                        data-rel-select={row.id}
+                        className="row-rel-select-hidden"
+                        value={row.relatedTo}
+                        onChange={e => updateRow(row.id, 'relatedTo', e.target.value)}
+                      >
+                        {existingNodes.map(n => (
+                          <option key={n.id} value={n.id}>{n.data.name}</option>
+                        ))}
+                      </select>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           )
         })}

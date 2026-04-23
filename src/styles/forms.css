@@ -200,6 +200,146 @@
 
 .member-row.row-ready { border-color: rgba(126,200,69,0.35); }
 
+/* ─────────────── Inline relationship picker (add-more mode) ────────────── */
+.row-relationship {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.4rem 0.5rem 0.15rem;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  margin-top: 0.1rem;
+}
+
+.row-rel-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.row-rel-pill {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.45rem;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.row-rel-pill:hover { border-color: var(--gold-dim); color: var(--text-soft); }
+
+.row-rel-pill--active {
+  background: rgba(201,168,76,0.15);
+  border-color: rgba(201,168,76,0.5);
+  color: var(--gold);
+}
+
+.row-rel-sep {
+  width: 1px;
+  height: 0.9rem;
+  background: rgba(255,255,255,0.1);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.row-rel-target {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.row-rel-of {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Person pills (≤6 people) */
+.row-rel-people-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.row-rel-person-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.4rem;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.row-rel-person-pill:hover { border-color: rgba(255,255,255,0.25); color: var(--text-soft); }
+
+.row-rel-person-pill--active {
+  background: rgba(201,168,76,0.12);
+  border-color: rgba(201,168,76,0.45);
+  color: var(--gold);
+}
+
+.row-rel-person-symbol {
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+/* Styled select button (7+ people) */
+.row-rel-select-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0.28rem 0.45rem;
+  color: var(--text-soft);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  flex: 1;
+  min-width: 0;
+}
+
+.row-rel-select-btn:hover {
+  border-color: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.06);
+}
+
+.row-rel-select-value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.row-rel-select-arrow {
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+
+.row-rel-select-hidden {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
 /* Red validation highlight — applied after blur on invalid fields */
 .row-input.field-error {
   border-color: rgba(220,60,60,0.7) !important;

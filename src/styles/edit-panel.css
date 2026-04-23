@@ -777,6 +777,14 @@
 }
 .conn-type-cancel-pill:hover { color: var(--text); }
 
+.conn-type-sep {
+  width: 1px;
+  height: 1rem;
+  background: rgba(255,255,255,0.1);
+  flex-shrink: 0;
+  align-self: center;
+}
+
 /* ── parent-select / parent-checkbox ──────────────────────────────────────── */
 .parent-select { display: flex; flex-direction: column; gap: 0.4rem; }
 .parent-select-label { font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.11em; color: var(--text-muted); }

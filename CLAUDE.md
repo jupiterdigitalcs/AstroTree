@@ -68,7 +68,7 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
 - Prefer readable code over clever code — this is a solo project
 - Always use named exports, not default exports, for utility functions
 - When adding new features, add them in isolation before wiring into the main tree
-- **Never add `VITE_` prefixed secrets** — all Supabase/admin/Stripe keys stay server-side in `/src/app/api/` route handlers
+- **Keep secrets server-side** — all Supabase/admin/Stripe keys stay in `/src/app/api/` route handlers, never exposed to the client
 - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are the only client-exposed env vars (public anon key, safe)
 - Environment variables (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `ADMIN_PASSWORD`, Stripe keys) are set in Vercel dashboard, not committed to code
 
@@ -123,14 +123,14 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
     digSlides.js        # DIG slide builder (selects 5-7 personalized slides)
     demoData.js         # Sample tree data
     dateInput.js        # Date parsing/validation helpers
-  App.jsx               # Root component (~680 lines) — layout, routing, orchestration
+  App.jsx               # Root component (~1600 lines) — layout, routing, orchestration
 ```
 
 ---
 
 ## What's Next
-- **Content Revamp:** Group astrology depth — Jupiter/Saturn, degree clustering, collective element maps, copy rewrite. Full plan at `CONTENT_REVAMP_PLAN.md`.
-- **Advanced Charts (future):** Birth time + place, Rising sign, house placements, aspects between members' charts.
+- **Content Revamp (in progress):** Group astrology depth — degree clustering, collective element maps, copy rewrite. Jupiter/Saturn already added. Full plan at `CONTENT_REVAMP_PLAN.md`.
+- **Advanced Charts (future):** Rising sign, house placements, aspects between members' charts (birth time capture already exists).
 
 ## Insights Panel Card Order (do not reorder unless asked)
   1. Family Signature
@@ -146,10 +146,21 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
   11. Pluto Generations
 
 ## Component Size Guidelines
-  - App.jsx is intentionally large (~700 lines) — orchestration only, don't split unless asked
+  - App.jsx is intentionally large (~1600 lines) — orchestration only, don't split unless asked
   - InsightsPanel.jsx is intentionally large — all insight cards live in one file by design
   - EditMemberPanel.jsx handles all member editing in one place — keep it that way
   - The DIG uses many small slide components (opposite pattern) — each slide is its own file in /components/dig/slides/
+
+## Tree Edge Routing
+  - Edge type is enforced at display time in `edgesForDisplay` (useTreeState.js), NOT at creation time in `makeEdge`. This is the single source of truth — changing `makeEdge` alone won't affect existing edges in state.
+  - React Flow type names are counterintuitive:
+    - `smoothstep` = vertical/horizontal segments with rounded corners (what we use — looks like "straight lines")
+    - `step` = same but with sharp corners
+    - `straight` = diagonal line from A to B (NOT straight-looking in a tree)
+    - `default` = bezier S-curves
+  - TB mode: parent-child edges use `smoothstep`, spouse edges use `straight` with side handles
+  - LR mode: parent-child edges use `smoothstep` with side handles, spouse edges use `straight` with top/bottom handles
+  - Mobile compact spacing is in `layout.js` — if edges look cramped, adjust GEN_GAP/DAGRE_NSEP/DAGRE_RSEP, not the edge type
 
 ## CSS Organization
   - 19 CSS files in /src/styles/ — each maps to a feature area

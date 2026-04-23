@@ -423,7 +423,7 @@ export default function App() {
     window.addEventListener('touchend', onUp)
   }
   // ── Add (atomic, supports multiple members) ───────────────────────────────
-  async function handleAdd({ members, relationships = {} }) {
+  async function handleAdd({ members, relationships = {}, memberRelationships = [] }) {
     const { parentIds = [], childIds = [], spouseIds = [] } = relationships
     const wasEmpty  = nodes.length === 0
     const startIdx  = counter
@@ -436,12 +436,28 @@ export default function App() {
         position: { x: 0, y: 0 }, data,
       })),
     ]
-    const nextEdges = [
-      ...edges,
+    // Build edges from legacy relationships prop
+    const legacyEdges = [
       ...parentIds.map(p => makeEdge(p,         primaryId)),
       ...childIds .map(c => makeEdge(primaryId, c)),
       ...spouseIds.map(s => makeEdge(primaryId, s, 'spouse')),
     ]
+    // Build edges from per-member relationships (inline relationship picker)
+    const memberEdges = (memberRelationships || []).flatMap((rel, i) => {
+      if (!rel || !rel.relatedTo) return []
+      const newId = `node-${startIdx + i}`
+      const { relatedTo, relationType } = rel
+      if (relationType === 'child')       return [makeEdge(relatedTo, newId)]
+      if (relationType === 'parent')      return [makeEdge(newId, relatedTo)]
+      if (relationType === 'step-parent') return [makeEdge(newId, relatedTo, 'step-parent')]
+      if (relationType === 'step-child')  return [makeEdge(relatedTo, newId, 'step-parent')]
+      if (relationType === 'spouse')      return [makeEdge(newId, relatedTo, 'spouse')]
+      if (relationType === 'sibling')     return [makeEdge(newId, relatedTo, 'sibling')]
+      if (relationType === 'friend')      return [makeEdge(newId, relatedTo, 'friend')]
+      if (relationType === 'coworker')    return [makeEdge(newId, relatedTo, 'coworker')]
+      return []
+    })
+    const nextEdges = [...edges, ...legacyEdges, ...memberEdges]
     const nextCounter = counter + members.length
     setNodes(applyDagreLayout(nextNodes, nextEdges, { collapsedIds: collapsedNodeIds, forceExpandedIds }))
     setEdges(nextEdges)
@@ -892,7 +908,7 @@ export default function App() {
                       >
                         {showAddMore ? '▲ Hide' : '＋ Add more people'}
                       </button>
-                      {showAddMore && <AddMembersForm onAdd={handleAdd} initialRows={1} />}
+                      {showAddMore && <AddMembersForm onAdd={handleAdd} initialRows={1} existingNodes={nodes} existingEdges={edges} />}
                     </div>
 
                     {edges.length === 0 && nodes.length >= 2 && (
@@ -1470,7 +1486,7 @@ export default function App() {
                         <button type="button" className="add-more-toggle" onClick={() => setShowAddMore(o => !o)}>
                           {showAddMore ? '▲ Hide' : '＋ Add more people'}
                         </button>
-                        {showAddMore && <AddMembersForm onAdd={handleAdd} initialRows={1} />}
+                        {showAddMore && <AddMembersForm onAdd={handleAdd} initialRows={1} existingNodes={nodes} existingEdges={edges} />}
                       </div>
                       {edges.length === 0 && (
                         <p className="connect-hint-banner">Tap a name below to connect family members on the tree ↓</p>

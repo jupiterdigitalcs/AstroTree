@@ -154,37 +154,43 @@ export default function EditMemberPanel({
 
   // ── Compute valid relationship types for a specific other node ────────────
   function getValidRelationships(otherId) {
-    const types = []
+    const family = []
+    const other  = []
 
     // Parent: only if current member has < 2 parents, and other is not a descendant
     if (parentEdges.length < 2 && !descendants.has(otherId)) {
-      types.push({ key: 'parent', label: 'Parent', action: () => addConn(otherId, node.id) })
+      family.push({ key: 'parent', label: 'Parent', action: () => addConn(otherId, node.id) })
     }
 
     // Child: only if other has < 2 parents, and other is not an ancestor
     if (parentCountOf(otherId) < 2 && !ancestors.has(otherId)) {
-      types.push({ key: 'child', label: 'Child', action: () => addConn(node.id, otherId) })
+      family.push({ key: 'child', label: 'Child', action: () => addConn(node.id, otherId) })
     }
 
-    // Step-parent: always valid (non-biological, no 2-parent limit)
-    types.push({ key: 'step-parent', label: 'Step-Parent', action: () => addConn(otherId, node.id, 'step-parent') })
-
-    // Step-child: always valid
-    types.push({ key: 'step-child', label: 'Step-Child', action: () => addConn(node.id, otherId, 'step-parent') })
-
     // Sibling: always valid (non-hierarchical, no parent needed)
-    types.push({ key: 'sibling', label: 'Sibling', action: () => addConn(node.id, otherId, 'sibling') })
+    family.push({ key: 'sibling', label: 'Sibling', action: () => addConn(node.id, otherId, 'sibling') })
 
-    // Spouse: always valid (non-hierarchical)
-    types.push({ key: 'spouse', label: 'Partner', action: () => addConn(node.id, otherId, 'spouse') })
+    // Spouse: deprioritize if this node already has a partner
+    const spouseEntry = { key: 'spouse', label: 'Partner', action: () => addConn(node.id, otherId, 'spouse') }
+    if (spouseEdges.length === 0) {
+      family.push(spouseEntry)
+    } else {
+      other.push(spouseEntry)
+    }
 
-    // Friend: always valid
-    types.push({ key: 'friend', label: 'Friend', action: () => addConn(node.id, otherId, 'friend') })
+    // Step-parent / step-child: less common, push to other
+    other.push({ key: 'step-parent', label: 'Step-Parent', action: () => addConn(otherId, node.id, 'step-parent') })
+    other.push({ key: 'step-child', label: 'Step-Child', action: () => addConn(node.id, otherId, 'step-parent') })
 
-    // Coworker: always valid
-    types.push({ key: 'coworker', label: 'Coworker', action: () => addConn(node.id, otherId, 'coworker') })
+    // Friend + coworker
+    other.push({ key: 'friend', label: 'Friend', action: () => addConn(node.id, otherId, 'friend') })
+    other.push({ key: 'coworker', label: 'Coworker', action: () => addConn(node.id, otherId, 'coworker') })
 
-    return types
+    // Insert separator between groups
+    if (family.length > 0 && other.length > 0) {
+      return [...family, { key: '_sep', separator: true }, ...other]
+    }
+    return [...family, ...other]
   }
 
   // ── Partner-children suggestion ───────────────────────────────────────────
@@ -552,16 +558,20 @@ export default function EditMemberPanel({
                     {connectTarget.data.symbol} {connectTarget.data.name} is {node.data.name}'s:
                   </span>
                   <div className="conn-type-pills">
-                    {connectOptions.map(opt => (
-                      <button
-                        key={opt.key}
-                        type="button"
-                        className={`conn-type-pill conn-type-pill--${opt.key}`}
-                        onClick={() => { opt.action(); setConnectTo(null) }}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
+                    {connectOptions.map(opt =>
+                      opt.separator ? (
+                        <span key={opt.key} className="conn-type-sep" />
+                      ) : (
+                        <button
+                          key={opt.key}
+                          type="button"
+                          className={`conn-type-pill conn-type-pill--${opt.key}`}
+                          onClick={() => { opt.action(); setConnectTo(null) }}
+                        >
+                          {opt.label}
+                        </button>
+                      )
+                    )}
                     <button type="button" className="conn-type-cancel-pill" onClick={() => setConnectTo(null)}>✕</button>
                   </div>
                 </div>
