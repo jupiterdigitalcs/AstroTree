@@ -997,8 +997,16 @@
     });
   }
 
-  scaleSlides();
+  // Delay scaling until layout is computed (app-content just became visible)
+  requestAnimationFrame(() => { requestAnimationFrame(scaleSlides); });
   window.addEventListener('resize', scaleSlides);
+
+  // Update button labels on mobile
+  if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+    document.querySelectorAll('.download-btn').forEach(btn => { btn.textContent = 'Share PNG'; });
+    const allBtn = document.querySelector('.nav-download-all');
+    if (allBtn) allBtn.textContent = 'Share All';
+  }
 
   // Track current slide
   container.addEventListener('scroll', () => {
@@ -1061,11 +1069,39 @@
     setTimeout(() => t.classList.remove('show'), 2500);
   }
 
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  // Share (mobile) or download (desktop) a canvas as PNG
+  async function shareOrDownload(canvas, filename) {
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    const file = new File([blob], filename, { type: 'image/png' });
+
+    if (isMobile && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file] });
+        return true;
+      } catch (e) {
+        if (e.name === 'AbortError') return false; // user cancelled
+      }
+    }
+
+    // Desktop fallback: blob download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    return true;
+  }
+
   // Download single slide
   async function downloadSlide(idx) {
     const btn = document.querySelectorAll('.download-btn')[idx];
     btn.classList.add('saving');
-    btn.textContent = 'Saving...';
+    btn.textContent = isMobile ? 'Rendering...' : 'Saving...';
 
     const slide = document.getElementById(`slide-${idx}`);
 
@@ -1087,18 +1123,8 @@
       slide.style.transform = origTransform;
       slide.style.marginBottom = origMargin;
 
-      // Use blob download (works in mobile Chrome/Safari)
-      canvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `astrodig-carousel-${idx + 1}.png`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast(`Slide ${idx + 1} saved!`);
-      }, 'image/png');
+      const saved = await shareOrDownload(canvas, `astrodig-carousel-${idx + 1}.png`);
+      if (saved) showToast(`Slide ${idx + 1} saved!`);
     } catch (err) {
       slide.style.transform = origTransform;
       slide.style.marginBottom = origMargin;
@@ -1106,7 +1132,7 @@
     }
 
     btn.classList.remove('saving');
-    btn.textContent = 'Save PNG';
+    btn.textContent = isMobile ? 'Share PNG' : 'Save PNG';
   }
 
   // Download all
@@ -1115,10 +1141,9 @@
     btn.textContent = 'Saving...';
     for (let i = 0; i < TOTAL; i++) {
       await downloadSlide(i);
-      // Small delay between downloads so browser doesn't block them
       await new Promise(r => setTimeout(r, 500));
     }
-    btn.textContent = 'Save All';
+    btn.textContent = isMobile ? 'Share All' : 'Save All';
     showToast('All slides saved!');
   }
 
