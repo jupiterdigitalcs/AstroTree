@@ -1081,15 +1081,16 @@
     fileInput.click();
   }
 
-  // Apply cover-fit via inline styles so html2canvas renders correctly
-  // (html2canvas ignores object-fit: cover)
-  function applyCoverFit(img, container) {
+  // Apply fit via inline styles so html2canvas renders correctly
+  // (html2canvas ignores object-fit)
+  // mode: 'cover' = fill + crop (for bg photos), 'contain' = fit whole image (for screenshots)
+  function applyFit(img, container, mode) {
     img.onload = () => {
       const cw = container.offsetWidth || 1080;
       const ch = container.offsetHeight || 1350;
       const iw = img.naturalWidth;
       const ih = img.naturalHeight;
-      const scale = Math.max(cw / iw, ch / ih);
+      const scale = mode === 'cover' ? Math.max(cw / iw, ch / ih) : Math.min(cw / iw, ch / ih);
       const w = Math.round(iw * scale);
       const h = Math.round(ih * scale);
       Object.assign(img.style, {
@@ -1102,7 +1103,6 @@
         maxWidth: 'none',
       });
     };
-    // If already loaded (cached), trigger immediately
     if (img.complete && img.naturalWidth) img.onload();
   }
 
@@ -1120,7 +1120,7 @@
         if (existing) existing.remove();
         bg.appendChild(img);
         bg.classList.add('has-image');
-        applyCoverFit(img, bg);
+        applyFit(img, bg, 'cover');
         // Update button text
         const btn = bg.closest('.slide').querySelector('.add-photo-btn');
         if (btn) { btn.textContent = 'Change photo'; btn.classList.add('has-image'); }
@@ -1131,7 +1131,7 @@
         if (existing) existing.remove();
         activeTarget.appendChild(img);
         activeTarget.classList.add('has-image');
-        applyCoverFit(img, activeTarget);
+        applyFit(img, activeTarget, 'contain');
         activeTarget = null;
       }
     };
