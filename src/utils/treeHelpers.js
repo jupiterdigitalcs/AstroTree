@@ -103,6 +103,6 @@ export function makeEdge(source, target, relationType = 'parent-child') {
     data:     { relationType },
     animated: isFamily,
     style:    EDGE_STYLES[relationType] || EDGE_STYLE,
-    type:     isHierarchical ? 'step' : 'smoothstep',
+    type:     'smoothstep',
   }
 }
