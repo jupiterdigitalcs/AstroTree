@@ -137,7 +137,7 @@ export function useTreeState({
           }
         }
 
-        // TB mode: parent-child edges use default top/bottom handles with smoothstep
+        // TB mode: parent-child edges — smoothstep = vertical/horizontal segments with rounded corners, no diagonals
         if (!isSpouse) return { ...edge, type: 'smoothstep' }
         const src = nodes.find(n => n.id === edge.source)
         const tgt = nodes.find(n => n.id === edge.target)
