@@ -82,7 +82,6 @@
     padding: 12px;
     gap: 12px;
     position: relative;
-    overflow: hidden;
   }
 
   .slide-actions {
@@ -995,7 +994,6 @@
       const slide = w.querySelector('.slide');
       slide.style.transform = `scale(${scale})`;
       slide.style.marginBottom = `-${1350 * (1 - scale)}px`;
-      slide.style.marginRight = `-${1080 * (1 - scale)}px`;
     });
   }
 
@@ -1109,11 +1107,9 @@
 
     // Temporarily remove transform for full-res capture
     const origTransform = slide.style.transform;
-    const origMarginB = slide.style.marginBottom;
-    const origMarginR = slide.style.marginRight;
+    const origMargin = slide.style.marginBottom;
     slide.style.transform = 'none';
     slide.style.marginBottom = '0';
-    slide.style.marginRight = '0';
 
     try {
       const canvas = await html2canvas(slide, {
@@ -1125,15 +1121,13 @@
       });
 
       slide.style.transform = origTransform;
-      slide.style.marginBottom = origMarginB;
-      slide.style.marginRight = origMarginR;
+      slide.style.marginBottom = origMargin;
 
       const saved = await shareOrDownload(canvas, `astrodig-carousel-${idx + 1}.png`);
       if (saved) showToast(`Slide ${idx + 1} saved!`);
     } catch (err) {
       slide.style.transform = origTransform;
-      slide.style.marginBottom = origMarginB;
-      slide.style.marginRight = origMarginR;
+      slide.style.marginBottom = origMargin;
       showToast('Error saving — try again');
     }
 
