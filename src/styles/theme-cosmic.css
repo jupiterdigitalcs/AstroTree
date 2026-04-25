@@ -1151,13 +1151,133 @@
   background: rgba(255,255,255,0.06);
 }
 
-/* ── Hero onboarding: zodiac glyphs strip ── */
-.cosmic-onboarding-glyphs {
-  font-size: 0.95rem;
-  letter-spacing: 0.35em;
-  color: var(--a-text-muted);
-  opacity: 0.5;
+/* ── Hero onboarding: mini animated preview row ── */
+@keyframes mini-node-in {
+  from { opacity: 0; transform: scale(0.7) translateY(4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes mini-line-draw {
+  from { stroke-dashoffset: 80; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes mini-insight-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.onboarding-preview-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  width: 100%;
+  margin: 0.1rem 0;
+}
+
+.onboarding-mini-tree {
+  position: relative;
+  width: 120px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.onboarding-mini-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.onboarding-mini-line {
+  stroke-dasharray: 80;
+  stroke-dashoffset: 80;
+  animation: mini-line-draw 0.7s ease-out 0.5s forwards;
+}
+.onboarding-mini-line--2 {
+  animation-delay: 0.7s;
+}
+
+.onboarding-mini-node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  background: rgba(10,7,22,0.92);
+  border: 1px solid rgba(160,130,220,0.22);
+  box-shadow: 0 0 8px var(--el, transparent);
+  border-radius: 8px;
+  padding: 0.18rem 0.4rem 0.15rem;
+  opacity: 0;
+  animation: mini-node-in 0.4s ease-out forwards;
+}
+
+/* Parents top row */
+.onboarding-mini-node--tl {
+  top: 0;
+  left: 4px;
+  animation-delay: 0.1s;
+}
+.onboarding-mini-node--tr {
+  top: 0;
+  right: 4px;
+  animation-delay: 0.25s;
+}
+/* Child bottom center */
+.onboarding-mini-node--bc {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 0.45s;
+}
+
+.onboarding-mini-glyph {
+  font-size: 0.8rem;
   line-height: 1;
+  filter: drop-shadow(0 0 4px var(--el));
+}
+
+.onboarding-mini-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.48rem;
+  font-weight: 600;
+  color: var(--a-text-muted);
+  letter-spacing: 0.03em;
+}
+
+/* Mini insight card */
+.onboarding-mini-insight {
+  flex: 1;
+  min-width: 0;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--a-border);
+  border-radius: 8px;
+  padding: 0.4rem 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  opacity: 0;
+  animation: mini-insight-in 0.5s ease-out 0.9s forwards;
+}
+
+.onboarding-mini-insight-heading {
+  font-family: 'Cinzel', serif;
+  font-size: 0.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--a-gold);
+}
+
+.onboarding-mini-insight-body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.55rem;
+  color: var(--a-text-muted);
+  line-height: 1.45;
+}
+
+.onboarding-mini-insight-body strong {
+  color: var(--a-text-soft);
+  font-weight: 600;
 }
 
 /* ── Hero onboarding: demo buttons (secondary) ── */

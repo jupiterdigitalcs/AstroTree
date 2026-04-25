@@ -30,8 +30,11 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNe
 
   function handleSubmit(e) {
     e.preventDefault()
-    if (!name.trim() || !birthdate) return
     tookAction.current = true
+    if (!name.trim() || !birthdate) {
+      onNewChart()
+      return
+    }
     onAdd({
       members: [{ name: name.trim(), birthdate, birthTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone }],
     })
@@ -75,9 +78,35 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNe
         See the sun signs, moon signs, and planets across your family, friends, or crew — all in one&nbsp;chart.
       </p>
 
-      {/* ── Zodiac glyphs strip ── */}
-      <div className="cosmic-onboarding-glyphs" aria-hidden="true">
-        ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓
+      {/* ── Mini preview: tree + insight ── */}
+      <div className="onboarding-preview-row" aria-hidden="true">
+        {/* Mini tree: parents at top, child below */}
+        <div className="onboarding-mini-tree">
+          <svg className="onboarding-mini-lines" viewBox="0 0 120 72" fill="none">
+            {/* Spouse line: horizontal between Mom and Dad */}
+            <path d="M46 10 L74 10" stroke="#d4a0bc" strokeWidth="1" strokeOpacity="0.45" strokeDasharray="4 3" className="onboarding-mini-line" />
+            {/* Parent-child line: midpoint down to You */}
+            <path d="M60 10 L60 56" stroke="#c9a84c" strokeWidth="1.2" strokeOpacity="0.5" className="onboarding-mini-line onboarding-mini-line--2" />
+          </svg>
+          <div className="onboarding-mini-node onboarding-mini-node--tl" style={{ '--el': '#e8634a' }}>
+            <span className="onboarding-mini-glyph">♈</span>
+            <span className="onboarding-mini-name">Mom</span>
+          </div>
+          <div className="onboarding-mini-node onboarding-mini-node--tr" style={{ '--el': '#6b8dd6' }}>
+            <span className="onboarding-mini-glyph">♏</span>
+            <span className="onboarding-mini-name">Dad</span>
+          </div>
+          <div className="onboarding-mini-node onboarding-mini-node--bc" style={{ '--el': '#5bc8f5' }}>
+            <span className="onboarding-mini-glyph">♊</span>
+            <span className="onboarding-mini-name">You</span>
+          </div>
+        </div>
+
+        {/* Mini insight card */}
+        <div className="onboarding-mini-insight">
+          <span className="onboarding-mini-insight-heading">Family Signature</span>
+          <span className="onboarding-mini-insight-body">Your family is <strong>Fire + Water</strong> dominant — passion meets intuition</span>
+        </div>
       </div>
 
       {/* ── Inline form ── */}
@@ -104,9 +133,8 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNe
         <button
           type="submit"
           className="cosmic-onboarding-btn"
-          disabled={!canSubmit}
         >
-          {canSubmit ? `Add ${trimmedName} to Chart` : 'Add to Chart'}
+          {canSubmit ? `Start ${trimmedName}'s Chart` : 'Start My Chart'}
         </button>
       </form>
 
