@@ -919,6 +919,21 @@
   animation: onboarding-breathe 4s ease-in-out infinite;
 }
 
+/* Hero variant — scrollable on short screens */
+.cosmic-onboarding--hero {
+  width: min(420px, calc(100% - 2rem));
+  /* Replace top/transform centering with margin-based so scroll works */
+  position: absolute;
+  top: 1.5rem;
+  bottom: auto;
+  transform: none;
+  margin-bottom: 1.5rem;
+  max-height: calc(100dvh - 3rem);
+  overflow-y: auto;
+  padding: 1.6rem 1.8rem 1.4rem;
+  gap: 0.45rem;
+}
+
 /* Pause ancestor animations while typing — mobile Safari repositions the
    text caret each frame when inputs live inside a backdrop-filtered,
    constantly-repainting parent, causing a "floating cursor" effect. */
@@ -1011,8 +1026,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 0.4rem;
+  gap: 0.5rem;
 }
 
 .cosmic-onboarding-label {
@@ -1083,7 +1097,6 @@
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   width: 100%;
-  margin-top: 0.2rem;
   box-shadow: 0 4px 20px rgba(212,168,76,0.25);
 }
 
@@ -1093,7 +1106,7 @@
 }
 
 .cosmic-onboarding-btn:disabled {
-  opacity: 0.35;
+  opacity: 0.55;
   cursor: default;
   transform: none;
 }
@@ -1136,6 +1149,94 @@
   border-color: var(--a-border-glow);
   color: var(--a-text-soft);
   background: rgba(255,255,255,0.06);
+}
+
+/* ── Hero onboarding: zodiac glyphs strip ── */
+.cosmic-onboarding-glyphs {
+  font-size: 0.95rem;
+  letter-spacing: 0.35em;
+  color: var(--a-text-muted);
+  opacity: 0.5;
+  line-height: 1;
+}
+
+/* ── Hero onboarding: demo buttons (secondary) ── */
+.cosmic-onboarding-demos--primary {
+  display: flex;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.cosmic-onboarding-demo-primary {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--a-border);
+  border-radius: var(--radius-sm);
+  color: var(--a-text-muted);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.72rem;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.cosmic-onboarding-demo-primary:hover {
+  border-color: var(--a-border-glow);
+  color: var(--a-text-soft);
+  background: rgba(255,255,255,0.07);
+}
+
+/* ── Hero onboarding: "or" divider ── */
+.cosmic-onboarding-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.cosmic-onboarding-divider::before,
+.cosmic-onboarding-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--a-border);
+}
+
+.cosmic-onboarding-divider span {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.68rem;
+  color: var(--a-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+/* ── Hero onboarding: compact inline form row ── */
+.cosmic-onboarding--hero .cosmic-onboarding-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.cosmic-onboarding--hero .cosmic-onboarding-row .cosmic-onboarding-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.cosmic-onboarding-btn--secondary {
+  background: rgba(255,255,255,0.06);
+  color: var(--a-text-soft);
+  box-shadow: none;
+  border: 1px solid var(--a-border);
+}
+
+.cosmic-onboarding-btn--secondary:hover:not(:disabled) {
+  background: rgba(255,255,255,0.1);
+  border-color: var(--a-border-glow);
+  box-shadow: none;
+  transform: none;
+}
+
+.cosmic-onboarding-btn--secondary:disabled {
+  opacity: 0.3;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
