@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { fetchAllCharts } from './utils/adminStorage.js'
+import { fetchAllCharts, markChartAsTest } from './utils/adminStorage.js'
 
 export default function AdminTreeList({ onSelectTree, excludeEmail }) {
   const [charts,   setCharts]   = useState([])
@@ -117,6 +117,19 @@ export default function AdminTreeList({ onSelectTree, excludeEmail }) {
                     {c.title || <em>Untitled</em>}
                     {c.isSample && <span className="admin-badge admin-badge--sample">sample</span>}
                     {c.isPublic && <span className="admin-badge admin-badge--public">public</span>}
+                    <button
+                      type="button"
+                      className={`admin-badge admin-badge--test${c.isTest ? ' admin-badge--test-active' : ''}`}
+                      onClick={async (e) => {
+                        e.stopPropagation()
+                        const newVal = !c.isTest
+                        const res = await markChartAsTest(c.id, newVal)
+                        if (res.ok) setCharts(prev => prev.map(ch => ch.id === c.id ? { ...ch, isTest: newVal } : ch))
+                      }}
+                      title={c.isTest ? 'Marked as test — click to unmark' : 'Click to mark as test chart'}
+                    >
+                      {c.isTest ? 'test' : 'test?'}
+                    </button>
                   </td>
                   <td>{c.memberCount}</td>
                   <td className="admin-td-email">{c.email || <span className="admin-dim">—</span>}</td>

@@ -4,12 +4,13 @@ import AdminTreeList from './AdminTreeList.jsx'
 import AdminUserList from './AdminUserList.jsx'
 import AdminTreePreview from './AdminTreePreview.jsx'
 import AdminPaywallPanel from './AdminPaywallPanel.jsx'
+import AdminResearchPanel from './AdminResearchPanel.jsx'
 import { fetchAllCharts } from './utils/adminStorage.js'
 
 const OWNER_EMAIL = 'chrissysoll@gmail.com'
 
 export default function AdminDashboard() {
-  const [view,         setView]         = useState('trees') // 'trees' | 'users' | 'paywall'
+  const [view,         setView]         = useState('trees') // 'trees' | 'users' | 'paywall' | 'research'
   const [selectedTree, setSelectedTree] = useState(null)
   const [excludeOwner, setExcludeOwner] = useState(true)
 
@@ -22,65 +23,30 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-        <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer' }}>
-          <input type="checkbox" checked={excludeOwner} onChange={e => setExcludeOwner(e.target.checked)} />
-          Exclude chrissysoll from everything
-        </label>
+      <div className="admin-top-bar">
+        <div className="admin-view-toggle">
+          <button type="button" className={`admin-toggle-btn${view === 'trees' ? ' admin-toggle-btn--active' : ''}`} onClick={() => setView('trees')}>All Trees</button>
+          <button type="button" className={`admin-toggle-btn${view === 'users' ? ' admin-toggle-btn--active' : ''}`} onClick={() => setView('users')}>By User</button>
+          <button type="button" className={`admin-toggle-btn${view === 'paywall' ? ' admin-toggle-btn--active' : ''}`} onClick={() => setView('paywall')}>Paywall</button>
+          <button type="button" className={`admin-toggle-btn${view === 'research' ? ' admin-toggle-btn--active' : ''}`} onClick={() => setView('research')}>Research</button>
+        </div>
+        <div className="admin-top-controls">
+          <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <input type="checkbox" checked={excludeOwner} onChange={e => setExcludeOwner(e.target.checked)} />
+            Exclude me
+          </label>
+          <a href="/carousel.html" target="_blank" rel="noopener" className="admin-top-link">IG Carousel</a>
+        </div>
       </div>
 
-      <a
-        href="/carousel.html"
-        target="_blank"
-        rel="noopener"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.4rem',
-          padding: '0.4rem 0.9rem',
-          marginBottom: '0.6rem',
-          borderRadius: '8px',
-          background: 'rgba(201,168,76,0.1)',
-          border: '1px solid rgba(201,168,76,0.25)',
-          color: '#c9a84c',
-          fontSize: '0.75rem',
-          fontWeight: 600,
-          letterSpacing: '0.06em',
-          textDecoration: 'none',
-        }}
-      >
-        IG Carousel Builder
-      </a>
-
-      <AdminStatsPanel excludeOwner={excludeOwner} ownerEmail={OWNER_EMAIL} />
-
-      <div className="admin-view-toggle">
-        <button
-          type="button"
-          className={`admin-toggle-btn${view === 'trees' ? ' admin-toggle-btn--active' : ''}`}
-          onClick={() => setView('trees')}
-        >
-          All Trees
-        </button>
-        <button
-          type="button"
-          className={`admin-toggle-btn${view === 'users' ? ' admin-toggle-btn--active' : ''}`}
-          onClick={() => setView('users')}
-        >
-          By User
-        </button>
-        <button
-          type="button"
-          className={`admin-toggle-btn${view === 'paywall' ? ' admin-toggle-btn--active' : ''}`}
-          onClick={() => setView('paywall')}
-        >
-          Paywall
-        </button>
-      </div>
+      {(view === 'trees' || view === 'users') && (
+        <AdminStatsPanel excludeOwner={excludeOwner} ownerEmail={OWNER_EMAIL} />
+      )}
 
       {view === 'trees' && <AdminTreeList onSelectTree={setSelectedTree} excludeEmail={excludeOwner ? OWNER_EMAIL : null} />}
       {view === 'users' && <AdminUserList onSelectDevice={handleSelectDevice} excludeEmail={excludeOwner ? OWNER_EMAIL : null} />}
       {view === 'paywall' && <AdminPaywallPanel />}
+      {view === 'research' && <AdminResearchPanel />}
 
       {selectedTree && (
         <AdminTreePreview tree={selectedTree} onClose={() => setSelectedTree(null)} />

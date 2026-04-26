@@ -170,11 +170,13 @@ export default function AboutPanel() {
           <li>To sync and store your charts across devices</li>
           <li>To link purchases (Celestial) to your account</li>
           <li>To send purchase confirmations and occasional updates from Jupiter Digital</li>
+          <li>To study anonymized, aggregated astrological patterns across families (e.g. how often family members share moon signs). No individual names, birthdates, or identifying details are ever published — only statistical trends across all users combined.</li>
         </ul>
 
         <p className="about-data-subhead">What we don't do</p>
         <ul className="about-data-list">
           <li>Sell your data or share it with third parties</li>
+          <li>Publish or share any individual chart data, names, or birthdates — research uses only anonymous aggregate patterns</li>
         </ul>
 
         <p className="about-data-subhead">Adding other people</p>
@@ -204,7 +206,7 @@ export default function AboutPanel() {
 
         <p className="about-data-subhead">User Content</p>
         <p className="about-bio">
-          You retain ownership of the data you enter (names, birthdates, etc.). By using AstroDig, you grant Jupiter Digital LLC a limited license to store, process, and display your data solely to provide the service. We do not claim ownership of your chart data.
+          You retain ownership of the data you enter (names, birthdates, etc.). By using AstroDig, you grant Jupiter Digital LLC a limited license to store, process, and display your data to provide the service and to analyze anonymized, aggregated patterns for astrological research. We do not claim ownership of your chart data, and research never includes individual names, birthdates, or any information that could identify you or the people in your charts.
         </p>
 
         <p className="about-data-subhead">Purchases &amp; Refunds</p>

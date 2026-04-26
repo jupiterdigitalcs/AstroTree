@@ -17,6 +17,7 @@ function fromRow(row) {
     referrer:    row.referrer,
     isPublic:    row.is_public,
     isSample:    row.is_sample,
+    isTest:      row.is_test,
     shareToken:  row.share_token ?? null,
     memberCount: row.member_count ?? (row.nodes?.length ?? 0),
     email:       row.email ?? null,
@@ -164,6 +165,32 @@ export async function fetchFunnel({ dateFrom = '', dateTo = '', excludeDevices =
   } catch (e) {
     console.error('fetchFunnel exception:', e)
     return []
+  }
+}
+
+export async function markChartAsTest(chartId, isTest) {
+  try {
+    const res = await fetch('/api/admin?action=mark-chart-test', {
+      method: 'POST',
+      headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chartId, isTest }),
+    })
+    return await res.json()
+  } catch (e) {
+    console.error('markChartAsTest exception:', e)
+    return { ok: false }
+  }
+}
+
+export async function fetchResearchData() {
+  try {
+    const res = await fetch('/api/admin?action=research', { headers: adminHeaders() })
+    if (res.status === 401) return { error: 'auth' }
+    if (!res.ok) return null
+    return await res.json()
+  } catch (e) {
+    console.error('fetchResearchData exception:', e)
+    return null
   }
 }
 

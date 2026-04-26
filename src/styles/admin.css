@@ -292,6 +292,20 @@
 .admin-badge--sample { background: rgba(201,168,76,0.2); color: var(--gold); }
 .admin-badge--public { background: rgba(100,180,255,0.15); color: #7dd; }
 
+.admin-badge--test {
+  background: transparent;
+  border: 1px solid rgba(232,112,112,0.3);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.admin-badge--test:hover { border-color: #e87070; color: #e87070; }
+.admin-badge--test-active {
+  background: rgba(232,112,112,0.2);
+  border-color: #e87070;
+  color: #e87070;
+}
+
 .admin-dim { color: var(--text-muted); font-size: 0.8rem; }
 .admin-empty { color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0; }
 .admin-loading { color: var(--text-muted); font-size: 0.85rem; padding: 0.75rem 0; }
@@ -441,11 +455,43 @@
 .admin-planet-name { color: var(--text-muted); }
 .admin-planet-sign { color: var(--text-soft); }
 
+/* ── Admin top bar ────────────────────────────────────────────── */
+.admin-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin-top-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-top-link {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #c9a84c;
+  text-decoration: none;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(201,168,76,0.25);
+  background: rgba(201,168,76,0.08);
+  white-space: nowrap;
+}
+
+.admin-top-link:hover { background: rgba(201,168,76,0.15); }
+
 /* ── Admin view toggle ────────────────────────────────────────── */
 .admin-view-toggle {
   display: flex;
   gap: 0.5rem;
-  margin: 1.5rem 0 1rem;
+  margin: 0;
+  flex-wrap: wrap;
 }
 
 .admin-toggle-btn {
@@ -1803,3 +1849,141 @@
 .admin-paywall-status--pending   { color: var(--gold); background: rgba(201,168,76,0.12); }
 .admin-paywall-status--refunded  { color: #e87070; background: rgba(232,112,112,0.12); }
 .admin-paywall-status--expired   { color: var(--text-muted); background: rgba(255,255,255,0.05); }
+
+/* ── Research panel ──────────────────────────────────────────── */
+
+.research-grid {
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.research-grid th,
+.research-grid td {
+  padding: 0.45rem 0.7rem;
+  text-align: center;
+  border: 1px solid rgba(201,168,76,0.12);
+}
+
+.research-grid th {
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.research-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.research-comparison-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.research-comparison-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.research-comparison-observed {
+  font-family: 'Cinzel', serif;
+  font-size: 1.4rem;
+  color: var(--gold);
+  line-height: 1.2;
+}
+
+.research-comparison-expected {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.research-comparison-ratio {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.research-comparison-note {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.research-detail-row {
+  font-size: 0.72rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.research-detail-family {
+  color: var(--gold);
+  font-weight: 600;
+  min-width: 10rem;
+  flex-shrink: 0;
+}
+
+.research-detail-sign {
+  color: var(--text-muted);
+  min-width: 7rem;
+  flex-shrink: 0;
+}
+
+.research-detail-names {
+  color: var(--text-primary);
+}
+
+.research-confidence {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.research-confidence-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.research-section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+}
+
+.research-section-toggle:hover { color: var(--gold); }
+
+.research-section-chevron {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  width: 0.8rem;
+  flex-shrink: 0;
+}
+
+.research-summary-card {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+}
