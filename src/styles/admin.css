@@ -1987,3 +1987,9 @@
   border: 1px solid var(--gold);
   border-radius: 12px;
 }
+
+.research-methodology {
+  margin-top: 0.75rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(201,168,76,0.15);
+}

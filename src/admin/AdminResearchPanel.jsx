@@ -163,6 +163,20 @@ export default function AdminResearchPanel() {
               </div>
             ))}
           </div>
+
+          <div className="research-methodology">
+            <p style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.3rem', letterSpacing: '0.04em' }}>Methodology</p>
+            <ul style={{ fontSize: '0.62rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0, paddingLeft: '1rem' }}>
+              <li><strong>Data source:</strong> Real family charts submitted by users of AstroDig. Test, sample, and duplicate charts are excluded. No individual names or birthdates are used in this summary.</li>
+              <li><strong>Deduplication:</strong> Individuals are identified by birthdate. The same person appearing in multiple family charts is counted once for headline stats, but analyzed within each family group they belong to (since they are part of each family&apos;s astrological dynamics).</li>
+              <li><strong>Normalization:</strong> Each family is weighted equally regardless of size. A 17-person family contributes the same weight as a 3-person family, preventing large families from dominating results.</li>
+              <li><strong>Expected values:</strong> Calculated using probability theory — birthday problem for sharing (1/12 chance per sign pair), uniform distribution for element/modality concentration, geometric probability for degree clustering.</li>
+              <li><strong>Confidence levels:</strong> Based on both effect size (observed/expected ratio) and sample size (number of families). Green = strong signal, orange = promising but needs more data, gray = inconclusive at current sample size.</li>
+              <li><strong>Planetary placements:</strong> Sun and Moon signs calculated from birthdates using the Celestine ephemeris library. Inner planets (Mercury, Venus, Mars) and outer planets (Jupiter, Saturn) also computed server-side.</li>
+              <li><strong>Limitations:</strong> Sample size is still small. Selection bias is possible — people drawn to an astrology app may not represent all families. Moon sign accuracy depends on birth time (noon is used when unknown). Results are directional, not yet conclusive.</li>
+              <li><strong>What makes this research unique:</strong> To our knowledge, no existing public dataset links full planetary placements across family units with relationship structure. Existing astrology databases (e.g., AstroDatabank) focus on individuals, not family dynamics. This is a novel dataset for testing within-family astrological clustering.</li>
+            </ul>
+          </div>
         </div>
       )}
 
