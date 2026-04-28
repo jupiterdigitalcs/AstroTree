@@ -105,13 +105,23 @@ async function appendBrandBar(imageUrl, pixelRatio = 2) {
   const adw = ctx.measureText('AstroDig').width
   ctx.fillStyle = 'rgba(184,170,212,0.55)'
   ctx.font = `300 ${10 * pr}px Raleway, Helvetica, sans-serif`
-  ctx.fillText('  by Jupiter Digital', textLeft + adw, mid - 1 * pr)
+  const byText = '  by Jupiter Digital'
+  ctx.fillText(byText, textLeft + adw, mid - 1 * pr)
+  const leftEnd = textLeft + adw + ctx.measureText(byText).width
 
-  // Right side — URL + handle
+  // Right side — URL + handle (shorten or hide if narrow to avoid overlap)
   ctx.fillStyle = 'rgba(201,168,76,0.6)'
   ctx.font = `500 ${11 * pr}px Raleway, Helvetica, sans-serif`
   ctx.textAlign = 'right'
-  ctx.fillText('astrodig.com  ·  @jupreturn', cvs.width - pad, mid - 1 * pr)
+  const fullRight = 'astrodig.com  ·  @jupreturn'
+  const shortRight = 'astrodig.com'
+  const gap = 16 * pr
+  const fullRightStart  = cvs.width - pad - ctx.measureText(fullRight).width
+  const shortRightStart = cvs.width - pad - ctx.measureText(shortRight).width
+  const rightText = fullRightStart  > leftEnd + gap ? fullRight
+                  : shortRightStart > leftEnd + gap ? shortRight
+                  : null
+  if (rightText) ctx.fillText(rightText, cvs.width - pad, mid - 1 * pr)
 
   return cvs.toDataURL('image/png')
 }

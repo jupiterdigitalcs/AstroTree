@@ -5,60 +5,71 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign in to AstroDig</title>
 </head>
-<body style="margin:0;padding:0;background:#0e0a20;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0e0a20;padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;background:linear-gradient(180deg,#16122e 0%,#0e0a20 100%);border:1px solid rgba(201,168,76,0.2);border-radius:16px;overflow:hidden;">
-          <!-- Header -->
-          <tr>
-            <td style="padding:32px 32px 16px;text-align:center;">
-              <p style="margin:0;font-size:24px;letter-spacing:0.08em;color:#c9a84c;font-weight:300;">
-                &#10022; AstroDig
-              </p>
-              <p style="margin:6px 0 0;font-size:12px;letter-spacing:0.15em;color:rgba(255,255,255,0.35);text-transform:uppercase;">
-                by Jupiter Digital
-              </p>
-            </td>
-          </tr>
-          <!-- Body -->
-          <tr>
-            <td style="padding:8px 32px 32px;">
-              <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:rgba(255,255,255,0.8);text-align:center;">
-                Tap the button below to sign in to your AstroDig account. This link expires in 1 hour.
-              </p>
-              <!-- CTA Button -->
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td align="center" style="padding:8px 0 24px;">
-                    <a href="{{ .ConfirmationURL }}"
-                       target="_blank"
-                       style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#c9a84c,#a8893a);color:#0e0a20;font-size:14px;font-weight:600;letter-spacing:0.06em;text-decoration:none;border-radius:8px;">
-                      Sign in to AstroDig
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin:0 0 8px;font-size:12px;line-height:1.5;color:rgba(255,255,255,0.35);text-align:center;">
-                If you didn't request this email, you can safely ignore it.
-              </p>
-              <p style="margin:0;font-size:12px;line-height:1.5;color:rgba(255,255,255,0.25);text-align:center;">
-                Trouble with the button? Copy and paste this link into your browser:<br>
-                <span style="color:rgba(201,168,76,0.6);word-break:break-all;">{{ .ConfirmationURL }}</span>
-              </p>
-            </td>
-          </tr>
-          <!-- Footer -->
-          <tr>
-            <td style="padding:16px 32px;border-top:1px solid rgba(201,168,76,0.12);text-align:center;">
-              <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:0.04em;">
-                astrodig.com &middot; Jupiter Digital
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
+<body bgcolor="#0e0a20" style="margin:0;padding:0;background-color:#0e0a20;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <!-- Outer wrapper - bgcolor is the fallback Gmail respects -->
+  <div style="background-color:#0e0a20;padding:40px 20px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0e0a20" style="background-color:#0e0a20;">
+      <tr>
+        <td align="center" bgcolor="#0e0a20" style="background-color:#0e0a20;">
+          <!-- Inner card -->
+          <table width="480" cellpadding="0" cellspacing="0" border="0" bgcolor="#16122e" style="max-width:480px;width:100%;background-color:#16122e;border:1px solid #3d3256;border-radius:16px;overflow:hidden;">
+            <!-- Header -->
+            <tr>
+              <td bgcolor="#16122e" style="background-color:#16122e;padding:32px 32px 16px;text-align:center;">
+                <p style="margin:0;font-size:24px;letter-spacing:0.08em;color:#c9a84c;font-weight:300;">
+                  &#10022; AstroDig
+                </p>
+                <p style="margin:6px 0 0;font-size:12px;letter-spacing:0.15em;color:#6b6480;text-transform:uppercase;">
+                  by Jupiter Digital
+                </p>
+              </td>
+            </tr>
+            <!-- Body -->
+            <tr>
+              <td bgcolor="#16122e" style="background-color:#16122e;padding:8px 32px 32px;">
+                <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#c4bdd4;text-align:center;">
+                  Tap the button below to sign in to your AstroDig account. This link expires in 1 hour.
+                </p>
+                <!-- CTA Button - using table for Outlook compatibility -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td align="center" style="padding:8px 0 24px;">
+                      <!--[if mso]>
+                      <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ .ConfirmationURL }}" style="height:46px;v-text-anchor:middle;width:220px;" arcsize="17%" fillcolor="#c9a84c">
+                        <center style="color:#0e0a20;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;font-weight:bold;">Sign in to AstroDig</center>
+                      </v:roundrect>
+                      <![endif]-->
+                      <!--[if !mso]><!-->
+                      <a href="{{ .ConfirmationURL }}"
+                         target="_blank"
+                         style="display:inline-block;padding:14px 36px;background-color:#c9a84c;color:#0e0a20;font-size:14px;font-weight:600;letter-spacing:0.06em;text-decoration:none;border-radius:8px;mso-hide:all;">
+                        Sign in to AstroDig
+                      </a>
+                      <!--<![endif]-->
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:0 0 8px;font-size:12px;line-height:1.5;color:#6b6480;text-align:center;">
+                  If you didn't request this email, you can safely ignore it.
+                </p>
+                <p style="margin:0;font-size:12px;line-height:1.5;color:#4a4563;text-align:center;">
+                  Trouble with the button? Copy and paste this link into your browser:<br>
+                  <span style="color:#a8893a;word-break:break-all;">{{ .ConfirmationURL }}</span>
+                </p>
+              </td>
+            </tr>
+            <!-- Footer -->
+            <tr>
+              <td bgcolor="#120e28" style="background-color:#120e28;padding:16px 32px;border-top:1px solid #2a2445;text-align:center;">
+                <p style="margin:0;font-size:11px;color:#4a4563;letter-spacing:0.04em;">
+                  astrodig.com &middot; Jupiter Digital
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
 </body>
 </html>

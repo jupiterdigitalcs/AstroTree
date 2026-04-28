@@ -479,6 +479,7 @@ export default function App() {
       setEditingNodeId(null)
       logEvent(`member_added_${Math.min(nextNodes.length, 10)}`)
     }
+    if (nextNodes.length === 4) logEvent('chart_activated')
     markUsed()
 
     // Auto-save on first add when no chart exists yet
@@ -889,6 +890,18 @@ export default function App() {
                         </div>
                       </div>
                       <button type="button" className="return-visit-close" onClick={() => setReturnVisit(false)}>×</button>
+                    </div>
+                  )}
+
+                  {/* First-member prompt — shown only when exactly 1 person is in the chart */}
+                  {nodes.length === 1 && (
+                    <div className="first-member-prompt">
+                      <p className="first-member-prompt-headline">
+                        {nodes[0].data.symbol} {nodes[0].data.name} is in the chart ✦
+                      </p>
+                      <p className="first-member-prompt-body">
+                        Add someone close to them — a parent, partner, or sibling — to reveal your first cosmic connection.
+                      </p>
                     </div>
                   )}
 
@@ -1477,6 +1490,16 @@ export default function App() {
                   </>
                 ) : (
                   <>
+                    {nodes.length === 1 && (
+                      <div className="first-member-prompt">
+                        <p className="first-member-prompt-headline">
+                          {nodes[0].data.symbol} {nodes[0].data.name} is in the chart ✦
+                        </p>
+                        <p className="first-member-prompt-body">
+                          Add someone close to them — a parent, partner, or sibling — to reveal your first cosmic connection.
+                        </p>
+                      </div>
+                    )}
                     <div className="member-list">
                       <div className="member-list-header">
                         <h3>Your {familyLabel} · {nodes.length}</h3>

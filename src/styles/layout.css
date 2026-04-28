@@ -176,7 +176,6 @@
 
   /* When subnav is present, push sidebar and canvas down by subnav height (38px) */
   .app--subnav .sidebar      { top: 90px !important; height: calc(100dvh - 90px) !important; }
-  .app--subnav .canvas       { height: calc(100dvh - 90px); }
   .app--subnav .top-nav-backdrop { top: 90px; }
 
   /* ── Section tabs (Charts / Family / Insights / Saved / About) ── */

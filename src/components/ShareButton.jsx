@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { generateShareToken } from '../utils/cloudStorage.js'
+import { generateShareToken, logEvent } from '../utils/cloudStorage.js'
 
 export function ShareButton({ savedChartId, syncStatus }) {
   const [copying, setCopying] = useState(false)
@@ -14,6 +14,7 @@ export function ShareButton({ savedChartId, syncStatus }) {
     setShareError(false)
     const token = await generateShareToken(savedChartId)
     if (token) {
+      logEvent('share_created')
       const url = `${window.location.origin}/view/${token}`
       // Try Web Share API on mobile first (shows native share sheet)
       if (navigator.share) {

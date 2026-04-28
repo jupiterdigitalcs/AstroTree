@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { buildSlides } from '../../utils/digSlides.js'
 import { useSwipe } from '../../hooks/useSwipe.js'
+import { logEvent } from '../../utils/cloudStorage.js'
 import DigProgressBar from './DigProgressBar.jsx'
 import DigSlide from './DigSlide.jsx'
 
@@ -29,7 +30,7 @@ export default function TheDig({ digData, onClose, chartTitle, isPremium = true,
     if (transitioning) return
     const next = dir === 'forward' ? current + 1 : current - 1
     if (next < 0 || next >= slides.length) {
-      if (dir === 'forward' && current === slides.length - 1) onClose()
+      if (dir === 'forward' && current === slides.length - 1) { logEvent('dig_completed'); onClose() }
       return
     }
     setDirection(dir)

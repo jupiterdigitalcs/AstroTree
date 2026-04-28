@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { startCheckout } from '../utils/checkout.js'
 import { getDeviceId } from '../utils/identity.js'
+import { logEvent } from '../utils/cloudStorage.js'
 import { DialogBackdrop } from './DialogBackdrop.jsx'
 
 export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn }) {
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => { logEvent('paywall_hit') }, [])
   const [error, setError]     = useState(null)
 
   // Promo code state
