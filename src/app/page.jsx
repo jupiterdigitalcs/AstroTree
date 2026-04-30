@@ -12,14 +12,12 @@ export default function HomePage() {
         aria-hidden="true"
         style={{
           position: 'absolute',
-          left: 0,
-          top: 0,
-          width: '100%',
-          padding: '2rem',
-          background: '#09071a',
-          color: '#e0dcd0',
-          fontFamily: 'system-ui, sans-serif',
-          zIndex: -1,
+          left: '-9999px',
+          top: '-9999px',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden',
+          pointerEvents: 'none',
         }}
       >
         <h1>AstroDig — Map Your Cosmic Connections</h1>

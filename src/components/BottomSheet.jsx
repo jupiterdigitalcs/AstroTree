@@ -45,8 +45,10 @@ export function BottomSheet({ open, title, onClose, children }) {
     if (delta > 80) onClose()
   }, [onClose])
 
+  // When keyboard opens, dvh already shrinks to the visible area above the keyboard,
+  // so fixed-positioned bottom is already correct — only constrain maxHeight.
   const sheetStyle = keyboardHeight > 0
-    ? { maxHeight: `calc(100dvh - ${keyboardHeight}px)`, bottom: `${keyboardHeight}px` }
+    ? { maxHeight: `calc(100dvh - 80px)` }
     : undefined
 
   return (
