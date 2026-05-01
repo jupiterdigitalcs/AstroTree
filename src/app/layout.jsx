@@ -73,7 +73,22 @@ const jsonLd = {
       publisher: { '@id': 'https://astrodig.com/#organization' },
       inLanguage: 'en-US',
       isAccessibleForFree: true,
-      screenshot: 'https://astrodig.com/og-image.svg',
+      screenshot: 'https://astrodig.com/og-image.png',
+    },
+    {
+      '@type': 'WebPage',
+      '@id': 'https://astrodig.com/#webpage',
+      url: 'https://astrodig.com',
+      name: 'AstroDig — Map Your Cosmic Connections',
+      isPartOf: { '@id': 'https://astrodig.com/#webapp' },
+      about: { '@id': 'https://astrodig.com/#webapp' },
+      description:
+        'A free web app to map cosmic connections — build astrology charts with sun signs, moon signs, planetary placements, compatibility insights, and The DIG.',
+      inLanguage: 'en-US',
+      potentialAction: {
+        '@type': 'UseAction',
+        target: 'https://astrodig.com',
+      },
     },
     {
       '@type': 'Organization',

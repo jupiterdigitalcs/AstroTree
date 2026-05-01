@@ -14,5 +14,23 @@ Disallow: /?view=
 User-agent: anthropic-ai
 Disallow: /?view=
 
+User-agent: ClaudeBot
+Disallow: /?view=
+
+User-agent: PerplexityBot
+Disallow: /?view=
+
+User-agent: Meta-ExternalAgent
+Disallow: /?view=
+
+User-agent: Applebot-Extended
+Disallow: /?view=
+
+User-agent: cohere-ai
+Disallow: /?view=
+
+User-agent: Diffbot
+Disallow: /?view=
+
 Sitemap: https://astrodig.com/sitemap.xml
 Llms-txt: https://astrodig.com/llms.txt

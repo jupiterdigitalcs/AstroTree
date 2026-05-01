@@ -9,15 +9,16 @@ export default function HomePage() {
           Hidden once the client app mounts (App.jsx covers the full viewport).
           This is the only content search engines and AI tools see. */}
       <div
-        aria-hidden="true"
         style={{
           position: 'absolute',
-          left: '-9999px',
-          top: '-9999px',
           width: '1px',
           height: '1px',
+          padding: 0,
+          margin: '-1px',
           overflow: 'hidden',
-          pointerEvents: 'none',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
         }}
       >
         <h1>AstroDig — Map Your Cosmic Connections</h1>
