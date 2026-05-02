@@ -11,7 +11,7 @@ import {
   saturnLines, jupiterGifts, allPlanetsBySign,
   findBridgePerson, deriveRoles, PLANET_GLYPHS,
 } from '../utils/groupChartCalc.js'
-import { findHereditaryAspects, findSharedContacts, PLANET_GLYPHS as ASPECT_PLANET_GLYPHS } from '../lib/astrology-core/aspects.js'
+import { findHereditaryAspects, findSharedContacts, calcCrossAspects, PLANET_GLYPHS as ASPECT_PLANET_GLYPHS } from '../lib/astrology-core/aspects.js'
 
 const TheDig = lazy(() => import('./dig/TheDig.jsx'))
 
@@ -1432,6 +1432,47 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     return glyphs.join(' ')
   }
 
+  // ── Synastry helpers ──────────────────────────────────────────────────────────
+  // Extract unique planet positions from a node's natal aspects (they store longitudes)
+  function extractPlanetPositions(node) {
+    const aspects = node.data?.natalAspects
+    if (!Array.isArray(aspects) || !aspects.length) return []
+    const seen = new Map()
+    for (const a of aspects) {
+      if (a.planet1?.longitude != null && !seen.has(a.planet1.name)) {
+        seen.set(a.planet1.name, { name: a.planet1.name, signName: a.planet1.sign, longitude: a.planet1.longitude })
+      }
+      if (a.planet2?.longitude != null && !seen.has(a.planet2.name)) {
+        seen.set(a.planet2.name, { name: a.planet2.name, signName: a.planet2.sign, longitude: a.planet2.longitude })
+      }
+    }
+    return [...seen.values()]
+  }
+
+  const PERSONAL_SET = new Set(['Sun', 'Moon', 'Mercury', 'Venus', 'Mars'])
+  const SYNASTRY_BLURBS = {
+    'Venus:Mars': { soft: 'Desire and affection tend to flow easily between them.', hard: 'A push-pull of attraction — magnetic, but may require patience.' },
+    'Venus:Sun':  { soft: 'One person naturally admires and is drawn to the other.', hard: 'Admiration is there, but expressing it may not always land as intended.' },
+    'Moon:Sun':   { soft: 'A natural comfort — one person\'s identity tends to nurture the other\'s emotional needs.', hard: 'Identity and emotional needs can bump — growth comes from not taking reactions personally.' },
+    'Moon:Venus': { soft: 'Emotional warmth flows easily. They tend to feel safe with each other.', hard: 'Care is there, but the way it\'s expressed may sometimes miss the mark.' },
+    'Moon:Mars':  { soft: 'Feelings and drive complement each other — a lively but supportive dynamic.', hard: 'One person\'s energy may sometimes overwhelm the other\'s emotional space.' },
+    'Venus:Venus':{ soft: 'They tend to value and enjoy the same things — a natural ease in shared taste.', hard: 'Similar values expressed in clashing ways — they want the same things but pursue them differently.' },
+    'Sun:Mars':   { soft: 'They tend to energize each other — action and identity in easy collaboration.', hard: 'A competitive spark — can fuel motivation or create friction depending on the day.' },
+    'Moon:Moon':  { soft: 'Emotional rhythms in sync — they tend to understand each other\'s moods instinctively.', hard: 'Both have strong emotional needs that can sometimes collide.' },
+    'Sun:Sun':    { soft: 'A feeling of recognition — they may see themselves reflected in each other.', hard: 'Two strong identities that may sometimes compete for the spotlight.' },
+    'Sun:Saturn': { soft: 'A stabilizing bond — one person helps ground and structure the other.', hard: 'One person may feel held back or judged by the other, even when that\'s not the intent.' },
+    'Moon:Saturn':{ soft: 'Emotional security through commitment — a bond that tends to deepen over time.', hard: 'Warmth may sometimes feel conditional — a relationship that asks both to grow.' },
+    'Venus:Saturn':{ soft: 'Love that builds slowly and lasts — loyalty and devotion over flash.', hard: 'Affection meets restraint — one may need more warmth than the other easily gives.' },
+  }
+
+  function getSynastryBlurb(pA, pB, aspect) {
+    const key = [pA, pB].sort().join(':')
+    const entry = SYNASTRY_BLURBS[key]
+    if (!entry) return null
+    const isHard = aspect === 'square' || aspect === 'opposition'
+    return isHard ? entry.hard : entry.soft
+  }
+
   function buildCoupleAnalysis(src, tgt) {
     const srcMoon   = src.data.moonSign && src.data.moonSign !== 'Unknown' ? src.data.moonSign : null
     const tgtMoon   = tgt.data.moonSign && tgt.data.moonSign !== 'Unknown' ? tgt.data.moonSign : null
@@ -1523,14 +1564,51 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       growthEdge = SUNEDGE[key] || null
     }
 
+    // ── Cross-chart (synastry) aspects — tight orb, personal planet required ──
+    const synastryAspects = []
+    const srcPlanets = extractPlanetPositions(src)
+    const tgtPlanets = extractPlanetPositions(tgt)
+    if (srcPlanets.length >= 3 && tgtPlanets.length >= 3) {
+      const hasBtA = !!src.data.birthTime
+      const hasBtB = !!tgt.data.birthTime
+      const crossAspects = calcCrossAspects(srcPlanets, tgtPlanets, hasBtA, hasBtB)
+      // Filter: ≤3° orb, at least one personal planet, skip same-planet generational
+      const qualifying = crossAspects.filter(a => {
+        if (a.orb > 3) return false
+        const hasPersonal = PERSONAL_SET.has(a.personA.name) || PERSONAL_SET.has(a.personB.name)
+        if (!hasPersonal) return false
+        // Skip if both are the same outer planet (generational)
+        if (a.personA.name === a.personB.name && !PERSONAL_SET.has(a.personA.name)) return false
+        // Skip uncertain aspects
+        if (a.confidence === 'uncertain') return false
+        return true
+      })
+      // Prioritize: Venus/Mars > Sun/Moon > others
+      const priority = (a) => {
+        const names = [a.personA.name, a.personB.name]
+        if (names.includes('Venus') && names.includes('Mars')) return 0
+        if (names.includes('Venus') || names.includes('Mars')) return 1
+        if (names.includes('Sun') || names.includes('Moon')) return 2
+        return 3
+      }
+      qualifying.sort((a, b) => priority(a) - priority(b) || a.orb - b.orb)
+      for (const a of qualifying.slice(0, 2)) {
+        const blurb = getSynastryBlurb(a.personA.name, a.personB.name, a.aspect)
+        if (blurb) {
+          const symbol = { conjunction: '☌', opposition: '☍', trine: '△', square: '□', sextile: '⚹' }[a.aspect] || ''
+          synastryAspects.push(`${ASPECT_PLANET_GLYPHS[a.personA.name] || ''} ${a.personA.name} ${symbol} ${ASPECT_PLANET_GLYPHS[a.personB.name] || ''} ${a.personB.name} (${a.orb}°) — ${blurb}`)
+        }
+      }
+    }
+
     if (insights.length === 0) {
       const compat = areCompatible(src.data.element, tgt.data.element)
-      return { tagline: compat ? 'Harmonious' : 'Complementary', taglineColor: compat ? '#7ec845' : '#c9a84c', narrativeItems: [], growthEdge }
+      return { tagline: compat ? 'Harmonious' : 'Complementary', taglineColor: compat ? '#7ec845' : '#c9a84c', narrativeItems: [], growthEdge, synastryAspects }
     }
 
     insights.sort((a, b) => b.score - a.score)
     const top = insights.slice(0, 2)
-    return { tagline: top[0].tagline, taglineColor: top[0].color, narrativeItems: top.map(i => i.text), growthEdge }
+    return { tagline: top[0].tagline, taglineColor: top[0].color, narrativeItems: top.map(i => i.text), growthEdge, synastryAspects }
   }
 
   // ── Per-node warned planets — a planet is excluded if ingress + no birth time ─
@@ -2012,6 +2090,57 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const isSelectMode = allCompatPairs.length > 12
   const compatDisplayPairs = isSelectMode ? allCompatPairs.filter(p => p.score >= 3) : allCompatPairs
   const compatTitle = isSelectMode ? 'Select Compatibility' : 'Compatibility Map'
+
+  // ── Hidden Connections — pairs with low sign-based scores but tight cross-chart aspects ─
+  const hiddenConnections = useMemo(() => {
+    if (nodes.length < 4) return []
+    // Only consider pairs that scored LOW in sign-based matching (≤5 = no notable bond)
+    const lowScorePairs = allCompatPairs.filter(p => p.score <= 5)
+    // Exclude spouse pairs (they already get synastry in Partner Compatibility)
+    const nonSpouseLow = lowScorePairs.filter(p => {
+      const key = [p.a.id, p.b.id].sort().join('|')
+      return !spouseEdgeSet.has(key)
+    })
+
+    const results = []
+    for (const pair of nonSpouseLow) {
+      const planetsA = extractPlanetPositions(pair.a)
+      const planetsB = extractPlanetPositions(pair.b)
+      if (planetsA.length < 3 || planetsB.length < 3) continue
+      const hasBtA = !!pair.a.data.birthTime
+      const hasBtB = !!pair.b.data.birthTime
+      const crossAspects = calcCrossAspects(planetsA, planetsB, hasBtA, hasBtB)
+      // Filter: ≤4° orb, personal planet required, skip uncertain
+      const qualifying = crossAspects.filter(a => {
+        if (a.orb > 4) return false
+        if (a.confidence === 'uncertain') return false
+        const hasPersonal = PERSONAL_SET.has(a.personA.name) || PERSONAL_SET.has(a.personB.name)
+        if (!hasPersonal) return false
+        if (a.personA.name === a.personB.name && !PERSONAL_SET.has(a.personA.name)) return false
+        return true
+      })
+      if (qualifying.length >= 3) {
+        // Build top 2 blurbs for display
+        const display = []
+        for (const a of qualifying.slice(0, 2)) {
+          const blurb = getSynastryBlurb(a.personA.name, a.personB.name, a.aspect)
+          const symbol = { conjunction: '☌', opposition: '☍', trine: '△', square: '□', sextile: '⚹' }[a.aspect] || ''
+          display.push({
+            text: blurb || `${a.personA.name} ${symbol} ${a.personB.name}`,
+            label: `${ASPECT_PLANET_GLYPHS[a.personA.name] || ''} ${a.personA.name} ${symbol} ${ASPECT_PLANET_GLYPHS[a.personB.name] || ''} ${a.personB.name} (${a.orb}°)`,
+          })
+        }
+        results.push({
+          a: pair.a,
+          b: pair.b,
+          aspectCount: qualifying.length,
+          relation: pair.relation,
+          aspects: display,
+        })
+      }
+    }
+    return results.sort((a, b) => b.aspectCount - a.aspectCount).slice(0, 3)
+  }, [nodes, allCompatPairs, spouseEdgeSet])
 
   // ── Member roles (Feature 3) ─────────────────────────────────────────────────
   const distinctEls = new Set(nodes.map(n => n.data.element)).size
@@ -2805,7 +2934,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <div className="insight-card">
           <h3 className="insight-heading">Partner Compatibility<span className="insight-pro-tag">✦</span></h3>
           {couples.map(({ src, tgt }, i) => {
-            const { tagline, taglineColor, narrativeItems, growthEdge } = buildCoupleAnalysis(src, tgt)
+            const { tagline, taglineColor, narrativeItems, growthEdge, synastryAspects } = buildCoupleAnalysis(src, tgt)
             return (
               <div key={i} className="insight-couple">
                 <p className="insight-note">
@@ -2819,6 +2948,15 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                   <div style={{ marginTop: '0.3rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     {narrativeItems.map((text, ni) => (
                       <p key={ni} className="insight-note" style={{ fontSize: '0.78rem', color: 'var(--text-soft)', lineHeight: 1.55, paddingLeft: '0.75rem', borderLeft: '2px solid rgba(255,255,255,0.08)' }}>
+                        {text}
+                      </p>
+                    ))}
+                  </div>
+                )}
+                {synastryAspects.length > 0 && (
+                  <div style={{ marginTop: '0.35rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    {synastryAspects.map((text, si) => (
+                      <p key={si} className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-soft)', lineHeight: 1.5, paddingLeft: '0.75rem', borderLeft: '2px solid rgba(184,160,212,0.3)' }}>
                         {text}
                       </p>
                     ))}
@@ -2923,6 +3061,34 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* 10. Compatibility Map (includes Notable Bonds as highlights) */}
       {(compatDisplayPairs.length > 0 || topBonds.length > 0) && hasFullCompat && (
         <FullCompatPairs pairs={compatDisplayPairs} title={compatTitle} isExporting={exporting} generationLevel={generationLevel} notableBonds={topBonds} />
+      )}
+
+      {/* 10b. Hidden Connections — pairs sign-matching missed but aspects caught */}
+      {hiddenConnections.length > 0 && hasFullCompat && (
+        <div className="insight-card">
+          <h3 className="insight-heading">Hidden Connections<span className="insight-pro-tag">✦</span></h3>
+          <p className="insight-whisper">These pairs don't share obvious sign placements, but their charts are quietly wired together through tight planetary aspects.</p>
+          {hiddenConnections.map((hc, i) => (
+            <div key={i} style={{ marginBottom: '0.6rem' }}>
+              <p className="insight-note">
+                {hc.a.data.symbol} <strong>{hc.a.data.name}</strong> &amp;{' '}
+                {hc.b.data.symbol} <strong>{hc.b.data.name}</strong>
+                {hc.relation && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '0.4rem' }}>({hc.relation})</span>}
+              </p>
+              <p className="insight-note" style={{ fontSize: '0.72rem', color: '#b8a0d4', marginTop: '0.15rem' }}>
+                {hc.aspectCount} tight aspect{hc.aspectCount > 1 ? 's' : ''} between their charts
+              </p>
+              <div style={{ marginTop: '0.2rem', display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                {hc.aspects.map((a, ai) => (
+                  <p key={ai} className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-soft)', lineHeight: 1.5, paddingLeft: '0.75rem', borderLeft: '2px solid rgba(184,160,212,0.25)' }}>
+                    <span style={{ opacity: 0.6 }}>{a.label}</span> — {a.text}
+                  </p>
+                ))}
+              </div>
+            </div>
+          ))}
+          <p className="insight-whisper" style={{ marginTop: '0.3rem' }}>An aspect is the angle between two planets. When planets in different charts form tight angles, there tends to be a felt connection — even without shared signs.</p>
+        </div>
       )}
 
       {/* 11. Family Roles */}
