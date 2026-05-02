@@ -33,8 +33,8 @@ function loadEnv() {
 
 // ── Fetch a table via Supabase REST API ──────────────────────────────────────
 
-async function fetchTable(baseUrl, serviceKey, table) {
-  const url = `${baseUrl}/rest/v1/${table}?select=*&order=created_at.desc&limit=10000`
+async function fetchTable(baseUrl, serviceKey, table, orderCol = 'created_at') {
+  const url = `${baseUrl}/rest/v1/${table}?select=*&order=${orderCol}.desc&limit=10000`
   const res = await fetch(url, {
     headers: {
       apikey: serviceKey,
@@ -64,10 +64,10 @@ async function main() {
   console.log('Fetching tables from Supabase...')
 
   const [devices, charts, purchases, userProfiles] = await Promise.all([
-    fetchTable(supabaseUrl, serviceKey, 'devices'),
-    fetchTable(supabaseUrl, serviceKey, 'charts'),
-    fetchTable(supabaseUrl, serviceKey, 'purchases'),
-    fetchTable(supabaseUrl, serviceKey, 'user_profiles'),
+    fetchTable(supabaseUrl, serviceKey, 'devices', 'first_seen'),
+    fetchTable(supabaseUrl, serviceKey, 'charts', 'saved_at'),
+    fetchTable(supabaseUrl, serviceKey, 'purchases', 'created_at'),
+    fetchTable(supabaseUrl, serviceKey, 'user_profiles', 'created_at'),
   ])
 
   const backup = {
