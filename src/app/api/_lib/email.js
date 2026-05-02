@@ -199,6 +199,47 @@ export async function sendRefundConfirmation({ to }) {
 }
 
 /**
+ * Email the owner a JSON snapshot of a purchase record + device for backup.
+ * Fires after every successful Stripe purchase so there's always an email trail.
+ */
+export async function sendPurchaseBackupSnapshot({ purchase, device, session }) {
+  const resend = getResend()
+  const ownerEmail = process.env.OWNER_EMAIL
+  if (!ownerEmail) return
+
+  const snapshot = {
+    backed_up_at: new Date().toISOString(),
+    session_id: session.id,
+    payment_intent: session.payment_intent,
+    amount_total: session.amount_total,
+    customer_email: session.customer_details?.email ?? null,
+    stripe_customer_id: session.customer ?? null,
+    purchase,
+    device,
+  }
+
+  const json = JSON.stringify(snapshot, null, 2)
+  const date = new Date().toISOString().split('T')[0]
+
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: ownerEmail,
+      subject: `[backup] purchase snapshot ${date} — ${session.customer_details?.email ?? 'unknown'}`,
+      text: json,
+      attachments: [
+        {
+          filename: `purchase_${date}_${session.id.slice(-8)}.json`,
+          content: Buffer.from(json).toString('base64'),
+        },
+      ],
+    })
+  } catch (err) {
+    console.error('[email] purchase backup snapshot failed:', err)
+  }
+}
+
+/**
  * Notify the site owner of a refund.
  */
 export async function sendOwnerRefundNotification({ buyerEmail, deviceId }) {

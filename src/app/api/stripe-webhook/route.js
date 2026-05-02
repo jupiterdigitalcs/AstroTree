@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getSupabase } from '../_lib/supabase.js'
-import { sendPremiumConfirmation, sendOwnerPurchaseNotification, sendRefundConfirmation, sendOwnerRefundNotification } from '../_lib/email.js'
+import { sendPremiumConfirmation, sendOwnerPurchaseNotification, sendPurchaseBackupSnapshot, sendRefundConfirmation, sendOwnerRefundNotification } from '../_lib/email.js'
 
 export async function POST(request) {
   try {
@@ -108,6 +108,13 @@ export async function POST(request) {
             chartsCount: parsed.length,
             deviceId,
           }).catch(err => console.error('[stripe] owner notification error:', err))
+
+          // Backup snapshot — emails a JSON record of this purchase to the owner
+          const { data: deviceSnap } = await sb.from('devices').select('*').eq('id', deviceId).single()
+          const { data: purchaseSnap } = await sb.from('purchases').select('*').eq('stripe_session_id', session.id).single()
+          sendPurchaseBackupSnapshot({ purchase: purchaseSnap, device: deviceSnap, session }).catch(err =>
+            console.error('[stripe] backup snapshot error:', err)
+          )
         }
       }
     }
