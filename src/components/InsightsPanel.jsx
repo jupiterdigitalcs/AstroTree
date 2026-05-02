@@ -2120,22 +2120,43 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         return true
       })
       if (qualifying.length >= 3) {
-        // Build top 2 blurbs for display
-        const display = []
-        for (const a of qualifying.slice(0, 2)) {
-          const blurb = getSynastryBlurb(a.personA.name, a.personB.name, a.aspect)
-          const symbol = { conjunction: '☌', opposition: '☍', trine: '△', square: '□', sextile: '⚹' }[a.aspect] || ''
-          display.push({
-            text: blurb || `${a.personA.name} ${symbol} ${a.personB.name}`,
-            label: `${ASPECT_PLANET_GLYPHS[a.personA.name] || ''} ${a.personA.name} ${symbol} ${ASPECT_PLANET_GLYPHS[a.personB.name] || ''} ${a.personB.name} (${a.orb}°)`,
-          })
+        // Summarize the connection in plain language (no glyphs/degrees)
+        const softCount = qualifying.filter(a => a.aspect === 'trine' || a.aspect === 'sextile' || a.aspect === 'conjunction').length
+        const hardCount = qualifying.filter(a => a.aspect === 'square' || a.aspect === 'opposition').length
+        // Build a plain-language flavor based on what planets are involved
+        const involvedPlanets = new Set()
+        for (const a of qualifying) {
+          involvedPlanets.add(a.personA.name)
+          involvedPlanets.add(a.personB.name)
+        }
+        let flavor = ''
+        if (involvedPlanets.has('Venus') && involvedPlanets.has('Moon')) {
+          flavor = softCount >= hardCount
+            ? 'There tends to be a natural warmth when they\'re together — an easy emotional rapport.'
+            : 'There\'s a pull between them that can feel intense. They tend to bring out strong reactions in each other.'
+        } else if (involvedPlanets.has('Sun') && involvedPlanets.has('Moon')) {
+          flavor = softCount >= hardCount
+            ? 'Something clicks when they\'re in the same room — a sense of recognition, even if they don\'t see each other often.'
+            : 'When they\'re together, they tend to push each other in subtle ways. Not always comfortable, but often catalytic.'
+        } else if (involvedPlanets.has('Mars')) {
+          flavor = softCount >= hardCount
+            ? 'They tend to energize each other — the dynamic picks up when they\'re both around.'
+            : 'There\'s a spark between them that can read as friction or motivation, depending on the day.'
+        } else if (involvedPlanets.has('Saturn')) {
+          flavor = softCount >= hardCount
+            ? 'A quietly stabilizing connection — they may not realize how much they anchor each other.'
+            : 'There\'s a weight to this connection. They tend to feel more "seen" by each other, for better or worse.'
+        } else {
+          flavor = softCount >= hardCount
+            ? 'Their charts are unexpectedly in sync — a quiet resonance that may not be obvious on the surface.'
+            : 'There\'s a dynamic tension here. They tend to notice each other, even from across the room.'
         }
         results.push({
           a: pair.a,
           b: pair.b,
           aspectCount: qualifying.length,
           relation: pair.relation,
-          aspects: display,
+          flavor,
         })
       }
     }
@@ -3067,7 +3088,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {hiddenConnections.length > 0 && hasFullCompat && (
         <div className="insight-card">
           <h3 className="insight-heading">Hidden Connections<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-whisper">These pairs don't share obvious sign placements, but their charts are quietly wired together through tight planetary aspects.</p>
+          <p className="insight-whisper">These pairs don't share obvious sign placements, but their charts form tight angles to each other — a subtler kind of connection that may show up when they spend time together.</p>
           {hiddenConnections.map((hc, i) => (
             <div key={i} style={{ marginBottom: '0.6rem' }}>
               <p className="insight-note">
@@ -3075,19 +3096,12 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                 {hc.b.data.symbol} <strong>{hc.b.data.name}</strong>
                 {hc.relation && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '0.4rem' }}>({hc.relation})</span>}
               </p>
-              <p className="insight-note" style={{ fontSize: '0.72rem', color: '#b8a0d4', marginTop: '0.15rem' }}>
-                {hc.aspectCount} tight aspect{hc.aspectCount > 1 ? 's' : ''} between their charts
+              <p className="insight-note" style={{ fontSize: '0.75rem', color: 'var(--text-soft)', lineHeight: 1.55, paddingLeft: '0.75rem', borderLeft: '2px solid rgba(184,160,212,0.25)', marginTop: '0.2rem' }}>
+                {hc.flavor}
               </p>
-              <div style={{ marginTop: '0.2rem', display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                {hc.aspects.map((a, ai) => (
-                  <p key={ai} className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-soft)', lineHeight: 1.5, paddingLeft: '0.75rem', borderLeft: '2px solid rgba(184,160,212,0.25)' }}>
-                    <span style={{ opacity: 0.6 }}>{a.label}</span> — {a.text}
-                  </p>
-                ))}
-              </div>
             </div>
           ))}
-          <p className="insight-whisper" style={{ marginTop: '0.3rem' }}>An aspect is the angle between two planets. When planets in different charts form tight angles, there tends to be a felt connection — even without shared signs.</p>
+          <p className="insight-whisper" style={{ marginTop: '0.3rem' }}>In astrology, an "aspect" is a meaningful angle between two planets. When one person's planets form tight angles to another person's, it can create a sense of connection or friction — even without shared signs.</p>
         </div>
       )}
 
