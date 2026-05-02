@@ -29,6 +29,17 @@ export {
 } from './natal.js'
 
 export {
+  // Aspect math
+  PLANET_GLYPHS,
+  ASPECT_DEFINITIONS,
+  angularSeparation,
+  detectAspect,
+  calcNatalAspects,
+  calcCrossAspects,
+  findHereditaryAspects,
+} from './aspects.js'
+
+export {
   // Transit config
   TRANSITING_BODIES,
   NATAL_POINTS,
