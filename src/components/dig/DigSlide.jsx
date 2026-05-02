@@ -6,7 +6,7 @@ import SlideCosmicDuo from './slides/SlideCosmicDuo.jsx'
 import SlideWildcard from './slides/SlideWildcard.jsx'
 import SlideCosmicDNA from './slides/SlideCosmicDNA.jsx'
 import SlideOutro from './slides/SlideOutro.jsx'
-import SlideGlue from './slides/SlideGlue.jsx'
+import SlideConnector from './slides/SlideConnector.jsx'
 import SlideElementClash from './slides/SlideElementClash.jsx'
 import SlideClone from './slides/SlideClone.jsx'
 import SlideVenusVibes from './slides/SlideVenusVibes.jsx'
@@ -30,7 +30,7 @@ const SLIDE_COMPONENTS = {
   wildcard: SlideWildcard,
   cosmicDNA: SlideCosmicDNA,
   outro: SlideOutro,
-  glue: SlideGlue,
+  connector: SlideConnector,
   elementClash: SlideElementClash,
   clone: SlideClone,
   venusVibes: SlideVenusVibes,

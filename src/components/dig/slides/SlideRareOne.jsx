@@ -21,7 +21,7 @@ export default function SlideRareOne({ data }) {
         no one else can.
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.75rem', opacity: 0.5, marginTop: '0.6rem' }}>
-        Sole {d.sign} — an irreplaceable cosmic fingerprint
+        Sole {d.sign} — an irreplaceable piece of the chart
       </p>
     </div>
   )

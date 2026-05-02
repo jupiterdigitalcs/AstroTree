@@ -151,11 +151,11 @@ const SIBLING_ADAPTABILITY = {
 const PLUTO_GENS = {
   Cancer:      { years: '~1914–1939', flavor: 'shaped by home, survival, and deep loyalty to family' },
   Leo:         { years: '~1939–1957', flavor: 'driven by identity, pride, and a need to leave their mark' },
-  Virgo:       { years: '~1957–1972', flavor: 'defined by craft, critical thinking, and a drive to improve' },
-  Libra:       { years: '~1972–1984', flavor: 'formed by ideals of fairness, partnership, and social harmony' },
+  Virgo:       { years: '~1958–1971', flavor: 'defined by craft, critical thinking, and a drive to improve' },
+  Libra:       { years: '~1972–1983', flavor: 'formed by ideals of fairness, partnership, and social harmony' },
   Scorpio:     { years: '~1984–1995', flavor: 'marked by transformation, intensity, and truth-seeking' },
-  Sagittarius: { years: '~1995–2008', flavor: 'colored by idealism, global thinking, and the search for meaning' },
-  Capricorn:   { years: '~2008–2024', flavor: 'shaped by ambition, structure, and rethinking the rules' },
+  Sagittarius: { years: '~1996–2008', flavor: 'colored by idealism, global thinking, and the search for meaning' },
+  Capricorn:   { years: '~2008–2023', flavor: 'shaped by ambition, structure, and rethinking the rules' },
   Aquarius:    { years: '2024+',      flavor: 'awakening into collective vision, technology, and radical change' },
 }
 const PLUTO_ORDER = ['Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius']
@@ -214,18 +214,18 @@ const ELEMENT_QUALITY = {
 }
 
 const MOON_STYLE = {
-  Aries:       'processes emotions quickly and moves on fast',
-  Taurus:      'takes time to open up and craves security above all',
-  Gemini:      'talks through feelings and needs mental space to process',
-  Cancer:      'feels deeply and holds onto emotional memory',
-  Leo:         'needs to feel appreciated and expresses feelings openly',
-  Virgo:       'processes by analyzing and shows love through acts of service',
-  Libra:       'avoids conflict and needs harmony to feel emotionally safe',
-  Scorpio:     'feels everything intensely and holds it for a long time',
-  Sagittarius: 'needs freedom and tends to stay upbeat on the surface',
-  Capricorn:   'keeps emotions private and handles things practically',
-  Aquarius:    'steps back to process and needs intellectual independence',
-  Pisces:      'absorbs the emotions of others and needs quiet to recharge',
+  Aries:       'tends to process emotions quickly and move on fast',
+  Taurus:      'tends to take time to open up and often craves security above all',
+  Gemini:      'tends to talk through feelings and may need mental space to process',
+  Cancer:      'tends to feel deeply and hold onto emotional memory',
+  Leo:         'tends to need appreciation and often expresses feelings openly',
+  Virgo:       'tends to process by analyzing and may show love through acts of service',
+  Libra:       'tends to avoid conflict and often needs harmony to feel emotionally safe',
+  Scorpio:     'tends to feel things intensely and may hold onto emotions for a long time',
+  Sagittarius: 'tends to need freedom and may stay upbeat on the surface',
+  Capricorn:   'tends to keep emotions private and handle things practically',
+  Aquarius:    'tends to step back to process and may need intellectual independence',
+  Pisces:      'tends to absorb the emotions of others and may need quiet to recharge',
 }
 
 const ZODIAC_THREAD_BLURB = {
@@ -562,7 +562,7 @@ function SocialChemistryCard({ nodes, innerPlanetMap, edges }) {
 
 // Tier definitions: label, explanation, and grouping order
 const COMPAT_TIERS = {
-  'Cosmic Echo':           { order: 1, explain: 'All four personal planets (Sun, Moon, Venus, Mars) land in the same signs. This is extraordinarily rare — it means these two share the same outward identity, emotional instincts, love language, and drive.' },
+  'Cosmic Echo':           { order: 1, explain: 'All four personal planets (Sun, Moon, Venus, Mars) land in the same signs. This is unusually close — it means these two share the same outward identity, emotional instincts, love language, and drive.' },
   'Rare Triple Alignment': { order: 2, explain: 'Three of their four personal planets match signs. Most people share one placement at most, so three is a remarkably deep resonance.' },
   'Soul Twins':            { order: 3, explain: 'Same Sun and Moon signs. Sun is how you show up in the world; Moon is your emotional core. Sharing both means they tend to express and feel in very similar ways.' },
   'Cosmic Twins':          { order: 4, explain: 'Same Sun sign. The Sun represents outward identity and ego — they may recognize their own qualities reflected in each other.' },
@@ -572,7 +572,7 @@ const COMPAT_TIERS = {
 }
 
 const BOND_EXPLAIN = {
-  'cosmic-echo': 'Multiple personal planets in the same sign is extraordinarily rare. It suggests a deep resonance between these two.',
+  'cosmic-echo': 'Multiple personal planets in the same signs is uncommon and suggests a deep resonance between these two.',
   'rare-alignment': 'Three shared sign placements is uncommon and tends to create a feeling of being fundamentally understood by the other person.',
   'soul-twins': 'Sharing both Sun and Moon signs means their outward identity and inner emotional world are built from the same material. They may instinctively understand each other.',
   'cosmic-twins': 'Same Sun sign means they tend to express themselves in similar ways. They may see parts of themselves reflected in each other.',
@@ -1469,7 +1469,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     // Same moon sign — emotional twins
     if (srcMoon && tgtMoon && srcMoon === tgtMoon)
       insights.push({ score: 7, tagline: 'Emotional Twins', color: '#9dbbd4',
-        text: `Both ${srcMoon} moons. They feel and process the same way, an almost wordless emotional understanding.` })
+        text: `Both ${srcMoon} moons. They tend to feel and process in similar ways — a shared emotional rhythm.` })
 
     // Same Venus sign — identical love language
     if (srcVenus && tgtVenus && srcVenus === tgtVenus)
@@ -1495,14 +1495,42 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       insights.push({ score: 4, tagline: 'Natural Pull', color: 'var(--rose)',
         text: `${tgt.data.name}'s ${tgtMars} Mars aligns with ${src.data.name}'s ${srcVenus} Venus. A natural attraction dynamic.` })
 
+    // Growth edge — where this pair may need to stretch
+    let growthEdge = null
+    if (srcMoon && tgtMoon && srcMoon !== tgtMoon) {
+      const srcMoonEl = getElement(srcMoon).element
+      const tgtMoonEl = getElement(tgtMoon).element
+      if (!areCompatible(srcMoonEl, tgtMoonEl)) {
+        const GROWTH_EDGES = {
+          'Fire-Water': 'One tends to act on feelings quickly, the other needs time to sit with them. Meeting in the middle may take patience from both sides.',
+          'Fire-Earth': 'One moves on instinct, the other needs a plan. They may need to take turns setting the pace.',
+          'Air-Water': 'One processes through talking, the other through feeling. They may need to learn each other\'s emotional language.',
+          'Air-Earth': 'One lives in ideas, the other in what\'s tangible. Finding common ground may mean translating between the two.',
+        }
+        const key = [srcMoonEl, tgtMoonEl].sort().join('-')
+        growthEdge = GROWTH_EDGES[key] || null
+      }
+    }
+    // Fallback: sun element clash with no moon data
+    if (!growthEdge && !areCompatible(src.data.element, tgt.data.element)) {
+      const SUNEDGE = {
+        'Fire-Water': 'Fire\'s directness and Water\'s sensitivity may sometimes clash — patience with each other\'s pace tends to help.',
+        'Fire-Earth': 'Fire\'s spontaneity and Earth\'s caution can create friction — they may do best when they take turns leading.',
+        'Air-Water': 'Air\'s detachment and Water\'s depth can feel like different languages — checking in rather than assuming tends to help.',
+        'Air-Earth': 'Air\'s restlessness and Earth\'s need for stability can create tension — both may benefit from honoring what the other needs.',
+      }
+      const key = [src.data.element, tgt.data.element].sort().join('-')
+      growthEdge = SUNEDGE[key] || null
+    }
+
     if (insights.length === 0) {
       const compat = areCompatible(src.data.element, tgt.data.element)
-      return { tagline: compat ? 'Harmonious' : 'Complementary', taglineColor: compat ? '#7ec845' : '#c9a84c', narrativeItems: [] }
+      return { tagline: compat ? 'Harmonious' : 'Complementary', taglineColor: compat ? '#7ec845' : '#c9a84c', narrativeItems: [], growthEdge }
     }
 
     insights.sort((a, b) => b.score - a.score)
     const top = insights.slice(0, 2)
-    return { tagline: top[0].tagline, taglineColor: top[0].color, narrativeItems: top.map(i => i.text) }
+    return { tagline: top[0].tagline, taglineColor: top[0].color, narrativeItems: top.map(i => i.text), growthEdge }
   }
 
   // ── Per-node warned planets — a planet is excluded if ingress + no birth time ─
@@ -1844,8 +1872,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         score    = is4 ? 25 : 20
         noteType = is4 ? 'cosmic-echo' : 'rare-alignment'
         const label = is4
-          ? 'Once-in-a-generation cosmic echo — all four personal planets aligned'
-          : 'Rare triple alignment — an extraordinarily uncommon bond'
+          ? 'All four personal planets in the same signs — an unusually close match'
+          : 'Three planets aligned — a notably uncommon bond'
         note = `${matchedPlanets.join(' · ')} — ${label}`
       } else if (sameSun && sameMoon) {
         score = 12; noteType = 'soul-twins'
@@ -2777,7 +2805,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <div className="insight-card">
           <h3 className="insight-heading">Partner Compatibility<span className="insight-pro-tag">✦</span></h3>
           {couples.map(({ src, tgt }, i) => {
-            const { tagline, taglineColor, narrativeItems } = buildCoupleAnalysis(src, tgt)
+            const { tagline, taglineColor, narrativeItems, growthEdge } = buildCoupleAnalysis(src, tgt)
             return (
               <div key={i} className="insight-couple">
                 <p className="insight-note">
@@ -2795,6 +2823,11 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                       </p>
                     ))}
                   </div>
+                )}
+                {growthEdge && (
+                  <p className="insight-note" style={{ fontSize: '0.75rem', color: 'var(--gold)', lineHeight: 1.55, paddingLeft: '0.75rem', borderLeft: '2px solid rgba(201,168,76,0.25)', marginTop: '0.35rem', fontStyle: 'italic' }}>
+                    Growth edge: {growthEdge}
+                  </p>
                 )}
               </div>
             )
@@ -3084,7 +3117,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {groupJupiterGifts.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">♃ Jupiter Gifts<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-whisper">Jupiter's sign points to where each person tends to find expansion, luck, and natural ease.</p>
+          <p className="insight-whisper">Jupiter's sign points to where each person tends to find expansion, opportunity, and natural ease.</p>
           {groupJupiterGifts.filter(g => g.members.length >= 1).map(g => (
             <div key={g.sign} style={{ marginBottom: '0.4rem' }}>
               <p className="insight-note">

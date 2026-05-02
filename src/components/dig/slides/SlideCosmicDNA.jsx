@@ -32,8 +32,8 @@ export default function SlideCosmicDNA({ data, active }) {
         The {thread.sign} Line
       </h2>
       <p className="dig-body dig-fly-in" style={{ '--i': 2 }}>
-        {names[0]} passed down {flavor}, and it stuck.
-        The same {planetLabel} runs through {generationWord}.
+        {flavor} — this energy echoes across {generationWord}.
+        The same {planetLabel} keeps showing up.
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3, fontSize: '0.9rem' }}>
@@ -45,7 +45,7 @@ export default function SlideCosmicDNA({ data, active }) {
         ))}
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.75rem', opacity: 0.4, marginTop: '0.5rem' }}>
-        Some signs run in the family.
+        Some signs keep reappearing across generations.
         {totalThreads > 1 && ` (${totalThreads} zodiac threads found)`}
       </p>
     </div>

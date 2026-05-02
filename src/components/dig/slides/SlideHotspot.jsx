@@ -17,7 +17,8 @@ export default function SlideHotspot({ data }) {
         {spot.position} {spot.sign}
       </h2>
       <p className="dig-body dig-fly-in" style={{ '--i': 2 }}>
-        {spot.peopleCount} of you have planets concentrated here. This is a zone your group keeps activating.
+        {spot.peopleCount} of you have planets clustered in the same zone of {spot.sign} — when something
+        happens in this part of the sky, you all tend to feel it.
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <div className="dig-fade-in" style={{ '--i': 3 }}>
@@ -27,8 +28,8 @@ export default function SlideHotspot({ data }) {
           </p>
         ))}
       </div>
-      <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.7rem', opacity: 0.5, marginTop: '0.4rem' }}>
-        When multiple people share a zodiac zone, its themes tend to echo through the whole group.
+      <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.68rem', opacity: 0.4, marginTop: '0.4rem' }}>
+        Each sign spans 30 degrees. When multiple people have planets in the same few degrees, transits through that zone tend to activate the whole group at once.
       </p>
     </div>
   )

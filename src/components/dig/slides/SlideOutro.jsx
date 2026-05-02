@@ -25,7 +25,7 @@ export default function SlideOutro({ data, onShare, sharing }) {
         )}
       </div>
       <p className="dig-body dig-fade-in" style={{ '--i': 3, fontSize: '0.8rem' }}>
-        Every family carries a unique cosmic fingerprint.
+        Every family carries a unique astrological fingerprint.
         <br />This is yours.
       </p>
       {onShare && (

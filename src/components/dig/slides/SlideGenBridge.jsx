@@ -20,11 +20,11 @@ export default function SlideGenBridge({ data }) {
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3 }}>
-        {parent.data.name.split(' ')[0]}'s {PLANET_GLYPH[parentPlanet]} {parentPlanet} in {sign} became{' '}
+        {parent.data.name.split(' ')[0]}'s {PLANET_GLYPH[parentPlanet]} {parentPlanet} in {sign} reappears as{' '}
         {child.data.name.split(' ')[0]}'s {PLANET_GLYPH[childPlanet]} {childPlanet} in {sign}.
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.78rem', opacity: 0.6, marginTop: '0.5rem' }}>
-        Same energy, different expression, passed down through the cosmic bloodline.
+        Same sign energy, different expression — echoed across generations.
       </p>
     </div>
   )

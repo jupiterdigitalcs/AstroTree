@@ -1,6 +1,6 @@
 const DUO_LABELS = {
-  'cosmic-echo':         { title: 'Cosmic Echo', sub: 'their charts are basically copy-paste', badge: '✦✦✦ INSANELY RARE' },
-  'rare-alignment':      { title: 'Rare Alignment', sub: 'this kind of overlap almost never happens', badge: '✦✦ VERY RARE' },
+  'cosmic-echo':         { title: 'Cosmic Echo', sub: 'an unusually close chart overlap — all four personal planets land in the same signs.', badge: '✦✦✦ REMARKABLY RARE' },
+  'rare-alignment':      { title: 'Rare Alignment', sub: 'three planets in the same signs — a notably uncommon bond.', badge: '✦✦ UNCOMMON' },
   'soul-twins':          { title: 'Soul Twins', sub: 'same sun AND same moon. They just get each other.', badge: 'DEEP CONNECTION' },
   'cosmic-twins':        { title: 'Cosmic Twins', sub: 'same sun sign. They speak the same language.', badge: 'MATCHING ENERGY' },
   'lunar-bond':          { title: 'Emotional Twins', sub: 'same moon sign. They feel things the same way.', badge: 'DEEP CONNECTION' },

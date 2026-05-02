@@ -34,6 +34,9 @@ export default function SlideAspectThreads({ data }) {
       <p className="dig-body dig-fade-in" style={{ '--i': 3, fontSize: '0.78rem', opacity: 0.6, marginTop: '0.5rem' }}>
         {planetLabel}{totalCount > 1 ? ` · ${totalCount} patterns in this family` : ''}
       </p>
+      <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.68rem', opacity: 0.4, marginTop: '0.5rem' }}>
+        An aspect is the angle between two planets in a chart. When the same angle repeats across a family, it can show up as a shared theme or inherited dynamic.
+      </p>
     </div>
   )
 }

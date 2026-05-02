@@ -143,8 +143,10 @@ export function buildSlides(digData) {
     mood: ELEMENT_MOOD[collectiveMap.dominant] || 'starfield',
   })
 
-  // Pool of candidate slides — we'll pick the best ones
+  // Pool of candidate slides — ordered by engagement priority
   const candidates = []
+
+  // ── TIER 1: Personal hook + relationships (strongest openers) ─────────────
 
   // Superlative — strongest element concentration (data-derived, not sign lookup)
   if (nodes.length >= 2) {
@@ -173,23 +175,7 @@ export function buildSlides(digData) {
     }
   }
 
-  // Emotional Forecast — most water placements
-  if (nodes.length >= 2) {
-    const ranked = nodes
-      .filter(n => n.data?.moonSign && MOON_VIBES[n.data.moonSign])
-      .map(n => ({ node: n, water: elementWeight(n, 'Water') }))
-      .filter(r => r.water >= 2)
-      .sort((a, b) => b.water - a.water)
-    if (ranked[0]) {
-      candidates.push(() => {
-        const pick = ranked.find(r => !featured.has(r.node.id)) || ranked[0]
-        featured.add(pick.node.id)
-        return { type: 'emotionalForecast', data: { node: pick.node, moonVibe: MOON_VIBES[pick.node.data.moonSign], waterCount: pick.water }, mood: 'water' }
-      })
-    }
-  }
-
-  // Cosmic Duo — top bond
+  // Cosmic Duo — top bond (relationships are the #1 thing people want to see)
   if (digData.topBonds?.length > 0) {
     candidates.push(() => {
       const bond = digData.topBonds[0]
@@ -199,58 +185,7 @@ export function buildSlides(digData) {
     })
   }
 
-  // Wildcard — most different from family dominant
-  if (nodes.length >= 3) {
-    const domEl = digData.dominant
-    const wild = nodes.filter(n => elementWeight(n, domEl) === 0)
-    if (wild.length > 0) {
-      candidates.push(() => {
-        const pick = wild.find(n => !featured.has(n.id)) || wild[0]
-        featured.add(pick.id)
-        return { type: 'wildcard', data: { node: pick, familyElement: domEl }, mood: ELEMENT_MOOD[pick.data?.element] || 'starfield' }
-      })
-    }
-  }
-
-  // Cosmic DNA — zodiac thread
-  if (digData.signThreadList?.length > 0) {
-    candidates.push(() => {
-      const thread = digData.signThreadList[0]
-      return { type: 'cosmicDNA', data: { thread, totalThreads: digData.signThreadList.length }, mood: 'constellation' }
-    })
-  }
-
-  // ── NEW SLIDES ────────────────────────────────────────────────────────────
-
-  // The Glue — most diverse connections (not just raw count, which favors parents)
-  if (edges && edges.length > 0 && nodes.length >= 4) {
-    const connData = {}
-    nodes.forEach(n => { connData[n.id] = { total: 0, types: new Set() } })
-    edges.forEach(e => {
-      const rel = e.data?.relationType || 'parent-child'
-      if (connData[e.source]) { connData[e.source].total++; connData[e.source].types.add(rel) }
-      if (connData[e.target]) { connData[e.target].total++; connData[e.target].types.add(rel) }
-    })
-    // Score: number of different relationship types × connections
-    // This favors people who bridge across friend/family/coworker groups
-    const scored = nodes.map(n => ({
-      node: n,
-      score: connData[n.id].total * connData[n.id].types.size,
-      total: connData[n.id].total,
-      typeCount: connData[n.id].types.size,
-    })).sort((a, b) => b.score - a.score)
-    // Only show if someone has 3+ connections or bridges multiple relationship types
-    const best = scored[0]
-    if (best && (best.typeCount >= 2 || best.total >= 3)) {
-      candidates.push(() => {
-        const pick = scored.find(s => !featured.has(s.node.id)) || scored[0]
-        featured.add(pick.node.id)
-        return { type: 'glue', data: { node: pick.node, connectionCount: pick.total, typeCount: pick.typeCount }, mood: 'orbits' }
-      })
-    }
-  }
-
-  // Element Clash — two members with most opposing planet placements
+  // Element Clash — dynamic tension
   if (nodes.length >= 2) {
     let bestClash = null, bestScore = 0
     for (let i = 0; i < nodes.length; i++) {
@@ -284,34 +219,181 @@ export function buildSlides(digData) {
     }
   }
 
-  // The Clone — two members with the most matching placements
-  if (nodes.length >= 2) {
-    let bestPair = null, bestMatches = []
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const pA = getNodePlacements(nodes[i])
-        const pB = getNodePlacements(nodes[j])
-        const matches = []
-        for (const a of pA) {
-          if (pB.some(b => b.planet === a.planet && b.sign === a.sign)) {
-            const glyph = { sun: '☀', moon: '☽', mercury: '☿', venus: '♀', mars: '♂' }[a.planet] || ''
-            matches.push(`${glyph} ${a.planet} in ${a.sign}`)
+  // ── TIER 2: Family story + emotional depth ────────────────────────────────
+
+  // Cosmic DNA — zodiac thread (family narrative)
+  if (digData.signThreadList?.length > 0) {
+    candidates.push(() => {
+      const thread = digData.signThreadList[0]
+      return { type: 'cosmicDNA', data: { thread, totalThreads: digData.signThreadList.length }, mood: 'constellation' }
+    })
+  }
+
+  // Generational Bridge — parent-child sharing a sign across different planets
+  if (edges && edges.length > 0) {
+    const parentChildEdges = edges.filter(e => {
+      const t = e.data?.relationType
+      return t === 'parent' || t === 'child'
+    })
+    let bestBridge = null
+    for (const edge of parentChildEdges) {
+      const parent = nodes.find(n => n.id === edge.source)
+      const child = nodes.find(n => n.id === edge.target)
+      if (!parent || !child) continue
+      const pP = getNodePlacements(parent)
+      const pC = getNodePlacements(child)
+      for (const pp of pP) {
+        for (const cp of pC) {
+          if (pp.sign === cp.sign && pp.planet !== cp.planet && !bestBridge) {
+            bestBridge = { parent, child, sign: pp.sign, parentPlanet: pp.planet, childPlanet: cp.planet }
           }
-        }
-        if (matches.length > bestMatches.length) {
-          bestMatches = matches
-          bestPair = { nodeA: nodes[i], nodeB: nodes[j] }
         }
       }
     }
-    if (bestPair && bestMatches.length >= 2) {
+    if (bestBridge) {
       candidates.push(() => {
-        featured.add(bestPair.nodeA.id)
-        featured.add(bestPair.nodeB.id)
-        return { type: 'clone', data: { ...bestPair, matchCount: bestMatches.length, matches: bestMatches }, mood: 'starfield' }
+        featured.add(bestBridge.parent.id)
+        featured.add(bestBridge.child.id)
+        return { type: 'genBridge', data: bestBridge, mood: 'constellation' }
       })
     }
   }
+
+  // Cosmic Inheritance — shared natal aspect patterns
+  if (digData.aspectThreads?.totalCount > 0) {
+    const { rareBonds, heredThreads, famSigs } = digData.aspectThreads
+    let topItem = null
+    let topType = null
+    if (heredThreads.length > 0) {
+      topItem = heredThreads[0]
+      topType = 'heredThread'
+    } else if (rareBonds.length > 0) {
+      topItem = rareBonds[0]
+      topType = 'rareBond'
+    } else if (famSigs.length > 0) {
+      topItem = famSigs[0]
+      topType = 'famSig'
+    }
+    if (topItem) {
+      candidates.push(() => ({
+        type: 'aspectThreads',
+        data: {
+          blurb:       topItem.blurb ?? `${topItem.planet1}–${topItem.planet2}`,
+          chainNames:  topItem.chainNames,
+          planetLabel: topItem.planet1 + '–' + topItem.planet2,
+          aspect:      topItem.aspect ?? null,
+          topType,
+          totalCount:  digData.aspectThreads.totalCount,
+        },
+        mood: 'constellation',
+      }))
+    }
+  }
+
+  // Moon Mirror — same moon sign or "all different"
+  if (nodes.length >= 2) {
+    const moonNodes = nodes.filter(n => n.data?.moonSign && n.data.moonSign !== 'Unknown')
+    const moonGroups = {}
+    moonNodes.forEach(n => {
+      const ms = n.data.moonSign
+      if (!moonGroups[ms]) moonGroups[ms] = []
+      moonGroups[ms].push(n)
+    })
+    const pairs = Object.entries(moonGroups).filter(([, g]) => g.length >= 2)
+    if (pairs.length > 0) {
+      const [moonSign, group] = pairs[0]
+      candidates.push(() => {
+        const a = group.find(n => !featured.has(n.id)) || group[0]
+        const b = group.find(n => n.id !== a.id && !featured.has(n.id)) || group.find(n => n.id !== a.id)
+        if (a && b) {
+          featured.add(a.id); featured.add(b.id)
+          return { type: 'moonMirror', data: { nodeA: a, nodeB: b, moonSign, noSharedMoons: false }, mood: 'water' }
+        }
+        return null
+      })
+    } else if (moonNodes.length >= 4) {
+      candidates.push(() => {
+        return { type: 'moonMirror', data: { noSharedMoons: true, moonCount: moonNodes.length }, mood: 'water' }
+      })
+    }
+  }
+
+  // Emotional Landscape — most water placements
+  if (nodes.length >= 2) {
+    const ranked = nodes
+      .filter(n => n.data?.moonSign && MOON_VIBES[n.data.moonSign])
+      .map(n => ({ node: n, water: elementWeight(n, 'Water') }))
+      .filter(r => r.water >= 2)
+      .sort((a, b) => b.water - a.water)
+    if (ranked[0]) {
+      candidates.push(() => {
+        const pick = ranked.find(r => !featured.has(r.node.id)) || ranked[0]
+        featured.add(pick.node.id)
+        return { type: 'emotionalForecast', data: { node: pick.node, moonVibe: MOON_VIBES[pick.node.data.moonSign], waterCount: pick.water }, mood: 'water' }
+      })
+    }
+  }
+
+  // ── TIER 3: Individual spotlights ─────────────────────────────────────────
+
+  // Wildcard — most different from family dominant
+  if (nodes.length >= 3) {
+    const domEl = digData.dominant
+    const wild = nodes.filter(n => elementWeight(n, domEl) === 0)
+    if (wild.length > 0) {
+      candidates.push(() => {
+        const pick = wild.find(n => !featured.has(n.id)) || wild[0]
+        featured.add(pick.id)
+        return { type: 'wildcard', data: { node: pick, familyElement: domEl }, mood: ELEMENT_MOOD[pick.data?.element] || 'starfield' }
+      })
+    }
+  }
+
+  // The Rare One — unique sun sign
+  if (nodes.length >= 3) {
+    const signCount = {}
+    nodes.forEach(n => { if (n.data?.sign) signCount[n.data.sign] = (signCount[n.data.sign] || 0) + 1 })
+    const unique = nodes.filter(n => n.data?.sign && signCount[n.data.sign] === 1)
+    if (unique.length > 0) {
+      candidates.push(() => {
+        const pick = unique.find(n => !featured.has(n.id)) || unique[0]
+        featured.add(pick.id)
+        return { type: 'rareOne', data: { node: pick, totalMembers: nodes.length }, mood: ELEMENT_MOOD[pick.data?.element] || 'starfield' }
+      })
+    }
+  }
+
+  // The Anchor — most Earth placements
+  if (nodes.length >= 2) {
+    const ranked = nodes
+      .map(n => ({ node: n, earth: elementWeight(n, 'Earth') }))
+      .filter(r => r.earth >= 2)
+      .sort((a, b) => b.earth - a.earth)
+    if (ranked[0]) {
+      candidates.push(() => {
+        const pick = ranked.find(r => !featured.has(r.node.id)) || ranked[0]
+        featured.add(pick.node.id)
+        return { type: 'oldSoul', data: { node: pick.node, earthCount: pick.earth }, mood: 'earth' }
+      })
+    }
+  }
+
+  // The Free Thinker — most Air placements
+  if (nodes.length >= 2) {
+    const ranked = nodes
+      .map(n => ({ node: n, air: elementWeight(n, 'Air') }))
+      .filter(r => r.air >= 2)
+      .sort((a, b) => b.air - a.air)
+    if (ranked[0]) {
+      candidates.push(() => {
+        const pick = ranked.find(r => !featured.has(r.node.id)) || ranked[0]
+        featured.add(pick.node.id)
+        return { type: 'rebel', data: { node: pick.node, airCount: pick.air }, mood: 'air' }
+      })
+    }
+  }
+
+  // ── TIER 4: Group patterns ────────────────────────────────────────────────
 
   // Venus Vibes — group Venus patterns
   {
@@ -345,109 +427,6 @@ export function buildSlides(digData) {
     }
   }
 
-  // Moon Mirror — two people with the same moon sign, or "no shared moons"
-  if (nodes.length >= 2) {
-    const moonNodes = nodes.filter(n => n.data?.moonSign && n.data.moonSign !== 'Unknown')
-    const moonGroups = {}
-    moonNodes.forEach(n => {
-      const ms = n.data.moonSign
-      if (!moonGroups[ms]) moonGroups[ms] = []
-      moonGroups[ms].push(n)
-    })
-    const pairs = Object.entries(moonGroups).filter(([, g]) => g.length >= 2)
-    if (pairs.length > 0) {
-      const [moonSign, group] = pairs[0]
-      candidates.push(() => {
-        const a = group.find(n => !featured.has(n.id)) || group[0]
-        const b = group.find(n => n.id !== a.id && !featured.has(n.id)) || group.find(n => n.id !== a.id)
-        if (a && b) {
-          featured.add(a.id); featured.add(b.id)
-          return { type: 'moonMirror', data: { nodeA: a, nodeB: b, moonSign, noSharedMoons: false }, mood: 'water' }
-        }
-        return null
-      })
-    } else if (moonNodes.length >= 4) {
-      // No shared moons — that's also meaningful
-      candidates.push(() => {
-        return { type: 'moonMirror', data: { noSharedMoons: true, moonCount: moonNodes.length }, mood: 'water' }
-      })
-    }
-  }
-
-  // The Old Soul — most Earth placements
-  if (nodes.length >= 2) {
-    const ranked = nodes
-      .map(n => ({ node: n, earth: elementWeight(n, 'Earth') }))
-      .filter(r => r.earth >= 2)
-      .sort((a, b) => b.earth - a.earth)
-    if (ranked[0]) {
-      candidates.push(() => {
-        const pick = ranked.find(r => !featured.has(r.node.id)) || ranked[0]
-        featured.add(pick.node.id)
-        return { type: 'oldSoul', data: { node: pick.node, earthCount: pick.earth }, mood: 'earth' }
-      })
-    }
-  }
-
-  // The Rebel — most Air placements
-  if (nodes.length >= 2) {
-    const ranked = nodes
-      .map(n => ({ node: n, air: elementWeight(n, 'Air') }))
-      .filter(r => r.air >= 2)
-      .sort((a, b) => b.air - a.air)
-    if (ranked[0]) {
-      candidates.push(() => {
-        const pick = ranked.find(r => !featured.has(r.node.id)) || ranked[0]
-        featured.add(pick.node.id)
-        return { type: 'rebel', data: { node: pick.node, airCount: pick.air }, mood: 'air' }
-      })
-    }
-  }
-
-  // Generational Bridge — parent-child sharing a sign across different planets
-  if (edges && edges.length > 0) {
-    const parentChildEdges = edges.filter(e => {
-      const t = e.data?.relationType
-      return t === 'parent' || t === 'child'
-    })
-    let bestBridge = null
-    for (const edge of parentChildEdges) {
-      const parent = nodes.find(n => n.id === edge.source)
-      const child = nodes.find(n => n.id === edge.target)
-      if (!parent || !child) continue
-      const pP = getNodePlacements(parent)
-      const pC = getNodePlacements(child)
-      for (const pp of pP) {
-        for (const cp of pC) {
-          if (pp.sign === cp.sign && pp.planet !== cp.planet && !bestBridge) {
-            bestBridge = { parent, child, sign: pp.sign, parentPlanet: pp.planet, childPlanet: cp.planet }
-          }
-        }
-      }
-    }
-    if (bestBridge) {
-      candidates.push(() => {
-        featured.add(bestBridge.parent.id)
-        featured.add(bestBridge.child.id)
-        return { type: 'genBridge', data: bestBridge, mood: 'constellation' }
-      })
-    }
-  }
-
-  // The Rare One — unique sun sign
-  if (nodes.length >= 3) {
-    const signCount = {}
-    nodes.forEach(n => { if (n.data?.sign) signCount[n.data.sign] = (signCount[n.data.sign] || 0) + 1 })
-    const unique = nodes.filter(n => n.data?.sign && signCount[n.data.sign] === 1)
-    if (unique.length > 0) {
-      candidates.push(() => {
-        const pick = unique.find(n => !featured.has(n.id)) || unique[0]
-        featured.add(pick.id)
-        return { type: 'rareOne', data: { node: pick, totalMembers: nodes.length }, mood: ELEMENT_MOOD[pick.data?.element] || 'starfield' }
-      })
-    }
-  }
-
   // Hotspot — group's strongest degree cluster
   {
     const hotspots = findHotspots(nodes)
@@ -459,45 +438,70 @@ export function buildSlides(digData) {
     }
   }
 
-  // Cosmic Inheritance — shared natal aspect patterns
-  if (digData.aspectThreads?.totalCount > 0) {
-    const { rareBonds, heredThreads, famSigs } = digData.aspectThreads
-    let topItem = null
-    let topType = null
-    // Priority: passed-down chains first (most dramatic), then rare bonds, then family patterns
-    if (heredThreads.length > 0) {
-      topItem = heredThreads[0]
-      topType = 'heredThread'
-    } else if (rareBonds.length > 0) {
-      topItem = rareBonds[0]
-      topType = 'rareBond'
-    } else if (famSigs.length > 0) {
-      topItem = famSigs[0]
-      topType = 'famSig'
-    }
-    if (topItem) {
-      candidates.push(() => ({
-        type: 'aspectThreads',
-        data: {
-          blurb:       topItem.blurb ?? `${topItem.planet1}–${topItem.planet2}`,
-          chainNames:  topItem.chainNames,
-          planetLabel: topItem.planet1 + '–' + topItem.planet2,
-          aspect:      topItem.aspect ?? null,
-          topType,
-          totalCount:  digData.aspectThreads.totalCount,
-        },
-        mood: 'constellation',
-      }))
-    }
-  }
+  // ── TIER 5: Chart-derived connectors (replaces structural Glue) ───────────
 
-  // Bridge — person whose chart touches the most others
+  // The Connector — chart-backed; only shows if the person with most aspect connections
+  // ALSO has Air/Libra/Venus energy supporting the archetype
   if (nodes.length >= 4) {
     const bridge = findBridgePerson(nodes)
     if (bridge) {
+      // Check if this person has chart support for "connector" archetype
+      const bn = bridge.node
+      const hasAir = elementWeight(bn, 'Air') >= 1
+      const hasLibra = bn.data?.sign === 'Libra' ||
+        bn.data?.moonSign === 'Libra' ||
+        bn.data?.innerPlanets?.venus?.sign === 'Libra' ||
+        bn.data?.innerPlanets?.mercury?.sign === 'Libra'
+      const hasVenusProminence = bn.data?.innerPlanets?.venus?.sign &&
+        signElement(bn.data.innerPlanets.venus.sign) === 'Air'
+
+      if (hasAir || hasLibra || hasVenusProminence) {
+        candidates.push(() => {
+          featured.add(bridge.node.id)
+          return { type: 'connector', data: { ...bridge, chartBacked: true }, mood: 'orbits' }
+        })
+      }
+    }
+  }
+
+  // Bridge — person whose chart touches the most others (always chart-based)
+  if (nodes.length >= 4) {
+    const bridge = findBridgePerson(nodes)
+    if (bridge && !featured.has(bridge.node.id)) {
       candidates.push(() => {
         featured.add(bridge.node.id)
         return { type: 'bridge', data: bridge, mood: 'orbits' }
+      })
+    }
+  }
+
+  // ── TIER 6: Nice-to-have ──────────────────────────────────────────────────
+
+  // The Clone — two members with the most matching placements
+  if (nodes.length >= 2) {
+    let bestPair = null, bestMatches = []
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const pA = getNodePlacements(nodes[i])
+        const pB = getNodePlacements(nodes[j])
+        const matches = []
+        for (const a of pA) {
+          if (pB.some(b => b.planet === a.planet && b.sign === a.sign)) {
+            const glyph = { sun: '☀', moon: '☽', mercury: '☿', venus: '♀', mars: '♂' }[a.planet] || ''
+            matches.push(`${glyph} ${a.planet} in ${a.sign}`)
+          }
+        }
+        if (matches.length > bestMatches.length) {
+          bestMatches = matches
+          bestPair = { nodeA: nodes[i], nodeB: nodes[j] }
+        }
+      }
+    }
+    if (bestPair && bestMatches.length >= 2) {
+      candidates.push(() => {
+        featured.add(bestPair.nodeA.id)
+        featured.add(bestPair.nodeB.id)
+        return { type: 'clone', data: { ...bestPair, matchCount: bestMatches.length, matches: bestMatches }, mood: 'starfield' }
       })
     }
   }
@@ -554,7 +558,7 @@ export function buildDigSummaryHtml(digData, slides, chartTitle) {
     } else if (s.type === 'superlative') {
       rows += row(s.data.title, `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}`, `${s.data.sub} · ${s.data.score} of ${s.data.total} placements in ${s.data.node.data?.element}`)
     } else if (s.type === 'emotionalForecast') {
-      rows += row('The Empath', `☽ ${s.data.node.data?.name || '—'}`, `${s.data.node.data?.moonSign} Moon — ${s.data.moonVibe}`)
+      rows += row('Emotional Landscape', `☽ ${s.data.node.data?.name || '—'}`, `${s.data.node.data?.moonSign} Moon — ${s.data.moonVibe}`)
     } else if (s.type === 'cosmicDuo') {
       const b = s.data.bond
       rows += row('Cosmic Duo', `${b.a?.data?.name || '—'} + ${b.b?.data?.name || '—'}`, `${b.title || 'Strongest cosmic bond in the chart'}${s.data.totalBonds > 1 ? ` · ${s.data.totalBonds} total bonds found` : ''}`)
@@ -564,8 +568,8 @@ export function buildDigSummaryHtml(digData, slides, chartTitle) {
       const t = s.data.thread
       const chain = (t.chain || t.members || []).map(m => typeof m === 'string' ? m : m.name).join(' → ')
       rows += row('Cosmic DNA', `${SYM[t.sign] || ''} The ${t.sign} Gene`, `${chain}${s.data.totalThreads > 1 ? ` · ${s.data.totalThreads} zodiac threads running through the family` : ''}`)
-    } else if (s.type === 'glue') {
-      rows += row('The Glue', `${s.data.node.data?.name || '—'}`, `${s.data.connectionCount} connections — the person holding everyone together`)
+    } else if (s.type === 'connector') {
+      rows += row('The Connector', `${s.data.node.data?.name || '—'}`, `Chart aspects to ${s.data.connectedTo?.length || 0} people — chart-backed linking energy`)
     } else if (s.type === 'elementClash') {
       rows += row('Element Clash', `${s.data.nodeA.data?.name} vs ${s.data.nodeB.data?.name}`, `${s.data.elementA} meets ${s.data.elementB} — the most cosmically opposed pair`)
     } else if (s.type === 'clone') {
@@ -579,9 +583,9 @@ export function buildDigSummaryHtml(digData, slides, chartTitle) {
     } else if (s.type === 'moonMirror') {
       rows += row('Moon Mirror', `${s.data.nodeA.data?.name} & ${s.data.nodeB.data?.name}`, `Both carry a ${s.data.moonSign} Moon — emotional twins`)
     } else if (s.type === 'oldSoul') {
-      rows += row('The Old Soul', `${s.data.node.data?.name}`, `${s.data.earthCount} Earth placements — the most grounded person in the chart`)
+      rows += row('The Anchor', `${s.data.node.data?.name}`, `${s.data.earthCount} Earth placements — the steadying presence in the chart`)
     } else if (s.type === 'rebel') {
-      rows += row('The Rebel', `${s.data.node.data?.name}`, `${s.data.airCount} Air placements — the most independent thinker`)
+      rows += row('The Free Thinker', `${s.data.node.data?.name}`, `${s.data.airCount} Air placements — leads with ideas and perspective`)
     } else if (s.type === 'genBridge') {
       rows += row('Generational Bridge', `${s.data.parent.data?.name} → ${s.data.child.data?.name}`, `${SYM[s.data.sign] || ''} ${s.data.sign} energy passed from ${s.data.parentPlanet} to ${s.data.childPlanet}`)
     } else if (s.type === 'rareOne') {

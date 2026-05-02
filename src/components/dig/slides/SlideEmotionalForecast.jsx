@@ -4,7 +4,7 @@ export default function SlideEmotionalForecast({ data }) {
 
   return (
     <div className="dig-slide-content dig-sparkles">
-      <p className="dig-label dig-fly-in" style={{ '--i': 0 }}>Emotional Forecast</p>
+      <p className="dig-label dig-fly-in" style={{ '--i': 0 }}>Emotional Landscape</p>
       <div className="dig-scale-pop" style={{ '--i': 0 }}>
         <span className="dig-stat">🌊</span>
       </div>
