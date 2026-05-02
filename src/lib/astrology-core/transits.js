@@ -42,7 +42,6 @@ export const ASPECTS = {
   trine:       { angle: 120, symbol: '△', name: 'trine'       },
   square:      { angle: 90,  symbol: '□', name: 'square'      },
   sextile:     { angle: 60,  symbol: '⚹', name: 'sextile'    },
-  quincunx:    { angle: 150, symbol: '⚻', name: 'quincunx'   },
 }
 
 /** Default orbs — Christina will tune these */
@@ -99,20 +98,26 @@ function getPhase(transitPlanet, natalLon, aspectAngle) {
  */
 export function calcTransitsForPerson({
   birthdate,
-  birthTime    = null,
+  birthTime     = null,
   birthTimezone = null,
-  date         = new Date(),
-  orbs         = DEFAULT_TRANSIT_ORBS,
-  aspects      = Object.keys(ASPECTS),
+  hasBirthTime  = !!birthTime,
+  date          = new Date(),
+  orbs          = DEFAULT_TRANSIT_ORBS,
+  aspects       = Object.keys(ASPECTS),
 }) {
   const tz          = birthTimezone ? ianaToOffset(birthTimezone, birthdate) : DEFAULT_TIMEZONE
   const natalPlanets = getNatalPlanets(birthdate, birthTime, tz)
   if (!natalPlanets.length) return []
 
   // Get today's sky
-  const todayStr    = date.toISOString().split('T')[0]
-  const todayChart  = chartAt(todayStr, 12, 0, 0) // UTC noon for transit positions
+  const todayStr       = date.toISOString().split('T')[0]
+  const todayChart     = chartAt(todayStr, 12, 0, 0) // UTC noon for transit positions
   const transitPlanets = todayChart.planets
+
+  // Without birth time, Moon can be up to 6.6° off — skip it as a transit target
+  const natalTargets = hasBirthTime
+    ? NATAL_POINTS
+    : NATAL_POINTS.filter(p => p.name !== 'Moon')
 
   const activeTransits = []
 
@@ -120,7 +125,7 @@ export function calcTransitsForPerson({
     const tPlanet = transitPlanets[transiting.index]
     if (!tPlanet) continue
 
-    for (const natal of NATAL_POINTS) {
+    for (const natal of natalTargets) {
       const nPlanet = natalPlanets[natal.index]
       if (!nPlanet) continue
 

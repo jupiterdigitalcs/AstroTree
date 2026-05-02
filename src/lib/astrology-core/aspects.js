@@ -169,7 +169,10 @@ export function detectAspect(planet1, planet2, hasBirthTime = true) {
 export function calcNatalAspects(planets, hasBirthTime = true) {
   const aspects = []
 
-  const filtered = planets.filter(p => TRADITIONAL_PLANETS.has(p?.name))
+  // Without birth time, Moon can be up to 6.6° off — exclude entirely rather than mislead
+  const filtered = planets.filter(p =>
+    TRADITIONAL_PLANETS.has(p?.name) && (hasBirthTime || p.name !== 'Moon')
+  )
 
   for (let i = 0; i < filtered.length; i++) {
     for (let j = i + 1; j < filtered.length; j++) {
