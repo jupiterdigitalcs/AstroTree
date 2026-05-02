@@ -204,7 +204,28 @@ function calcTimezoneWarnings(birthdate, birthTime, birthTimezone) {
   }
 }
 
-// ── Route handler ───────────────────────────────────────────────────────────
+// ── Rate limiting ────────────────────────────────────────────────────────────
+// In-memory per-IP limiter. Resets on cold starts but stops warm-instance abuse.
+// Hard batch cap ensures a single request can never be a DDoS vector regardless.
+
+const BATCH_LIMIT = 100         // max members per batch request
+const RATE_LIMIT  = 60          // max requests per IP per window
+const RATE_WINDOW = 60_000      // 1 minute in ms
+
+const _rateMap = new Map()
+
+function isRateLimited(ip) {
+  const now = Date.now()
+  const entry = _rateMap.get(ip)
+  if (!entry || now - entry.start > RATE_WINDOW) {
+    _rateMap.set(ip, { start: now, count: 1 })
+    return false
+  }
+  entry.count++
+  return entry.count > RATE_LIMIT
+}
+
+// ── Route handler ────────────────────────────────────────────────────────────
 
 const CALCULATORS = {
   moon: calcMoon,
@@ -226,10 +247,18 @@ const CALCULATORS = {
  */
 export async function POST(request) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    if (isRateLimited(ip)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const body = await request.json()
 
     // Batch mode
     if (Array.isArray(body.members)) {
+      if (body.members.length > BATCH_LIMIT) {
+        return NextResponse.json({ error: `Batch size exceeds limit of ${BATCH_LIMIT}` }, { status: 400 })
+      }
       const calcs = body.calculations ?? ['moon']
       const results = {}
       for (const member of body.members) {

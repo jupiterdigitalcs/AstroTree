@@ -92,8 +92,12 @@ export async function POST(request) {
           const seen = new Set()
           const unique = (charts || []).filter(c => seen.has(c.id) ? false : (seen.add(c.id), true))
           const parsed = unique.map(c => {
-            const d = typeof c.tree_data === 'string' ? JSON.parse(c.tree_data) : c.tree_data
-            return { title: c.title, nodes: d?.nodes || [] }
+            try {
+              const d = typeof c.tree_data === 'string' ? JSON.parse(c.tree_data) : c.tree_data
+              return { title: c.title, nodes: d?.nodes || [] }
+            } catch {
+              return { title: c.title, nodes: [] }
+            }
           })
           sendPremiumConfirmation({ to: email, charts: parsed }).catch(err =>
             console.error('[stripe] email send error:', err)
