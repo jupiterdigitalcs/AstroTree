@@ -11,6 +11,7 @@ import {
   saturnLines, jupiterGifts, allPlanetsBySign,
   findBridgePerson, deriveRoles, PLANET_GLYPHS,
 } from '../utils/groupChartCalc.js'
+import { findHereditaryAspects, findSharedContacts, PLANET_GLYPHS as ASPECT_PLANET_GLYPHS } from '../lib/astrology-core/aspects.js'
 
 const TheDig = lazy(() => import('./dig/TheDig.jsx'))
 
@@ -1002,6 +1003,275 @@ function SiblingDynamics({ siblingGroups, isExporting }) {
   )
 }
 
+// ── Cosmic Inheritance ──────────────────────────────────────────────────────────
+
+const ASPECT_PAIR_BLURB = {
+  // Personal × Personal
+  'Moon:Sun': {
+    soft: 'Identity and emotional life in alignment — an ease with knowing who one is',
+    hard: 'A recurring tension between inner feeling and outward self — what\'s felt versus what\'s shown',
+    conj: 'Identity and emotion deeply fused — living from the inside out',
+  },
+  'Mercury:Sun': {
+    soft: 'Mind and identity in sync — clear, confident expression as a recurring thread',
+    hard: 'Intellect and ego in tension — self-image tested through communication',
+    conj: 'Thinking and identity tightly linked — defined largely by how one communicates',
+  },
+  'Sun:Venus': {
+    soft: 'Warmth and a natural ease with love — identity and affection closely linked',
+    hard: 'Self-worth and love in recurring tension — what\'s deserved versus what\'s given',
+    conj: 'Identity and values deeply intertwined — defining oneself through loves and loyalties',
+  },
+  'Mars:Sun': {
+    soft: 'Drive and identity reinforcing each other — knowing what\'s wanted and going after it',
+    hard: 'Will and ego in tension — asserting oneself without overriding connection',
+    conj: 'Ambition and identity fused — acting from a place of strong personal will',
+  },
+  'Moon:Mercury': {
+    soft: 'Thinking and feeling in complement — emotion expressed with unusual clarity',
+    hard: 'Head and heart in recurring conflict — logic and emotion rarely landing in the same place',
+    conj: 'Thinking and feeling hard to separate — emotion and logic running together',
+  },
+  'Moon:Venus': {
+    soft: 'Warmth and emotional openness as a recurring thread',
+    hard: 'Emotional needs and affection misaligned — a recurring push-pull around love and belonging',
+    conj: 'Love and emotional life deeply fused — feeling love intensely and personally',
+  },
+  'Mars:Moon': {
+    soft: 'Emotional energy that translates into action — protective instinct and motivation together',
+    hard: 'Strong emotional reactions that can escalate — defensiveness or volatility under pressure',
+    conj: 'Intense emotional reactions and a fierce protective instinct — feeling things quickly and acting on them',
+  },
+  'Mercury:Venus': {
+    soft: 'Warmth expressed through words — affection and communication naturally linked',
+    hard: 'Words and affection at cross-purposes — tone and intention often getting crossed',
+    conj: 'Love expressed through language — needing to talk through feelings to feel close',
+  },
+  'Mars:Mercury': {
+    soft: 'Sharp, direct minds — speaking without holding back',
+    hard: 'Sharp tongues and quick tempers — prone to arguments and cutting words',
+    conj: 'Mind and action tightly linked — thinking fast and acting faster',
+  },
+  'Mars:Venus': {
+    soft: 'Passion and desire in an easy flow — comfortable with wanting and being wanted',
+    hard: 'Desire and conflict running close together — push-pull between attraction and friction',
+    conj: 'Passion and the magnetism of desire — love lived as intensity',
+  },
+  // Personal × Social
+  'Jupiter:Sun': {
+    soft: 'Generous, optimistic self-expression — broad vision and a belief in what\'s possible',
+    hard: 'Ambition and overreach in tension — sometimes reaching beyond the grasp',
+    conj: 'Expansive, generous identity — thinking big and leading with faith in oneself',
+  },
+  'Saturn:Sun': {
+    soft: 'Discipline and high standards woven into identity — building steadily through earned responsibility',
+    hard: 'Heavy expectations and self-doubt as a recurring thread — achievement that comes at a cost',
+    conj: 'The weight of high standards in identity — shaped by responsibility and hard-won respect',
+  },
+  'Jupiter:Moon': {
+    soft: 'Emotional generosity and optimism — comfort found in abundance and meaning',
+    hard: 'Emotional excess and overreach — a tendency to feel things to an overwhelming degree',
+    conj: 'Feelings on a grand scale — experiencing emotion expansively and deeply',
+  },
+  'Moon:Saturn': {
+    soft: 'Emotional discipline that builds depth — security earned slowly and held carefully',
+    hard: 'A recurring pattern of emotional withholding — warmth that can feel conditional or hard to access',
+    conj: 'Emotional restraint and the dance between nurturing and limitation — love expressed through duty',
+  },
+  'Jupiter:Mercury': {
+    soft: 'Broad thinking and expansive communication — storytelling and big ideas as a recurring thread',
+    hard: 'Big talk and overconfidence — ideas that don\'t always match reality',
+    conj: 'Thinking big and arguing well — wide-ranging ideas and a love of debate',
+  },
+  'Mercury:Saturn': {
+    soft: 'Careful, deliberate communication — words chosen with intention',
+    hard: 'Communication carrying weight and criticism — words that can wound or withhold',
+    conj: 'Serious, precise thinking — not speaking lightly',
+  },
+  'Jupiter:Venus': {
+    soft: 'Warmth, generosity, and an easy love of beauty as a recurring thread',
+    hard: 'Excess in love — tending to overdo affection or avoid hard truths in relationships',
+    conj: 'A love of beauty and abundance — giving generously and expecting to be met in kind',
+  },
+  'Saturn:Venus': {
+    soft: 'Love that builds slowly and lasts — loyalty earned through time and commitment',
+    hard: 'Love and restriction running together — emotional distance or withheld affection as a pattern',
+    conj: 'A cautious approach to love — loyalty earned slowly, felt deeply, sometimes carried as burden',
+  },
+  'Jupiter:Mars': {
+    soft: 'Enthusiasm and momentum — moving toward what\'s exciting with confidence',
+    hard: 'Reckless action and overreach — burning out or overextending in pursuit of more',
+    conj: 'Appetite for action and adventure — moving toward what\'s exciting without much hesitation',
+  },
+  'Mars:Saturn': {
+    soft: 'Drive channeled through discipline — acting with patience and purpose',
+    hard: 'Action blocked by structure or turned inward as frustration — effort that keeps running into walls',
+    conj: 'Drive tempered by discipline — acting strategically, even when it costs something',
+  },
+  // Personal × Outer
+  'Sun:Uranus': {
+    soft: 'Originality and independence as a recurring thread — doing things a different way',
+    hard: 'Disruption and identity instability — individuality in tension with belonging',
+    conj: 'Independence woven into identity — never quite following the script',
+  },
+  'Neptune:Sun': {
+    soft: 'Sensitivity and spiritual openness as a thread — drawn to beauty, meaning, and ideals',
+    hard: 'A recurring pattern of idealization or confusion — seeing what one wants to see',
+    conj: 'Identity and idealism fused — blurring the line between who one is and who one wishes to be',
+  },
+  'Pluto:Sun': {
+    soft: 'A gift for transformation — reinventing and growing stronger through change',
+    hard: 'Recurring encounters with power, control, and loss — shaped by forces not always chosen',
+    conj: 'Intensity and reinvention as a recurring thread — forged by depth and transformation',
+  },
+  'Moon:Uranus': {
+    soft: 'Emotional independence and a need for space — freedom valued within close bonds',
+    hard: 'Emotional unpredictability and instability — nurturing that can feel erratic or suddenly absent',
+    conj: 'A restless emotional life — valuing space and individuality even in intimate bonds',
+  },
+  'Moon:Neptune': {
+    soft: 'Deep empathy and emotional sensitivity — feeling others\' pain as one\'s own',
+    hard: 'Emotional confusion and porous boundaries — prone to absorbing others\' feelings or losing oneself in them',
+    conj: 'The line between inner feeling and the world\'s is thin — deep empathy that can blur into dissolution',
+  },
+  'Moon:Pluto': {
+    soft: 'Emotional depth and resilience — feeling as a process of becoming',
+    hard: 'Emotional intensity that can become consuming or controlling — grief and power struggles as recurring themes',
+    conj: 'Deep emotional intensity — feeling everything fully, including the most difficult parts',
+  },
+  'Mercury:Uranus': {
+    soft: 'Quick, unconventional thinking — surprising insights that don\'t follow the usual logic',
+    hard: 'Erratic communication and restless minds — disrupting conversations without always landing',
+    conj: 'Fast, unpredictable minds — surprising others with what comes out of their mouths',
+  },
+  'Mercury:Neptune': {
+    soft: 'Intuitive, imaginative communication — finding truth in metaphor and story',
+    hard: 'A tendency toward vagueness or wishful thinking — clarity that\'s hard to pin down',
+    conj: 'Intuitive minds and imaginative communication — truth and imagination as close neighbors',
+  },
+  'Mercury:Pluto': {
+    soft: 'Deep, searching minds — probing beneath the surface and finding what others miss',
+    hard: 'A tendency toward obsessive or controlling communication — words used to uncover but also to dominate',
+    conj: 'Probing minds with a need to know the truth — uncovering what others gloss over',
+  },
+  'Uranus:Venus': {
+    soft: 'An unconventional approach to love — freshness and freedom in relationships',
+    hard: 'Sudden disruptions in love and difficulty with commitment — resisting being tied down',
+    conj: 'Love on one\'s own terms — not following the relationship rulebook',
+  },
+  'Neptune:Venus': {
+    soft: 'Romantic idealism and a capacity for transcendent, compassionate love',
+    hard: 'A tendency to idealize love and feel let down by reality — prone to illusion in relationships',
+    conj: 'A romantic thread — love as a spiritual longing, sometimes at odds with what\'s real',
+  },
+  'Pluto:Venus': {
+    soft: 'Transformative love — bonds that go deep and change people in lasting ways',
+    hard: 'Obsession and power dynamics in love — a pattern of all-or-nothing relationships',
+    conj: 'Intense, consuming bonds — love that transforms but doesn\'t always survive the transformation',
+  },
+  'Mars:Uranus': {
+    soft: 'Bursts of inspiration and original action — moving when others hesitate',
+    hard: 'Impulsive and erratic action — prone to sudden outbursts and unpredictable choices',
+    conj: 'Unpredictable energy and sudden action — surprising others, and sometimes oneself',
+  },
+  'Mars:Neptune': {
+    soft: 'Drive in service of something meaningful — channeling energy toward ideals',
+    hard: 'Energy dissipated or misdirected — acting on unclear impulses or sacrificing too easily',
+    conj: 'Drive meets idealism — energy channeled toward something that can\'t always be seen or measured',
+  },
+  'Mars:Pluto': {
+    soft: 'Powerful, focused determination — committing fully and enduring',
+    hard: 'Intense will and a tendency toward compulsion or conflict — pushing hard without letting go',
+    conj: 'Intense drive and unyielding will — power and determination as a recurring thread',
+  },
+  // Social × Social
+  'Jupiter:Saturn': {
+    soft: 'Expansion and structure in balance — building big with patience',
+    hard: 'Growth and restraint in ongoing tension — caught between wanting more and holding back',
+    conj: 'Vision and discipline fused — capable of enormous effort when committed to a direction',
+  },
+  // Social × Outer
+  'Jupiter:Uranus': {
+    soft: 'A pull toward breakthroughs and new possibilities — drawn to what\'s just over the horizon',
+    hard: 'Restless expansion and sudden reversals — upending one\'s own progress',
+    conj: 'Breakthrough moments and a hunger for what\'s new — unable to stay still for long',
+  },
+  'Jupiter:Neptune': {
+    soft: 'Dreaming big and finding meaning beyond the ordinary',
+    hard: 'A tendency toward escapism or grandiose idealism — losing oneself in visions',
+    conj: 'Seeking something transcendent — drawn to faith, dreams, and unanswerable questions',
+  },
+  'Jupiter:Pluto': {
+    soft: 'A drive for transformation on a large scale — thinking in decades',
+    hard: 'A hunger for power dressed as ambition — overstepping in pursuit of transformation',
+    conj: 'Transformation at scale — not just changing oneself but what\'s around them',
+  },
+  'Saturn:Uranus': {
+    soft: 'Structure and disruption in balance — innovating without losing footing',
+    hard: 'Ongoing friction between holding on and breaking free — tradition versus change',
+    conj: 'Structure meets disruption — navigating between the need for stability and the pull toward something new',
+  },
+  'Neptune:Saturn': {
+    soft: 'Idealism grounded in reality — pursuing meaning without losing footing',
+    hard: 'Reality and illusion in conflict — struggling to bridge the practical and the transcendent',
+    conj: 'Reality and idealism in ongoing conversation — carrying both the practical and the transcendent',
+  },
+  'Pluto:Saturn': {
+    soft: 'Resilience and endurance — shaped by challenge but not defined by it',
+    hard: 'Recurring encounters with loss, control, and deep pressure — having to earn endurance the hard way',
+    conj: 'Endurance under pressure — shaped by difficulty, survival, and quiet resilience',
+  },
+}
+
+function getPairBlurb(planet1, planet2, aspectName) {
+  const key = [planet1, planet2].sort().join(':')
+  const entry = ASPECT_PAIR_BLURB[key]
+  if (!entry) return null
+  const hard = new Set(['square', 'opposition'])
+  const soft = new Set(['trine', 'sextile'])
+  const tier = hard.has(aspectName) ? 'hard' : soft.has(aspectName) ? 'soft' : 'conj'
+  return entry[tier] ?? entry.soft ?? entry.hard ?? null
+}
+
+function representativeAspect(members) {
+  const hard = new Set(['square', 'opposition'])
+  if (members.every(m => m.aspect === 'conjunction')) return 'conjunction'
+  const hardCount = members.filter(m => hard.has(m.aspect)).length
+  return hardCount >= members.length / 2 ? 'square' : 'trine'
+}
+
+/**
+ * Given member IDs who share a pattern, find and order the parent-child chain.
+ * Returns ordered chain [{id, name, node}] oldest → youngest, or null if no chain.
+ */
+function buildGenerationalChain(memberIds, nodes, edges) {
+  const memberSet = new Set(memberIds)
+  const relevant  = edges.filter(e =>
+    e.data?.relationType === 'parent-child' &&
+    memberSet.has(e.source) && memberSet.has(e.target)
+  )
+  if (relevant.length === 0) return null
+
+  const members = nodes
+    .filter(n => memberSet.has(n.id))
+    .sort((a, b) => (a.data.birthdate || '9999').localeCompare(b.data.birthdate || '9999'))
+
+  // Build undirected adjacency within the set
+  const adj = new Set(relevant.flatMap(e => [`${e.source}|${e.target}`, `${e.target}|${e.source}`]))
+
+  // Greedy walk from oldest to youngest
+  const chain   = []
+  const visited = new Set()
+  let current   = members[0]
+  while (current && !visited.has(current.id)) {
+    visited.add(current.id)
+    chain.push(current)
+    current = members.find(m => !visited.has(m.id) && adj.has(`${current.id}|${m.id}`))
+  }
+
+  return chain.length >= 2 ? chain : null
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements, chartTitle, insightsTab = 'insights', onInsightsTabChange, showDig, onShowDig, onCloseDig }) {
@@ -1048,6 +1318,81 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const groupJupiterGifts = useMemo(() => jupiterGifts(nodes), [nodes])
   const groupSignMap = useMemo(() => allPlanetsBySign(nodes), [nodes])
   const groupRoles = useMemo(() => deriveRoles(nodes), [nodes])
+
+  // ── Aspect thread patterns (shared natal aspects across family) ───────────────
+  const aspectThreadData = useMemo(() => {
+    const totalWithBirthdata = nodes.filter(n => n.data.birthdate).length
+    if (totalWithBirthdata < 2) return { rareBonds: [], heredThreads: [], famSigs: [], totalCount: 0, totalWithBirthdata }
+
+    const membersWithAspects = nodes
+      .filter(n => Array.isArray(n.data.natalAspects) && n.data.natalAspects.length && n.data.birthdate)
+      .map(n => {
+        // Without birth time, Mercury position is uncertain (~±0.75°/day).
+        // Moon is already excluded at compute time (calcNatalAspects). Apply the same logic here for Mercury.
+        const aspects = n.data.birthTime
+          ? n.data.natalAspects
+          : n.data.natalAspects.filter(a => a.planet1.name !== 'Mercury' && a.planet2.name !== 'Mercury')
+        return { id: n.id, name: n.data.name, aspects }
+      })
+      .filter(m => m.aspects.length > 0)
+
+    if (membersWithAspects.length < 2) return { rareBonds: [], heredThreads: [], famSigs: [], totalCount: 0, totalWithBirthdata }
+
+    const minPeople = totalWithBirthdata <= 4 ? 2 : 3
+    const GLOBAL_BASELINE = {
+      'Jupiter:Saturn': 0.56, 'Pluto:Sun': 0.50, 'Saturn:Sun': 0.44,
+      'Neptune:Sun': 0.38, 'Moon:Pluto': 0.31, 'Jupiter:Neptune': 0.31,
+      'Moon:Neptune': 0.25, 'Neptune:Saturn': 0.19,
+    }
+    function bKey(p1, p2) { return [p1, p2].sort().join(':') }
+    function isWorthy(memberIds, p1, p2) {
+      const count = memberIds.length
+      const prop  = count / totalWithBirthdata
+      if (count < minPeople || prop < 0.30) return false
+      const baseline = GLOBAL_BASELINE[bKey(p1, p2)] ?? 0
+      if (baseline > 0.50 && prop <= baseline) return false
+      return true
+    }
+
+    const sharedContacts    = findSharedContacts(membersWithAspects)
+    const hereditaryAspects = findHereditaryAspects(membersWithAspects)
+
+    const rareBonds = hereditaryAspects
+      .filter(p => p.members.filter(m => m.orb <= 0.5).length >= 2)
+      .map(p => ({ ...p, blurb: getPairBlurb(p.planet1, p.planet2, p.members[0]?.aspect ?? 'conjunction'), chainNames: p.members.map(m => m.name).join(' and ') }))
+      .slice(0, 3)
+
+    const shownPairs = new Set(rareBonds.map(p => [p.planet1, p.planet2].sort().join(':')))
+
+    const heredThreads = sharedContacts
+      .filter(c => {
+        const key = [c.planet1, c.planet2].sort().join(':')
+        if (shownPairs.has(key)) return false
+        return buildGenerationalChain(c.members.map(m => m.id), nodes, edges) !== null
+      })
+      .filter(c => c.members.length >= 2)
+      .map(c => {
+        const chain = buildGenerationalChain(c.members.map(m => m.id), nodes, edges)
+        return {
+          ...c,
+          blurb:      getPairBlurb(c.planet1, c.planet2, representativeAspect(c.members)),
+          chainNames: chain ? chain.map(n => n.data.name).join(' → ') : c.members.map(m => m.name).join(', '),
+        }
+      })
+      .slice(0, 3)
+    heredThreads.forEach(c => shownPairs.add([c.planet1, c.planet2].sort().join(':')))
+
+    const famSigs = sharedContacts
+      .filter(c => {
+        if (shownPairs.has([c.planet1, c.planet2].sort().join(':'))) return false
+        return isWorthy(c.members.map(m => m.id), c.planet1, c.planet2)
+      })
+      .map(c => ({ ...c, blurb: getPairBlurb(c.planet1, c.planet2, representativeAspect(c.members)), chainNames: c.members.map(m => m.name).join(', ') }))
+      .slice(0, 5 - rareBonds.length - heredThreads.length)
+
+    const totalCount = rareBonds.length + heredThreads.length + famSigs.length
+    return { rareBonds, heredThreads, famSigs, totalCount, totalWithBirthdata }
+  }, [nodes, edges]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Inner planet data (Mercury/Venus/Mars) ────────────────────────────────────
   const innerPlanetData = useMemo(() => {
@@ -1797,8 +2142,9 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       memberRoles,
       couples,
       plutoGroups,
+      aspectThreads: aspectThreadData,
     }
-  }, [nodes, edges, dominant, dominantModality, masculine, feminine, total, missingElements, topBonds, signThreadList, memberRoles, couples, isGroupOnly])
+  }, [nodes, edges, dominant, dominantModality, masculine, feminine, total, missingElements, topBonds, signThreadList, memberRoles, couples, isGroupOnly, aspectThreadData])
 
   if (tooFewNodes) {
     return (
@@ -2365,6 +2711,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           groupGaps && { icon: '◌', label: 'The Gaps', detail: 'what the group may be missing' },
           groupSaturnLines.length > 0 && { icon: '♄', label: 'Saturn Lines', detail: 'shared growth & responsibility' },
           groupJupiterGifts.length > 0 && { icon: '♃', label: 'Jupiter Gifts', detail: 'where the group expands' },
+          aspectThreadData.totalCount > 0 && { icon: '✦', label: 'Cosmic Inheritance', detail: `${aspectThreadData.totalCount} pattern${aspectThreadData.totalCount !== 1 ? 's' : ''} found` },
         ].filter(Boolean)
         return (
         <div className="insight-card" style={{ padding: '1.2rem 1rem' }}>
@@ -2789,6 +3136,95 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                 </div>
               )
             })}
+          </div>
+        )
+      })()}
+
+      {/* 12. Cosmic Inheritance — shared / hereditary natal aspects */}
+      {(() => {
+        const { rareBonds, heredThreads, famSigs, totalWithBirthdata } = aspectThreadData
+        if (aspectThreadData.totalCount === 0) return null
+
+        function aspectLabel(members) {
+          const types = [...new Set(members.map(m => m.aspect))]
+          return types.length === 1 ? types[0] : 'connection'
+        }
+
+        function nameList(members) {
+          return members.map(m => m.name).join(', ')
+        }
+
+        return (
+          <div className="insight-card">
+            <h3 className="insight-heading">✦ Cosmic Inheritance<span className="insight-pro-tag">✦</span></h3>
+            <p className="insight-whisper">Patterns appearing independently in each person's own birth chart — not connections between charts, but the same energy recurring across them.</p>
+
+            {rareBonds.length > 0 && rareBonds.map((p, i) => {
+              const exact = p.members.filter(m => m.orb <= 0.5)
+              const blurb = p.blurb
+              return (
+                <div key={i} style={{ marginBottom: '0.75rem' }}>
+                  <p className="insight-note" style={{ marginBottom: '0.18rem' }}>
+                    <span style={{ color: 'var(--gold)', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginRight: '0.4rem' }}>Rare Bond</span>
+                    {blurb
+                      ? <strong>{blurb}</strong>
+                      : <strong>{p.planet1} {p.aspect} {p.planet2}</strong>}
+                  </p>
+                  <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                    {exact.map(m => m.name).join(' and ')} — within {exact.map(m => `${m.orb}°`).join(' and ')}
+                  </p>
+                  <p className="insight-note" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.7 }}>
+                    {p.planet1} {p.aspect} {p.planet2}
+                  </p>
+                </div>
+              )
+            })}
+
+            {heredThreads.length > 0 && heredThreads.map((c, i) => {
+              const blurb = c.blurb
+              return (
+                <div key={i} style={{ marginBottom: '0.75rem' }}>
+                  <p className="insight-note" style={{ marginBottom: '0.18rem' }}>
+                    <span style={{ color: 'var(--rose)', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginRight: '0.4rem' }}>Passed Down</span>
+                    {blurb
+                      ? <strong>{blurb}</strong>
+                      : <strong>{c.planet1}–{c.planet2}</strong>}
+                  </p>
+
+                  <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                    {c.chainNames}
+                  </p>
+                  <p className="insight-note" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.7 }}>
+                    {c.planet1}–{c.planet2} · {aspectLabel(c.members)}
+                  </p>
+                </div>
+              )
+            })}
+
+            {famSigs.length > 0 && famSigs.map((c, i) => {
+              const blurb = c.blurb
+              return (
+                <div key={i} style={{ marginBottom: '0.75rem' }}>
+                  <p className="insight-note" style={{ marginBottom: '0.18rem' }}>
+                    <span style={{ color: 'var(--text-soft)', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginRight: '0.4rem' }}>Family Pattern</span>
+                    {blurb
+                      ? <strong>{blurb}</strong>
+                      : <strong>{c.planet1}–{c.planet2}</strong>}
+                  </p>
+
+                  <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                    {c.chainNames}
+                  </p>
+                  <p className="insight-note" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.7 }}>
+                    {c.planet1}–{c.planet2} · {aspectLabel(c.members)}
+                  </p>
+                </div>
+              )
+            })}
+
+            <p className="insight-whisper" style={{ marginTop: '0.3rem' }}>
+              Based on birth chart alignments. Moon excluded for members without a birth time.
+            </p>
           </div>
         )
       })()}

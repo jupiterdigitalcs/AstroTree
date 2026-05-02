@@ -459,6 +459,38 @@ export function buildSlides(digData) {
     }
   }
 
+  // Cosmic Inheritance — shared natal aspect patterns
+  if (digData.aspectThreads?.totalCount > 0) {
+    const { rareBonds, heredThreads, famSigs } = digData.aspectThreads
+    let topItem = null
+    let topType = null
+    // Priority: passed-down chains first (most dramatic), then rare bonds, then family patterns
+    if (heredThreads.length > 0) {
+      topItem = heredThreads[0]
+      topType = 'heredThread'
+    } else if (rareBonds.length > 0) {
+      topItem = rareBonds[0]
+      topType = 'rareBond'
+    } else if (famSigs.length > 0) {
+      topItem = famSigs[0]
+      topType = 'famSig'
+    }
+    if (topItem) {
+      candidates.push(() => ({
+        type: 'aspectThreads',
+        data: {
+          blurb:       topItem.blurb ?? `${topItem.planet1}–${topItem.planet2}`,
+          chainNames:  topItem.chainNames,
+          planetLabel: topItem.planet1 + '–' + topItem.planet2,
+          aspect:      topItem.aspect ?? null,
+          topType,
+          totalCount:  digData.aspectThreads.totalCount,
+        },
+        mood: 'constellation',
+      }))
+    }
+  }
+
   // Bridge — person whose chart touches the most others
   if (nodes.length >= 4) {
     const bridge = findBridgePerson(nodes)
@@ -554,6 +586,9 @@ export function buildDigSummaryHtml(digData, slides, chartTitle) {
       rows += row('Generational Bridge', `${s.data.parent.data?.name} → ${s.data.child.data?.name}`, `${SYM[s.data.sign] || ''} ${s.data.sign} energy passed from ${s.data.parentPlanet} to ${s.data.childPlanet}`)
     } else if (s.type === 'rareOne') {
       rows += row('The Rare One', `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name}`, `The only ${s.data.node.data?.sign} in a chart of ${s.data.totalMembers}`)
+    } else if (s.type === 'aspectThreads') {
+      const tierLabel = s.data.topType === 'heredThread' ? 'Passed Down' : s.data.topType === 'rareBond' ? 'Rare Bond' : 'Family Pattern'
+      rows += row('Cosmic Inheritance', `${tierLabel} — ${s.data.planetLabel}`, s.data.blurb ?? s.data.chainNames)
     } else if (s.type === 'paywall') {
       // Skip paywall slide in summary export
     }

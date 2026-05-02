@@ -8,6 +8,7 @@
  */
 
 import { calculateChart } from 'celestine'
+import { calcNatalAspects } from './aspects.js'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -221,4 +222,19 @@ export function getNatalPlanets(birthdate, birthTime, tz = DEFAULT_TIMEZONE) {
   } catch {
     return []
   }
+}
+
+/**
+ * Calculate natal aspects for a person.
+ * Matches the API route calculator signature: (birthdate, birthTime, tz) → data
+ *
+ * @param {string} birthdate  — 'YYYY-MM-DD'
+ * @param {string|null} birthTime — 'HH:MM' or null
+ * @param {number} tz         — numeric UTC offset
+ * @returns {NatalAspect[]}
+ */
+export function calcNatalAspectsForPerson(birthdate, birthTime, tz = DEFAULT_TIMEZONE) {
+  const hasBirthTime = !!birthTime
+  const planets = getNatalPlanets(birthdate, birthTime, tz)
+  return calcNatalAspects(planets, hasBirthTime)
 }

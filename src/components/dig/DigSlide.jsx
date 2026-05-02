@@ -19,6 +19,7 @@ import SlideRareOne from './slides/SlideRareOne.jsx'
 import SlidePaywall from './slides/SlidePaywall.jsx'
 import SlideHotspot from './slides/SlideHotspot.jsx'
 import SlideBridge from './slides/SlideBridge.jsx'
+import SlideAspectThreads from './slides/SlideAspectThreads.jsx'
 
 const SLIDE_COMPONENTS = {
   intro: SlideIntro,
@@ -42,6 +43,7 @@ const SLIDE_COMPONENTS = {
   paywall: SlidePaywall,
   hotspot: SlideHotspot,
   bridge: SlideBridge,
+  aspectThreads: SlideAspectThreads,
 }
 
 export default function DigSlide({ slide, state, onShare, sharing, onUpgrade }) {

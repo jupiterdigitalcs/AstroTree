@@ -26,6 +26,7 @@ export {
   calcIngressWarnings,
   calcTimezoneWarnings,
   getNatalPlanets,
+  calcNatalAspectsForPerson,
 } from './natal.js'
 
 export {
@@ -37,6 +38,7 @@ export {
   calcNatalAspects,
   calcCrossAspects,
   findHereditaryAspects,
+  findSharedContacts,
 } from './aspects.js'
 
 export {

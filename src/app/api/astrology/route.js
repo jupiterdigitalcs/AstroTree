@@ -7,6 +7,7 @@ import {
   calcSunAtTime,
   calcIngressWarnings,
   calcTimezoneWarnings,
+  calcNatalAspectsForPerson,
   DEFAULT_TIMEZONE,
 } from '@/lib/astrology-core'
 
@@ -38,6 +39,7 @@ const CALCULATORS = {
   sunAtTime:         calcSunAtTime,
   ingressWarnings:   calcIngressWarnings,
   timezoneWarnings:  calcTimezoneWarnings,
+  natalAspects:      calcNatalAspectsForPerson,
 }
 
 // ── Route handler ────────────────────────────────────────────────────────────

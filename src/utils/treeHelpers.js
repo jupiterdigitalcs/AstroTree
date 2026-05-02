@@ -62,6 +62,7 @@ export async function buildNodeData(member) {
     if (astro.outerPlanets) base.outerPlanets = astro.outerPlanets
     if (astro.ingressWarnings) base.ingressWarnings = astro.ingressWarnings
     if (astro.timezoneWarnings) base.timezoneWarnings = astro.timezoneWarnings
+    if (astro.natalAspects) base.natalAspects = astro.natalAspects
     if (astro.sunAtTime?.sign) {
       const { element: el, color: c } = getElement(astro.sunAtTime.sign)
       Object.assign(base, { sign: astro.sunAtTime.sign, symbol: astro.sunAtTime.symbol, element: el, elementColor: c })
@@ -72,7 +73,7 @@ export async function buildNodeData(member) {
 
 // Enrich existing saved nodes with any missing computed fields
 export async function hydrateNodes(nodes) {
-  const needsHydration = nodes.filter(n => (!n.data?.innerPlanets || !n.data?.outerPlanets) && n.data?.birthdate)
+  const needsHydration = nodes.filter(n => (!n.data?.innerPlanets || !n.data?.outerPlanets || !n.data?.natalAspects) && n.data?.birthdate)
   if (needsHydration.length === 0) return nodes
 
   const batch = await computeAstrologyBatch(
@@ -91,6 +92,7 @@ export async function hydrateNodes(nodes) {
     if (astro.outerPlanets) enriched.outerPlanets = astro.outerPlanets
     if (astro.ingressWarnings) enriched.ingressWarnings = astro.ingressWarnings
     if (astro.timezoneWarnings) enriched.timezoneWarnings = astro.timezoneWarnings
+    if (astro.natalAspects) enriched.natalAspects = astro.natalAspects
     return { ...n, data: enriched }
   })
 }

@@ -5,6 +5,7 @@ import { saveDraft, loadDraft, saveChart, loadCharts } from '../utils/storage.js
 import { applyDagreLayout } from '../utils/layout.js'
 import { hydrateNodes } from '../utils/treeHelpers.js'
 import { hasBeenAsked } from '../components/EmailCapture.jsx'
+import { markInsightsSeen } from '../components/OnboardingProgress.jsx'
 import { isCloudEnabled } from '../utils/cloudStorage.js'
 
 export function useChartManager({
@@ -35,6 +36,8 @@ export function useChartManager({
       // Set nodes immediately from cache to prevent welcome screen flash
       setNodes(draft.nodes)
       setEdges(draft.edges)
+      // If chart already has members + connections, skip the onboarding stepper
+      if (draft.edges?.length > 0) markInsightsSeen()
       setCounter(draft.counter ?? 1)
       if (draft.savedChartId) setSavedChartId(draft.savedChartId)
       // In cosmic mode, stay on canvas; in classic mode, open family tab
@@ -71,6 +74,7 @@ export function useChartManager({
   }, [nodes, edges, counter, savedChartId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLoadChart = useCallback(async (chart) => {
+    markInsightsSeen()
     const hydrated = await hydrateNodes(chart.nodes)
     if (setCollapsedNodeIds) setCollapsedNodeIds(new Set())
     if (setForceExpandedIds) setForceExpandedIds(new Set())

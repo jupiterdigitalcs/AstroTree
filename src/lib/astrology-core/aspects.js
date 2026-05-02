@@ -235,7 +235,7 @@ export function calcCrossAspects(planetsA, planetsB, hasBirthTimeA = true, hasBi
   return aspects.sort((a, b) => a.orb - b.orb)
 }
 
-// ── Group / hereditary patterns ───────────────────────────────────────────────
+// ── Group / hereditary / shared patterns ─────────────────────────────────────
 
 /**
  * Find the same natal aspect appearing across multiple family members.
@@ -268,5 +268,41 @@ export function findHereditaryAspects(memberProfiles) {
   return Object.values(counts)
     .filter(p => p.members.length >= 2)
     .map(p => ({ ...p, count: p.members.length }))
+    .sort((a, b) => b.count - a.count)
+}
+
+/**
+ * Find the same planet PAIR (regardless of aspect type) appearing in multiple charts.
+ * Used for the Shared Aspects insight — catches Sun trine Saturn in one person
+ * and Sun square Saturn in another as both being a Sun-Saturn contact.
+ *
+ * @param {Array<{ id, name, aspects: NatalAspect[] }>} memberProfiles
+ * @returns {Array<{ planet1, planet2, members: Array<{ id, name, aspect, symbol, orb, exact }>, count }>}
+ */
+export function findSharedContacts(memberProfiles) {
+  const contacts = {}
+
+  for (const member of memberProfiles) {
+    const seen = new Set() // one entry per planet pair per person
+    for (const a of member.aspects) {
+      const planets = [a.planet1.name, a.planet2.name].sort()
+      const key = `${planets[0]}:${planets[1]}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      if (!contacts[key]) contacts[key] = { planet1: planets[0], planet2: planets[1], members: [] }
+      contacts[key].members.push({
+        id:     member.id,
+        name:   member.name,
+        aspect: a.aspect,
+        symbol: a.symbol,
+        orb:    a.orb,
+        exact:  a.exact ?? (a.orb < 0.5),
+      })
+    }
+  }
+
+  return Object.values(contacts)
+    .filter(c => c.members.length >= 2)
+    .map(c => ({ ...c, count: c.members.length }))
     .sort((a, b) => b.count - a.count)
 }
