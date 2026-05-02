@@ -2129,6 +2129,19 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           involvedPlanets.add(a.personA.name)
           involvedPlanets.add(a.personB.name)
         }
+
+        // Plain-English "why" — what parts of their charts connect
+        const PLANET_MEANING = {
+          Sun: 'identity', Moon: 'emotions', Venus: 'love and values',
+          Mars: 'drive and energy', Mercury: 'communication',
+          Jupiter: 'growth', Saturn: 'responsibility',
+        }
+        const personalInvolved = [...involvedPlanets].filter(p => PERSONAL_SET.has(p) || p === 'Saturn' || p === 'Jupiter')
+        const meaningParts = personalInvolved.slice(0, 3).map(p => PLANET_MEANING[p] || p.toLowerCase())
+        const why = meaningParts.length > 0
+          ? `Connected through ${meaningParts.join(', ')}.`
+          : ''
+
         let flavor = ''
         if (involvedPlanets.has('Venus') && involvedPlanets.has('Moon')) {
           flavor = softCount >= hardCount
@@ -2151,12 +2164,21 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             ? 'Their charts are unexpectedly in sync — a quiet resonance that may not be obvious on the surface.'
             : 'There\'s a dynamic tension here. They tend to notice each other, even from across the room.'
         }
+        // Strength rating based on count + tightness
+        const avgOrb = qualifying.reduce((sum, a) => sum + a.orb, 0) / qualifying.length
+        let strength = ''
+        if (qualifying.length >= 5 || (qualifying.length >= 4 && avgOrb < 2)) strength = 'Very strong'
+        else if (qualifying.length >= 4 || (qualifying.length >= 3 && avgOrb < 1.5)) strength = 'Strong'
+        else strength = 'Notable'
+
         results.push({
           a: pair.a,
           b: pair.b,
           aspectCount: qualifying.length,
           relation: pair.relation,
+          why,
           flavor,
+          strength,
         })
       }
     }
@@ -3095,7 +3117,15 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                 {hc.a.data.symbol} <strong>{hc.a.data.name}</strong> &amp;{' '}
                 {hc.b.data.symbol} <strong>{hc.b.data.name}</strong>
                 {hc.relation && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '0.4rem' }}>({hc.relation})</span>}
+                <span style={{ fontSize: '0.68rem', color: hc.strength === 'Very strong' ? 'var(--gold)' : hc.strength === 'Strong' ? '#b8a0d4' : 'var(--text-muted)', marginLeft: '0.4rem', fontWeight: 500 }}>
+                  {hc.strength}
+                </span>
               </p>
+              {hc.why && (
+                <p className="insight-note" style={{ fontSize: '0.72rem', color: '#b8a0d4', marginTop: '0.15rem' }}>
+                  {hc.why}
+                </p>
+              )}
               <p className="insight-note" style={{ fontSize: '0.75rem', color: 'var(--text-soft)', lineHeight: 1.55, paddingLeft: '0.75rem', borderLeft: '2px solid rgba(184,160,212,0.25)', marginTop: '0.2rem' }}>
                 {hc.flavor}
               </p>
