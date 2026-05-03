@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback, lazy, Suspense } from 'react'
+import { useState, useMemo, lazy, Suspense } from 'react'
 import {
   getElement,
   ELEMENT_COLORS, SIGN_MODALITY, POLARITY_GROUP,
@@ -761,77 +761,6 @@ function FullCompatPairs({ pairs, title, isExporting, generationLevel, notableBo
   )
 }
 
-// ── Section Navigation ────────────────────────────────────────────────────────
-
-function InsightsSectionNav({ sections }) {
-  const [active, setActive] = useState(sections[0]?.id || '')
-  const [collapsed, setCollapsed] = useState({})
-
-  useEffect(() => {
-    const els = sections.map(s => document.getElementById(`insights-section-${s.id}`)).filter(Boolean)
-    if (!els.length) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const id = entry.target.id.replace('insights-section-', '')
-            setActive(id)
-            break
-          }
-        }
-      },
-      { rootMargin: '-20% 0px -70% 0px' }
-    )
-    els.forEach(el => observer.observe(el))
-    return () => observer.disconnect()
-  }, [sections])
-
-  const scrollTo = useCallback((id) => {
-    const el = document.getElementById(`insights-section-${id}`)
-    if (!el) return
-    // Expand if collapsed
-    if (collapsed[id]) setCollapsed(prev => ({ ...prev, [id]: false }))
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [collapsed])
-
-  const toggleCollapse = useCallback((id) => {
-    setCollapsed(prev => ({ ...prev, [id]: !prev[id] }))
-  }, [])
-
-  // Apply collapsed state to section elements via class
-  useEffect(() => {
-    for (const s of sections) {
-      const el = document.getElementById(`insights-section-${s.id}`)
-      if (!el) continue
-      if (collapsed[s.id]) {
-        el.classList.add('insights-section--collapsed')
-      } else {
-        el.classList.remove('insights-section--collapsed')
-      }
-    }
-  }, [collapsed, sections])
-
-  return (
-    <div className="insights-section-nav">
-      {sections.map(s => (
-        <button
-          key={s.id}
-          type="button"
-          className={`insights-section-nav-btn${active === s.id ? ' insights-section-nav-btn--active' : ''}`}
-          onClick={() => scrollTo(s.id)}
-        >
-          {s.label}
-        </button>
-      ))}
-      {/* Dot position indicator */}
-      <span
-        className="insights-section-nav-dot"
-        style={{ left: `${(sections.findIndex(s => s.id === active) / sections.length) * 100 + (50 / sections.length)}%` }}
-      />
-    </div>
-  )
-}
 
 function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly }) {
   const g = isGroupOnly ? 'group' : 'family'
@@ -3008,15 +2937,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {hasAdvanced && (<>
 
-      <InsightsSectionNav sections={[
-        { id: 'identity', label: 'Identity' },
-        { id: 'relationships', label: 'Relationships' },
-        { id: 'narrative', label: 'Family Story' },
-        { id: 'patterns', label: 'Patterns' },
-      ]} />
-
       {/* ═══ SECTION: Individual Identity ═══════════════════════════════════ */}
-      <div className="insights-section" id="insights-section-identity" data-section-label="Identity">
 
       {/* Family Roles */}
       {memberRoles.length >= 2 && (
@@ -3108,10 +3029,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         )
       })()}
 
-      </div>{/* end identity section */}
+
 
       {/* ═══ SECTION: Relationships ═════════════════════════════════════════ */}
-      <div className="insights-section" id="insights-section-relationships" data-section-label="Relationships">
+
 
       {/* Partner Compatibility */}
       {couples.length > 0 && (
@@ -3206,10 +3127,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      </div>{/* end relationships section */}
+
 
       {/* ═══ SECTION: Family Narrative ══════════════════════════════════════ */}
-      <div className="insights-section" id="insights-section-narrative" data-section-label="Family Story">
+
 
       {/* Family Arrivals */}
       {arrivalGroups.length > 0 && (
@@ -3362,10 +3283,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      </div>{/* end narrative section */}
+
 
       {/* ═══ SECTION: Group Patterns ═══════════════════════════════════════ */}
-      <div className="insights-section" id="insights-section-patterns" data-section-label="Patterns">
+
 
       {/* Planetary Patterns (Dominant Sign) */}
       {topSigns.length > 0 && (
@@ -3561,7 +3482,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         )
       })()}
 
-      </div>{/* end patterns section */}
+
 
       </>)}
       {/* 13. Add more prompt */}
