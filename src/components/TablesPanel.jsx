@@ -1,6 +1,7 @@
 import { useState } from 'react'
 // Planet colors now handled by zodiac symbol + sign name directly (no per-planet coloring)
 import { getElement, ELEMENT_COLORS } from '../utils/astrology/elements.js'
+import { AspectsPanel } from './AspectsPanel.jsx'
 
 const ELEMENT_ORDER = ['Fire', 'Earth', 'Air', 'Water']
 const ELEMENT_EMOJI = { Fire: '🔥', Earth: '🌿', Air: '💨', Water: '💧' }
@@ -30,9 +31,10 @@ function ElementTag({ sign }) {
 }
 
 export function TablesPanel({ nodes, chartTitle }) {
-  const [sortBy,  setSortBy]  = useState('name')
-  const [sortDir, setSortDir] = useState('asc')
-  const [visible, setVisible] = useState(DEFAULT_VISIBLE)
+  const [tab,         setTab]         = useState('planets') // 'planets' | 'aspects'
+  const [sortBy,      setSortBy]      = useState('name')
+  const [sortDir,     setSortDir]     = useState('asc')
+  const [visible,     setVisible]     = useState(DEFAULT_VISIBLE)
   const [showElements, setShowElements] = useState(false)
 
   if (!nodes?.length) {
@@ -133,11 +135,27 @@ export function TablesPanel({ nodes, chartTitle }) {
     )
   }
 
+  if (tab === 'aspects') {
+    return (
+      <div className="tables-panel">
+        <div className="tables-tab-toggle">
+          <button className="tables-tab-btn" onClick={() => setTab('planets')}>☿ Planets</button>
+          <button className="tables-tab-btn tables-tab-btn--active">⚹ Aspects <span className="tables-beta-tag">Beta</span></button>
+        </div>
+        <AspectsPanel nodes={nodes} />
+      </div>
+    )
+  }
+
   return (
     <div className="tables-panel">
       <h3 className="tables-title">{chartTitle || 'Astrology Data'}</h3>
 
-      {/* Column visibility toggles */}
+      {/* Tab toggle + column visibility toggles */}
+      <div className="tables-tab-toggle">
+        <button className="tables-tab-btn tables-tab-btn--active">☿ Planets</button>
+        <button className="tables-tab-btn" onClick={() => setTab('aspects')}>⚹ Aspects <span className="tables-beta-tag">Beta</span></button>
+      </div>
       <div className="tables-col-toggles">
         {COLUMNS.map(c => (
           <button

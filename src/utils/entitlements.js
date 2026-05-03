@@ -62,7 +62,7 @@ export function getChartLimit(tier, config) {
 export const FEATURE_KEYS = [
   // Views
   { key: 'zodiac_view',        label: 'Zodiac Wheel View', group: 'Views' },
-  { key: 'tables_view',        label: 'Tables View — sortable planet grid', group: 'Views' },
+  { key: 'tables_view',        label: 'Tables View — sortable planet grid + aspects', group: 'Views' },
   { key: 'constellation_view', label: 'Constellation View', group: 'Views' },
   // Insights
   { key: 'advanced_insights',  label: 'Celestial Insights — Notable Bonds, Venus/Mars, Partner Compatibility, Sign Threads, Zodiac Threads, Family Roles, Arrivals, Sign Concentration, Pluto Generations', group: 'Insights' },

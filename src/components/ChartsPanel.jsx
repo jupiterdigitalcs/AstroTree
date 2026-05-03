@@ -97,7 +97,7 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
       ) : onSignIn ? (
         <div className="charts-account-top charts-account-top--unsigned">
           <button type="button" className="charts-signin-link" onClick={onSignIn}>Sign in</button>
-          <span className="charts-account-hint">to sync charts &amp; unlock Celestial</span>
+          <span className="charts-account-hint">{entitlements?.tier === 'premium' ? 'to back up your charts' : 'to sync charts \u0026 unlock Celestial'}</span>
         </div>
       ) : null}
 

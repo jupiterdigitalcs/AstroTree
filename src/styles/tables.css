@@ -203,6 +203,54 @@
   text-align: center;
 }
 
+/* ── Beta tag (used on Aspects tab) ─────────────────────────────────────── */
+.tables-beta-tag {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.48rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  border: 1px solid rgba(201,168,76,0.4);
+  color: var(--gold);
+  background: rgba(201,168,76,0.08);
+  vertical-align: middle;
+  margin-left: 0.35rem;
+}
+
+/* ── Planets / Aspects tab toggle ───────────────────────────────────────── */
+.tables-tab-toggle {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tables-tab-btn {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.35rem 0.8rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+
+.tables-tab-btn:hover {
+  color: var(--text-soft);
+}
+
+.tables-tab-btn--active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
 /* ── Column visibility toggles ──────────────────────────────────────────── */
 .tables-col-toggles {
   display: flex;
@@ -253,4 +301,193 @@
   background: var(--border);
   align-self: center;
   flex-shrink: 0;
+}
+
+/* ────────────────────────── Aspects table ─────────────────────────────────── */
+
+/* Aspect type filter pills */
+.aspects-filter-bar {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.aspects-filter-pill {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.aspects-filter-pill--on {
+  border-color: rgba(201,168,76,0.4);
+  color: var(--gold);
+  background: rgba(201,168,76,0.07);
+}
+
+.aspects-desc-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: auto;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.aspects-desc-toggle input[type="checkbox"] {
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+/* Table cell alignment */
+.aspects-table td {
+  vertical-align: top;
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+}
+
+/* Person cell — align to top of taller rows */
+.aspects-person-cell {
+  padding-top: 0.6rem !important;
+}
+
+.aspects-no-time-marker {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.aspects-orb-unknown {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+/* Planets cell: pair line + description below */
+.aspects-planets-cell {
+  min-width: 160px;
+}
+
+.aspects-pair-line {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-wrap: nowrap;
+  margin-bottom: 0.25rem;
+  font-family: 'Raleway', sans-serif;
+}
+
+.aspects-glyph {
+  font-size: 0.82rem;
+  color: var(--gold-light);
+}
+
+.aspects-pname {
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  font-weight: 500;
+}
+
+.aspects-pair-dash {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin: 0 0.15rem;
+}
+
+.aspects-desc-line {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.67rem;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.45;
+  max-width: 28ch;
+}
+
+.aspects-badge {
+  display: inline-block;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 0.08rem 0.28rem;
+  border-radius: 4px;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.aspects-badge--exact {
+  color: var(--gold);
+  border: 1px solid rgba(201,168,76,0.35);
+  background: rgba(201,168,76,0.08);
+}
+
+/* Aspect cell: symbol + label */
+.aspects-aspect-cell {
+  white-space: nowrap;
+}
+
+.aspects-sym {
+  font-size: 0.95rem;
+  margin-right: 0.3rem;
+}
+.aspects-sym--conjunction { color: var(--gold); }
+.aspects-sym--trine       { color: #7ecba6; }
+.aspects-sym--sextile     { color: #6ab0d4; }
+.aspects-sym--opposition  { color: #a98cd4; }
+.aspects-sym--square      { color: #d47a6a; }
+
+.aspects-aspect-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Signs cell */
+.aspects-signs-cell {
+  white-space: nowrap;
+}
+
+.aspects-sign {
+  font-size: 0.72rem;
+  color: var(--text-soft);
+}
+
+.aspects-sign-sep {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+/* Orb cell */
+.aspects-orb-cell {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Family / shared cell */
+.aspects-family-cell {
+  white-space: nowrap;
+}
+
+.aspects-family-names {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  color: var(--gold-light);
+  font-weight: 500;
+}
+
+.aspects-family-none {
+  color: var(--text-dim, rgba(255,255,255,0.2));
+  font-size: 0.72rem;
 }
