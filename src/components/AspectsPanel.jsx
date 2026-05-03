@@ -2,6 +2,13 @@ import { useState } from 'react'
 
 const EXCLUDE_WITHOUT_TIME = new Set(['Moon', 'Mercury'])
 const OUTER_PLANETS = new Set(['Uranus', 'Neptune', 'Pluto'])
+// Jupiter paired with slow planets is generational — everyone born in a similar year shares it
+const GENERATIONAL_PAIR = (a, b) =>
+  (OUTER_PLANETS.has(a) && OUTER_PLANETS.has(b)) ||
+  (a === 'Jupiter' && (b === 'Saturn' || OUTER_PLANETS.has(b))) ||
+  (b === 'Jupiter' && (a === 'Saturn' || OUTER_PLANETS.has(a))) ||
+  (a === 'Saturn' && OUTER_PLANETS.has(b)) ||
+  (b === 'Saturn' && OUTER_PLANETS.has(a))
 
 const PLANET_ORDER = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']
 
@@ -268,7 +275,7 @@ export function AspectsPanel({ nodes }) {
     for (const a of aspects) {
       const n1 = a.planet1.name, n2 = a.planet2.name
       if (!hasBirthTime && (EXCLUDE_WITHOUT_TIME.has(n1) || EXCLUDE_WITHOUT_TIME.has(n2))) continue
-      if (OUTER_PLANETS.has(n1) && OUTER_PLANETS.has(n2)) continue
+      if (GENERATIONAL_PAIR(n1, n2)) continue
 
       const swap = PLANET_ORDER.indexOf(n1) > PLANET_ORDER.indexOf(n2)
       const p1 = swap ? a.planet2 : a.planet1

@@ -142,6 +142,7 @@ export function TablesPanel({ nodes, chartTitle }) {
           <button className="tables-tab-btn" onClick={() => setTab('planets')}>☿ Planets</button>
           <button className="tables-tab-btn tables-tab-btn--active">⚹ Aspects <span className="tables-beta-tag">Beta</span></button>
         </div>
+        <p className="tables-export-tab-label">⚹ Aspects</p>
         <AspectsPanel nodes={nodes} />
       </div>
     )
@@ -156,6 +157,7 @@ export function TablesPanel({ nodes, chartTitle }) {
         <button className="tables-tab-btn tables-tab-btn--active">☿ Planets</button>
         <button className="tables-tab-btn" onClick={() => setTab('aspects')}>⚹ Aspects <span className="tables-beta-tag">Beta</span></button>
       </div>
+      <p className="tables-export-tab-label">☿ Planets</p>
       <div className="tables-col-toggles">
         {COLUMNS.map(c => (
           <button

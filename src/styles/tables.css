@@ -85,6 +85,26 @@
 .tables-canvas-wrap--exporting .tables-el-sort {
   display: none;
 }
+.tables-canvas-wrap--exporting .tables-tab-toggle {
+  display: none;
+}
+.tables-canvas-wrap--exporting .tables-col-toggles {
+  display: none;
+}
+
+/* Export-only tab label (hidden in normal view) */
+.tables-export-tab-label {
+  display: none;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+.tables-canvas-wrap--exporting .tables-export-tab-label {
+  display: block;
+}
 
 .tables-scroll {
   overflow-x: auto;
@@ -357,7 +377,14 @@
   padding-bottom: 0.55rem;
 }
 
-/* Person cell — align to top of taller rows */
+/* Person cell — sticky left col on mobile scroll */
+.aspects-person-cell,
+.aspects-table thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--canvas-bg, #0e0b1a);
+}
 .aspects-person-cell {
   padding-top: 0.6rem !important;
 }
