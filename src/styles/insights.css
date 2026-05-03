@@ -114,6 +114,27 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.insight-heading::after {
+  content: '▾';
+  margin-left: auto;
+  font-size: 1rem;
+  opacity: 0.5;
+  transition: transform 0.25s ease;
+  transform: rotate(0deg);
+  line-height: 1;
+}
+.insight-card--collapsed .insight-heading::after {
+  transform: rotate(-90deg);
+}
+.insight-card--collapsed > *:not(.insight-heading) {
+  display: none !important;
+}
+.insight-card--collapsed {
+  padding-bottom: 0.45rem;
 }
 
 .insight-pro-tag {
@@ -362,6 +383,16 @@
 .insights-panel--exporting .insight-heading {
   font-size: 0.85rem;
   margin-bottom: 0.25rem;
+  cursor: default;
+}
+.insights-panel--exporting .insight-heading::after {
+  display: none;
+}
+.insights-panel--exporting .insight-card--collapsed > * {
+  display: revert !important;
+}
+.insights-panel--exporting .insight-card--collapsed {
+  padding-bottom: 0.65rem;
 }
 /* Full-width items span all columns */
 .insights-panel--exporting .insights-header,

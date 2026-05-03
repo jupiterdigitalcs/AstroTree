@@ -2391,7 +2391,12 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   }
 
   return (
-    <div className="insights-panel">
+    <div className="insights-panel" onClick={e => {
+      const heading = e.target.closest('.insight-heading')
+      if (!heading) return
+      const card = heading.closest('.insight-card')
+      if (card) card.classList.toggle('insight-card--collapsed')
+    }}>
       {/* ── The DIG overlay ────────────────────────────────────────────── */}
       {showDig && (
         <Suspense fallback={null}>
