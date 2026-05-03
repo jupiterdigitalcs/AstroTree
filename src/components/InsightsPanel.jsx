@@ -2936,43 +2936,101 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {hasAdvanced && (<>
 
-      {/* 6. Shared Venus & Mars Signs (premium) */}
-      {(sharedVenusSigns.length > 0 || sharedMarsSigns.length > 0) && (
-        <div className="insight-card">
-          <h3 className="insight-heading">♀ Venus · ♂ Mars — Shared Signs<span className="insight-pro-tag">✦</span></h3>
-          {sharedVenusSigns.map(({ sign, symbol, members }) => (
-            <div key={`v-${sign}`} style={{ marginBottom: '0.35rem' }}>
-              <p className="insight-note">
-                <PlanetSign planet="venus" symbol={symbol} sign={sign} />
-                {' '}— {members.map(m => m.data.name).join(', ')}
-              </p>
-              {VENUS_SIGN_BLURB[sign] && (
-                <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem', marginTop: '0.1rem' }}>
-                  {VENUS_SIGN_BLURB[sign]}
-                </p>
-              )}
-            </div>
-          ))}
-          {sharedMarsSigns.map(({ sign, symbol, members }) => (
-            <div key={`m-${sign}`} style={{ marginBottom: '0.35rem' }}>
-              <p className="insight-note">
-                <PlanetSign planet="mars" symbol={symbol} sign={sign} />
-                {' '}— {members.map(m => m.data.name).join(', ')}
-              </p>
-              {MARS_SIGN_BLURB[sign] && (
-                <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem', marginTop: '0.1rem' }}>
-                  {MARS_SIGN_BLURB[sign]}
-                </p>
-              )}
-            </div>
-          ))}
-          <p className="insight-note" style={{ marginTop: '0.3rem', color: 'var(--text-muted)', fontSize: '0.72rem' }}>
-            ♀ Venus reflects how someone loves and what they value. ♂ Mars reflects drive and how they act.
-          </p>
-        </div>
+      {/* ═══ SECTION: Individual Identity ═══════════════════════════════════ */}
+
+      {/* Family Roles */}
+      {memberRoles.length >= 2 && (
+        <FamilyRoles memberRoles={memberRoles} isExporting={exporting} generationLevel={generationLevel} isGroupOnly={isGroupOnly} />
       )}
 
-      {/* 7. Partner Compatibility */}
+      {/* Cosmic Inheritance — shared / hereditary natal aspects */}
+      {(() => {
+        const { rareBonds, heredThreads, famSigs, totalWithBirthdata } = aspectThreadData
+        if (aspectThreadData.totalCount === 0) return null
+
+        function aspectLabel(members) {
+          const types = [...new Set(members.map(m => m.aspect))]
+          return types.length === 1 ? types[0] : 'connection'
+        }
+
+        return (
+          <div className="insight-card">
+            <h3 className="insight-heading">✦ Cosmic Inheritance<span className="insight-pro-tag">✦</span></h3>
+            <p className="insight-whisper">Patterns appearing independently in each person's own birth chart — not connections between charts, but the same energy recurring across them.</p>
+
+            {rareBonds.length > 0 && rareBonds.map((p, i) => {
+              const exact = p.members.filter(m => m.orb <= 0.5)
+              const blurb = p.blurb
+              return (
+                <div key={i} style={{ marginBottom: '0.75rem' }}>
+                  <p className="insight-note" style={{ marginBottom: '0.18rem' }}>
+                    <span style={{ color: 'var(--gold)', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginRight: '0.4rem' }}>Rare Bond</span>
+                    {blurb
+                      ? <strong>{blurb}</strong>
+                      : <strong>{p.planet1} {p.aspect} {p.planet2}</strong>}
+                  </p>
+                  <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                    {exact.map(m => m.name).join(' and ')} — within {exact.map(m => `${m.orb}°`).join(' and ')}
+                  </p>
+                  <p className="insight-note" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.7 }}>
+                    {p.planet1} {p.aspect} {p.planet2}
+                  </p>
+                </div>
+              )
+            })}
+
+            {heredThreads.length > 0 && heredThreads.map((c, i) => {
+              const blurb = c.blurb
+              return (
+                <div key={i} style={{ marginBottom: '0.75rem' }}>
+                  <p className="insight-note" style={{ marginBottom: '0.18rem' }}>
+                    <span style={{ color: 'var(--rose)', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginRight: '0.4rem' }}>Passed Down</span>
+                    {blurb
+                      ? <strong>{blurb}</strong>
+                      : <strong>{c.planet1}–{c.planet2}</strong>}
+                  </p>
+
+                  <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                    {c.chainNames}
+                  </p>
+                  <p className="insight-note" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.7 }}>
+                    {c.planet1}–{c.planet2} · {aspectLabel(c.members)}
+                  </p>
+                </div>
+              )
+            })}
+
+            {famSigs.length > 0 && famSigs.map((c, i) => {
+              const blurb = c.blurb
+              return (
+                <div key={i} style={{ marginBottom: '0.75rem' }}>
+                  <p className="insight-note" style={{ marginBottom: '0.18rem' }}>
+                    <span style={{ color: 'var(--text-soft)', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginRight: '0.4rem' }}>Family Pattern</span>
+                    {blurb
+                      ? <strong>{blurb}</strong>
+                      : <strong>{c.planet1}–{c.planet2}</strong>}
+                  </p>
+
+                  <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                    {c.chainNames}
+                  </p>
+                  <p className="insight-note" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.7 }}>
+                    {c.planet1}–{c.planet2} · {aspectLabel(c.members)}
+                  </p>
+                </div>
+              )
+            })}
+
+            <p className="insight-whisper" style={{ marginTop: '0.3rem' }}>
+              Based on birth chart alignments. Moon excluded for members without a birth time.
+            </p>
+          </div>
+        )
+      })()}
+
+      {/* ═══ SECTION: Relationships ═════════════════════════════════════════ */}
+
+      {/* Partner Compatibility */}
       {couples.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">Partner Compatibility<span className="insight-pro-tag">✦</span></h3>
@@ -3031,76 +3089,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <p className="insight-hint">🔁 Add parent-child connections to see generational threads</p>
       )}
 
-      {/* 9. Zodiac Threads (includes generational echoes — parent-child sign lines) */}
-      {(topZodiacThreads.length > 0 || signThreadList.length > 0) && (
-        <div className="insight-card">
-          <h3 className="insight-heading">Zodiac Threads<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.1rem' }}>
-            Like a gene that runs in families. These signs keep showing up across generations, carried through different planets in different people.
-          </p>
-
-          {/* Generational Echoes — direct parent→child sign lines */}
-          {signThreadList.length > 0 && (
-            <div style={{ marginBottom: topZodiacThreads.length > 0 ? '0.5rem' : 0 }}>
-              <p className="insight-note" style={{ fontWeight: 500, marginBottom: '0.15rem' }}>Generational Echoes</p>
-              <p className="insight-whisper" style={{ marginBottom: '0.2rem' }}>
-                The same Sun or Moon sign passed directly from parent to child.
-              </p>
-              {signThreadList.map(({ sign, chain, planet }) => (
-                <p key={`${planet}-${sign}`} className="insight-note">
-                  {planet === 'sun' ? '☀' : '☽'}{' '}
-                  <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>{' '}
-                  {chain.length === 2 ? 'across 2 generations' : `through ${chain.length} generations`}:{' '}
-                  {chain.map(n => n.data.name).join(' → ')}
-                </p>
-              ))}
-            </div>
-          )}
-
-          {/* Broader zodiac threads — sign across generations via any planet */}
-          {topZodiacThreads.length > 0 && (
-            <div>
-              {signThreadList.length > 0 && (
-                <p className="insight-note" style={{ fontWeight: 500, marginBottom: '0.15rem' }}>Wider Patterns</p>
-              )}
-              {signThreadList.length > 0 && (
-                <p className="insight-whisper" style={{ marginBottom: '0.2rem' }}>
-                  Signs that echo across generations through any personal planet, not just Sun or Moon.
-                </p>
-              )}
-              {topZodiacThreads.map(({ sign, byGen, gens }) => (
-                <div key={sign} style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                  <p className="insight-note">
-                    <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>
-                    {' '}—{' '}
-                    {gens.map((gen, gi) => (
-                      <span key={gen}>
-                        {gi > 0 && <span style={{ color: 'var(--text-muted)' }}> → </span>}
-                        {byGen[gen].map((n, ni) => {
-                          const glyphs = getSignPlanetGlyphs(n, sign)
-                          return (
-                            <span key={n.id}>
-                              {ni > 0 && ', '}
-                              <strong>{n.data.name}</strong>
-                              {glyphs && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> ({glyphs})</span>}
-                            </span>
-                          )
-                        })}
-                      </span>
-                    ))}
-                  </p>
-                  {ZODIAC_THREAD_BLURB[sign] && (
-                    <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem' }}>
-                      {isGroupOnly ? ZODIAC_THREAD_BLURB[sign].replace(/\bthis family\b/gi, 'this group').replace(/\bthe family\b/gi, 'the group') : ZODIAC_THREAD_BLURB[sign]}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* 10. Compatibility Map (includes Notable Bonds as highlights) */}
       {(compatDisplayPairs.length > 0 || topBonds.length > 0) && hasFullCompat && (
         <FullCompatPairs pairs={compatDisplayPairs} title={compatTitle} isExporting={exporting} generationLevel={generationLevel} notableBonds={topBonds} />
@@ -3135,12 +3123,9 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* 11. Family Roles */}
-      {memberRoles.length >= 2 && (
-        <FamilyRoles memberRoles={memberRoles} isExporting={exporting} generationLevel={generationLevel} isGroupOnly={isGroupOnly} />
-      )}
+      {/* ═══ SECTION: Family Narrative ══════════════════════════════════════ */}
 
-      {/* 12. Family Arrivals */}
+      {/* Family Arrivals */}
       {arrivalGroups.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">✦ Family Arrivals<span className="insight-pro-tag">✦</span></h3>
@@ -3189,7 +3174,111 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
-      {/* 11. Dominant Sign */}
+      {/* Zodiac Threads */}
+      {(topZodiacThreads.length > 0 || signThreadList.length > 0) && (
+        <div className="insight-card">
+          <h3 className="insight-heading">Zodiac Threads<span className="insight-pro-tag">✦</span></h3>
+          <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.1rem' }}>
+            Like a gene that runs in families. These signs keep showing up across generations, carried through different planets in different people.
+          </p>
+          {signThreadList.length > 0 && (
+            <div style={{ marginBottom: topZodiacThreads.length > 0 ? '0.5rem' : 0 }}>
+              <p className="insight-note" style={{ fontWeight: 500, marginBottom: '0.15rem' }}>Generational Echoes</p>
+              <p className="insight-whisper" style={{ marginBottom: '0.2rem' }}>
+                The same Sun or Moon sign passed directly from parent to child.
+              </p>
+              {signThreadList.map(({ sign, chain, planet }) => (
+                <p key={`${planet}-${sign}`} className="insight-note">
+                  {planet === 'sun' ? '☀' : '☽'}{' '}
+                  <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>{' '}
+                  {chain.length === 2 ? 'across 2 generations' : `through ${chain.length} generations`}:{' '}
+                  {chain.map(n => n.data.name).join(' → ')}
+                </p>
+              ))}
+            </div>
+          )}
+          {topZodiacThreads.length > 0 && (
+            <div>
+              {signThreadList.length > 0 && (
+                <p className="insight-note" style={{ fontWeight: 500, marginBottom: '0.15rem' }}>Wider Patterns</p>
+              )}
+              {signThreadList.length > 0 && (
+                <p className="insight-whisper" style={{ marginBottom: '0.2rem' }}>
+                  Signs that echo across generations through any personal planet, not just Sun or Moon.
+                </p>
+              )}
+              {topZodiacThreads.map(({ sign, byGen, gens }) => (
+                <div key={sign} style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                  <p className="insight-note">
+                    <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>
+                    {' '}—{' '}
+                    {gens.map((gen, gi) => (
+                      <span key={gen}>
+                        {gi > 0 && <span style={{ color: 'var(--text-muted)' }}> → </span>}
+                        {byGen[gen].map((n, ni) => {
+                          const glyphs = getSignPlanetGlyphs(n, sign)
+                          return (
+                            <span key={n.id}>
+                              {ni > 0 && ', '}
+                              <strong>{n.data.name}</strong>
+                              {glyphs && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> ({glyphs})</span>}
+                            </span>
+                          )
+                        })}
+                      </span>
+                    ))}
+                  </p>
+                  {ZODIAC_THREAD_BLURB[sign] && (
+                    <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem' }}>
+                      {isGroupOnly ? ZODIAC_THREAD_BLURB[sign].replace(/\bthis family\b/gi, 'this group').replace(/\bthe family\b/gi, 'the group') : ZODIAC_THREAD_BLURB[sign]}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Venus & Mars Shared Signs */}
+      {(sharedVenusSigns.length > 0 || sharedMarsSigns.length > 0) && (
+        <div className="insight-card">
+          <h3 className="insight-heading">♀ Venus · ♂ Mars — Shared Signs<span className="insight-pro-tag">✦</span></h3>
+          {sharedVenusSigns.map(({ sign, symbol, members }) => (
+            <div key={`v-${sign}`} style={{ marginBottom: '0.35rem' }}>
+              <p className="insight-note">
+                <PlanetSign planet="venus" symbol={symbol} sign={sign} />
+                {' '}— {members.map(m => m.data.name).join(', ')}
+              </p>
+              {VENUS_SIGN_BLURB[sign] && (
+                <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem', marginTop: '0.1rem' }}>
+                  {VENUS_SIGN_BLURB[sign]}
+                </p>
+              )}
+            </div>
+          ))}
+          {sharedMarsSigns.map(({ sign, symbol, members }) => (
+            <div key={`m-${sign}`} style={{ marginBottom: '0.35rem' }}>
+              <p className="insight-note">
+                <PlanetSign planet="mars" symbol={symbol} sign={sign} />
+                {' '}— {members.map(m => m.data.name).join(', ')}
+              </p>
+              {MARS_SIGN_BLURB[sign] && (
+                <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem', marginTop: '0.1rem' }}>
+                  {MARS_SIGN_BLURB[sign]}
+                </p>
+              )}
+            </div>
+          ))}
+          <p className="insight-note" style={{ marginTop: '0.3rem', color: 'var(--text-muted)', fontSize: '0.72rem' }}>
+            ♀ Venus reflects how someone loves and what they value. ♂ Mars reflects drive and how they act.
+          </p>
+        </div>
+      )}
+
+      {/* ═══ SECTION: Group Patterns ═══════════════════════════════════════ */}
+
+      {/* Planetary Patterns (Dominant Sign) */}
       {topSigns.length > 0 && (
         <div className="insight-card">
           <h3 className="insight-heading">★ Planetary Patterns<span className="insight-pro-tag">✦</span></h3>
@@ -3379,95 +3468,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                 </div>
               )
             })}
-          </div>
-        )
-      })()}
-
-      {/* 12. Cosmic Inheritance — shared / hereditary natal aspects */}
-      {(() => {
-        const { rareBonds, heredThreads, famSigs, totalWithBirthdata } = aspectThreadData
-        if (aspectThreadData.totalCount === 0) return null
-
-        function aspectLabel(members) {
-          const types = [...new Set(members.map(m => m.aspect))]
-          return types.length === 1 ? types[0] : 'connection'
-        }
-
-        function nameList(members) {
-          return members.map(m => m.name).join(', ')
-        }
-
-        return (
-          <div className="insight-card">
-            <h3 className="insight-heading">✦ Cosmic Inheritance<span className="insight-pro-tag">✦</span></h3>
-            <p className="insight-whisper">Patterns appearing independently in each person's own birth chart — not connections between charts, but the same energy recurring across them.</p>
-
-            {rareBonds.length > 0 && rareBonds.map((p, i) => {
-              const exact = p.members.filter(m => m.orb <= 0.5)
-              const blurb = p.blurb
-              return (
-                <div key={i} style={{ marginBottom: '0.75rem' }}>
-                  <p className="insight-note" style={{ marginBottom: '0.18rem' }}>
-                    <span style={{ color: 'var(--gold)', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginRight: '0.4rem' }}>Rare Bond</span>
-                    {blurb
-                      ? <strong>{blurb}</strong>
-                      : <strong>{p.planet1} {p.aspect} {p.planet2}</strong>}
-                  </p>
-                  <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                    {exact.map(m => m.name).join(' and ')} — within {exact.map(m => `${m.orb}°`).join(' and ')}
-                  </p>
-                  <p className="insight-note" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.7 }}>
-                    {p.planet1} {p.aspect} {p.planet2}
-                  </p>
-                </div>
-              )
-            })}
-
-            {heredThreads.length > 0 && heredThreads.map((c, i) => {
-              const blurb = c.blurb
-              return (
-                <div key={i} style={{ marginBottom: '0.75rem' }}>
-                  <p className="insight-note" style={{ marginBottom: '0.18rem' }}>
-                    <span style={{ color: 'var(--rose)', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginRight: '0.4rem' }}>Passed Down</span>
-                    {blurb
-                      ? <strong>{blurb}</strong>
-                      : <strong>{c.planet1}–{c.planet2}</strong>}
-                  </p>
-
-                  <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                    {c.chainNames}
-                  </p>
-                  <p className="insight-note" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.7 }}>
-                    {c.planet1}–{c.planet2} · {aspectLabel(c.members)}
-                  </p>
-                </div>
-              )
-            })}
-
-            {famSigs.length > 0 && famSigs.map((c, i) => {
-              const blurb = c.blurb
-              return (
-                <div key={i} style={{ marginBottom: '0.75rem' }}>
-                  <p className="insight-note" style={{ marginBottom: '0.18rem' }}>
-                    <span style={{ color: 'var(--text-soft)', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginRight: '0.4rem' }}>Family Pattern</span>
-                    {blurb
-                      ? <strong>{blurb}</strong>
-                      : <strong>{c.planet1}–{c.planet2}</strong>}
-                  </p>
-
-                  <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                    {c.chainNames}
-                  </p>
-                  <p className="insight-note" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.7 }}>
-                    {c.planet1}–{c.planet2} · {aspectLabel(c.members)}
-                  </p>
-                </div>
-              )
-            })}
-
-            <p className="insight-whisper" style={{ marginTop: '0.3rem' }}>
-              Based on birth chart alignments. Moon excluded for members without a birth time.
-            </p>
           </div>
         )
       })()}
