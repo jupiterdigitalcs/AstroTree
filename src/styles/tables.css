@@ -383,7 +383,7 @@
   position: sticky;
   left: 0;
   z-index: 2;
-  background: var(--canvas-bg, #0e0b1a);
+  background: var(--bg, #09071a);
 }
 .aspects-person-cell {
   padding-top: 0.6rem !important;
