@@ -2086,10 +2086,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   }
   allCompatPairs.sort((x, y) => y.score - x.score || (x.a.data.birthdate || '9999').localeCompare(y.a.data.birthdate || '9999'))
 
-  // Select mode for large families: only show highest-scoring pairs
+  // Select mode for large families: only show meaningful pairs (score ≥5 = Mirror Signs and above)
   const isSelectMode = allCompatPairs.length > 12
-  const compatDisplayPairs = isSelectMode ? allCompatPairs.filter(p => p.score >= 3) : allCompatPairs
-  const compatTitle = isSelectMode ? 'Select Compatibility' : 'Compatibility Map'
+  const compatDisplayPairs = isSelectMode ? allCompatPairs.filter(p => p.score >= 5) : allCompatPairs.filter(p => p.score >= 4)
+  const compatTitle = isSelectMode ? 'Strongest Connections' : 'Compatibility Map'
 
   // ── Hidden Connections — pairs with low sign-based scores but tight cross-chart aspects ─
   const hiddenConnections = useMemo(() => {
