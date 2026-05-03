@@ -186,12 +186,11 @@
 .insight-compat { font-size: 0.7rem; letter-spacing: 0.04em; font-weight: 500; }
 
 .insight-couple--rare {
-  border-top-color: rgba(201,168,76,0.3);
   background: linear-gradient(135deg, rgba(201,168,76,0.07) 0%, transparent 100%);
   border: 1px solid rgba(201,168,76,0.25);
   border-radius: 8px;
   padding: 0.5rem 0.6rem;
-  margin: 0.15rem -0.1rem;
+  margin: 0.25rem 0;
 }
 
 .insight-rare-badge {

@@ -655,97 +655,73 @@ function FullCompatPairs({ pairs, title, isExporting, generationLevel, notableBo
         </p>
       )}
 
-      {/* ── Notable Bonds — highlights section ────────────────────────── */}
-      {notableBonds.length > 0 && (
-        <div style={{ marginBottom: '0.5rem' }}>
-          <p className="compat-tier-label" style={{ color: 'var(--gold)' }}>Notable Bonds</p>
-          <p className="insight-whisper" style={{ marginBottom: '0.3rem' }}>
-            The strongest connections in the group, ranked by how many personal planets align.
-          </p>
-          {notableBonds.map(({ a, b, note, noteType, rel, needsTimeCheck }) => {
-            const isRare = noteType === 'cosmic-echo' || noteType === 'rare-alignment'
-            const color = BOND_COLOR[noteType] || '#7ec845'
+      {/* ── Notable Bonds ────────────────────────────────────────────── */}
+      {notableBonds.map(({ a, b, note, noteType, rel, needsTimeCheck }) => {
+        const isRare = noteType === 'cosmic-echo' || noteType === 'rare-alignment'
+        const color = BOND_COLOR[noteType] || '#7ec845'
+        return (
+          <div key={pairKey(a, b)} className={`insight-couple${isRare ? ' insight-couple--rare' : ''}`}>
+            {isRare && (
+              <p className="insight-rare-badge">
+                {noteType === 'cosmic-echo' ? '✦✦✦ Extremely Rare' : '✦✦ Rare'}
+              </p>
+            )}
+            <p className="insight-note">
+              <strong>{a.data.name}</strong> & <strong>{b.data.name}</strong>
+              {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> — {rel}</span>}
+            </p>
+            <p className="insight-compat" style={{ color }}>{note}</p>
+            {needsTimeCheck && (
+              <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
+                ⚠ Confirm with exact birth time
+              </p>
+            )}
+          </div>
+        )
+      })}
+
+      {/* ── Remaining pairs, grouped by tier ──────────────────────────── */}
+      {sortedTiers.length > 0 && (
+        <div className="compat-pair-list">
+          {sortedTiers.map(([tierLabel, items]) => {
+            const pairsToShow = items.filter(() => {
+              if (visibleCount >= visibleLimit) return false
+              visibleCount++
+              return true
+            })
+            if (pairsToShow.length === 0) return null
             return (
-              <div key={pairKey(a, b)} className={`insight-couple${isRare ? ' insight-couple--rare' : ''}`}>
-                {isRare && (
-                  <p className="insight-rare-badge">
-                    {noteType === 'cosmic-echo' ? '✦✦✦ Extremely Rare' : '✦✦ Rare'}
-                  </p>
-                )}
-                <p className="insight-note">
-                  <strong>{a.data.name}</strong> & <strong>{b.data.name}</strong>
-                  {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> — {rel}</span>}
-                </p>
-                <p className="insight-compat" style={{ color }}>{note}</p>
-                {BOND_EXPLAIN[noteType] && (
-                  <p className="insight-whisper" style={{ marginTop: '0.1rem' }}>
-                    {BOND_EXPLAIN[noteType]}
-                  </p>
-                )}
-                {needsTimeCheck && (
-                  <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
-                    ⚠ Confirm with exact birth time
-                  </p>
-                )}
+              <div key={tierLabel} className="compat-tier-group">
+                <p className="compat-tier-label" style={{ color: items[0].color }}>{tierLabel}</p>
+                {pairsToShow.map(pair => (
+                  <div key={pairKey(pair.a, pair.b)} className="compat-pair-row">
+                    <div className="compat-pair-names">
+                      <span>{pair.a.data.symbol} <strong>{pair.a.data.name}</strong></span>
+                      <span className="compat-pair-amp">&</span>
+                      <span>{pair.b.data.symbol} <strong>{pair.b.data.name}</strong></span>
+                      <span className="compat-pair-rel">{pair.relationLabel}</span>
+                    </div>
+                    {pair.sharedPlacements?.length > 0 && (
+                      <p className="insight-note" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.05rem' }}>
+                        {pair.sharedPlacements.join(' · ')}
+                      </p>
+                    )}
+                    {pair.moonNote && (
+                      <p className="insight-note" style={{ color: '#9dbbd4', fontSize: '0.72rem', marginTop: '0.1rem' }}>
+                        ☽ {pair.moonNote}
+                      </p>
+                    )}
+                    {pair.needsTimeCheck && (
+                      <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.68rem', fontStyle: 'italic', marginTop: '0.1rem' }}>
+                        ⚠ Confirm with exact birth time
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
             )
           })}
         </div>
-      )}
-
-      {/* ── All other pairs, grouped by tier ──────────────────────────── */}
-      {sortedTiers.length > 0 && (
-        <>
-          {notableBonds.length > 0 && (
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.45rem', marginBottom: '0.15rem' }}>
-              <p className="compat-tier-label" style={{ color: 'var(--text-soft)' }}>All Pairs</p>
-            </div>
-          )}
-          <div className="compat-pair-list">
-            {sortedTiers.map(([tierLabel, items]) => {
-              const tierInfo = COMPAT_TIERS[tierLabel]
-              const pairsToShow = items.filter(() => {
-                if (visibleCount >= visibleLimit) return false
-                visibleCount++
-                return true
-              })
-              if (pairsToShow.length === 0) return null
-              return (
-                <div key={tierLabel} className="compat-tier-group">
-                  <p className="compat-tier-label" style={{ color: items[0].color }}>{tierLabel}</p>
-                  {tierInfo?.explain && (
-                    <p className="insight-whisper" style={{ marginBottom: '0.3rem' }}>{tierInfo.explain}</p>
-                  )}
-                  {pairsToShow.map(pair => (
-                    <div key={pairKey(pair.a, pair.b)} className="compat-pair-row">
-                      <div className="compat-pair-names">
-                        <span>{pair.a.data.symbol} <strong>{pair.a.data.name}</strong></span>
-                        <span className="compat-pair-amp">&</span>
-                        <span>{pair.b.data.symbol} <strong>{pair.b.data.name}</strong></span>
-                        <span className="compat-pair-rel">{pair.relationLabel}</span>
-                      </div>
-                      {pair.sharedPlacements?.length > 0 && (
-                        <p className="insight-note" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.05rem' }}>
-                          {pair.sharedPlacements.join(' · ')}
-                        </p>
-                      )}
-                      {pair.moonNote && (
-                        <p className="insight-note" style={{ color: '#9dbbd4', fontSize: '0.72rem', marginTop: '0.1rem' }}>
-                          ☽ {pair.moonNote}
-                        </p>
-                      )}
-                      {pair.needsTimeCheck && (
-                        <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.68rem', fontStyle: 'italic', marginTop: '0.1rem' }}>
-                          ⚠ Confirm with exact birth time
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )
-            })}
-          </div>
-        </>
       )}
       {isLong && (
         <button type="button" className="compat-show-more-btn" onClick={() => setShowAll(v => !v)}>
