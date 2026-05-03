@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react'
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react'
 import {
   getElement,
   ELEMENT_COLORS, SIGN_MODALITY, POLARITY_GROUP,
@@ -646,7 +646,7 @@ function FullCompatPairs({ pairs, title, isExporting, generationLevel, notableBo
   let visibleCount = 0
 
   return (
-    <div className="insight-card insight-full-compat">
+    <div className="insight-card insight-full-compat" data-count={totalPairs} data-label={totalPairs === 1 ? 'pair' : 'pairs'}>
       <h3 className="insight-heading">{title}<span className="insight-pro-tag">✦</span></h3>
       <p className="insight-note compat-pair-count">{totalPairs} notable pair{totalPairs !== 1 ? 's' : ''}</p>
       {summaryParts.length > 1 && (
@@ -748,7 +748,7 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
     : memberRoles
   const trimmedCount = memberRoles.length - displayRoles.length
   return (
-    <div className="insight-card insight-family-roles">
+    <div className="insight-card insight-family-roles" data-count={displayRoles.length} data-label={displayRoles.length === 1 ? 'member' : 'members'}>
       <h3 className="insight-heading">{G} Roles<span className="insight-pro-tag">✦</span></h3>
       <p className="insight-note" style={{ marginBottom: '0.4rem' }}>Each member's cosmic role in the {g} dynamic</p>
       {displayRoles.map(role => {
@@ -837,7 +837,7 @@ function SiblingDynamics({ siblingGroups, isExporting }) {
   const [expanded, setExpanded] = useState(null)
   if (siblingGroups.length === 0) return null
   return (
-    <div className="insight-card">
+    <div className="insight-card" data-count={siblingGroups.length} data-label={siblingGroups.length === 1 ? 'group' : 'groups'}>
       <h3 className="insight-heading">Sibling Dynamics<span className="insight-pro-tag">✦</span></h3>
       <p className="insight-note" style={{ marginBottom: '0.5rem' }}>How siblings' cosmic wiring shapes the way they relate</p>
       {siblingGroups.map((group, gi) => {
@@ -1256,6 +1256,21 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const hasFullDig = canAccess('full_dig', entitlements?.tier, entitlements?.config)
   const hasFullCompat = canAccess('full_compatibility', entitlements?.tier, entitlements?.config)
   const [digExporting, setDigExporting] = useState(false)
+  const panelRef = useRef(null)
+
+  // Inject toggle buttons into insight headings
+  useEffect(() => {
+    if (!panelRef.current) return
+    const headings = panelRef.current.querySelectorAll('.insight-heading')
+    headings.forEach(h => {
+      if (h.querySelector('.insight-toggle')) return
+      const toggle = document.createElement('span')
+      toggle.className = 'insight-toggle'
+      toggle.innerHTML = '<span class="insight-toggle-count"></span><span class="insight-toggle-arrow">▾</span>'
+      h.appendChild(toggle)
+    })
+  })
+
   const isGroupOnly = edges.length > 0 && edges.every(e => {
     const t = e.data?.relationType
     return t === 'friend' || t === 'coworker'
@@ -2367,11 +2382,19 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   }
 
   return (
-    <div className="insights-panel" onClick={e => {
+    <div className="insights-panel" ref={panelRef} onClick={e => {
       const heading = e.target.closest('.insight-heading')
       if (!heading) return
       const card = heading.closest('.insight-card')
-      if (card) card.classList.toggle('insight-card--collapsed')
+      if (!card) return
+      const toggle = heading.querySelector('.insight-toggle-count')
+      const isCollapsing = !card.classList.contains('insight-card--collapsed')
+      if (toggle && isCollapsing) {
+        const n = card.dataset.count
+        const label = card.dataset.label
+        toggle.textContent = n && label ? `${n} ${label}` : ''
+      }
+      card.classList.toggle('insight-card--collapsed')
     }}>
       {/* ── The DIG overlay ────────────────────────────────────────────── */}
       {showDig && (
@@ -2418,12 +2441,13 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               onClick={() => onInsightsTabChange?.('dig')}
             >✦ The DIG{hasAdvanced && <span className="pro-tag pro-tag--subtle">✦</span>}</button>
           </nav>
-          {onExport && insightsTab === 'insights' && (
+          {onExport && (
             <button
               type="button"
               className="insights-export-btn--mobile-top"
               onClick={onExport}
               disabled={exporting}
+              style={insightsTab !== 'insights' ? { visibility: 'hidden' } : undefined}
             >{exporting ? '…' : '↓'}</button>
           )}
         </div>
@@ -2812,7 +2836,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           .sort((a, b) => b[1].total - a[1].total)
         if (concentrated.length === 0) return null
         return (
-          <div className="insight-card">
+          <div className="insight-card" data-count={Math.min(concentrated.length, 6)} data-label={concentrated.length === 1 ? 'sign' : 'signs'}>
             <h3 className="insight-heading">Sign Threads</h3>
             <p className="insight-whisper">Signs that appear more than once across personal planets in the group.</p>
             {concentrated.slice(0, 6).map(([sign, data]) => {
@@ -2833,7 +2857,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {/* 5. Shared Moon Signs */}
       {sharedMoonSigns.length > 0 && (
-        <div className="insight-card">
+        <div className="insight-card" data-count={sharedMoonSigns.length} data-label={sharedMoonSigns.length === 1 ? 'sign' : 'signs'}>
           <h3 className="insight-heading">☽ Shared Moon Signs</h3>
           {sharedMoonSigns.map(([sign]) => {
             const members = moonNodes.filter(n => n.data.moonSign === sign).sort(byAge)
@@ -2936,7 +2960,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         }
 
         return (
-          <div className="insight-card">
+          <div className="insight-card" data-count={aspectThreadData.totalCount} data-label={aspectThreadData.totalCount === 1 ? 'pattern' : 'patterns'}>
             <h3 className="insight-heading">✦ Cosmic Inheritance<span className="insight-pro-tag">✦</span></h3>
             <p className="insight-whisper">Patterns appearing independently in each person's own birth chart — not connections between charts, but the same energy recurring across them.</p>
 
@@ -3017,7 +3041,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {/* Partner Compatibility */}
       {couples.length > 0 && (
-        <div className="insight-card">
+        <div className="insight-card" data-count={couples.length} data-label={couples.length === 1 ? 'couple' : 'couples'}>
           <h3 className="insight-heading">Partner Compatibility<span className="insight-pro-tag">✦</span></h3>
           {couples.map(({ src, tgt }, i) => {
             const { tagline, taglineColor, narrativeItems, growthEdge, synastryAspects } = buildCoupleAnalysis(src, tgt)
@@ -3081,7 +3105,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {/* 10b. Hidden Connections — pairs sign-matching missed but aspects caught */}
       {hiddenConnections.length > 0 && hasFullCompat && (
-        <div className="insight-card">
+        <div className="insight-card" data-count={hiddenConnections.length} data-label={hiddenConnections.length === 1 ? 'connection' : 'connections'}>
           <h3 className="insight-heading">Hidden Connections<span className="insight-pro-tag">✦</span></h3>
           <p className="insight-whisper">These pairs don't share obvious sign placements, but their charts form tight angles to each other — a subtler kind of connection that may show up when they spend time together.</p>
           {hiddenConnections.map((hc, i) => (
@@ -3114,8 +3138,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
 
       {/* Family Arrivals */}
-      {arrivalGroups.length > 0 && (
-        <div className="insight-card">
+      {arrivalGroups.length > 0 && (() => {
+        const arrivalCount = arrivalGroups.reduce((s, g) => s + g.children.length, 0)
+        return (
+        <div className="insight-card" data-count={arrivalCount} data-label={arrivalCount === 1 ? 'arrival' : 'arrivals'}>
           <h3 className="insight-heading">✦ Family Arrivals<span className="insight-pro-tag">✦</span></h3>
           <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem' }}>
             What each child brought to the mix, in energy, personality, and the family dynamic.
@@ -3160,11 +3186,14 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             )
           })}
         </div>
-      )}
+        )
+      })()}
 
       {/* Zodiac Threads */}
-      {(topZodiacThreads.length > 0 || signThreadList.length > 0) && (
-        <div className="insight-card">
+      {(topZodiacThreads.length > 0 || signThreadList.length > 0) && (() => {
+        const threadCount = signThreadList.length + topZodiacThreads.length
+        return (
+        <div className="insight-card" data-count={threadCount} data-label={threadCount === 1 ? 'thread' : 'threads'}>
           <h3 className="insight-heading">Zodiac Threads<span className="insight-pro-tag">✦</span></h3>
           <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.1rem' }}>
             Like a gene that runs in families. These signs keep showing up across generations, carried through different planets in different people.
@@ -3226,11 +3255,14 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             </div>
           )}
         </div>
-      )}
+        )
+      })()}
 
       {/* Venus & Mars Shared Signs */}
-      {(sharedVenusSigns.length > 0 || sharedMarsSigns.length > 0) && (
-        <div className="insight-card">
+      {(sharedVenusSigns.length > 0 || sharedMarsSigns.length > 0) && (() => {
+        const vmCount = sharedVenusSigns.length + sharedMarsSigns.length
+        return (
+        <div className="insight-card" data-count={vmCount} data-label={vmCount === 1 ? 'match' : 'matches'}>
           <h3 className="insight-heading">♀ Venus · ♂ Mars — Shared Signs<span className="insight-pro-tag">✦</span></h3>
           {sharedVenusSigns.map(({ sign, symbol, members }) => (
             <div key={`v-${sign}`} style={{ marginBottom: '0.35rem' }}>
@@ -3262,7 +3294,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             ♀ Venus reflects how someone loves and what they value. ♂ Mars reflects drive and how they act.
           </p>
         </div>
-      )}
+        )
+      })()}
 
 
 
@@ -3271,7 +3304,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {/* Planetary Patterns (Dominant Sign) */}
       {topSigns.length > 0 && (
-        <div className="insight-card">
+        <div className="insight-card" data-count={topSigns.length} data-label={topSigns.length === 1 ? 'sign' : 'signs'}>
           <h3 className="insight-heading">★ Planetary Patterns<span className="insight-pro-tag">✦</span></h3>
           <p className="insight-whisper" style={{ marginBottom: '0.2rem' }}>
             The sign(s) holding the most personal planets across the whole group.
@@ -3323,8 +3356,9 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           else if (hasMars) extra = ' With Mars here, this is where the group\'s drive and motivation tend to concentrate.'
           return `A shared pull toward ${theme.core}. ${theme.daily}${extra}`
         }
+        const hotspotCount = Math.min(groupHotspots.length, 3)
         return (
-        <div className="insight-card">
+        <div className="insight-card" data-count={hotspotCount} data-label={hotspotCount === 1 ? 'hotspot' : 'hotspots'}>
           <h3 className="insight-heading">Group Hotspots<span className="insight-pro-tag">✦</span></h3>
           <p className="insight-whisper">Zones of the zodiac where multiple people's planets concentrate. These themes tend to echo through the group's daily life.</p>
           {groupHotspots.slice(0, 3).map((spot, i) => (
@@ -3384,7 +3418,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {/* Saturn Lines — shared structural themes */}
       {groupSaturnLines.length > 0 && (
-        <div className="insight-card">
+        <div className="insight-card" data-count={groupSaturnLines.length} data-label={groupSaturnLines.length === 1 ? 'sign' : 'signs'}>
           <h3 className="insight-heading">♄ Saturn Lines<span className="insight-pro-tag">✦</span></h3>
           <p className="insight-whisper">Saturn's sign reflects where each person tends to carry responsibility and face their deepest growth.</p>
           {groupSaturnLines.filter(g => g.members.length >= 1).map(g => (
@@ -3405,7 +3439,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
       {/* Jupiter Gifts — shared growth areas */}
       {groupJupiterGifts.length > 0 && (
-        <div className="insight-card">
+        <div className="insight-card" data-count={groupJupiterGifts.length} data-label={groupJupiterGifts.length === 1 ? 'sign' : 'signs'}>
           <h3 className="insight-heading">♃ Jupiter Gifts<span className="insight-pro-tag">✦</span></h3>
           <p className="insight-whisper">Jupiter's sign points to where each person tends to find expansion, opportunity, and natural ease.</p>
           {groupJupiterGifts.filter(g => g.members.length >= 1).map(g => (
@@ -3434,7 +3468,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         const present = PLUTO_ORDER.filter(s => genMap[s])
         if (present.length < 2) return null
         return (
-          <div className="insight-card">
+          <div className="insight-card" data-count={present.length} data-label={present.length === 1 ? 'generation' : 'generations'}>
             <h3 className="insight-heading">✦ Pluto Generations<span className="insight-pro-tag">✦</span></h3>
             <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem' }}>
               Pluto's slow orbit imprints each generation with a shared undercurrent.

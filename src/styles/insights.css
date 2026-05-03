@@ -117,18 +117,43 @@
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
+  position: relative;
 }
-.insight-heading::after {
-  content: '▾';
+/* Collapse toggle indicator */
+.insight-heading .insight-toggle {
   margin-left: auto;
-  font-size: 1rem;
-  opacity: 0.5;
-  transition: transform 0.25s ease;
-  transform: rotate(0deg);
-  line-height: 1;
+  font-size: 0.6rem;
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--text-muted);
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
 }
-.insight-card--collapsed .insight-heading::after {
+.insight-heading:hover .insight-toggle {
+  opacity: 1;
+}
+.insight-toggle-arrow {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+.insight-card--collapsed .insight-toggle-arrow {
   transform: rotate(-90deg);
+}
+/* Count badge — only visible when collapsed */
+.insight-toggle-count {
+  display: none;
+}
+.insight-card--collapsed .insight-toggle-count {
+  display: inline;
 }
 .insight-card--collapsed > *:not(.insight-heading) {
   display: none !important;
@@ -384,7 +409,7 @@
   margin-bottom: 0.25rem;
   cursor: default;
 }
-.insights-panel--exporting .insight-heading::after {
+.insights-panel--exporting .insight-toggle {
   display: none;
 }
 .insights-panel--exporting .insight-card--collapsed > * {
