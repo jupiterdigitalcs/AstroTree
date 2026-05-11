@@ -53,13 +53,33 @@ const innerR = 118
 const labelR = 84
 
 function nameLabel(name, allNames) {
-  const initial = (name || '?')[0].toUpperCase()
-  // If another person shares the same initial, show first 2 chars
-  const dupes = (allNames || []).filter(n => n && n[0]?.toUpperCase() === initial)
-  if (dupes.length > 1) {
-    return (name || '??').slice(0, 2).toUpperCase()
+  const parts    = (name || '').trim().split(/\s+/)
+  const first    = parts[0] || '?'
+  const last     = parts.length > 1 ? parts[parts.length - 1] : ''
+  const firstIni = first[0].toUpperCase()
+
+  // Check how many others share the same first initial
+  const sharesFirst = (allNames || []).filter(
+    n => n && n.trim().split(/\s+/)[0]?.[0]?.toUpperCase() === firstIni
+  )
+
+  if (sharesFirst.length <= 1) return firstIni  // unique first initial — done
+
+  // Conflict: try first + last initial if last name exists
+  if (last) {
+    const label = firstIni + last[0].toUpperCase()
+    // Check if this combo is still unique among the conflicting group
+    const sharesCombo = (allNames || []).filter(n => {
+      const p = (n || '').trim().split(/\s+/)
+      const fi = p[0]?.[0]?.toUpperCase()
+      const li = p.length > 1 ? p[p.length - 1][0]?.toUpperCase() : ''
+      return fi === firstIni && li === last[0].toUpperCase()
+    })
+    if (sharesCombo.length <= 1) return label
   }
-  return initial
+
+  // Last resort: first 2 chars of first name (color distinguishes the rest)
+  return first.slice(0, 2).toUpperCase()
 }
 
 // Generate a consistent hue from a name string for per-person differentiation
