@@ -52,3 +52,8 @@ export {
   calcGroupTransits,
   findSharedTransits,
 } from './transits.js'
+
+export {
+  // Transit timeline (lifetime chapter scanning)
+  calcTransitTimeline,
+} from './timeline.js'
