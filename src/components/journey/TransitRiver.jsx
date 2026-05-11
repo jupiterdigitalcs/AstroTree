@@ -30,16 +30,45 @@ function isLandmark(ev) {
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
-const TWO_YEARS_MS = 2 * 365.25 * 86_400_000
+const TWO_YEARS_MS  = 2 * 365.25 * 86_400_000
+const SIXTY_DAYS_MS = 60 * 86_400_000
 
 function categorize(events) {
   const now = Date.now()
 
   // Active: orbStart <= today <= orbEnd — currently within orb
-  const active = events.filter(ev =>
-    new Date(ev.orbStart).getTime() <= now &&
-    new Date(ev.orbEnd).getTime()   >= now
-  )
+  // Dedupe by transit key so a retrograde that loops back >12 months later
+  // doesn't show the same card twice.
+  const seenKeys = new Set()
+  const strictActive = events.filter(ev => {
+    if (new Date(ev.orbStart).getTime() > now)  return false
+    if (new Date(ev.orbEnd).getTime()   < now)  return false
+    const key = `${ev.transitingPlanet}_${ev.aspect}_${ev.natalPlanet}`
+    if (seenKeys.has(key)) return false
+    seenKeys.add(key)
+    return true
+  })
+
+  // If nothing is strictly active, widen to ±60 days so everyone has at
+  // least one card in "Happening now".
+  let active = strictActive
+  if (active.length === 0) {
+    const nearbySeen = new Set()
+    active = events
+      .filter(ev => {
+        const start = new Date(ev.orbStart).getTime()
+        const end   = new Date(ev.orbEnd).getTime()
+        // Orb window overlaps the ±60-day bubble around today
+        if (end < now - SIXTY_DAYS_MS)  return false
+        if (start > now + SIXTY_DAYS_MS) return false
+        const key = `${ev.transitingPlanet}_${ev.aspect}_${ev.natalPlanet}`
+        if (nearbySeen.has(key)) return false
+        nearbySeen.add(key)
+        return true
+      })
+      .slice(0, 3)  // don't flood the section if several are nearby
+  }
+
   const activeKeys = new Set(active.map(ev => ev.firstPeakDate))
 
   // Past: last peak before today AND not currently active
@@ -54,7 +83,7 @@ function categorize(events) {
     .filter(ev => new Date(ev.firstPeakDate).getTime() > now && !activeKeys.has(ev.firstPeakDate))
     .slice(0, 10)
 
-  return { past, active, future }
+  return { past, active, future, isNearby: strictActive.length === 0 && active.length > 0 }
 }
 
 function currentYear() {
@@ -88,7 +117,7 @@ export default function TransitRiver({ events, person, hasBirthTime, onReset }) 
     }
   }, [])
 
-  const { past, active, future } = categorize(events)
+  const { past, active, future, isNearby } = categorize(events)
 
   // Count how many times each transit type occurs across the full lifetime.
   // Used to personalize the frequency label on rare/once transits.
@@ -148,7 +177,9 @@ export default function TransitRiver({ events, person, hasBirthTime, onReset }) 
         {/* ── Happening Now ── */}
         {active.length > 0 && (
           <>
-            <div className="journey-section-label journey-section-label--active"><span>Happening now</span></div>
+            <div className="journey-section-label journey-section-label--active">
+              <span>{isNearby ? 'In your orbit' : 'Happening now'}</span>
+            </div>
             {active.map((ev, i) => (
               <RiverCard
                 key={`active-${i}`}

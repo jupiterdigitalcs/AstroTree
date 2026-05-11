@@ -129,7 +129,9 @@ function findOrbEdge(natalLon, aspectAngle, transitIdx, peakDate, direction, max
 function mergeRetrogradePasses(events) {
   if (!events.length) return []
 
-  const TWELVE_MONTHS = 12 * 30 * MS_PER_DAY
+  // Outer planets (Saturn–Pluto) can retrograde across the same natal point
+  // over 2–3 passes spanning up to ~18 months — treat them as one chapter.
+  const TWELVE_MONTHS = 18 * 30 * MS_PER_DAY
   const sorted = [...events].sort((a, b) => {
     const ka = `${a.transitingPlanet}|${a.natalPlanet}|${a.aspect}`
     const kb = `${b.transitingPlanet}|${b.natalPlanet}|${b.aspect}`
@@ -251,5 +253,11 @@ export function calcTransitTimeline({
     }
   }
 
-  return mergeRetrogradePasses(rawEvents)
+  // Drop events peaking within the first 2 years of life.
+  // Those are natal-position artifacts (the planet hasn't moved far enough
+  // to be a true transit chapter) — not meaningful life experiences.
+  const twoYearsMs = 2 * 365.25 * MS_PER_DAY
+  const minPeakDate = new Date(startDate.getTime() + twoYearsMs)
+
+  return mergeRetrogradePasses(rawEvents).filter(ev => ev.firstPeakDate >= minPeakDate)
 }

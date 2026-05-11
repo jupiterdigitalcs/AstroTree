@@ -23,23 +23,34 @@ function isRateLimited(ip) {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function serializeEvent(ev) {
-  return {
-    // Planet info
-    transitingPlanet: ev.transitingPlanet,
-    transitingGlyph:  ev.transitingGlyph,
-    natalPlanet:      ev.natalPlanet,
-    natalGlyph:       ev.natalGlyph,
-    aspect:           ev.aspect,
-    aspectSymbol:     ev.aspectSymbol,
-    // Dates as ISO strings
-    firstPeakDate:    ev.firstPeakDate?.toISOString() ?? null,
-    lastPeakDate:     ev.lastPeakDate?.toISOString()  ?? null,
-    orbStart:         ev.orbStart?.toISOString()      ?? null,
-    orbEnd:           ev.orbEnd?.toISOString()        ?? null,
-    passes:           ev.passes ?? 1,
-    // Chapter copy
-    ...getChapter(ev.transitingPlanet, ev.aspect, ev.natalPlanet),
+function calcAge(birthdate, peakDate) {
+  const born = new Date(birthdate + 'T12:00:00Z')
+  let age = peakDate.getUTCFullYear() - born.getUTCFullYear()
+  const m = peakDate.getUTCMonth() - born.getUTCMonth()
+  if (m < 0 || (m === 0 && peakDate.getUTCDate() < born.getUTCDate())) age--
+  return age
+}
+
+function makeSerializer(birthdate) {
+  return function serializeEvent(ev) {
+    const age = ev.firstPeakDate ? calcAge(birthdate, ev.firstPeakDate) : 99
+    return {
+      // Planet info
+      transitingPlanet: ev.transitingPlanet,
+      transitingGlyph:  ev.transitingGlyph,
+      natalPlanet:      ev.natalPlanet,
+      natalGlyph:       ev.natalGlyph,
+      aspect:           ev.aspect,
+      aspectSymbol:     ev.aspectSymbol,
+      // Dates as ISO strings
+      firstPeakDate:    ev.firstPeakDate?.toISOString() ?? null,
+      lastPeakDate:     ev.lastPeakDate?.toISOString()  ?? null,
+      orbStart:         ev.orbStart?.toISOString()      ?? null,
+      orbEnd:           ev.orbEnd?.toISOString()        ?? null,
+      passes:           ev.passes ?? 1,
+      // Chapter copy — age-aware, all three tenses
+      ...getChapter(ev.transitingPlanet, ev.aspect, ev.natalPlanet, age),
+    }
   }
 }
 
@@ -89,6 +100,7 @@ export async function POST(request) {
       endDate,
     })
 
+    const serializeEvent = makeSerializer(birthdate)
     return NextResponse.json({
       events:       events.map(serializeEvent),
       hasBirthTime: !!birthTime,

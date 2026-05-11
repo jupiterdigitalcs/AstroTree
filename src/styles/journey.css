@@ -543,6 +543,15 @@
   opacity: 0.5;
 }
 
+.journey-card-through {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  opacity: 0.55;
+  margin: -0.25rem 0 0.4rem;
+  font-style: italic;
+}
+
 .journey-card-title {
   font-family: 'Cinzel', serif;
   font-size: 0.95rem;
