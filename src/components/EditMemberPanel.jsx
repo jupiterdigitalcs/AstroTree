@@ -2,6 +2,238 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { DateInput } from './DateInput.jsx'
 import { PlanetSign } from './PlanetSign.jsx'
 
+// City/state → IANA timezone lookup.
+// Each entry has an array of search terms (all lowercase, full words/phrases).
+// Matching: a term hits if the query contains the term OR the term contains the query.
+// Terms should be specific enough to avoid false matches (no single common words).
+const CITY_TZ_ALIASES = [
+  // ── Pacific (America/Los_Angeles) ────────────────────────────────────────
+  {
+    tz: 'America/Los_Angeles', label: 'Pacific Time',
+    search: [
+      'california', 'los angeles', 'san diego', 'san francisco', 'san jose',
+      'sacramento', 'fresno', 'long beach', 'oakland', 'bakersfield',
+      'anaheim', 'santa ana', 'riverside', 'stockton', 'irvine',
+      'chula vista', 'fremont', 'san bernardino', 'modesto', 'fontana',
+      'moreno valley', 'glendale', 'huntington beach', 'santa clarita',
+      'garden grove', 'oceanside', 'oxnard', 'ontario', 'rancho cucamonga',
+      'elk grove', 'corona', 'hayward', 'salinas', 'pomona', 'escondido',
+      'sunnyvale', 'torrance', 'pasadena', 'orange', 'fullerton',
+      'thousand oaks', 'visalia', 'santa rosa', 'concord', 'simi valley',
+      'vallejo', 'berkeley', 'el monte', 'downey', 'miramar',
+      'washington state', 'seattle', 'spokane', 'tacoma', 'bellevue',
+      'kent', 'everett', 'renton', 'olympia', 'bellingham',
+      'oregon', 'portland', 'eugene', 'salem', 'gresham', 'hillsboro',
+      'nevada', 'las vegas', 'henderson', 'reno', 'north las vegas',
+    ],
+  },
+  // ── Arizona / no DST (America/Phoenix) ───────────────────────────────────
+  {
+    tz: 'America/Phoenix', label: 'Arizona (Mountain, no DST)',
+    search: [
+      'arizona', 'phoenix', 'tucson', 'mesa', 'chandler', 'scottsdale',
+      'tempe', 'gilbert', 'glendale', 'flagstaff', 'peoria', 'surprise',
+      'yuma', 'avondale', 'goodyear', 'sedona', 'prescott',
+    ],
+  },
+  // ── Mountain (America/Denver) ─────────────────────────────────────────────
+  {
+    tz: 'America/Denver', label: 'Mountain Time',
+    search: [
+      'colorado', 'denver', 'colorado springs', 'aurora', 'fort collins',
+      'lakewood', 'thornton', 'arvada', 'westminster', 'boulder',
+      'pueblo', 'highlands ranch', 'centennial', 'greeley', 'longmont',
+      'utah', 'salt lake city', 'salt lake', 'west valley city', 'provo',
+      'west jordan', 'orem', 'sandy', 'ogden', 'st george', 'layton',
+      'new mexico', 'albuquerque', 'las cruces', 'santa fe', 'rio rancho',
+      'wyoming', 'cheyenne', 'casper', 'laramie',
+      'montana', 'billings', 'missoula', 'great falls', 'bozeman',
+      'idaho', 'boise', 'nampa', 'meridian', 'idaho falls', 'pocatello',
+    ],
+  },
+  // ── Central (America/Chicago) ─────────────────────────────────────────────
+  {
+    tz: 'America/Chicago', label: 'Central Time',
+    search: [
+      'texas', 'houston', 'dallas', 'san antonio', 'austin', 'fort worth',
+      'el paso', 'arlington', 'corpus christi', 'plano', 'lubbock',
+      'laredo', 'irving', 'garland', 'amarillo', 'mckinney', 'frisco',
+      'illinois', 'chicago', 'aurora', 'joliet', 'naperville', 'rockford',
+      'springfield', 'elgin', 'peoria', 'champaign',
+      'minnesota', 'minneapolis', 'saint paul', 'st paul', 'rochester',
+      'duluth', 'bloomington',
+      'wisconsin', 'milwaukee', 'madison', 'green bay', 'kenosha', 'racine',
+      'iowa', 'des moines', 'cedar rapids', 'davenport', 'sioux city',
+      'missouri', 'kansas city', 'saint louis', 'st louis', 'springfield',
+      'independence', 'columbia',
+      'kansas', 'wichita', 'overland park', 'topeka', 'olathe',
+      'nebraska', 'omaha', 'lincoln', 'bellevue',
+      'oklahoma', 'oklahoma city', 'tulsa', 'norman', 'broken arrow',
+      'louisiana', 'new orleans', 'baton rouge', 'shreveport', 'lafayette',
+      'arkansas', 'little rock', 'fort smith', 'fayetteville',
+      'mississippi', 'jackson', 'gulfport', 'biloxi',
+      'alabama', 'birmingham', 'montgomery', 'huntsville', 'mobile',
+      'tennessee', 'nashville', 'memphis', 'knoxville', 'chattanooga',
+      'south dakota', 'sioux falls', 'rapid city',
+      'north dakota', 'fargo', 'bismarck', 'grand forks',
+    ],
+  },
+  // ── Eastern (America/New_York) ────────────────────────────────────────────
+  {
+    tz: 'America/New_York', label: 'Eastern Time',
+    search: [
+      'new york', 'new york city', 'nyc', 'brooklyn', 'queens', 'bronx',
+      'manhattan', 'staten island', 'buffalo', 'rochester', 'yonkers',
+      'syracuse', 'albany', 'new rochelle', 'mount vernon',
+      'new jersey', 'newark', 'jersey city', 'paterson', 'elizabeth',
+      'trenton', 'camden', 'clifton', 'toms river', 'new brunswick',
+      'hackensack', 'hoboken', 'east orange', 'parsippany', 'woodbridge',
+      'pennsylvania', 'philadelphia', 'pittsburgh', 'allentown', 'erie',
+      'reading', 'scranton', 'bethlehem', 'lancaster', 'harrisburg',
+      'massachusetts', 'boston', 'worcester', 'springfield', 'cambridge',
+      'lowell', 'brockton', 'quincy', 'lynn', 'fall river',
+      'connecticut', 'bridgeport', 'new haven', 'hartford', 'stamford',
+      'rhode island', 'providence', 'cranston', 'warwick',
+      'new hampshire', 'manchester', 'nashua', 'concord',
+      'vermont', 'burlington', 'montpelier',
+      'maine', 'portland', 'lewiston', 'bangor',
+      'maryland', 'baltimore', 'columbia', 'germantown', 'silver spring',
+      'annapolis', 'rockville',
+      'washington dc', 'district of columbia',
+      'virginia', 'virginia beach', 'chesapeake', 'norfolk', 'richmond',
+      'arlington', 'alexandria', 'roanoke',
+      'north carolina', 'charlotte', 'raleigh', 'greensboro', 'durham',
+      'winston-salem', 'fayetteville', 'cary', 'wilmington', 'high point',
+      'south carolina', 'columbia', 'charleston', 'north charleston',
+      'mount pleasant', 'rock hill', 'greenville',
+      'georgia', 'atlanta', 'columbus', 'savannah', 'athens',
+      'florida', 'miami', 'jacksonville', 'tampa', 'orlando', 'st petersburg',
+      'hialeah', 'tallahassee', 'fort lauderdale', 'pembroke pines',
+      'cape coral', 'hollywood', 'gainesville', 'miramar', 'coral springs',
+      'west virginia', 'charleston', 'huntington', 'morgantown',
+      'delaware', 'wilmington', 'dover',
+      'michigan', 'detroit', 'grand rapids', 'warren', 'sterling heights',
+      'lansing', 'ann arbor', 'flint',
+      'ohio', 'columbus', 'cleveland', 'cincinnati', 'toledo', 'akron',
+      'dayton', 'parma',
+      'kentucky', 'louisville', 'lexington', 'bowling green',
+      'indiana', 'indianapolis', 'fort wayne', 'evansville', 'south bend',
+    ],
+  },
+  // ── Indiana exceptions ────────────────────────────────────────────────────
+  {
+    tz: 'America/Indiana/Indianapolis', label: 'Indiana (Eastern)',
+    search: ['indiana', 'indianapolis', 'fort wayne', 'evansville', 'south bend', 'gary'],
+  },
+  // ── Alaska ───────────────────────────────────────────────────────────────
+  {
+    tz: 'America/Anchorage', label: 'Alaska',
+    search: ['alaska', 'anchorage', 'fairbanks', 'juneau', 'sitka'],
+  },
+  // ── Hawaii ───────────────────────────────────────────────────────────────
+  {
+    tz: 'Pacific/Honolulu', label: 'Hawaii',
+    search: ['hawaii', 'honolulu', 'maui', 'hilo', 'kailua', 'oahu', 'kauai'],
+  },
+  // ── Canada ───────────────────────────────────────────────────────────────
+  {
+    tz: 'America/Toronto', label: 'Eastern Canada',
+    search: ['ontario', 'toronto', 'ottawa', 'mississauga', 'brampton',
+      'hamilton', 'london ontario', 'quebec', 'montreal', 'laval',
+      'gatineau', 'longueuil'],
+  },
+  {
+    tz: 'America/Vancouver', label: 'Pacific Canada',
+    search: ['british columbia', 'vancouver', 'surrey', 'burnaby', 'richmond',
+      'kelowna', 'abbotsford'],
+  },
+  {
+    tz: 'America/Edmonton', label: 'Mountain Canada',
+    search: ['alberta', 'calgary', 'edmonton', 'red deer', 'lethbridge'],
+  },
+  {
+    tz: 'America/Winnipeg', label: 'Central Canada',
+    search: ['manitoba', 'winnipeg', 'brandon', 'saskatchewan', 'regina', 'saskatoon'],
+  },
+  {
+    tz: 'America/Halifax', label: 'Atlantic Canada',
+    search: ['nova scotia', 'halifax', 'new brunswick canada', 'moncton',
+      'fredericton', 'prince edward island', 'charlottetown'],
+  },
+  // ── UK / Europe ───────────────────────────────────────────────────────────
+  { tz: 'Europe/London',    label: 'United Kingdom',  search: ['uk', 'united kingdom', 'england', 'london', 'manchester', 'birmingham', 'glasgow', 'liverpool', 'wales', 'scotland', 'ireland', 'dublin'] },
+  { tz: 'Europe/Paris',     label: 'France',          search: ['france', 'paris', 'lyon', 'marseille', 'toulouse', 'nice'] },
+  { tz: 'Europe/Berlin',    label: 'Germany',         search: ['germany', 'berlin', 'hamburg', 'munich', 'cologne', 'frankfurt', 'stuttgart'] },
+  { tz: 'Europe/Rome',      label: 'Italy',           search: ['italy', 'rome', 'milan', 'naples', 'turin', 'florence', 'venice'] },
+  { tz: 'Europe/Madrid',    label: 'Spain',           search: ['spain', 'madrid', 'barcelona', 'valencia', 'seville'] },
+  { tz: 'Europe/Amsterdam', label: 'Netherlands',     search: ['netherlands', 'amsterdam', 'rotterdam', 'the hague', 'utrecht'] },
+  { tz: 'Europe/Athens',    label: 'Greece',          search: ['greece', 'athens', 'thessaloniki'] },
+  { tz: 'Europe/Warsaw',    label: 'Poland',          search: ['poland', 'warsaw', 'krakow', 'lodz', 'wroclaw'] },
+  { tz: 'Europe/Stockholm', label: 'Sweden',          search: ['sweden', 'stockholm', 'gothenburg', 'malmo'] },
+  { tz: 'Europe/Bucharest', label: 'Romania',         search: ['romania', 'bucharest'] },
+  { tz: 'Europe/Kiev',      label: 'Ukraine',         search: ['ukraine', 'kyiv', 'kiev', 'kharkiv', 'odessa'] },
+  { tz: 'Europe/Moscow',    label: 'Moscow',          search: ['russia', 'moscow', 'saint petersburg'] },
+  // ── Asia ──────────────────────────────────────────────────────────────────
+  { tz: 'Asia/Tokyo',       label: 'Japan',           search: ['japan', 'tokyo', 'osaka', 'kyoto', 'yokohama', 'nagoya'] },
+  { tz: 'Asia/Seoul',       label: 'South Korea',     search: ['south korea', 'korea', 'seoul', 'busan', 'incheon'] },
+  { tz: 'Asia/Shanghai',    label: 'China',           search: ['china', 'beijing', 'shanghai', 'guangzhou', 'shenzhen', 'chengdu'] },
+  { tz: 'Asia/Hong_Kong',   label: 'Hong Kong',       search: ['hong kong'] },
+  { tz: 'Asia/Singapore',   label: 'Singapore',       search: ['singapore'] },
+  { tz: 'Asia/Kolkata',     label: 'India',           search: ['india', 'mumbai', 'delhi', 'bangalore', 'hyderabad', 'kolkata', 'chennai', 'pune'] },
+  { tz: 'Asia/Dubai',       label: 'UAE / Dubai',     search: ['dubai', 'abu dhabi', 'uae', 'united arab emirates'] },
+  { tz: 'Asia/Bangkok',     label: 'Thailand',        search: ['thailand', 'bangkok', 'chiang mai'] },
+  { tz: 'Asia/Manila',      label: 'Philippines',     search: ['philippines', 'manila', 'quezon city', 'cebu'] },
+  { tz: 'Asia/Jakarta',     label: 'Indonesia',       search: ['indonesia', 'jakarta', 'bali', 'surabaya'] },
+  { tz: 'Asia/Karachi',     label: 'Pakistan',        search: ['pakistan', 'karachi', 'lahore', 'islamabad'] },
+  // ── Latin America ─────────────────────────────────────────────────────────
+  { tz: 'America/Mexico_City', label: 'Mexico (Central)', search: ['mexico', 'mexico city', 'guadalajara', 'monterrey', 'puebla', 'tijuana'] },
+  { tz: 'America/Sao_Paulo',   label: 'Brazil (Brasília)', search: ['brazil', 'sao paulo', 'rio de janeiro', 'brasilia', 'salvador', 'fortaleza'] },
+  { tz: 'America/Argentina/Buenos_Aires', label: 'Argentina', search: ['argentina', 'buenos aires', 'cordoba', 'rosario'] },
+  { tz: 'America/Bogota',      label: 'Colombia',    search: ['colombia', 'bogota', 'medellin', 'cali'] },
+  { tz: 'America/Lima',        label: 'Peru',        search: ['peru', 'lima'] },
+  { tz: 'America/Santiago',    label: 'Chile',       search: ['chile', 'santiago'] },
+  // ── Australia / NZ ────────────────────────────────────────────────────────
+  { tz: 'Australia/Sydney',    label: 'Sydney / Melbourne (AEST)', search: ['new south wales', 'victoria', 'sydney', 'melbourne', 'canberra', 'newcastle', 'wollongong'] },
+  { tz: 'Australia/Brisbane',  label: 'Brisbane / Queensland',     search: ['queensland', 'brisbane', 'gold coast', 'sunshine coast', 'cairns', 'townsville'] },
+  { tz: 'Australia/Perth',     label: 'Perth / Western Australia', search: ['western australia', 'perth'] },
+  { tz: 'Australia/Adelaide',  label: 'Adelaide / South Australia',search: ['south australia', 'adelaide'] },
+  { tz: 'Pacific/Auckland',    label: 'New Zealand',               search: ['new zealand', 'auckland', 'wellington', 'christchurch'] },
+  // ── Africa / Middle East ──────────────────────────────────────────────────
+  { tz: 'Africa/Cairo',        label: 'Egypt',       search: ['egypt', 'cairo', 'alexandria'] },
+  { tz: 'Africa/Johannesburg', label: 'South Africa',search: ['south africa', 'johannesburg', 'cape town', 'durban', 'pretoria'] },
+  { tz: 'Africa/Lagos',        label: 'Nigeria',     search: ['nigeria', 'lagos', 'abuja', 'kano'] },
+  { tz: 'Africa/Nairobi',      label: 'Kenya',       search: ['kenya', 'nairobi'] },
+]
+
+function searchTimezones(q) {
+  const ql = q.toLowerCase().trim()
+  if (ql.length < 2) return []
+
+  // Match: query is contained in term, OR term is contained in query (min 3 chars to prevent noise)
+  const aliasHits = CITY_TZ_ALIASES
+    .filter(entry => entry.search.some(term =>
+      term.includes(ql) || (ql.length >= 3 && ql.includes(term))
+    ))
+    .map(entry => ({ tz: entry.tz, label: entry.label, isAlias: true }))
+
+  // Also search IANA names directly
+  let all = []
+  try { all = Intl.supportedValuesOf('timeZone') } catch { return aliasHits }
+  const qNorm = ql.replace(/\s+/g, '_')
+  const ianaHits = all
+    .filter(tz => tz.toLowerCase().includes(qNorm))
+    .slice(0, 15)
+    .map(tz => ({ tz, label: null, isAlias: false }))
+
+  // Merge, dedupe by tz
+  const seen = new Set(aliasHits.map(a => a.tz))
+  const merged = [...aliasHits]
+  for (const h of ianaHits) {
+    if (!seen.has(h.tz)) { merged.push(h); seen.add(h.tz) }
+  }
+  return merged.slice(0, 20)
+}
+
 // Convert stored 24h "HH:MM" → 12h display + AM/PM
 function to12h(time24) {
   if (!time24 || !/^\d{2}:\d{2}$/.test(time24)) return { display: '', ampm: 'AM' }
@@ -385,23 +617,31 @@ export default function EditMemberPanel({
               })()}
               <div className="tz-results">
                 {(() => {
-                  try {
-                    const all = Intl.supportedValuesOf('timeZone')
-                    const q = tzSearch.toLowerCase().replace(/\s+/g, '_')
-                    const filtered = q ? all.filter(tz => tz.toLowerCase().includes(q)) : all
-                    const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone
-                    return filtered.slice(0, 12).map(tz => (
-                      <button
-                        key={tz}
-                        type="button"
-                        className={`tz-option${tz === birthTimezone ? ' tz-option--selected' : ''}${tz === browserTz ? ' tz-option--detected' : ''}`}
-                        onClick={() => { setBirthTimezone(tz); setTzSearch(''); setShowTzPicker(false); doSave({ birthTimezone: tz }) }}
-                      >
-                        {tz.replace(/_/g, ' ').replace(/\//g, ' / ')}
-                        {tz === browserTz && ' (detected)'}
-                      </button>
-                    ))
-                  } catch { return null }
+                  const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone
+                  if (!tzSearch.trim()) {
+                    // No query — show a helpful prompt
+                    return (
+                      <p className="tz-results-hint">Type a city or region name</p>
+                    )
+                  }
+                  const results = searchTimezones(tzSearch)
+                  if (!results.length) return <p className="tz-results-hint">No matches — try a nearby city</p>
+                  return results.map(({ tz, label, isAlias }) => (
+                    <button
+                      key={tz + (label ?? '')}
+                      type="button"
+                      className={`tz-option${tz === birthTimezone ? ' tz-option--selected' : ''}${tz === browserTz ? ' tz-option--detected' : ''}`}
+                      onClick={() => { setBirthTimezone(tz); setTzSearch(''); setShowTzPicker(false); doSave({ birthTimezone: tz }) }}
+                    >
+                      <span className="tz-option-label">
+                        {isAlias ? label : tz.replace(/_/g, ' ').replace(/\//g, ' / ')}
+                      </span>
+                      <span className="tz-option-id">
+                        {tz.replace(/_/g, ' ')}
+                        {tz === browserTz ? ' · detected' : ''}
+                      </span>
+                    </button>
+                  ))
                 })()}
               </div>
             </div>
