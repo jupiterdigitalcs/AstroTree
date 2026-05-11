@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    // Tell Next.js to only import the specific parts of @xyflow/react that are
+    // actually used, rather than the whole package. Reduces JS parse time on mobile.
+    optimizePackageImports: ['@xyflow/react'],
+  },
   // Headers (migrated from vercel.json)
   async headers() {
     return [

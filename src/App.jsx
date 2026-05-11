@@ -13,17 +13,19 @@ import '@xyflow/react/dist/style.css'
 
 import AddMembersForm  from './components/AddMembersForm.jsx'
 import AstroNode       from './components/AstroNode.jsx'
-import EditMemberPanel from './components/EditMemberPanel.jsx'
-const ZodiacWheel        = lazy(() => import('./components/ZodiacWheel.jsx'))
-const ConstellationView  = lazy(() => import('./components/ConstellationView.jsx'))
-import ChartsPanel     from './components/ChartsPanel.jsx'
-import InsightsPanel   from './components/InsightsPanel.jsx'
-import AboutPanel      from './components/AboutPanel.jsx'
-import { SaveDialog }    from './components/SaveDialog.jsx'
-import { NewTreeConfirm } from './components/NewTreeConfirm.jsx'
-import { WelcomeScreen }  from './components/WelcomeScreen.jsx'
+
+// Lazy — not needed until user interacts (split into separate chunks)
+const ZodiacWheel       = lazy(() => import('./components/ZodiacWheel.jsx'))
+const ConstellationView = lazy(() => import('./components/ConstellationView.jsx'))
+const EditMemberPanel   = lazy(() => import('./components/EditMemberPanel.jsx'))
+const InsightsPanel     = lazy(() => import('./components/InsightsPanel.jsx'))
+const TablesPanel       = lazy(() => import('./components/TablesPanel.jsx').then(m => ({ default: m.TablesPanel })))
+const ChartsPanel       = lazy(() => import('./components/ChartsPanel.jsx'))
+const AboutPanel        = lazy(() => import('./components/AboutPanel.jsx'))
+const SaveDialog        = lazy(() => import('./components/SaveDialog.jsx').then(m => ({ default: m.SaveDialog })))
+const NewTreeConfirm    = lazy(() => import('./components/NewTreeConfirm.jsx').then(m => ({ default: m.NewTreeConfirm })))
+const WelcomeScreen     = lazy(() => import('./components/WelcomeScreen.jsx').then(m => ({ default: m.WelcomeScreen })))
 import { JupiterIcon }            from './components/JupiterIcon.jsx'
-import { TablesPanel }           from './components/TablesPanel.jsx'
 import { applyDagreLayout }      from './utils/layout.js'
 import { loadDraft, saveChart, loadCharts }  from './utils/storage.js'
 import { useCloudSync } from './hooks/useCloudSync.js'
@@ -98,6 +100,19 @@ export default function App() {
     const t = setTimeout(() => setReturnVisit(false), 6000)
     return () => clearTimeout(t)
   }, [returnVisit, setReturnVisit])
+
+  // Prefetch non-critical chunks in the background after first render so they're
+  // warm before the user navigates to Insights, Charts, or edits a member.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      import('./components/InsightsPanel.jsx')
+      import('./components/EditMemberPanel.jsx')
+      import('./components/ChartsPanel.jsx')
+      import('./components/TablesPanel.jsx')
+      import('./components/AboutPanel.jsx')
+    }, 3000) // wait 3s so prefetch doesn't compete with initial render
+    return () => clearTimeout(t)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
@@ -633,22 +648,26 @@ export default function App() {
 
       {/* ── New Tree confirm (when tree is already saved) ────────────────── */}
       {showNewTreeConfirm && (
-        <NewTreeConfirm
-          onClose={() => setShowNewTreeConfirm(false)}
-          onConfirm={() => { setShowNewTreeConfirm(false); handleNewChart() }}
-        />
+        <Suspense fallback={null}>
+          <NewTreeConfirm
+            onClose={() => setShowNewTreeConfirm(false)}
+            onConfirm={() => { setShowNewTreeConfirm(false); handleNewChart() }}
+          />
+        </Suspense>
       )}
 
       {/* ── Save dialog — fixed overlay, above sidebar ───────────────────── */}
       {showSaveDialog && (
-        <SaveDialog
-          saveTitle={saveTitle}
-          setSaveTitle={setSaveTitle}
-          pendingNewTree={pendingNewTree}
-          onClose={() => { setShowSaveDialog(false); setPendingNewTree(false) }}
-          onDiscard={() => { setShowSaveDialog(false); setPendingNewTree(false); handleNewChart() }}
-          onSubmit={handleSaveChart}
-        />
+        <Suspense fallback={null}>
+          <SaveDialog
+            saveTitle={saveTitle}
+            setSaveTitle={setSaveTitle}
+            pendingNewTree={pendingNewTree}
+            onClose={() => { setShowSaveDialog(false); setPendingNewTree(false) }}
+            onDiscard={() => { setShowSaveDialog(false); setPendingNewTree(false); handleNewChart() }}
+            onSubmit={handleSaveChart}
+          />
+        </Suspense>
       )}
 
       {/* Starfield */}
@@ -765,6 +784,7 @@ export default function App() {
         <div className="sidebar-content">
 
           {/* ── Editing a member ──────────────────────────────────────── */}
+          <Suspense fallback={null}>
           {editingNode ? (
             <>
               <button
@@ -999,6 +1019,7 @@ export default function App() {
               )}
             </>
           )}
+        </Suspense>
         </div>
 
         {/* ── Footer ──────────────────────────────────────────────────── */}
@@ -1100,7 +1121,7 @@ export default function App() {
       {/* ── Canvas ──────────────────────────────────────────────────────── */}
       <main className="canvas">
         {nodes.length === 0 && !isCosmic && (
-          <WelcomeScreen
+          <Suspense fallback={null}><WelcomeScreen
             hasUsedApp={hasUsedApp}
             onBegin={() => {
               goTab('add')
@@ -1109,7 +1130,7 @@ export default function App() {
             onDemo={handleLoadDemo}
             onDemoCrew={handleLoadDemoCrew}
             onLoadCharts={() => goTab('charts')}
-          />
+          /></Suspense>
         )}
 
         {/* ── Saved toast — shown briefly after first auto-save ───────── */}
@@ -1236,7 +1257,7 @@ export default function App() {
         {/* ── Insights in main area (classic mode only; cosmic uses bottom sheet) */}
         {!isCosmic && activeTab === 'insights' ? (
           <div className="insights-main-area">
-            <InsightsPanel
+            <Suspense fallback={null}><InsightsPanel
               nodes={nodes} edges={edges}
               onExport={nodes.length >= 2 ? () => { logEvent('export'); handleInsightsExport() } : undefined}
               exporting={exporting}
@@ -1251,7 +1272,7 @@ export default function App() {
               showDig={showDig}
               onShowDig={() => { setShowDig(true); logEvent('dig_opened') }}
               onCloseDig={() => { setShowDig(false); setInsightsTab('insights') }}
-            />
+            /></Suspense>
           </div>
         ) : treeView === 'tables' && nodes.length > 0 ? (
           <div className="tables-canvas-wrap">
@@ -1262,7 +1283,7 @@ export default function App() {
                 onUpgrade={() => setShowUpgradePrompt(true)}
               />
             )}
-            <TablesPanel nodes={nodes} chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null} />
+            <Suspense fallback={null}><TablesPanel nodes={nodes} chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null} /></Suspense>
           </div>
         ) : treeView === 'zodiac' && nodes.length > 0 ? (
           <div style={{ position: 'relative', flex: 1 }}>
@@ -1435,6 +1456,7 @@ export default function App() {
             title={editingNode ? 'Edit Member' : `★ ${familyLabel}`}
             onClose={() => { setEditingNodeId(null); goTab('tree') }}
           >
+            <Suspense fallback={null}>
             {editingNode ? (
               <>
               <button
@@ -1548,6 +1570,7 @@ export default function App() {
                 )}
               </>
             )}
+            </Suspense>
           </BottomSheet>
 
           {/* Insights sheet */}
@@ -1556,7 +1579,7 @@ export default function App() {
             title="✦ Insights"
             onClose={() => goTab('tree')}
           >
-            <InsightsPanel
+            <Suspense fallback={null}><InsightsPanel
               nodes={nodes} edges={edges}
               onExport={nodes.length >= 2 ? () => { logEvent('export'); handleInsightsExport() } : undefined}
               exporting={exporting}
@@ -1571,7 +1594,7 @@ export default function App() {
               showDig={showDig}
               onShowDig={() => { setShowDig(true); logEvent('dig_opened') }}
               onCloseDig={() => { setShowDig(false); setInsightsTab('insights') }}
-            />
+            /></Suspense>
           </BottomSheet>
 
           {/* Charts sheet */}
@@ -1580,7 +1603,7 @@ export default function App() {
             title="🗂️ Saved Charts"
             onClose={() => goTab('tree')}
           >
-            <ChartsPanel
+            <Suspense fallback={null}><ChartsPanel
               nodes={nodes} edges={edges} counter={counter}
               savedChartId={savedChartId}
               onLoad={loadChart} onNew={handleNewTreeClick}
@@ -1596,7 +1619,7 @@ export default function App() {
               onSignOut={handleSignOut}
               refreshTick={chartRefreshTick}
               cloudLoading={cloudLoading}
-            />
+            /></Suspense>
           </BottomSheet>
 
           {/* About sheet */}
@@ -1605,7 +1628,7 @@ export default function App() {
             title="About"
             onClose={() => goTab('tree')}
           >
-            <AboutPanel />
+            <Suspense fallback={null}><AboutPanel /></Suspense>
           </BottomSheet>
 
           {/* Cosmic bottom nav */}

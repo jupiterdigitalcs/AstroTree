@@ -112,12 +112,20 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* Google Fonts — loaded via link to match existing CSS font-family references */}
+        {/* Google Fonts — split into critical (first paint) and non-critical (DIG / theme-cosmic) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Critical — used on every screen */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Raleway:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Raleway:wght@300;400;500;600&display=swap"
           rel="stylesheet"
+        />
+        {/* Non-critical — only needed for The DIG and theme-cosmic views; load at low priority */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
+          rel="stylesheet"
+          // @ts-ignore — fetchpriority is valid HTML but not in React types yet
+          fetchpriority="low"
         />
         <script
           type="application/ld+json"
