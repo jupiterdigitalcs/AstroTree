@@ -110,6 +110,7 @@ function spreadAngles(count, segStart) {
 
 export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
   const [hoveredNode, setHoveredNode] = useState(null)
+  const [selectedNode, setSelectedNode] = useState(null)
   const [hoveredSign, setHoveredSign] = useState(null)
   const [zoom, setZoom] = useState(1)
   const [pan,  setPan]  = useState({ x: 0, y: 0 })
@@ -178,6 +179,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
   function onPointerDown(e) {
     if (e.target.closest('.zodiac-member-marker')) return
     if (e.target.closest('.zodiac-zoom-btn')) return
+    if (e.target.closest('.zodiac-info-strip')) return
     dragBase.current = { mx: e.clientX, my: e.clientY, px: pan.x, py: pan.y, moved: false, target: e.target }
     e.currentTarget.setPointerCapture(e.pointerId)
   }
@@ -196,6 +198,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
         setSelectedSign(s => s === sign ? null : sign)
       } else if (!sign) {
         setSelectedSign(null)
+        setSelectedNode(null)
       }
     }
     dragBase.current = null
@@ -397,9 +400,12 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
                 if (!members.length) return null
                 const angles = spreadAngles(members.length, si * SEGMENT_ANGLE + START_OFFSET)
                 return members.map((n, mi) => {
-                  const pos   = polarToXY(ring.r, angles[mi])
-                  const isHov = hoveredNode === n.id
-                  const r     = isHov ? scaledHoverR : scaledMarkerR
+                  const pos       = polarToXY(ring.r, angles[mi])
+                  const isHov     = hoveredNode === n.id
+                  const isSel     = selectedNode === n.id
+                  const isDimmed  = selectedNode !== null && !isSel
+                  const isLit     = isSel || (selectedNode === null && isHov)
+                  const r         = isLit ? scaledHoverR : scaledMarkerR
                   // Sun uses element color; others use planet color with per-person hue shift
                   const hue = nameHue(n.data.name)
                   const strokeColor = ring.key === 'sun'
@@ -415,19 +421,21 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
                     <g
                       key={`${ring.key}-${n.id}`}
                       className="zodiac-member-marker"
-                      onClick={() => onSelectNode?.(n.id)}
+                      onClick={() => setSelectedNode(id => id === n.id ? null : n.id)}
                       onMouseEnter={() => setHoveredNode(n.id)}
                       onMouseLeave={() => setHoveredNode(null)}
-                      style={{ cursor: 'pointer' }}
+                      style={{ cursor: 'pointer', opacity: isDimmed ? 0.15 : 1, transition: 'opacity 0.2s ease' }}
                     >
                       <circle
                         cx={pos.x} cy={pos.y} r={r}
                         fill="#0d0b1e"
                         stroke={strokeColor}
-                        strokeWidth={isHov ? (large ? 2 : 1.5) : (large ? 1.2 : 1)}
-                        strokeDasharray={!isHov && ring.key === 'moon' ? '3 2.5' : undefined}
+                        strokeWidth={isLit ? (large ? 2.5 : 2) : (large ? 1.2 : 1)}
+                        strokeDasharray={!isLit && ring.key === 'moon' ? '3 2.5' : undefined}
                         style={{
-                          filter: isHov
+                          filter: isSel
+                            ? `drop-shadow(0 0 ${large ? 14 : 10}px ${strokeColor})`
+                            : isLit
                             ? `drop-shadow(0 0 ${large ? 8 : 5}px ${strokeColor})`
                             : `drop-shadow(0 0 ${large ? 4 : 2}px ${strokeColor}55)`,
                           transition: 'all 0.15s ease',
@@ -483,6 +491,38 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
               fontSize={20} fill="var(--gold)">✦</text>
           </svg>
         </div>
+        {/* Info strip — shown when a person is selected via tap */}
+        {selectedNode && (() => {
+          const n = nodes.find(nd => nd.id === selectedNode)
+          if (!n) return null
+          const color = n.data.elementColor ?? '#c9a84c'
+          const inner = innerByNode[n.id]
+          return (
+            <div className="zodiac-info-strip" onPointerDown={e => e.stopPropagation()}>
+              <span className="zodiac-info-strip-symbol" style={{ color }}>{n.data.symbol}</span>
+              <span className="zodiac-info-strip-name">{n.data.name}</span>
+              <span className="zodiac-info-strip-signs">
+                {activeRings.sun && (
+                  <span style={{ color }}>{n.data.sign}</span>
+                )}
+                {activeRings.moon && n.data.moonSign && n.data.moonSign !== 'Unknown' && (
+                  <PlanetSign planet="moon" symbol={n.data.moonSymbol} sign={n.data.moonSign} />
+                )}
+                {activeRings.mercury && inner?.mercury?.sign && (
+                  <PlanetSign planet="mercury" symbol={inner.mercury.symbol} sign={inner.mercury.sign} />
+                )}
+                {activeRings.venus && inner?.venus?.sign && (
+                  <PlanetSign planet="venus" symbol={inner.venus.symbol} sign={inner.venus.sign} />
+                )}
+                {activeRings.mars && inner?.mars?.sign && (
+                  <PlanetSign planet="mars" symbol={inner.mars.symbol} sign={inner.mars.sign} />
+                )}
+              </span>
+              <button className="zodiac-info-strip-close" onClick={() => setSelectedNode(null)}>✕</button>
+            </div>
+          )
+        })()}
+
         {/* Zoom controls inside the zoom area so they sit on top */}
         <div className="zodiac-zoom-controls">
           <button className="zodiac-zoom-btn" onClick={(e) => { e.stopPropagation(); setZoom(z => clampZoom(z * 1.2)) }} title="Zoom in">+</button>
@@ -494,8 +534,8 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
       {/* Mobile pan hint */}
         <p className="zodiac-mobile-hint">drag to pan · pinch to zoom · tap ↺ to reset</p>
 
-        {/* Hover tooltip */}
-        {hoveredNode && (() => {
+        {/* Hover tooltip — desktop only; suppressed when a node is selected (strip takes over) */}
+        {hoveredNode && !selectedNode && (() => {
           const n = nodes.find(nd => nd.id === hoveredNode)
           if (!n) return null
           return (
@@ -628,10 +668,10 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
           return (
             <div
               key={n.id}
-              className={`zodiac-legend-item${hoveredNode === n.id ? ' zodiac-legend-item--active' : ''}`}
+              className={`zodiac-legend-item${hoveredNode === n.id || selectedNode === n.id ? ' zodiac-legend-item--active' : ''}`}
               onMouseEnter={() => setHoveredNode(n.id)}
               onMouseLeave={() => setHoveredNode(null)}
-              onClick={() => onSelectNode?.(n.id)}
+              onClick={() => setSelectedNode(id => id === n.id ? null : n.id)}
             >
               <span className="zodiac-legend-num" style={{ borderColor: color, color }}>
                 {nameLabel(n.data.name, allNames)}
