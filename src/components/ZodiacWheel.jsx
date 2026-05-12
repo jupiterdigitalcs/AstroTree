@@ -503,7 +503,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
               <span className="zodiac-info-strip-name">{n.data.name}</span>
               <span className="zodiac-info-strip-signs">
                 {activeRings.sun && (
-                  <span style={{ color }}>{n.data.sign}</span>
+                  <PlanetSign planet="sun" symbol={n.data.symbol} sign={n.data.sign} />
                 )}
                 {activeRings.moon && n.data.moonSign && n.data.moonSign !== 'Unknown' && (
                   <PlanetSign planet="moon" symbol={n.data.moonSymbol} sign={n.data.moonSign} />
@@ -540,9 +540,12 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
           if (!n) return null
           return (
             <div className="zodiac-tooltip">
-              <span className="zodiac-tooltip-symbol" style={{ color: n.data.elementColor }}>{n.data.symbol}</span>
               <span className="zodiac-tooltip-name">{n.data.name}</span>
-              <span className="zodiac-tooltip-sign">{n.data.sign}</span>
+              {activeRings.sun && (
+                <span className="zodiac-tooltip-moon">
+                  <PlanetSign planet="sun" symbol={n.data.symbol} sign={n.data.sign} />
+                </span>
+              )}
               {n.data.moonSign && n.data.moonSign !== 'Unknown' && (
                 <span className="zodiac-tooltip-moon">
                   <PlanetSign planet="moon" symbol={n.data.moonSymbol} sign={n.data.moonSign} />
