@@ -83,12 +83,14 @@ Make the app stable and shareable beyond beta testers.
 
 ---
 
-## Next — Content Revamp (Group Astrology)
-See `CONTENT_REVAMP_PLAN.md` for full 6-phase plan.
-- Add Jupiter + Saturn calculations, degree data (internal only)
-- Group chart analysis: hotspots, gaps, collective element maps
-- Rewrite all copy in warm/hedging voice
-- New DIG slides based on chart math, not sun-sign superlatives
+## Content Revamp — Group Astrology (mostly complete)
+See `CONTENT_REVAMP_PLAN.md` for status.
+- ✅ Jupiter + Saturn calculations, degree data (internal only)
+- ✅ Group chart analysis: hotspots, gaps, collective element maps, bridge person, Saturn/Jupiter lines
+- ✅ New DIG slides: SlideHotspot, SlideBridge; revamped VibeCheck, Venus, Mars, MoonMirror
+- ✅ SIGN_FLAVOR copy rewrite (warm/hedging, group-context)
+- ✅ Element weight dots on tree nodes
+- Remaining: Jupiter/Saturn in EditMemberPanel, "starting point" note in InsightsPanel, groupChartCalc tests
 
 ---
 

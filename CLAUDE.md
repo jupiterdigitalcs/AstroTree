@@ -30,8 +30,8 @@ Live at astrodig.com:
 - Sun sign, moon sign, and inner planets (Mercury, Venus, Mars) calculated server-side via Celestine
 - Four visualization modes: tree (React Flow), zodiac wheel, constellation (force-directed), tables (sortable grid)
 - The DIG: Wrapped-style personality story with swipeable slides (free users see 3, celestial see all)
-- Insights panel with 11 cards (see card order below)
-- Optional auth via Supabase magic links — users start anonymous, prompted to add email after first save
+- Insights panel with 16+ cards (see card order below — source of truth is render order in InsightsPanel.jsx)
+- Optional auth via Google (GSI popup) or Supabase magic links — users start anonymous, prompted to sign in after first save
 - Chart save/load/rename/duplicate with cloud sync
 - Shared chart links via `?view=token`
 - PNG export with brand bar (all views + insights)
@@ -97,7 +97,7 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
       TheDig.jsx        # Main container (swipe/tap/keyboard navigation)
       DigProgressBar.jsx
       DigSlide.jsx      # Slide renderer
-      /slides/          # 19 individual slide components (SlideIntro, SlideCosmicDNA, etc.)
+      /slides/          # 22 individual slide components (SlideIntro, SlideCosmicDNA, etc.)
   /hooks                # Custom hooks
     useTreeState.js     # Tree node/edge state management
     useChartManager.js  # Chart CRUD operations
@@ -129,27 +129,37 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
 ---
 
 ## What's Next
-- **Content Revamp (in progress):** Group astrology depth — degree clustering, collective element maps, copy rewrite. Jupiter/Saturn already added. Full plan at `CONTENT_REVAMP_PLAN.md`.
+- **Content Revamp (mostly done):** Phases 1–2 and 4–5 complete. Remaining: Jupiter/Saturn display in EditMemberPanel (Phase 3), "starting point" note at top of InsightsPanel (Phase 4), test file for groupChartCalc.js (Phase 2). See `CONTENT_REVAMP_PLAN.md`.
 - **Advanced Charts (future):** Rising sign, house placements, aspects between members' charts (birth time capture already exists).
 
 ## Insights Panel Card Order (do not reorder unless asked)
+Source of truth is the render order in InsightsPanel.jsx. Current order (as of content revamp):
   1. Family Signature
-  2. Sun Element distribution
-  3. Moon Element distribution
-  4. Notable Bonds
-  5. Shared Signs
-  6. Partner Compatibility
-  7. Family Roles
-  8. Family Arrivals
-  9. Sign Concentration
-  10. Full Compatibility Report (after Zodiac Threads)
-  11. Pluto Generations
+  2. Squad Energy (sun element)
+  3. Social Chemistry (moon element)
+  4. Collective Element Map (free — all planets)
+  5. Sign Threads (shared signs)
+  6. Shared Moon Signs
+  7. Cosmic Inheritance
+  8. Partner Compatibility ✦
+  9. Hidden Connections ✦
+  10. Family Roles ✦
+  11. Sibling Dynamics ✦
+  12. Family Arrivals ✦
+  13. Zodiac Threads ✦
+  14. Venus · Mars Shared Signs ✦
+  15. Planetary Patterns ✦
+  16. Group Hotspots ✦
+  17. The Gaps ✦
+  18. Saturn Lines ✦
+  19. Jupiter Gifts ✦
+  20. Pluto Generations ✦
 
 ## Component Size Guidelines
-  - App.jsx is intentionally large (~1600 lines) — orchestration only, don't split unless asked
-  - InsightsPanel.jsx is intentionally large — all insight cards live in one file by design
-  - EditMemberPanel.jsx handles all member editing in one place — keep it that way
-  - The DIG uses many small slide components (opposite pattern) — each slide is its own file in /components/dig/slides/
+  - App.jsx (~1700 lines) is orchestration/routing — if suggesting a split, prefer extracting a self-contained feature (auth flow, onboarding, export) into a hook or sub-component rather than splitting arbitrarily
+  - InsightsPanel.jsx (~3600 lines) has all insight cards in one file — splitting by feature area (element cards, compatibility cards, group analysis cards) is reasonable if it reduces cognitive load
+  - EditMemberPanel.jsx handles all member editing — keep it in one file unless it crosses ~500 lines of unrelated logic
+  - The DIG uses many small slide components — each slide is its own file in /components/dig/slides/ (this pattern works well, keep it)
 
 ## Tree Edge Routing
   - Edge type is enforced at display time in `edgesForDisplay` (useTreeState.js), NOT at creation time in `makeEdge`. This is the single source of truth — changing `makeEdge` alone won't affect existing edges in state.

@@ -12,32 +12,21 @@ import {
   findBridgePerson, deriveRoles, PLANET_GLYPHS,
 } from '../utils/groupChartCalc.js'
 import { findHereditaryAspects, findSharedContacts, calcCrossAspects, PLANET_GLYPHS as ASPECT_PLANET_GLYPHS } from '../lib/astrology-core/aspects.js'
+import {
+  ELEMENT_ENERGY, SUN_ELEMENT_DESC, MOON_ELEMENT_DESC,
+  SIGN_SYMBOLS,
+  VENUS_SIGN_BLURB, MARS_SIGN_BLURB,
+  ELEMENT_THREAD_BLURB, SIBLING_ADAPTABILITY,
+  PLUTO_GENS, PLUTO_ORDER, OPPOSITE_SIGNS,
+  ELEMENT_QUALITY, MOON_STYLE, ZODIAC_THREAD_BLURB, SIGN_SHORT,
+  SQUAD_ELEMENT_VIBE, SQUAD_MODALITY_VIBE, SQUAD_POLARITY_NOTE,
+  ASPECT_PAIR_BLURB,
+} from './insights/insightsData.js'
+import { GroupAnalysisCards } from './insights/GroupAnalysisCards.jsx'
 
 const TheDig = lazy(() => import('./dig/TheDig.jsx'))
 
 const ELEMENTS = ['Fire', 'Earth', 'Air', 'Water']
-
-const ELEMENT_ENERGY = {
-  Fire:  'passionate and driven',
-  Earth: 'grounded and practical',
-  Air:   'communicative and curious',
-  Water: 'intuitive and emotional',
-}
-
-// Richer per-element language for the Sun / Moon Element Makeup cards.
-// Sun = identity, outward self. Moon = inner world, emotional needs.
-const SUN_ELEMENT_DESC = {
-  Fire:  'bold, driven identities that lead with action and spark',
-  Earth: 'steady, practical identities that build through patience and effort',
-  Air:   'curious, social identities that lead with ideas and conversation',
-  Water: 'sensitive, intuitive identities that lead with feeling and empathy',
-}
-const MOON_ELEMENT_DESC = {
-  Fire:  'big, expressive emotions that ignite fast and need room to burn',
-  Earth: 'steady emotional needs rooted in routine, safety, and physical comfort',
-  Air:   'inner worlds that process feeling through words, needing space to talk it out',
-  Water: 'deep emotional lives shaped by intuition, empathy, and what they sense in others',
-}
 
 function describeElementMix({ counts, total, kind, groupLabel }) {
   const present = ELEMENTS.filter(e => counts[e] > 0)
@@ -80,85 +69,6 @@ function fmtBirthdate(d) {
   return `${months[+mo - 1]} ${+day}, ${y}`
 }
 
-const SIGN_SYMBOLS = {
-  Aries:'♈', Taurus:'♉', Gemini:'♊', Cancer:'♋', Leo:'♌', Virgo:'♍',
-  Libra:'♎', Scorpio:'♏', Sagittarius:'♐', Capricorn:'♑', Aquarius:'♒', Pisces:'♓',
-}
-
-const SIGN_FLAVOR = {
-  Aries:       'when this energy shows up in a group, it tends to push everyone toward action. The spark that gets things started.',
-  Taurus:      'this energy brings a grounding quality to the group. Patience, steadiness, and a reminder to slow down and enjoy the process.',
-  Gemini:      'this energy keeps the group curious and connected. New ideas, lively conversation, and a restless need to keep learning.',
-  Cancer:      'this energy anchors the group emotionally. A deep attunement to feelings, memory, and what makes a place feel like home.',
-  Leo:         'this energy brings warmth and creative confidence to the group. A natural ability to make others feel seen and celebrated.',
-  Virgo:       'this energy shows up as quiet competence. The group member who notices what needs doing and handles it without fanfare.',
-  Libra:       'this energy smooths the group dynamic. A pull toward fairness, beauty, and keeping things in balance.',
-  Scorpio:     'this energy brings depth and perception. The willingness to go beneath the surface and sit with difficult truths.',
-  Sagittarius: 'this energy expands the group\'s vision. A philosophical streak and a pull toward meaning, travel, and big questions.',
-  Capricorn:   'this energy brings structure and long-term thinking. The part of the group that plans, commits, and follows through.',
-  Aquarius:    'this energy challenges the group to think differently. Independence, innovation, and a vision that may run ahead of its time.',
-  Pisces:      'this energy brings empathy and imagination. A sensitivity to what others feel and a deep inner world.',
-}
-
-const PLANET_GLYPH = { sun: '☀', moon: '☽', mercury: '☿', venus: '♀', mars: '♂', jupiter: '♃', saturn: '♄' }
-
-const VENUS_SIGN_BLURB = {
-  Aries:       'Tends to be direct and impulsive in love. May act on attraction quickly and value honesty over subtlety.',
-  Taurus:      'Often drawn to comfort, sensuality, and lasting loyalty. May show love through physical presence and steadiness.',
-  Gemini:      'Tends to connect through conversation and mental spark. May need variety and intellectual stimulation in love.',
-  Cancer:      'Often nurturing and emotionally invested. May build love around a sense of home and emotional safety.',
-  Leo:         'Tends to be warm and generous in love. May need to feel appreciated and often expresses affection openly.',
-  Virgo:       'Often shows love through thoughtful gestures and attention to detail. May express care more through doing than saying.',
-  Libra:       'Tends to seek harmony and beauty in relationships. May prioritize partnership and go out of their way to avoid conflict.',
-  Scorpio:     'Often loves with depth and intensity. May take time to trust but tends to be deeply loyal once committed.',
-  Sagittarius: 'Tends to need space and adventure in love. May connect through shared experiences and philosophical conversation.',
-  Capricorn:   'Often reserved in expressing affection. May show love through commitment, reliability, and quiet devotion.',
-  Aquarius:    'Tends to approach love unconventionally. May value friendship, independence, and intellectual connection as the basis of intimacy.',
-  Pisces:      'Often deeply empathetic and emotionally open. May love without boundaries and absorb a partner\'s feelings easily.',
-}
-
-const MARS_SIGN_BLURB = {
-  Aries:       'Tends to act quickly and directly. May be the first to take initiative and can bring high energy to any situation.',
-  Taurus:      'Often slow to start but persistent once moving. May surprise others with quiet determination and staying power.',
-  Gemini:      'Tends to channel energy through ideas and conversation. May approach challenges mentally before physically.',
-  Cancer:      'Often driven by emotion and a protective instinct. May fight hardest when someone they care about is affected.',
-  Leo:         'Tends to bring warmth and confidence to action. May need recognition for their efforts and often leads naturally.',
-  Virgo:       'Often precise and methodical in how they apply effort. May channel energy into getting things right rather than getting them fast.',
-  Libra:       'Tends to approach conflict through dialogue and diplomacy. May be uncomfortable with direct confrontation but firm on fairness.',
-  Scorpio:     'Often focused and deeply committed once engaged. May approach goals with quiet intensity and persistence.',
-  Sagittarius: 'Tends to bring enthusiasm and optimism to challenges. May need a meaningful goal to sustain effort over time.',
-  Capricorn:   'Often strategic and disciplined. May take a long-term approach and work steadily without needing external motivation.',
-  Aquarius:    'Tends to be driven by ideas and principles. May channel energy into innovation or challenging established systems.',
-  Pisces:      'Often motivated by compassion and creative vision. May direct energy toward helping, imagining, or connecting on a deeper level.',
-}
-
-const ELEMENT_THREAD_BLURB = {
-  Fire:  'A family line of passion, courage, and creative drive',
-  Earth: 'A legacy of groundedness, patience, and practical wisdom',
-  Air:   'Generations of quick minds, curiosity, and a gift for connection',
-  Water: 'Deep emotional intelligence and intuition flowing through the generations',
-}
-
-const SIBLING_ADAPTABILITY = {
-  'Cardinal-Cardinal': 'both initiators. May compete for direction, but together spark real momentum.',
-  'Cardinal-Fixed':    'initiation meets endurance. One starts it, one sees it through.',
-  'Cardinal-Mutable':  'spark meets flow. One launches, one shapes the path.',
-  'Fixed-Fixed':       'immovable force. Deep loyalty, shared stubbornness, and lasting bonds.',
-  'Fixed-Mutable':     'anchor meets adapter. One holds steady while the other evolves.',
-  'Mutable-Mutable':   'highly adaptable together. Fluid, curious, and ever-shifting.',
-}
-
-const PLUTO_GENS = {
-  Cancer:      { years: '~1914–1939', flavor: 'shaped by home, survival, and deep loyalty to family' },
-  Leo:         { years: '~1939–1957', flavor: 'driven by identity, pride, and a need to leave their mark' },
-  Virgo:       { years: '~1958–1971', flavor: 'defined by craft, critical thinking, and a drive to improve' },
-  Libra:       { years: '~1972–1983', flavor: 'formed by ideals of fairness, partnership, and social harmony' },
-  Scorpio:     { years: '~1984–1995', flavor: 'marked by transformation, intensity, and truth-seeking' },
-  Sagittarius: { years: '~1996–2008', flavor: 'colored by idealism, global thinking, and the search for meaning' },
-  Capricorn:   { years: '~2008–2023', flavor: 'shaped by ambition, structure, and rethinking the rules' },
-  Aquarius:    { years: '2024+',      flavor: 'awakening into collective vision, technology, and radical change' },
-}
-const PLUTO_ORDER = ['Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius']
 
 function getPlutoSign(birthdate) {
   if (!birthdate) return null
@@ -174,14 +84,6 @@ function getPlutoSign(birthdate) {
   return 'Aquarius'
 }
 
-const OPPOSITE_SIGNS = {
-  Aries: 'Libra',        Libra:       'Aries',
-  Taurus: 'Scorpio',     Scorpio:     'Taurus',
-  Gemini: 'Sagittarius', Sagittarius: 'Gemini',
-  Cancer: 'Capricorn',   Capricorn:   'Cancer',
-  Leo:    'Aquarius',    Aquarius:    'Leo',
-  Virgo:  'Pisces',      Pisces:      'Virgo',
-}
 
 function areCompatible(a, b) {
   if (a === b) return true
@@ -206,57 +108,6 @@ function byAgeNode(a, b) {
   return (a.node.data.birthdate || '9999').localeCompare(b.node.data.birthdate || '9999')
 }
 
-const ELEMENT_QUALITY = {
-  Fire:  'bold and passionate',
-  Earth: 'steady and grounded',
-  Air:   'curious and communicative',
-  Water: 'sensitive and emotionally deep',
-}
-
-const MOON_STYLE = {
-  Aries:       'tends to process emotions quickly and move on fast',
-  Taurus:      'tends to take time to open up and often craves security above all',
-  Gemini:      'tends to talk through feelings and may need mental space to process',
-  Cancer:      'tends to feel deeply and hold onto emotional memory',
-  Leo:         'tends to need appreciation and often expresses feelings openly',
-  Virgo:       'tends to process by analyzing and may show love through acts of service',
-  Libra:       'tends to avoid conflict and often needs harmony to feel emotionally safe',
-  Scorpio:     'tends to feel things intensely and may hold onto emotions for a long time',
-  Sagittarius: 'tends to need freedom and may stay upbeat on the surface',
-  Capricorn:   'tends to keep emotions private and handle things practically',
-  Aquarius:    'tends to step back to process and may need intellectual independence',
-  Pisces:      'tends to absorb the emotions of others and may need quiet to recharge',
-}
-
-const ZODIAC_THREAD_BLURB = {
-  Aries:       'A streak of boldness runs in this family. Independent thinkers who act on instinct and resist being told what to do.',
-  Taurus:      'A deep rootedness passes through the generations. This family prizes stability, comfort, and building things that last.',
-  Gemini:      'Curiosity is the family inheritance. Quick minds, a gift for conversation, and a need to keep learning.',
-  Cancer:      'The home and its memory bind this family. Emotional attunement, loyalty, and a fierce protectiveness of those they love.',
-  Leo:         'A warmth and need for self-expression flows through. This family carries a natural light and doesn\'t shrink from being seen.',
-  Virgo:       'A thread of precision and quiet devotion. These are the ones who notice the details, show up consistently, and fix things without being asked.',
-  Libra:       'A need for harmony and fairness is woven through. This family values beauty, balance, and keeping the peace, sometimes to a fault.',
-  Scorpio:     'Emotional depth and perception run strong. This family feels things fully, sees beneath the surface, and is shaped by transformation.',
-  Sagittarius: 'An expansive, searching spirit recurs. This family is restless with meaning, drawn to big ideas, travel, and the question of why.',
-  Capricorn:   'An ambition to build something lasting runs in the blood. This family respects discipline, earns trust slowly, and plays the long game.',
-  Aquarius:    'An independent streak and a vision that runs ahead of its time. This family thinks differently and doesn\'t follow trends.',
-  Pisces:      'A deep empathy and sensitivity recurs across the line. This family feels the world more than most and carries a strong imaginative inner life.',
-}
-
-const SIGN_SHORT = {
-  Aries:       'energetic and bold, but can be impulsive. Acts first, thinks later.',
-  Taurus:      'reliable and patient, but can be stubborn. Values stability above all.',
-  Gemini:      'social and curious, but can be scattered. Mentally restless, rarely still.',
-  Cancer:      'nurturing and sensitive, but can be moody. Home and family come first.',
-  Leo:         'loyal and generous, but can be demanding. Needs to be seen and to make others shine.',
-  Virgo:       'organized and devoted, but can be a perfectionist. Notices what everyone else misses.',
-  Libra:       'charming and fair-minded, but can be indecisive. Needs balance, avoids conflict.',
-  Scorpio:     'perceptive and magnetic, but can be intense. Feels everything deeply.',
-  Sagittarius: 'candid and freedom-loving, but can be blunt. Always chasing meaning and the horizon.',
-  Capricorn:   'disciplined and ambitious, but can be serious. Plays the long game, built to endure.',
-  Aquarius:    'independent and innovative, but can be distant. Marches to their own beat.',
-  Pisces:      'empathic and intuitive, but can be detached. Absorbs the feelings of the room.',
-}
 
 function getArrivalStory(child, parents, elderSiblings) {
   const el = child.data.element
@@ -333,24 +184,6 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
 }
 
 // ── Squad Energy — friend-group card using all personal planets ────────────
-const SQUAD_ELEMENT_VIBE = {
-  Fire:  { label: 'The Spark Squad', vibe: 'Your crew runs hot. There\'s always someone ready to start something, rally people, or turn a quiet night into an event. This group moves fast and feeds off each other\'s energy.' },
-  Earth: { label: 'The Anchor Crew', vibe: 'This group keeps things real. You\'re the ones who follow through, show up when it matters, and build something lasting together. Reliable, grounded, and probably good at splitting the check.' },
-  Air:   { label: 'The Idea Table', vibe: 'Conversation is the connective tissue here. Your group trades ideas, stays curious, and probably has three group chats going at once. You connect through what you think, not just what you do.' },
-  Water: { label: 'The Deep End', vibe: 'This group goes beneath the surface. You know each other\'s real stories, not just the highlights. Emotionally tuned in, sometimes to a fault, but that\'s what makes the bond rare.' },
-}
-
-const SQUAD_MODALITY_VIBE = {
-  Cardinal: 'initiators — always planning the next thing, pushing each other to start',
-  Fixed:    'ride-or-die loyal — once this group forms, it holds. Not easily shaken',
-  Mutable:  'adaptable and flexible — this group goes with the flow and rarely gets stuck',
-}
-
-const SQUAD_POLARITY_NOTE = {
-  active:    'Leans active (Fire + Air). This group tends toward doing, talking, and going — not a crew that sits still for long.',
-  receptive: 'Leans receptive (Earth + Water). This group tends toward depth, steadiness, and processing — you recharge each other.',
-  balanced:  'Balanced between active and receptive energy. This group can rally and also know when to slow down.',
-}
 
 function SquadEnergyCard({ nodes, allPlanetCounts, dominant, dominantModality, innerPlanetMap, warningsPerNode }) {
   const mascPct = (allPlanetCounts.masc + allPlanetCounts.fem) > 0
@@ -981,224 +814,6 @@ function SiblingDynamics({ siblingGroups, isExporting }) {
 }
 
 // ── Cosmic Inheritance ──────────────────────────────────────────────────────────
-
-const ASPECT_PAIR_BLURB = {
-  // Personal × Personal
-  'Moon:Sun': {
-    soft: 'Identity and emotional life in alignment — an ease with knowing who one is',
-    hard: 'A recurring tension between inner feeling and outward self — what\'s felt versus what\'s shown',
-    conj: 'Identity and emotion deeply fused — living from the inside out',
-  },
-  'Mercury:Sun': {
-    soft: 'Mind and identity in sync — clear, confident expression as a recurring thread',
-    hard: 'Intellect and ego in tension — self-image tested through communication',
-    conj: 'Thinking and identity tightly linked — defined largely by how one communicates',
-  },
-  'Sun:Venus': {
-    soft: 'Warmth and a natural ease with love — identity and affection closely linked',
-    hard: 'Self-worth and love in recurring tension — what\'s deserved versus what\'s given',
-    conj: 'Identity and values deeply intertwined — defining oneself through loves and loyalties',
-  },
-  'Mars:Sun': {
-    soft: 'Drive and identity reinforcing each other — knowing what\'s wanted and going after it',
-    hard: 'Will and ego in tension — asserting oneself without overriding connection',
-    conj: 'Ambition and identity fused — acting from a place of strong personal will',
-  },
-  'Moon:Mercury': {
-    soft: 'Thinking and feeling in complement — emotion expressed with unusual clarity',
-    hard: 'Head and heart in recurring conflict — logic and emotion rarely landing in the same place',
-    conj: 'Thinking and feeling hard to separate — emotion and logic running together',
-  },
-  'Moon:Venus': {
-    soft: 'Warmth and emotional openness as a recurring thread',
-    hard: 'Emotional needs and affection misaligned — a recurring push-pull around love and belonging',
-    conj: 'Love and emotional life deeply fused — feeling love intensely and personally',
-  },
-  'Mars:Moon': {
-    soft: 'Emotional energy that translates into action — protective instinct and motivation together',
-    hard: 'Strong emotional reactions that can escalate — defensiveness or volatility under pressure',
-    conj: 'Intense emotional reactions and a fierce protective instinct — feeling things quickly and acting on them',
-  },
-  'Mercury:Venus': {
-    soft: 'Warmth expressed through words — affection and communication naturally linked',
-    hard: 'Words and affection at cross-purposes — tone and intention often getting crossed',
-    conj: 'Love expressed through language — needing to talk through feelings to feel close',
-  },
-  'Mars:Mercury': {
-    soft: 'Sharp, direct minds — speaking without holding back',
-    hard: 'Sharp tongues and quick tempers — prone to arguments and cutting words',
-    conj: 'Mind and action tightly linked — thinking fast and acting faster',
-  },
-  'Mars:Venus': {
-    soft: 'Passion and desire in an easy flow — comfortable with wanting and being wanted',
-    hard: 'Desire and conflict running close together — push-pull between attraction and friction',
-    conj: 'Passion and the magnetism of desire — love lived as intensity',
-  },
-  // Personal × Social
-  'Jupiter:Sun': {
-    soft: 'Generous, optimistic self-expression — broad vision and a belief in what\'s possible',
-    hard: 'Ambition and overreach in tension — sometimes reaching beyond the grasp',
-    conj: 'Expansive, generous identity — thinking big and leading with faith in oneself',
-  },
-  'Saturn:Sun': {
-    soft: 'Discipline and high standards woven into identity — building steadily through earned responsibility',
-    hard: 'Heavy expectations and self-doubt as a recurring thread — achievement that comes at a cost',
-    conj: 'The weight of high standards in identity — shaped by responsibility and hard-won respect',
-  },
-  'Jupiter:Moon': {
-    soft: 'Emotional generosity and optimism — comfort found in abundance and meaning',
-    hard: 'Emotional excess and overreach — a tendency to feel things to an overwhelming degree',
-    conj: 'Feelings on a grand scale — experiencing emotion expansively and deeply',
-  },
-  'Moon:Saturn': {
-    soft: 'Emotional discipline that builds depth — security earned slowly and held carefully',
-    hard: 'A recurring pattern of emotional withholding — warmth that can feel conditional or hard to access',
-    conj: 'Emotional restraint and the dance between nurturing and limitation — love expressed through duty',
-  },
-  'Jupiter:Mercury': {
-    soft: 'Broad thinking and expansive communication — storytelling and big ideas as a recurring thread',
-    hard: 'Big talk and overconfidence — ideas that don\'t always match reality',
-    conj: 'Thinking big and arguing well — wide-ranging ideas and a love of debate',
-  },
-  'Mercury:Saturn': {
-    soft: 'Careful, deliberate communication — words chosen with intention',
-    hard: 'Communication carrying weight and criticism — words that can wound or withhold',
-    conj: 'Serious, precise thinking — not speaking lightly',
-  },
-  'Jupiter:Venus': {
-    soft: 'Warmth, generosity, and an easy love of beauty as a recurring thread',
-    hard: 'Excess in love — tending to overdo affection or avoid hard truths in relationships',
-    conj: 'A love of beauty and abundance — giving generously and expecting to be met in kind',
-  },
-  'Saturn:Venus': {
-    soft: 'Love that builds slowly and lasts — loyalty earned through time and commitment',
-    hard: 'Love and restriction running together — emotional distance or withheld affection as a pattern',
-    conj: 'A cautious approach to love — loyalty earned slowly, felt deeply, sometimes carried as burden',
-  },
-  'Jupiter:Mars': {
-    soft: 'Enthusiasm and momentum — moving toward what\'s exciting with confidence',
-    hard: 'Reckless action and overreach — burning out or overextending in pursuit of more',
-    conj: 'Appetite for action and adventure — moving toward what\'s exciting without much hesitation',
-  },
-  'Mars:Saturn': {
-    soft: 'Drive channeled through discipline — acting with patience and purpose',
-    hard: 'Action blocked by structure or turned inward as frustration — effort that keeps running into walls',
-    conj: 'Drive tempered by discipline — acting strategically, even when it costs something',
-  },
-  // Personal × Outer
-  'Sun:Uranus': {
-    soft: 'Originality and independence as a recurring thread — doing things a different way',
-    hard: 'Disruption and identity instability — individuality in tension with belonging',
-    conj: 'Independence woven into identity — never quite following the script',
-  },
-  'Neptune:Sun': {
-    soft: 'Sensitivity and spiritual openness as a thread — drawn to beauty, meaning, and ideals',
-    hard: 'A recurring pattern of idealization or confusion — seeing what one wants to see',
-    conj: 'Identity and idealism fused — blurring the line between who one is and who one wishes to be',
-  },
-  'Pluto:Sun': {
-    soft: 'A gift for transformation — reinventing and growing stronger through change',
-    hard: 'Recurring encounters with power, control, and loss — shaped by forces not always chosen',
-    conj: 'Intensity and reinvention as a recurring thread — forged by depth and transformation',
-  },
-  'Moon:Uranus': {
-    soft: 'Emotional independence and a need for space — freedom valued within close bonds',
-    hard: 'Emotional unpredictability and instability — nurturing that can feel erratic or suddenly absent',
-    conj: 'A restless emotional life — valuing space and individuality even in intimate bonds',
-  },
-  'Moon:Neptune': {
-    soft: 'Deep empathy and emotional sensitivity — feeling others\' pain as one\'s own',
-    hard: 'Emotional confusion and porous boundaries — prone to absorbing others\' feelings or losing oneself in them',
-    conj: 'The line between inner feeling and the world\'s is thin — deep empathy that can blur into dissolution',
-  },
-  'Moon:Pluto': {
-    soft: 'Emotional depth and resilience — feeling as a process of becoming',
-    hard: 'Emotional intensity that can become consuming or controlling — grief and power struggles as recurring themes',
-    conj: 'Deep emotional intensity — feeling everything fully, including the most difficult parts',
-  },
-  'Mercury:Uranus': {
-    soft: 'Quick, unconventional thinking — surprising insights that don\'t follow the usual logic',
-    hard: 'Erratic communication and restless minds — disrupting conversations without always landing',
-    conj: 'Fast, unpredictable minds — surprising others with what comes out of their mouths',
-  },
-  'Mercury:Neptune': {
-    soft: 'Intuitive, imaginative communication — finding truth in metaphor and story',
-    hard: 'A tendency toward vagueness or wishful thinking — clarity that\'s hard to pin down',
-    conj: 'Intuitive minds and imaginative communication — truth and imagination as close neighbors',
-  },
-  'Mercury:Pluto': {
-    soft: 'Deep, searching minds — probing beneath the surface and finding what others miss',
-    hard: 'A tendency toward obsessive or controlling communication — words used to uncover but also to dominate',
-    conj: 'Probing minds with a need to know the truth — uncovering what others gloss over',
-  },
-  'Uranus:Venus': {
-    soft: 'An unconventional approach to love — freshness and freedom in relationships',
-    hard: 'Sudden disruptions in love and difficulty with commitment — resisting being tied down',
-    conj: 'Love on one\'s own terms — not following the relationship rulebook',
-  },
-  'Neptune:Venus': {
-    soft: 'Romantic idealism and a capacity for transcendent, compassionate love',
-    hard: 'A tendency to idealize love and feel let down by reality — prone to illusion in relationships',
-    conj: 'A romantic thread — love as a spiritual longing, sometimes at odds with what\'s real',
-  },
-  'Pluto:Venus': {
-    soft: 'Transformative love — bonds that go deep and change people in lasting ways',
-    hard: 'Obsession and power dynamics in love — a pattern of all-or-nothing relationships',
-    conj: 'Intense, consuming bonds — love that transforms but doesn\'t always survive the transformation',
-  },
-  'Mars:Uranus': {
-    soft: 'Bursts of inspiration and original action — moving when others hesitate',
-    hard: 'Impulsive and erratic action — prone to sudden outbursts and unpredictable choices',
-    conj: 'Unpredictable energy and sudden action — surprising others, and sometimes oneself',
-  },
-  'Mars:Neptune': {
-    soft: 'Drive in service of something meaningful — channeling energy toward ideals',
-    hard: 'Energy dissipated or misdirected — acting on unclear impulses or sacrificing too easily',
-    conj: 'Drive meets idealism — energy channeled toward something that can\'t always be seen or measured',
-  },
-  'Mars:Pluto': {
-    soft: 'Powerful, focused determination — committing fully and enduring',
-    hard: 'Intense will and a tendency toward compulsion or conflict — pushing hard without letting go',
-    conj: 'Intense drive and unyielding will — power and determination as a recurring thread',
-  },
-  // Social × Social
-  'Jupiter:Saturn': {
-    soft: 'Expansion and structure in balance — building big with patience',
-    hard: 'Growth and restraint in ongoing tension — caught between wanting more and holding back',
-    conj: 'Vision and discipline fused — capable of enormous effort when committed to a direction',
-  },
-  // Social × Outer
-  'Jupiter:Uranus': {
-    soft: 'A pull toward breakthroughs and new possibilities — drawn to what\'s just over the horizon',
-    hard: 'Restless expansion and sudden reversals — upending one\'s own progress',
-    conj: 'Breakthrough moments and a hunger for what\'s new — unable to stay still for long',
-  },
-  'Jupiter:Neptune': {
-    soft: 'Dreaming big and finding meaning beyond the ordinary',
-    hard: 'A tendency toward escapism or grandiose idealism — losing oneself in visions',
-    conj: 'Seeking something transcendent — drawn to faith, dreams, and unanswerable questions',
-  },
-  'Jupiter:Pluto': {
-    soft: 'A drive for transformation on a large scale — thinking in decades',
-    hard: 'A hunger for power dressed as ambition — overstepping in pursuit of transformation',
-    conj: 'Transformation at scale — not just changing oneself but what\'s around them',
-  },
-  'Saturn:Uranus': {
-    soft: 'Structure and disruption in balance — innovating without losing footing',
-    hard: 'Ongoing friction between holding on and breaking free — tradition versus change',
-    conj: 'Structure meets disruption — navigating between the need for stability and the pull toward something new',
-  },
-  'Neptune:Saturn': {
-    soft: 'Idealism grounded in reality — pursuing meaning without losing footing',
-    hard: 'Reality and illusion in conflict — struggling to bridge the practical and the transcendent',
-    conj: 'Reality and idealism in ongoing conversation — carrying both the practical and the transcendent',
-  },
-  'Pluto:Saturn': {
-    soft: 'Resilience and endurance — shaped by challenge but not defined by it',
-    hard: 'Recurring encounters with loss, control, and deep pressure — having to earn endurance the hard way',
-    conj: 'Endurance under pressure — shaped by difficulty, survival, and quiet resilience',
-  },
-}
 
 function getPairBlurb(planet1, planet2, aspectName) {
   const key = [planet1, planet2].sort().join(':')
@@ -3302,161 +2917,14 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* ═══ SECTION: Group Patterns ═══════════════════════════════════════ */}
 
 
-      {/* Planetary Patterns (Dominant Sign) */}
-      {topSigns.length > 0 && (
-        <div className="insight-card" data-count={topSigns.length} data-label={topSigns.length === 1 ? 'sign' : 'signs'}>
-          <h3 className="insight-heading">★ Planetary Patterns<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-whisper" style={{ marginBottom: '0.2rem' }}>
-            The sign(s) holding the most personal planets across the whole group.
-          </p>
-          {topSigns.map(([sign, { total, planets }]) => {
-            const planetLine = Object.entries(planets)
-              .sort((a, b) => ['sun','moon','mercury','venus','mars'].indexOf(a[0]) - ['sun','moon','mercury','venus','mars'].indexOf(b[0]))
-              .map(([p, c]) => `${PLANET_GLYPH[p]}${c > 1 ? ` ×${c}` : ''}`)
-              .join('  ')
-            return (
-              <p key={sign} className="insight-note">
-                <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}> — {total} planet{total > 1 ? 's' : ''} &nbsp; {planetLine}</span>
-                <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
-                  {SIGN_FLAVOR[sign]}
-                </span>
-              </p>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Group Hotspots — degree clusters across members */}
-      {groupHotspots.length > 0 && (() => {
-        function describeHotspot(spot) {
-          const SIGN_THEMES = {
-            Aries:       { core: 'initiative and action', daily: 'Conversations may move fast. New ideas tend to spark quickly, and follow-through may be the challenge.' },
-            Taurus:      { core: 'comfort and stability', daily: 'Shared meals, familiar routines, and creating physical warmth together may be a recurring theme.' },
-            Gemini:      { core: 'communication and ideas', daily: 'Gatherings probably run long. The group may process everything by talking it through, sometimes at the same time.' },
-            Cancer:      { core: 'emotional safety and home', daily: 'Loyalty runs deep here. Family traditions, shared memories, and a strong protective instinct may define the group dynamic.' },
-            Leo:         { core: 'self-expression and warmth', daily: 'Celebrating each other may come naturally. The group might be drawn to big moments and making sure no one feels overlooked.' },
-            Virgo:       { core: 'precision and service', daily: 'Helping each other is a love language here. Standards may run high, both for the group and for themselves.' },
-            Libra:       { core: 'harmony and fairness', daily: 'Conflict avoidance may be a pattern. Real effort goes into keeping things balanced, sometimes at the cost of directness.' },
-            Scorpio:     { core: 'depth and honesty', daily: 'Surface-level interactions may not satisfy this group. There\'s likely a preference for truth, even when it\'s uncomfortable.' },
-            Sagittarius: { core: 'meaning and expansion', daily: 'Big questions, new experiences, and a restless need to keep growing may bring the group together, and pull it in new directions.' },
-            Capricorn:   { core: 'responsibility and structure', daily: 'The group may naturally organize around goals and timelines. Long-term planning might be a shared strength, and a shared pressure.' },
-            Aquarius:    { core: 'independence and innovation', daily: 'Doing things differently may be a point of pride. The group might resist convention and gravitate toward unconventional approaches.' },
-            Pisces:      { core: 'empathy and sensitivity', daily: 'Unspoken feelings may carry a lot of weight. Creative or spiritual pursuits might be where the group feels most connected.' },
-          }
-          const theme = SIGN_THEMES[spot.sign]
-          if (!theme) return null
-          const hasMoon = spot.planets.some(p => p.planet === 'moon')
-          const hasVenus = spot.planets.some(p => p.planet === 'venus')
-          const hasMars = spot.planets.some(p => p.planet === 'mars')
-          let extra = ''
-          if (hasMoon && hasVenus) extra = ' With both Moon and Venus here, emotional needs and how love is expressed may be closely intertwined.'
-          else if (hasMoon) extra = ' With Moon placements here, this zone touches the group\'s emotional core.'
-          else if (hasVenus) extra = ' With Venus here, this zone shapes how the group connects and shows affection.'
-          else if (hasMars) extra = ' With Mars here, this is where the group\'s drive and motivation tend to concentrate.'
-          return `A shared pull toward ${theme.core}. ${theme.daily}${extra}`
-        }
-        const hotspotCount = Math.min(groupHotspots.length, 3)
-        return (
-        <div className="insight-card" data-count={hotspotCount} data-label={hotspotCount === 1 ? 'hotspot' : 'hotspots'}>
-          <h3 className="insight-heading">Group Hotspots<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-whisper">Zones of the zodiac where multiple people's planets concentrate. These themes tend to echo through the group's daily life.</p>
-          {groupHotspots.slice(0, 3).map((spot, i) => (
-            <div key={i} style={{ marginBottom: '0.6rem' }}>
-              <p className="insight-note">
-                <strong style={{ color: ELEMENT_COLORS[getElement(spot.sign).element] }}>
-                  {SIGN_SYMBOLS[spot.sign]} {spot.sign}
-                </strong>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                  {' '}— {spot.planets.length} planets from {spot.peopleCount} people
-                </span>
-              </p>
-              <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', paddingLeft: '1rem' }}>
-                {spot.planets.map(p => `${p.glyph} ${p.person}`).join(', ')}
-              </p>
-              {describeHotspot(spot) && (
-                <p className="insight-note" style={{ fontSize: '0.72rem', paddingLeft: '1rem', marginTop: '0.15rem' }}>
-                  {describeHotspot(spot)}
-                </p>
-              )}
-            </div>
-          ))}
-          {/* What's missing — integrated from Gaps analysis */}
-          {groupGaps && (
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.5rem', marginTop: '0.5rem' }}>
-              <p className="insight-note" style={{ fontWeight: 500 }}>What's missing</p>
-              <p className="insight-note" style={{ fontSize: '0.75rem' }}>{groupGaps.description}</p>
-              {groupGaps.gapSigns.length > 0 && (
-                <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
-                  {groupGaps.gapSigns.map(s => `${SIGN_SYMBOLS[s]} ${s}`).join(', ')}
-                </p>
-              )}
-              <p className="insight-whisper" style={{ marginTop: '0.2rem' }}>
-                Gaps aren't weaknesses. They're areas where the group may seek those qualities in others or develop them over time.
-              </p>
-            </div>
-          )}
-        </div>
-        )
-      })()}
-
-      {/* The Gaps — standalone card when no hotspots exist */}
-      {groupHotspots.length === 0 && groupGaps && (
-        <div className="insight-card">
-          <h3 className="insight-heading">The Gaps<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-note">{groupGaps.description}</p>
-          {groupGaps.gapSigns.length > 0 && (
-            <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-              {groupGaps.gapSigns.map(s => `${SIGN_SYMBOLS[s]} ${s}`).join(', ')}
-            </p>
-          )}
-          <p className="insight-whisper" style={{ marginTop: '0.3rem' }}>
-            Gaps aren't weaknesses — they're areas where the group may seek those qualities in others or develop them over time.
-          </p>
-        </div>
-      )}
-
-      {/* Saturn Lines — shared structural themes */}
-      {groupSaturnLines.length > 0 && (
-        <div className="insight-card" data-count={groupSaturnLines.length} data-label={groupSaturnLines.length === 1 ? 'sign' : 'signs'}>
-          <h3 className="insight-heading">♄ Saturn Lines<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-whisper">Saturn's sign reflects where each person tends to carry responsibility and face their deepest growth.</p>
-          {groupSaturnLines.filter(g => g.members.length >= 1).map(g => (
-            <div key={g.sign} style={{ marginBottom: '0.4rem' }}>
-              <p className="insight-note">
-                <strong>{SIGN_SYMBOLS[g.sign]} Saturn in {g.sign}</strong>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                  {' '}— {g.names.join(', ')}
-                </span>
-              </p>
-              <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', paddingLeft: '1rem' }}>
-                {g.theme}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Jupiter Gifts — shared growth areas */}
-      {groupJupiterGifts.length > 0 && (
-        <div className="insight-card" data-count={groupJupiterGifts.length} data-label={groupJupiterGifts.length === 1 ? 'sign' : 'signs'}>
-          <h3 className="insight-heading">♃ Jupiter Gifts<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-whisper">Jupiter's sign points to where each person tends to find expansion, opportunity, and natural ease.</p>
-          {groupJupiterGifts.filter(g => g.members.length >= 1).map(g => (
-            <div key={g.sign} style={{ marginBottom: '0.4rem' }}>
-              <p className="insight-note">
-                <strong>{SIGN_SYMBOLS[g.sign]} Jupiter in {g.sign}</strong>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                  {' '}— {g.names.join(', ')}
-                </span>
-              </p>
-              <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', paddingLeft: '1rem' }}>
-                {g.theme}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Planetary Patterns, Group Hotspots, The Gaps, Saturn Lines, Jupiter Gifts */}
+      <GroupAnalysisCards
+        topSigns={topSigns}
+        groupHotspots={groupHotspots}
+        groupGaps={groupGaps}
+        groupSaturnLines={groupSaturnLines}
+        groupJupiterGifts={groupJupiterGifts}
+      />
 
       {/* 11. Pluto Generations */}
       {(() => {
