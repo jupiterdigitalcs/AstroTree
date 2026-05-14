@@ -2,6 +2,7 @@ import { useState } from 'react'
 // Planet colors now handled by zodiac symbol + sign name directly (no per-planet coloring)
 import { getElement, ELEMENT_COLORS } from '../utils/astrology/elements.js'
 import { AspectsPanel } from './AspectsPanel.jsx'
+import { logEvent } from '../utils/cloudStorage.js'
 
 const ELEMENT_ORDER = ['Fire', 'Earth', 'Air', 'Water']
 const ELEMENT_EMOJI = { Fire: '🔥', Earth: '🌿', Air: '💨', Water: '💧' }
@@ -155,7 +156,7 @@ export function TablesPanel({ nodes, chartTitle }) {
       {/* Tab toggle + column visibility toggles */}
       <div className="tables-tab-toggle">
         <button className="tables-tab-btn tables-tab-btn--active">☿ Planets</button>
-        <button className="tables-tab-btn" onClick={() => setTab('aspects')}>⚹ Aspects <span className="tables-beta-tag">Beta</span></button>
+        <button className="tables-tab-btn" onClick={() => { setTab('aspects'); logEvent('view_aspects') }}>⚹ Aspects <span className="tables-beta-tag">Beta</span></button>
       </div>
       <p className="tables-export-tab-label">☿ Planets</p>
       <div className="tables-col-toggles">

@@ -1,0 +1,571 @@
+/* ────────────────────────── The Current ─────────────────────────────────── */
+
+.current-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 2rem;
+  min-height: 70dvh;
+}
+
+.current-date {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-align: center;
+  margin-bottom: 0.15rem;
+}
+
+/* ── Beta tag (on tab button) ─────────────────────────────────────────────── */
+
+.current-beta-tag {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.42rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.05rem 0.2rem;
+  border-radius: 3px;
+  border: 1px solid rgba(201,168,76,0.4);
+  color: var(--gold);
+  background: rgba(201,168,76,0.08);
+  vertical-align: middle;
+  margin-left: 0.15rem;
+}
+
+/* ── Shared card base ────────────────────────────────────────────────────── */
+
+.current-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.current-card-heading {
+  font-family: 'Cinzel', serif;
+  font-size: 0.68rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+  margin: 0;
+}
+
+.current-card-note {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.current-card-note strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.current-card-whisper {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
+  opacity: 0.75;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ── Headline card ───────────────────────────────────────────────────────── */
+
+.current-headline {
+  text-align: center;
+  padding: 1rem 1rem 0.85rem;
+  border-left: 3px solid var(--accent, var(--gold));
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.03) 0%,
+    rgba(255,255,255,0.01) 100%
+  );
+}
+
+.current-headline-glyph {
+  font-size: 1.6rem;
+  color: var(--accent, var(--gold));
+  line-height: 1;
+  margin-bottom: 0.15rem;
+}
+
+.current-headline-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent, var(--gold));
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.current-headline-theme {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  font-style: italic;
+  margin: 0.1rem 0;
+}
+
+.current-headline-desc {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  line-height: 1.5;
+  margin: 0.2rem 0;
+}
+
+.current-headline-stat {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin: 0.1rem 0 0;
+}
+
+.current-headline-stat strong {
+  color: var(--text-soft);
+}
+
+/* ── Section titles (for grouped cards) ──────────────────────────────────── */
+
+.current-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.current-section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  margin: 0.25rem 0 0;
+}
+
+.current-section-note {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ── Shared Storm card ───────────────────────────────────────────────────── */
+
+.current-storm {
+  border-left: 3px solid var(--accent, var(--gold));
+}
+
+.current-storm-heading {
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent, var(--gold-light));
+  letter-spacing: 0.06em;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.current-storm-glyphs {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.current-storm-summary {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.current-storm-members {
+  list-style: none;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.current-storm-member {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  padding: 0.2rem 0;
+}
+
+.current-storm-name {
+  font-weight: 500;
+  color: var(--text);
+  min-width: 4rem;
+}
+
+.current-storm-aspect {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.current-storm-orb {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.current-exact-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  background: rgba(201, 168, 76, 0.15);
+  border-radius: 3px;
+  padding: 0.05rem 0.25rem;
+}
+
+.current-phase {
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+
+/* ── Natal Target card ───────────────────────────────────────────────────── */
+
+.current-target-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.2rem;
+}
+
+.current-target-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.current-target-label {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  min-width: 5.5rem;
+}
+
+.current-target-bar-track {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.current-target-bar-fill {
+  height: 100%;
+  background: var(--gold);
+  opacity: 0.6;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.current-target-count {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  min-width: 1.2rem;
+  text-align: right;
+}
+
+/* ── Mood gauge ──────────────────────────────────────────────────────────── */
+
+.current-mood-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.15rem 0;
+}
+
+.current-mood-label-left,
+.current-mood-label-right {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.current-mood-track {
+  flex: 1;
+  height: 8px;
+  display: flex;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.06);
+}
+
+.current-mood-fill--expansion {
+  background: #c9a84c;
+  opacity: 0.7;
+}
+
+.current-mood-fill--pressure {
+  background: #8899cc;
+  opacity: 0.6;
+}
+
+/* ── Rare transit card ───────────────────────────────────────────────────── */
+
+.current-rare-item {
+  border-left: 2px solid var(--accent, var(--gold));
+  padding-left: 0.6rem;
+  margin: 0.2rem 0;
+}
+
+.current-rare-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent, var(--gold));
+  background: rgba(201, 168, 76, 0.1);
+  border-radius: 3px;
+  padding: 0.08rem 0.3rem;
+}
+
+.current-rare-who {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  margin: 0.15rem 0 0.05rem;
+}
+
+.current-rare-who strong {
+  color: var(--text);
+}
+
+.current-rare-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.current-rare-detail {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+  margin: 0.1rem 0 0;
+}
+
+.current-exact-item {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  padding: 0.15rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.current-exact-item strong {
+  color: var(--text);
+}
+
+.current-exact-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent, var(--gold));
+  flex-shrink: 0;
+}
+
+/* ── Quick hits (Venus & Mars) ────────────────────────────────────────────── */
+
+.current-quick-list {
+  list-style: none;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.current-quick-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  padding: 0.2rem 0;
+}
+
+.current-quick-item strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.current-quick-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent, var(--gold));
+  flex-shrink: 0;
+  position: relative;
+  top: -1px;
+}
+
+.current-quick-text {
+  flex: 1;
+}
+
+.current-quick-blurb {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.current-quick-orb {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* ── Age tag ─────────────────────────────────────────────────────────────── */
+
+.current-age-tag {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  padding: 0.06rem 0.3rem;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+}
+
+/* ── Baby moods ──────────────────────────────────────────────────────────── */
+
+.current-baby-member {
+  margin: 0.25rem 0;
+}
+
+.current-baby-name {
+  font-size: 0.82rem;
+  color: var(--text);
+  margin: 0 0 0.15rem;
+}
+
+.current-baby-transit {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  padding: 0.1rem 0;
+  line-height: 1.45;
+}
+
+.current-baby-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent, var(--gold));
+  flex-shrink: 0;
+  position: relative;
+  top: -1px;
+}
+
+.current-baby-text {
+  flex: 1;
+}
+
+.current-baby-calm {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0.1rem 0;
+}
+
+.current-baby-ahead {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin: 0.2rem 0 0;
+  padding-top: 0.15rem;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+/* ── Activity / Quiet skies ──────────────────────────────────────────────── */
+
+.current-activity {
+  gap: 0.2rem;
+}
+
+.current-carrying-rare {
+  font-size: 0.7rem;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.current-card-note--quiet {
+  opacity: 0.75;
+  font-style: italic;
+}
+
+/* ── Locked overlay for free tier ────────────────────────────────────────── */
+
+.current-locked {
+  text-align: center;
+  padding: 1rem;
+  border: 1px dashed rgba(201, 168, 76, 0.3);
+  background: rgba(201, 168, 76, 0.04);
+}
+
+.current-locked-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  margin: 0 0 0.3rem;
+}
+
+.current-locked-text {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── States: empty, loading, error ───────────────────────────────────────── */
+
+.current-empty,
+.current-loading,
+.current-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70dvh;
+  text-align: center;
+}
+
+.current-empty-text,
+.current-loading-text,
+.current-error-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 20rem;
+}
+
+.current-loading-text {
+  font-style: italic;
+}
+
+/* ── Footer whisper ──────────────────────────────────────────────────────── */
+
+.current-whisper {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  opacity: 0.6;
+  margin-top: 0.5rem;
+}

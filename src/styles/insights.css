@@ -43,6 +43,11 @@
   padding-bottom: 2rem;
 }
 
+/* Placeholder shown while lazy tab content loads — prevents panel collapse */
+.insights-tab-placeholder {
+  min-height: 70dvh;
+}
+
 /* ── Insights rendered in main content area (topnav mode) ──────────── */
 /* ── Insights rendered in main content area (desktop topnav mode) ──── */
 .insights-main-area {

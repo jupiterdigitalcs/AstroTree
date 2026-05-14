@@ -64,6 +64,30 @@ const CHAPTERS = {
     rarity:      'common',
   },
 
+  Jupiter_conjunction_Mars: {
+    title:       'Full Throttle',
+    description: 'Energy surges. Ambition rises. Physical drive and confidence peak at the same time.',
+    past:        'Energy surged. Ambition rose. Physical drive and confidence peaked at the same time.',
+    future:      'Energy will surge. Ambition will rise. Physical drive and confidence will peak together.',
+    child:       'A high-energy stretch where you want to try everything and feel unstoppable.',
+    childPast:   'A high-energy stretch where you wanted to try everything and felt unstoppable.',
+    childFuture: 'A high-energy stretch is coming where you want to try everything.',
+    frequency:   'Every 12 years or so',
+    rarity:      'common',
+  },
+
+  Jupiter_opposition_Mars: {
+    title:       'Too Much Gas',
+    description: 'Drive runs high, maybe too high. The impulse is to push harder. Channel it before it scatters.',
+    past:        'Drive ran high, maybe too high. The impulse was to push harder. Channeling it mattered.',
+    future:      'Drive will run high, maybe too high. Channel it before it scatters.',
+    child:       'Energy and excitement can tip into overdoing it. Learning to pace matters here.',
+    childPast:   'Energy and excitement tipped into overdoing it. Learning to pace mattered.',
+    childFuture: 'Energy and excitement can tip into overdoing it. Pacing will matter.',
+    frequency:   'Every 12 years or so',
+    rarity:      'common',
+  },
+
   // ── Saturn (~29yr orbit) ─────────────────────────────────────────────────────
 
   Saturn_conjunction_Sun: {
@@ -135,6 +159,42 @@ const CHAPTERS = {
     childPast:   'Friendships were tested — you found out who really shows up. Those connections matter.',
     childFuture: "Friendships will be tested — you'll find out who really shows up. Those connections matter.",
     frequency:   'A few times in a lifetime',
+    rarity:      'notable',
+  },
+
+  Saturn_conjunction_Mars: {
+    title:       'Action on Hold',
+    description: 'Drive meets resistance. Everything takes longer. What you push through now is built to last.',
+    past:        'Drive met resistance. Everything took longer. What you pushed through was built to last.',
+    future:      'Drive will meet resistance. Everything will take longer. What you push through will last.',
+    child:       'A slower, more frustrating stretch. Things take effort, but the effort pays off.',
+    childPast:   'A slower, more frustrating stretch. Things took effort, but the effort paid off.',
+    childFuture: 'A slower, more frustrating stretch is ahead. Things will take effort, but it pays off.',
+    frequency:   'A few times in a lifetime',
+    rarity:      'notable',
+  },
+
+  Saturn_square_Mars: {
+    title:       'The Slow Burn',
+    description: 'Friction between what you want to do and what the situation allows. Anger can simmer. Patience is the work.',
+    past:        'Friction between what you wanted to do and what the situation allowed. Patience was the work.',
+    future:      'Friction between what you want to do and what the situation allows. Patience will be the work.',
+    child:       'Feeling held back or frustrated. The anger is real, but so is the lesson in patience.',
+    childPast:   'Feeling held back or frustrated. The anger was real, but so was the lesson.',
+    childFuture: 'Feeling held back or frustrated is coming. The anger will be real, but so will the lesson.',
+    frequency:   'Every 7 years or so',
+    rarity:      'common',
+  },
+
+  Saturn_opposition_Mars: {
+    title:       'Push Meets Wall',
+    description: 'External forces slow you down. Others test your will. Strategic patience wins over brute force.',
+    past:        'External forces slowed you down. Others tested your will. Strategic patience won over brute force.',
+    future:      'External forces will slow you down. Others will test your will. Strategic patience wins.',
+    child:       'Other people or rules hold you back from what you want to do. Frustrating, but it builds resilience.',
+    childPast:   'Other people or rules held you back. Frustrating, but it built resilience.',
+    childFuture: 'Other people or rules may hold you back. Frustrating, but it builds resilience.',
+    frequency:   'Every 14-15 years',
     rarity:      'notable',
   },
 
@@ -230,6 +290,42 @@ const CHAPTERS = {
     rarity:      'once',
   },
 
+  Uranus_conjunction_Mars: {
+    title:       'Spark and Powder',
+    description: 'Sudden bursts of energy, recklessness, breakthroughs. If you can steer it, it transforms everything.',
+    past:        'Sudden bursts of energy, recklessness, breakthroughs. When steered, it transformed everything.',
+    future:      'Sudden bursts of energy, recklessness, breakthroughs ahead. Steer it and it transforms everything.',
+    child:       'Impulsive energy and sudden physical changes. Wild and exciting, but it can be a lot.',
+    childPast:   'Impulsive energy and sudden physical changes. Wild and exciting, but it was a lot.',
+    childFuture: 'Impulsive energy and sudden changes are coming. Wild and exciting, but it can be a lot.',
+    frequency:   'Once in a lifetime',
+    rarity:      'once',
+  },
+
+  Uranus_square_Mars: {
+    title:       'The Reckless Edge',
+    description: 'Restless, impatient energy that wants out. The urge to break free can be physical. Channel it or it channels you.',
+    past:        'Restless, impatient energy that wanted out. The urge to break free was physical.',
+    future:      'Restless, impatient energy will want out. The urge to break free can be physical.',
+    child:       'Energy and impatience run high. A need to break out of routines. It needs a channel.',
+    childPast:   'Energy and impatience ran high. The need to break out of routines was strong.',
+    childFuture: 'Energy and impatience will run high. A need to break out of routines. Find a channel.',
+    frequency:   'A few times in a lifetime',
+    rarity:      'notable',
+  },
+
+  Uranus_opposition_Mars: {
+    title:       'Flash Point',
+    description: 'Others push your buttons in unexpected ways. Sudden conflicts, sudden freedom. Both are possible.',
+    past:        'Others pushed your buttons in unexpected ways. Sudden conflicts, sudden freedom.',
+    future:      'Others will push your buttons in unexpected ways. Sudden conflicts, sudden freedom.',
+    child:       'Clashes seem to come out of nowhere. People and situations provoke reactions you did not see coming.',
+    childPast:   'Clashes came out of nowhere. People and situations provoked reactions you did not see coming.',
+    childFuture: 'Clashes may come out of nowhere. People and situations will provoke unexpected reactions.',
+    frequency:   'Once or twice in a lifetime',
+    rarity:      'rare',
+  },
+
   // ── Neptune (~165yr orbit) ───────────────────────────────────────────────────
 
   Neptune_conjunction_Sun: {
@@ -277,6 +373,75 @@ const CHAPTERS = {
     childPast:   'A beautiful, dreamy stretch — creativity soared and everything felt magical.',
     childFuture: 'A beautiful, dreamy stretch is coming — creativity will soar and everything will feel magical.',
     frequency:   'Once in a generation',
+    rarity:      'once',
+  },
+
+  Neptune_opposition_Sun: {
+    title:       'The Mirror Fogs',
+    description: 'Who you are gets reflected in distorted ways. Others see someone you do not recognize. Stay grounded in what you know.',
+    past:        'Who you were got reflected in distorted ways. Others saw someone you did not recognize.',
+    future:      'Who you are will get reflected in distorted ways. Stay grounded in what you know.',
+    frequency:   'Once in a lifetime',
+    rarity:      'once',
+  },
+
+  Neptune_opposition_Moon: {
+    title:       'Emotional Blur',
+    description: 'Emotional boundaries with others dissolve. Compassion deepens, but so can confusion. Know where you end and they begin.',
+    past:        'Emotional boundaries with others dissolved. Compassion deepened, but so did confusion.',
+    future:      'Emotional boundaries with others will dissolve. Compassion deepens, but so can confusion.',
+    child:       'Feelings get tangled up with other people. Hard to tell whose emotions belong to whom.',
+    childPast:   'Feelings got tangled up with other people. Hard to tell whose emotions belonged to whom.',
+    childFuture: 'Feelings may get tangled up with other people. Knowing your own feelings from theirs will matter.',
+    frequency:   'Once in a lifetime',
+    rarity:      'once',
+  },
+
+  Neptune_opposition_Venus: {
+    title:       'The Longing',
+    description: 'Love and desire pull toward something just out of reach. Beautiful ache, but check what is real.',
+    past:        'Love and desire pulled toward something just out of reach. Beautiful ache, but clarity came later.',
+    future:      'Love and desire will pull toward something just out of reach. Beautiful, but check what is real.',
+    child:       'Wanting something or someone in a way that feels bigger than usual. Not everything is what it seems.',
+    childPast:   'Wanting something or someone in a way that felt bigger than usual. Not everything was what it seemed.',
+    childFuture: 'Wanting something or someone in a way that feels bigger than usual. Not everything will be what it seems.',
+    frequency:   'Once in a generation',
+    rarity:      'once',
+  },
+
+  Neptune_conjunction_Mars: {
+    title:       'The Dissolve',
+    description: 'Energy and drive diffuse. Harder to know what to fight for. This is softening, not weakness.',
+    past:        'Energy and drive diffused. It was harder to know what to fight for. A softening, not weakness.',
+    future:      'Energy and drive will diffuse. Harder to know what to fight for. Softening, not weakness.',
+    child:       'Energy feels scattered and unfocused. What used to motivate does not land the same way.',
+    childPast:   'Energy felt scattered and unfocused. What used to motivate did not land the same way.',
+    childFuture: 'Energy may feel scattered and unfocused. What motivates you will shift.',
+    frequency:   'Once in a generation',
+    rarity:      'once',
+  },
+
+  Neptune_square_Mars: {
+    title:       'Chasing Fog',
+    description: 'Actions misfire. What you are chasing might be an illusion. Pause before pushing harder.',
+    past:        'Actions misfired. What you were chasing may have been an illusion.',
+    future:      'Actions may misfire. What you are chasing might be an illusion. Pause before pushing harder.',
+    child:       'Effort does not connect like it should. Trying harder does not always help here.',
+    childPast:   'Effort did not connect like it should have. Trying harder did not always help.',
+    childFuture: 'Effort may not connect the way it should. Trying harder will not always help.',
+    frequency:   'Once in a lifetime',
+    rarity:      'once',
+  },
+
+  Neptune_opposition_Mars: {
+    title:       'The Drain',
+    description: 'Others can drain your energy or mislead your efforts. Boundaries matter more than force right now.',
+    past:        'Others drained energy or misled efforts. Boundaries mattered more than force.',
+    future:      'Others may drain your energy or mislead your efforts. Boundaries will matter more than force.',
+    child:       'Other people can sap your motivation or send you in circles. Know when to step back.',
+    childPast:   'Other people sapped motivation or sent you in circles.',
+    childFuture: 'Other people may sap your motivation. Know when to step back.',
+    frequency:   'Once in a lifetime',
     rarity:      'once',
   },
 
@@ -351,9 +516,54 @@ const CHAPTERS = {
     rarity:      'once',
   },
 
+  Pluto_conjunction_Mars: {
+    title:       'Raw Power',
+    description: 'Intense, compulsive drive. Power dynamics surface in action and conflict. Controlled force transforms everything.',
+    past:        'Intense, compulsive drive. Power dynamics surfaced in action and conflict. Controlled force transformed everything.',
+    future:      'Intense, compulsive drive ahead. Power dynamics will surface. Controlled force will transform everything.',
+    child:       'Physical intensity and strong willpower. Conflicts can feel very serious, even when they are small.',
+    childPast:   'Physical intensity and strong willpower. Conflicts felt very serious, even the small ones.',
+    childFuture: 'Physical intensity and strong willpower ahead. Conflicts may feel very serious.',
+    frequency:   'Once in a generation',
+    rarity:      'once',
+  },
+
+  Pluto_square_Mars: {
+    title:       'The Power Struggle',
+    description: 'Compulsive energy and control issues. What you are fighting for reveals what matters most.',
+    past:        'Compulsive energy and control issues. What you were fighting for revealed what mattered most.',
+    future:      'Compulsive energy and control issues ahead. What you fight for will reveal what matters most.',
+    child:       'Strong urges to push, compete, or dominate. The intensity is real and needs a healthy outlet.',
+    childPast:   'Strong urges to push, compete, or dominate. The intensity was real.',
+    childFuture: 'Strong urges to push, compete, or dominate will surface. The intensity will need a healthy outlet.',
+    frequency:   'Once in a lifetime',
+    rarity:      'once',
+  },
+
+  Pluto_opposition_Mars: {
+    title:       'Force Meets Force',
+    description: 'Others mirror your deepest drives back at you. Power dynamics reach a peak. Transformation comes through confrontation.',
+    past:        'Others mirrored your deepest drives back at you. Power dynamics peaked.',
+    future:      'Others will mirror your deepest drives back at you. Power dynamics will peak.',
+    child:       'Intense clashes with others. What feels like a fight is often about something much deeper.',
+    childPast:   'Intense clashes with others. What felt like a fight was about something much deeper.',
+    childFuture: 'Intense clashes with others may come. What feels like a fight will be about something deeper.',
+    frequency:   'Once in a generation',
+    rarity:      'once',
+  },
+
 }
 
 const CHILD_AGE_THRESHOLD = 13
+
+/**
+ * Check whether a curated chapter exists for this transit combination.
+ * Used by The Current to filter out noise (transits without chapters are not
+ * impactful enough to surface in group analysis).
+ */
+export function hasChapter(transitingPlanet, aspect, natalPlanet) {
+  return `${transitingPlanet}_${aspect}_${natalPlanet}` in CHAPTERS
+}
 
 /**
  * Get chapter copy for a transit, adjusted for timing tense and age.

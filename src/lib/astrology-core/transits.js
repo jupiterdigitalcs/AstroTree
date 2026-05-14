@@ -44,14 +44,13 @@ export const ASPECTS = {
   sextile:     { angle: 60,  symbol: '⚹', name: 'sextile'    },
 }
 
-/** Default orbs — Christina will tune these */
 export const DEFAULT_TRANSIT_ORBS = {
-  conjunction: 8,
-  opposition:  8,
-  trine:       6,
-  square:      6,
-  sextile:     4,
-  quincunx:    3,
+  conjunction: 6,
+  opposition:  4,
+  trine:       3,
+  square:      3,
+  sextile:     2,
+  quincunx:    1,
 }
 
 // ── Core math ────────────────────────────────────────────────────────────────
@@ -191,6 +190,121 @@ export function calcGroupTransits(members, date = new Date(), options = {}) {
       birthTimezone: member.birthTimezone ?? null,
       date,
       ...options,
+    })
+  }
+  return results
+}
+
+// ── Quick transits (Venus & Mars as transiting bodies) ──────────────────────
+
+/** Fast-moving planets that create short, felt activations */
+const QUICK_BODIES = [
+  { name: 'Venus', index: 3, glyph: '♀', avgDailyMotion: 1.2 },
+  { name: 'Mars',  index: 4, glyph: '♂', avgDailyMotion: 0.52 },
+]
+
+/** Natal points for quick transits — only the personal planets that matter */
+const QUICK_NATAL = [
+  { name: 'Sun',   index: 0, glyph: '☀' },
+  { name: 'Moon',  index: 1, glyph: '☽' },
+  { name: 'Venus', index: 3, glyph: '♀' },
+  { name: 'Mars',  index: 4, glyph: '♂' },
+]
+
+/** Tighter orbs for fast movers — they pass through quickly */
+const QUICK_ORBS = {
+  conjunction: 3,
+  opposition:  2,
+  square:      2,
+}
+
+/** Only hard aspects for quick transits */
+const QUICK_ASPECTS = ['conjunction', 'opposition', 'square']
+
+/**
+ * Calculate quick Venus/Mars transits for a single person.
+ * These are short-lived (days to weeks) but felt in relationships and action.
+ *
+ * @param {object} params — same shape as calcTransitsForPerson
+ * @returns {Transit[]}
+ */
+export function calcQuickTransits({
+  birthdate,
+  birthTime     = null,
+  birthTimezone = null,
+  hasBirthTime  = !!birthTime,
+  date          = new Date(),
+}) {
+  const tz           = birthTimezone ? ianaToOffset(birthTimezone, birthdate) : DEFAULT_TIMEZONE
+  const natalPlanets = getNatalPlanets(birthdate, birthTime, tz)
+  if (!natalPlanets.length) return []
+
+  const todayStr       = date.toISOString().split('T')[0]
+  const todayChart     = chartAt(todayStr, 12, 0, 0)
+  const transitPlanets = todayChart.planets
+
+  const natalTargets = hasBirthTime
+    ? QUICK_NATAL
+    : QUICK_NATAL.filter(p => p.name !== 'Moon')
+
+  const active = []
+
+  for (const transiting of QUICK_BODIES) {
+    const tPlanet = transitPlanets[transiting.index]
+    if (!tPlanet) continue
+
+    for (const natal of natalTargets) {
+      // Skip self-to-self (Venus transiting natal Venus = just a return, not interesting here)
+      if (transiting.name === natal.name) continue
+
+      const nPlanet = natalPlanets[natal.index]
+      if (!nPlanet) continue
+
+      for (const aspectName of QUICK_ASPECTS) {
+        const aspectDef = ASPECTS[aspectName]
+        const orb       = QUICK_ORBS[aspectName]
+        const sep       = angularSeparation(tPlanet.longitude, nPlanet.longitude)
+        const deviation = Math.abs(sep - aspectDef.angle)
+
+        if (deviation <= orb) {
+          const phase = getPhase(tPlanet, nPlanet.longitude, aspectDef.angle)
+          active.push({
+            transitingPlanet:     transiting.name,
+            transitingGlyph:      transiting.glyph,
+            transitingSign:       tPlanet.signName,
+            transitingLongitude:  tPlanet.longitude,
+            transitingRetrograde: tPlanet.isRetrograde ?? false,
+            natalPlanet:          natal.name,
+            natalGlyph:           natal.glyph,
+            natalSign:            nPlanet.signName,
+            natalLongitude:       nPlanet.longitude,
+            aspect:               aspectName,
+            aspectSymbol:         aspectDef.symbol,
+            orb:                  Math.round(deviation * 100) / 100,
+            phase,
+            exact:                deviation < 0.5,
+          })
+        }
+      }
+    }
+  }
+
+  return active.sort((a, b) => a.orb - b.orb)
+}
+
+/**
+ * Calculate quick transits for multiple people.
+ * @returns {Record<string, Transit[]>}
+ */
+export function calcGroupQuickTransits(members, date = new Date()) {
+  const results = {}
+  for (const member of members) {
+    if (!member.birthdate || !member.id) continue
+    results[member.id] = calcQuickTransits({
+      birthdate:     member.birthdate,
+      birthTime:     member.birthTime ?? null,
+      birthTimezone: member.birthTimezone ?? null,
+      date,
     })
   }
   return results

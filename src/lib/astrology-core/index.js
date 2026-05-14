@@ -51,9 +51,25 @@ export {
   calcTransitsForPerson,
   calcGroupTransits,
   findSharedTransits,
+  // Quick transits (Venus & Mars as transiting bodies)
+  calcQuickTransits,
+  calcGroupQuickTransits,
 } from './transits.js'
 
 export {
   // Transit timeline (lifetime chapter scanning)
   calcTransitTimeline,
 } from './timeline.js'
+
+export {
+  // Group transit analysis ("The Current")
+  analyzeGroupTransits,
+  findDominantPlanet,
+  findSharedStorms,
+  findNatalTargets,
+  calcMood,
+  findRareTransits,
+  findExactTransits,
+  findMostActive,
+  findQuietMembers,
+} from './groupCurrent.js'

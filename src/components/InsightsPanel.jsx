@@ -25,6 +25,7 @@ import {
 import { GroupAnalysisCards } from './insights/GroupAnalysisCards.jsx'
 
 const TheDig = lazy(() => import('./dig/TheDig.jsx'))
+const TheCurrent = lazy(() => import('./current/TheCurrent.jsx'))
 
 const ELEMENTS = ['Fire', 'Earth', 'Air', 'Water']
 
@@ -2055,6 +2056,11 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               className={`insights-subnav-btn${insightsTab === 'dig' ? ' active' : ''}`}
               onClick={() => onInsightsTabChange?.('dig')}
             >✦ The DIG{hasAdvanced && <span className="pro-tag pro-tag--subtle">✦</span>}</button>
+            <button
+              type="button"
+              className={`insights-subnav-btn${insightsTab === 'current' ? ' active' : ''}${!hasAdvanced ? ' insights-subnav-btn--locked' : ''}`}
+              onClick={() => onInsightsTabChange?.('current')}
+            >✦ The Current <span className="current-beta-tag">Beta</span>{hasAdvanced && <span className="pro-tag pro-tag--subtle">✦</span>}</button>
           </nav>
           {onExport && (
             <button
@@ -2228,7 +2234,14 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         ))}
       </div>
 
-      {/* ── Insight cards (hidden when DIG tab active) ─────────────── */}
+      {/* ── The Current section ──────────────────────────────────────── */}
+      {insightsTab === 'current' && (
+        <Suspense fallback={<div className="insights-tab-placeholder" />}>
+          <TheCurrent nodes={nodes} edges={edges} entitlements={entitlements} />
+        </Suspense>
+      )}
+
+      {/* ── Insight cards (hidden when DIG/Current tab active) ──────── */}
       {insightsTab === 'insights' && (<>
 
       <p className="insight-whisper insight-whisper--standalone" style={{ textAlign: 'center', padding: '0.2rem 1rem 0.4rem' }}>

@@ -116,7 +116,8 @@ export default function App() {
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
-  const [insightsTab,       setInsightsTab]       = useState('insights') // 'insights' | 'dig'
+  const [insightsTab,       setInsightsTabRaw]    = useState('insights') // 'insights' | 'dig' | 'current'
+  const setInsightsTab = (tab) => { setInsightsTabRaw(tab); if (tab === 'current') logEvent('view_current'); if (tab === 'dig') logEvent('view_dig') }
   const [constellationTick, setConstellationTick] = useState(0)
   const [newMembersForChart,    setNewMembersForChart]    = useState(0)
   const [newEdgesForInsights,   setNewEdgesForInsights]   = useState(0)
@@ -753,6 +754,10 @@ export default function App() {
             className={`top-subnav-btn${insightsTab === 'dig' ? ' active' : ''}`}
             onClick={() => setInsightsTab('dig')}
           >✦ The DIG{entitlements?.tier === 'premium' && <span className="pro-tag pro-tag--subtle">✦</span>}</button>
+          <button
+            className={`top-subnav-btn${insightsTab === 'current' ? ' active' : ''}`}
+            onClick={() => setInsightsTab('current')}
+          >✦ The Current <span className="current-beta-tag">Beta</span></button>
         </nav>
       )}
       {panelOpen && (
