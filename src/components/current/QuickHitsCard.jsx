@@ -9,7 +9,7 @@ export default function QuickHitsCard({ quickHits }) {
   return (
     <div className="current-card current-quick">
       <h4 className="current-card-heading">This Week</h4>
-      <p className="current-card-whisper">Venus and Mars activations across your group right now</p>
+      <p className="current-card-whisper">Fast-moving energy touching your group this week</p>
       <ul className="current-quick-list">
         {quickHits.map((hit, i) => {
           const color = PLANET_COLORS[hit.transit.transitingPlanet] ?? 'var(--gold)'
@@ -19,12 +19,9 @@ export default function QuickHitsCard({ quickHits }) {
               <span className="current-quick-text">
                 <strong>{hit.memberName}</strong>
                 {hit.age != null && hit.age < 13 && <span className="current-age-tag">age {hit.age}</span>}
-                {' '}&mdash;{' '}
+                {' '}&middot;{' '}
                 {hit.transit.transitingPlanet} {hit.verb} {hit.transit.natalPlanet}
                 {hit.blurb && <span className="current-quick-blurb"> &middot; {hit.blurb}</span>}
-              </span>
-              <span className="current-quick-orb">
-                {hit.transit.orb.toFixed(1)}&deg;
               </span>
             </li>
           )

@@ -11,7 +11,7 @@ export default function NatalTargetCard({ natalTargets }) {
       <h4 className="current-card-heading">Where It's Landing</h4>
       <p className="current-card-note">
         Most transits are hitting <strong>{top.planet}</strong>
-        {topTheme ? ` — ${topTheme.area.toLowerCase()}` : ''}
+        {topTheme ? `, which connects to ${topTheme.area.toLowerCase()}` : ''}
       </p>
       <div className="current-target-bars">
         {natalTargets.map(t => {

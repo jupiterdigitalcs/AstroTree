@@ -9,7 +9,7 @@ const MOON_IMPACT = {
 }
 
 const MOON_MOOD_NOW = {
-  conjunction: { label: 'Moon return', note: 'The Moon is home. Peak emotional reset, comfort, and familiarity.' },
+  conjunction: { label: 'Moon return', note: 'Peak emotional reset. Comfort and familiarity tend to come easier.' },
   opposition:  { label: 'Moon opposite', note: 'Emotional tension. May feel off, reactive, or extra needy.' },
   square:      { label: 'Moon square', note: 'Friction and fussiness. Routines may not land like they usually do.' },
   trine:       { label: 'Moon trine', note: 'Easy flow. Content and settled, good energy for the whole house.' },
@@ -39,8 +39,9 @@ export default function BabyMoodsCard({ babyMoods }) {
     <div className="current-card current-baby">
       <h4 className="current-card-heading">The Littlest Ones</h4>
       <p className="current-card-whisper">
-        Babies and toddlers live through their Moon. When something crosses it, the whole group feels it.
-        The Moon return (every ~27 days) is a reset point, like a mini emotional cycle. Expect familiar moods and patterns to resurface.
+        Babies and toddlers tend to live through their Moon. When something crosses it,
+        the whole house feels it. The Moon return (roughly every 27 days) is like a mini
+        emotional reset. Familiar moods and patterns often resurface around this time.
       </p>
       {babyMoods.map(baby => {
         const moodNow = baby.moonMoodNow ? MOON_MOOD_NOW[baby.moonMoodNow] : null
@@ -57,7 +58,7 @@ export default function BabyMoodsCard({ babyMoods }) {
                 <span className="current-baby-dot" />
                 <span className="current-baby-text">
                   <strong>{moodNow.label}</strong> (Moon in {baby.transitMoonSign})
-                  {' '}&mdash; {moodNow.note}
+                  {' '}&middot; {moodNow.note}
                 </span>
               </div>
             )}
@@ -71,7 +72,7 @@ export default function BabyMoodsCard({ babyMoods }) {
                   <span className="current-baby-dot" />
                   <span className="current-baby-text">
                     {t.transitingPlanet} {t.aspectSymbol} Moon
-                    {impact && <> &mdash; {impact.note}</>}
+                    {impact && <> &middot; {impact.note}</>}
                   </span>
                 </div>
               )

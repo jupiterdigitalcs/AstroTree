@@ -62,7 +62,7 @@ export default function RareTransitCard({ rareTransits, exactTransits }) {
                 <p className="current-rare-who">
                   <strong>{r.memberName}</strong>
                   {r.age != null && <span className="current-age-tag">age {r.age}</span>}
-                  {' '}&mdash; {r.title}
+                  {' '}&middot; {r.title}
                 </p>
                 <p className="current-rare-desc">{r.description}</p>
                 <p className="current-rare-detail">
@@ -87,9 +87,9 @@ export default function RareTransitCard({ rareTransits, exactTransits }) {
             return (
               <div key={i} className="current-exact-item" style={{ '--accent': color }}>
                 <span className="current-exact-dot" />
-                <strong>{e.memberName}</strong> &mdash;{' '}
+                <strong>{e.memberName}</strong> &middot;{' '}
                 {e.transit.transitingGlyph}{e.transit.aspectSymbol}{e.transit.natalGlyph}{' '}
-                {e.title} ({e.transit.orb.toFixed(2)}&deg;)
+                {e.title}
               </div>
             )
           })}

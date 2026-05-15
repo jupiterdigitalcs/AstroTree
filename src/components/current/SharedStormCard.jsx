@@ -1,11 +1,5 @@
 import { PLANET_THEMES, NATAL_TARGET_THEMES } from './currentData'
 
-const ASPECT_VERBS = {
-  conjunction: 'conjunct',
-  opposition:  'opposing',
-  square:      'squaring',
-}
-
 export default function SharedStormCard({ storm }) {
   const planetTheme = PLANET_THEMES[storm.transitingPlanet]
   const natalTheme  = NATAL_TARGET_THEMES[storm.natalPlanet]
@@ -15,15 +9,15 @@ export default function SharedStormCard({ storm }) {
     <div className="current-card current-storm" style={{ '--accent': color }}>
       <h4 className="current-storm-heading">
         <span className="current-storm-glyphs">
-          {storm.transitingGlyph} &rarr; {storm.natalGlyph}
+          {storm.transitingGlyph} {storm.natalGlyph}
         </span>
         <span>
-          {storm.transitingPlanet} &times; {storm.natalPlanet}
+          {storm.transitingPlanet} touching {storm.natalPlanet}
         </span>
       </h4>
       <p className="current-storm-summary">
-        {storm.members.length} members share this transit
-        {natalTheme ? ` — ${natalTheme.area.toLowerCase()} is being activated` : ''}
+        {storm.members.length} members are feeling this right now
+        {natalTheme ? `. It connects to ${natalTheme.area.toLowerCase()}` : ''}
       </p>
       <ul className="current-storm-members">
         {storm.members.map(m => (
@@ -32,14 +26,7 @@ export default function SharedStormCard({ storm }) {
               {m.name}
               {m.age != null && <span className="current-age-tag">age {m.age}</span>}
             </span>
-            <span className="current-storm-aspect">
-              {m.aspectSymbol} {ASPECT_VERBS[m.aspect] ?? m.aspect}
-            </span>
-            <span className="current-storm-orb">
-              {m.orb.toFixed(1)}&deg;
-              {m.exact && <span className="current-exact-badge">exact</span>}
-              {!m.exact && <span className="current-phase">{m.phase}</span>}
-            </span>
+            {m.exact && <span className="current-exact-badge">exact</span>}
           </li>
         ))}
       </ul>

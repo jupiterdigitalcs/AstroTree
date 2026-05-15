@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     q: 'Is AstroDig free to use?',
-    a: 'Yes — the core experience is free with no account required. You can add unlimited people, explore the family tree view, see sun signs and elemental patterns, save and share charts, and export as PNG. A one-time $9.99 Celestial unlock adds advanced views (Zodiac Wheel, Tables, Constellation), the full Insights analysis, the complete DIG experience, and up to 50 saved charts.',
+    a: 'Yes — the core experience is free with no account required. You can add unlimited people, explore the family tree view, see sun signs and elemental patterns, save and share charts, and export as PNG. A one-time $9.99 Celestial unlock adds advanced views (Zodiac Wheel, Tables, Constellation), the full Insights analysis, The Current (live group transit analysis), the complete DIG experience, and up to 50 saved charts.',
   },
   {
     q: 'Do I need to create an account?',
@@ -64,7 +64,7 @@ const faqs = [
   },
   {
     q: 'What does the Celestial unlock include?',
-    a: 'The $9.99 one-time Celestial unlock adds: Zodiac Wheel view, Tables view, Constellation view, the full Insights panel (Notable Bonds, Partner Compatibility, Zodiac Threads, Family Roles, Pluto Generations, Full Compatibility Report), the complete DIG experience, zodiac and PDF exports, and up to 50 saved charts.',
+    a: 'The $9.99 one-time Celestial unlock adds: Zodiac Wheel view, Tables view, Constellation view, the full Insights panel (Notable Bonds, Partner Compatibility, Zodiac Threads, Family Roles, Pluto Generations, Full Compatibility Report), The Current (live group transit analysis with shared storms, rare moments, and per-person breakdowns), the complete DIG experience, zodiac and PDF exports, and up to 50 saved charts.',
   },
   {
     q: 'Can I share my chart with others?',

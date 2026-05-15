@@ -18,6 +18,15 @@ function formatDate(dateStr) {
   return `${MONTH_NAMES[m - 1]} ${d}, ${y}`
 }
 
+function formatUpdated(fetchedAt) {
+  if (!fetchedAt) return null
+  const mins = Math.floor((Date.now() - fetchedAt) / 60_000)
+  if (mins < 1) return 'Updated just now'
+  if (mins < 60) return `Updated ${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  return `Updated ${hrs}h ago`
+}
+
 /**
  * TheCurrent — group transit dashboard tab for the Insights Panel.
  *
@@ -28,7 +37,8 @@ export default function TheCurrent({ nodes, edges, entitlements }) {
   const [analysis, setAnalysis]   = useState(null)
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState(null)
-  const cacheRef = useRef({ key: null, data: null })
+  const [retryTick, setRetryTick] = useState(0)
+  const cacheRef = useRef({ key: null, data: null, fetchedAt: null })
 
   // Extract member data from tree nodes
   const members = (nodes ?? [])
@@ -75,7 +85,7 @@ export default function TheCurrent({ nodes, edges, entitlements }) {
       })
       .then(data => {
         if (cancelled) return
-        cacheRef.current = { key: cacheKey, data }
+        cacheRef.current = { key: cacheKey, data, fetchedAt: Date.now() }
         setAnalysis(data)
       })
       .catch(err => {
@@ -89,7 +99,7 @@ export default function TheCurrent({ nodes, edges, entitlements }) {
 
     return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [members.map(m => m.birthdate).sort().join(',')])
+  }, [members.map(m => m.birthdate).sort().join(','), retryTick])
 
   // ── Empty state ──────────────────────────────────────────────────────────
 
@@ -107,7 +117,11 @@ export default function TheCurrent({ nodes, edges, entitlements }) {
 
   if (loading && !analysis) {
     return (
-      <div className="current-loading">
+      <div className="current-container current-skeleton" aria-label="Loading transit data">
+        <div className="current-skeleton-bar current-skeleton-date" />
+        <div className="current-skeleton-card current-skeleton-headline" />
+        <div className="current-skeleton-card current-skeleton-short" />
+        <div className="current-skeleton-card current-skeleton-medium" />
         <p className="current-loading-text">Reading the sky&hellip;</p>
       </div>
     )
@@ -119,6 +133,16 @@ export default function TheCurrent({ nodes, edges, entitlements }) {
     return (
       <div className="current-error">
         <p className="current-error-text">{error}</p>
+        <button
+          className="current-retry-btn"
+          onClick={() => {
+            cacheRef.current = { key: null, data: null, fetchedAt: null }
+            setError(null)
+            setRetryTick(t => t + 1)
+          }}
+        >
+          Try again
+        </button>
       </div>
     )
   }
@@ -154,6 +178,9 @@ export default function TheCurrent({ nodes, edges, entitlements }) {
   return (
     <div className="current-container">
       <p className="current-date">{formatDate(date)}</p>
+      {cacheRef.current.fetchedAt && (
+        <p className="current-updated">{formatUpdated(cacheRef.current.fetchedAt)}</p>
+      )}
 
       <HeadlineCard dominantPlanet={dominantPlanet} />
       <MoodGauge mood={mood} />
@@ -163,7 +190,7 @@ export default function TheCurrent({ nodes, edges, entitlements }) {
         <div className="current-section">
           <h3 className="current-section-title">Shared Storms</h3>
           <p className="current-section-note">
-            Same planet, same target — these members are in parallel chapters
+            These members are moving through the same kind of energy at the same time.
           </p>
           {sharedStorms.map((storm, i) => (
             <SharedStormCard key={i} storm={storm} />
@@ -175,20 +202,18 @@ export default function TheCurrent({ nodes, edges, entitlements }) {
 
       <RareTransitCard rareTransits={rareTransits} exactTransits={exactTransits} />
 
-      {members.length > 1 && (
-        <CarryingCard
-          members={members}
-          memberTransits={analysis.memberTransits}
-          rareTransits={rareTransits}
-          quickHits={quickHits}
-          memberAges={groupAnalysis.memberAges}
-        />
-      )}
+      <CarryingCard
+        members={members}
+        memberTransits={analysis.memberTransits}
+        rareTransits={rareTransits}
+        quickHits={quickHits}
+        memberAges={groupAnalysis.memberAges}
+      />
 
       <BabyMoodsCard babyMoods={babyMoods} />
 
       <p className="current-whisper">
-        Transits describe seasons, not fate. How you meet them is always up to you.
+        Transits describe seasons, not fate. How you meet them is up to you.
       </p>
     </div>
   )

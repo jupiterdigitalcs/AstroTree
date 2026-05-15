@@ -9,38 +9,38 @@
 export const PLANET_THEMES = {
   Jupiter: {
     glyph: '♃',
-    season: 'Jupiter Season',
-    theme: 'Expansion, opportunity, and growth',
+    season: 'Expansion and Opportunity',
+    theme: 'Optimism, growth, and forward motion',
     color: '#c9a84c',
-    description: 'Jupiter is opening doors across your group. This is a stretch of optimism, generosity, and forward motion.',
+    description: 'Your group is in an expansive stretch right now. This energy tends to open doors, boost confidence, and make things feel possible. A good time to say yes. (Jupiter)',
   },
   Saturn: {
     glyph: '♄',
-    season: 'Saturn Season',
-    theme: 'Structure, responsibility, and tests',
+    season: 'Structure and Accountability',
+    theme: 'Responsibility, limits, and long-term building',
     color: '#8899cc',
-    description: 'Saturn is pressing your group to get serious. Accountability, limits, and long-term building are the themes.',
+    description: 'Your group is in a stretch that can feel heavy or demanding. This energy often shows up as tests, boundaries, and pressure to get serious about what matters. (Saturn)',
   },
   Uranus: {
     glyph: '♅',
-    season: 'Uranus Season',
-    theme: 'Disruption, breakthroughs, and change',
+    season: 'Breakthroughs and Disruption',
+    theme: 'Sudden shifts, new directions, and freedom',
     color: '#56c8c0',
-    description: 'Uranus is shaking things up. Expect the unexpected — sudden shifts, new directions, and freedom impulses.',
+    description: 'Your group is in a restless, unpredictable stretch. This energy tends to shake up routines and push toward change, even when it feels uncomfortable. (Uranus)',
   },
   Neptune: {
     glyph: '♆',
-    season: 'Neptune Season',
-    theme: 'Imagination, intuition, and dissolving boundaries',
+    season: 'Imagination and Fog',
+    theme: 'Intuition, creativity, and blurred edges',
     color: '#7bafd4',
-    description: 'Neptune is softening the edges. Creativity flows, but clarity may be harder to find. Trust intuition over logic.',
+    description: 'Your group is in a dreamy, unclear stretch. Creativity may flow more easily, but clarity can be harder to find. Trust your gut over the details right now. (Neptune)',
   },
   Pluto: {
     glyph: '♇',
-    season: 'Pluto Season',
-    theme: 'Transformation, power, and depth',
+    season: 'Transformation and Depth',
+    theme: 'Power, change, and letting go',
     color: '#b06cbf',
-    description: 'Pluto is working beneath the surface. Deep changes are underway — things that no longer serve fall away.',
+    description: 'Your group is in a deep, transformative stretch. This energy works beneath the surface. Things that no longer fit tend to fall away on their own. (Pluto)',
   },
 }
 
@@ -61,18 +61,18 @@ export const NATAL_TARGET_THEMES = {
 export function getMoodLabel(mood) {
   if (mood.total === 0) return 'All quiet'
   const ratio = mood.expansion / mood.total
-  if (ratio >= 0.6) return 'Leaning toward growth'
-  if (ratio >= 0.4) return 'Mixed energy'
-  if (ratio >= 0.2) return 'Leaning toward pressure'
-  return 'Heavy weather'
+  if (ratio >= 0.6) return 'Leaning toward ease. Expansion energy is leading right now.'
+  if (ratio >= 0.4) return 'A mix of ease and intensity. Both sides are active.'
+  if (ratio >= 0.2) return 'Leaning toward intensity. The slower, heavier energy is setting the tone.'
+  return 'A demanding stretch. Your group is carrying a lot of intense energy right now.'
 }
 
 export function getPhaseLabel(mood) {
   if (mood.total === 0) return null
   const applyingRatio = mood.applying / mood.total
-  if (applyingRatio >= 0.65) return 'Energy is building — most transits haven\'t peaked yet'
-  if (applyingRatio <= 0.35) return 'Energy is releasing — your group is coming through the other side'
-  return null // balanced — not worth mentioning
+  if (applyingRatio >= 0.65) return 'Most of this energy is still building. The peak is ahead.'
+  if (applyingRatio <= 0.35) return 'Most of this energy is winding down. Your group is coming through the other side.'
+  return null // balanced, not worth mentioning
 }
 
 // ── Rarity labels ───────────────────────────────────────────────────────────

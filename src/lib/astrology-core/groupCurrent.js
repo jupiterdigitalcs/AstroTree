@@ -141,12 +141,15 @@ export function calcMood(memberTransits) {
   let separating = 0
   let retrograde = 0
   let total = 0
+  const planets = {} // per-planet transit count
 
   for (const transits of Object.values(memberTransits)) {
     for (const t of transits) {
       total++
       if (t.transitingPlanet === 'Jupiter') expansion++
       else pressure++
+
+      planets[t.transitingPlanet] = (planets[t.transitingPlanet] ?? 0) + 1
 
       if (t.phase === 'applying') applying++
       else separating++
@@ -155,7 +158,7 @@ export function calcMood(memberTransits) {
     }
   }
 
-  return { expansion, pressure, applying, separating, retrograde, total }
+  return { expansion, pressure, applying, separating, retrograde, total, planets }
 }
 
 /**

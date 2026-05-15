@@ -288,7 +288,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin: 0.15rem 0;
+  margin: 0.15rem 0 0;
 }
 
 .current-mood-label-left,
@@ -301,20 +301,42 @@
 .current-mood-track {
   flex: 1;
   height: 8px;
-  display: flex;
   border-radius: 4px;
-  overflow: hidden;
-  background: rgba(255,255,255,0.06);
+  background: linear-gradient(90deg, #8899cc, #a09060 50%, #c9a84c);
+  opacity: 0.5;
+  position: relative;
 }
 
-.current-mood-fill--expansion {
-  background: #c9a84c;
-  opacity: 0.7;
+.current-mood-center {
+  position: absolute;
+  left: 50%;
+  top: -1px;
+  width: 1px;
+  height: 10px;
+  background: rgba(255,255,255,0.2);
+  transform: translateX(-0.5px);
 }
 
-.current-mood-fill--pressure {
-  background: #8899cc;
-  opacity: 0.6;
+.current-mood-indicator {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 2px solid rgba(0,0,0,0.4);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 6px rgba(0,0,0,0.5);
+  transition: left 0.4s ease;
+  z-index: 1;
+}
+
+.current-mood-summary {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+  text-align: center;
+  margin: 0;
 }
 
 /* ── Rare transit card ───────────────────────────────────────────────────── */
@@ -495,16 +517,134 @@
   border-top: 1px solid rgba(255,255,255,0.04);
 }
 
-/* ── Activity / Quiet skies ──────────────────────────────────────────────── */
+/* ── Who's Carrying What ────────────────────────────────────────────────── */
 
 .current-activity {
-  gap: 0.2rem;
+  gap: 0.15rem;
+}
+
+.current-carrying-member {
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.current-carrying-member:last-of-type {
+  border-bottom: none;
+}
+
+.current-carrying-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.4rem 0;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.current-carrying-header:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+.current-carrying-name {
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.current-carrying-name strong {
+  font-weight: 500;
+}
+
+.current-carrying-summary {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-left: auto;
 }
 
 .current-carrying-rare {
   font-size: 0.7rem;
   color: var(--gold);
   font-weight: 600;
+}
+
+.current-carrying-chevron {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  opacity: 0.5;
+  transition: transform 0.2s ease;
+  transform: rotate(0deg);
+  flex-shrink: 0;
+}
+
+.current-carrying-chevron--open {
+  transform: rotate(90deg);
+}
+
+/* ── Expanded transit details ────────────────────────────────────────────── */
+
+.current-carrying-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 0 0.4rem;
+}
+
+.current-carrying-transit {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 0.3rem 0.4rem;
+  border-left: 2px solid var(--accent, var(--gold));
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: rgba(255,255,255,0.015);
+}
+
+.current-carrying-transit--quick {
+  opacity: 0.8;
+}
+
+.current-carrying-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent, var(--gold));
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+}
+
+.current-carrying-transit-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.current-carrying-title {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.current-carrying-desc {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.current-carrying-meta {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+  margin: 0;
 }
 
 .current-card-note--quiet {
@@ -535,16 +675,27 @@
   margin: 0;
 }
 
+/* ── Updated timestamp ──────────────────────────────────────────────────── */
+
+.current-updated {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+  text-align: center;
+  margin: -0.1rem 0 0.1rem;
+}
+
 /* ── States: empty, loading, error ───────────────────────────────────────── */
 
 .current-empty,
-.current-loading,
 .current-error {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 70dvh;
   text-align: center;
+  gap: 0.75rem;
 }
 
 .current-empty-text,
@@ -557,6 +708,84 @@
 
 .current-loading-text {
   font-style: italic;
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Retry button ──────────────────────────────────────────────────────── */
+
+.current-retry-btn {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.75rem;
+  color: var(--gold);
+  background: transparent;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: var(--radius);
+  padding: 0.35rem 1rem;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.current-retry-btn:hover {
+  background: rgba(201, 168, 76, 0.08);
+  border-color: rgba(201, 168, 76, 0.5);
+}
+
+/* ── Loading skeleton ──────────────────────────────────────────────────── */
+
+.current-skeleton {
+  min-height: 70dvh;
+}
+
+.current-skeleton-card {
+  border-radius: var(--radius);
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03) 25%,
+    rgba(255,255,255,0.06) 50%,
+    rgba(255,255,255,0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: current-shimmer 1.8s ease-in-out infinite;
+}
+
+.current-skeleton-bar {
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03) 25%,
+    rgba(255,255,255,0.06) 50%,
+    rgba(255,255,255,0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: current-shimmer 1.8s ease-in-out infinite;
+}
+
+.current-skeleton-date {
+  width: 8rem;
+  height: 0.7rem;
+  margin: 0 auto;
+}
+
+.current-skeleton-headline {
+  height: 7rem;
+  animation-delay: 0.15s;
+}
+
+.current-skeleton-short {
+  height: 4rem;
+  animation-delay: 0.3s;
+}
+
+.current-skeleton-medium {
+  height: 5.5rem;
+  animation-delay: 0.45s;
+}
+
+@keyframes current-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* ── Footer whisper ──────────────────────────────────────────────────────── */
