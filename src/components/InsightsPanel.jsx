@@ -872,6 +872,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const hasFullDig = canAccess('full_dig', entitlements?.tier, entitlements?.config)
   const hasFullCompat = canAccess('full_compatibility', entitlements?.tier, entitlements?.config)
   const [digExporting, setDigExporting] = useState(false)
+  const [currentVisited, setCurrentVisited] = useState(false)
+  if (insightsTab === 'current' && !currentVisited) setCurrentVisited(true)
   const panelRef = useRef(null)
 
   // Inject toggle buttons into insight headings
@@ -2074,9 +2076,12 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </div>
       )}
 
+      {/* ── Tab content (stable container to prevent layout jump) ──── */}
+      <div className="insights-tab-content">
+
       {/* ── The DIG section ────────────────────────────────────────────── */}
-      {insightsTab === 'dig' && edges.length > 0 && (
-        <div className="dig-section">
+      {edges.length > 0 && (
+        <div className="dig-section" style={insightsTab !== 'dig' ? { display: 'none' } : undefined}>
           <div className="dig-section-header">
             <h3 className="dig-section-title">✦ The DIG</h3>
             <p className="dig-section-desc">Your family's cosmic story. A Wrapped-style experience of your family's astrological DNA.</p>
@@ -2235,14 +2240,17 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       </div>
 
       {/* ── The Current section ──────────────────────────────────────── */}
-      {insightsTab === 'current' && (
-        <Suspense fallback={<div className="insights-tab-placeholder" />}>
-          <TheCurrent nodes={nodes} edges={edges} entitlements={entitlements} />
-        </Suspense>
+      {currentVisited && (
+        <div style={insightsTab !== 'current' ? { display: 'none' } : undefined}>
+          <Suspense fallback={<div className="insights-tab-placeholder" />}>
+            <TheCurrent nodes={nodes} edges={edges} entitlements={entitlements} />
+          </Suspense>
+        </div>
       )}
 
       {/* ── Insight cards (hidden when DIG/Current tab active) ──────── */}
-      {insightsTab === 'insights' && (<>
+      <div style={insightsTab !== 'insights' ? { display: 'none' } : undefined}>
+      {<>
 
       <p className="insight-whisper insight-whisper--standalone" style={{ textAlign: 'center', padding: '0.2rem 1rem 0.4rem' }}>
         These insights describe tendencies and patterns, not certainties. A birth chart is one layer of a much bigger picture, and how you live it evolves over time.
@@ -3005,11 +3013,11 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         </button>
       )}
 
-      </>)}
+      </>}
       {/* ── end insight cards ─────────────────────────────────────────── */}
 
       {/* Download button — placed above consult CTA so it's visible */}
-      {onExport && insightsTab === 'insights' && (
+      {onExport && (
         <button
           type="button"
           className="relayout-btn relayout-btn--share insights-export-btn insights-export-btn--bottom"
@@ -3022,7 +3030,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       )}
 
       {/* Consult CTA */}
-      {insightsTab === 'insights' && <div className="insight-consult-cta">
+      <div className="insight-consult-cta">
         <p className="insight-consult-cta-text">
           <strong>Want a deeper reading?</strong> Book a personal astrology consultation with Christina. Explore your chart, your family's patterns, and what the stars reveal about your connections.
         </p>
@@ -3040,7 +3048,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             ✦ Book with Jupiter Digital →
           </a>
         )}
-      </div>}
+      </div>
+      </div>{/* end insights display:none wrapper */}
+
+      </div>{/* end .insights-tab-content */}
 
       {/* Brand footer — hidden normally, shown during export */}
       <div className="insights-brand-footer">

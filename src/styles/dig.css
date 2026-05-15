@@ -451,37 +451,43 @@
 /* ── Insights sub-nav ──────────────────────────────────────────────────── */
 .insights-subnav {
   display: flex;
-  gap: 0;
+  gap: 0.35rem;
   margin-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.35rem;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
 .insights-subnav-btn {
   flex: 1;
-  padding: 0.55rem 0.3rem;
+  padding: 0.5rem 0.3rem;
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-radius: 7px;
   color: var(--text-muted);
-  font-family: 'Cinzel', serif;
-  font-size: 0.68rem;
-  letter-spacing: 0.03em;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
+  transition: color 0.2s, background 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.2rem;
+  gap: 0.25rem;
   white-space: nowrap;
 }
 
 .insights-subnav-btn:hover {
-  color: var(--text-primary);
+  color: var(--text-soft);
+  background: rgba(255,255,255,0.04);
 }
 
 .insights-subnav-btn.active {
   color: var(--gold);
-  border-bottom-color: var(--gold);
+  background: rgba(201,168,76,0.1);
+  border: 1px solid rgba(201,168,76,0.2);
 }
 
 .insights-subnav-btn--locked {

@@ -16,7 +16,7 @@ export default function MoodGauge({ mood }) {
       </p>
 
       <div className="current-mood-bar">
-        <span className="current-mood-label-left">Intensity</span>
+        <span className="current-mood-label-left">◂ Intensity</span>
         <div
           className="current-mood-track"
           role="meter"
@@ -25,13 +25,18 @@ export default function MoodGauge({ mood }) {
           aria-valuemax={100}
           aria-label={`${easePct}% ease, ${100 - easePct}% intensity`}
         >
+          <div className="current-mood-ticks">
+            <span className="current-mood-tick" />
+            <span className="current-mood-tick" />
+            <span className="current-mood-tick" />
+          </div>
           <span className="current-mood-center" />
           <span
             className="current-mood-indicator"
             style={{ left: `${easePct}%` }}
           />
         </div>
-        <span className="current-mood-label-right">Ease</span>
+        <span className="current-mood-label-right">Ease ▸</span>
       </div>
 
       <p className="current-mood-summary">{moodLabel}</p>

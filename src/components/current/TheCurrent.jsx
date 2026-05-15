@@ -177,12 +177,14 @@ export default function TheCurrent({ nodes, edges, entitlements }) {
 
   return (
     <div className="current-container">
-      <p className="current-date">{formatDate(date)}</p>
-      {cacheRef.current.fetchedAt && (
-        <p className="current-updated">{formatUpdated(cacheRef.current.fetchedAt)}</p>
-      )}
+      <p className="current-date">
+        {formatDate(date)}
+        {cacheRef.current.fetchedAt && (
+          <span className="current-updated">{formatUpdated(cacheRef.current.fetchedAt)}</span>
+        )}
+      </p>
 
-      <HeadlineCard dominantPlanet={dominantPlanet} />
+      <HeadlineCard natalTargets={natalTargets} mood={mood} />
       <MoodGauge mood={mood} />
       <QuickHitsCard quickHits={quickHits} />
 

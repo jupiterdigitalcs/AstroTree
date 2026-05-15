@@ -117,7 +117,16 @@ export default function App() {
   const [viewOnly,          setViewOnly]          = useState(false)
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
   const [insightsTab,       setInsightsTabRaw]    = useState('insights') // 'insights' | 'dig' | 'current'
-  const setInsightsTab = (tab) => { setInsightsTabRaw(tab); if (tab === 'current') logEvent('view_current'); if (tab === 'dig') logEvent('view_dig') }
+  const setInsightsTab = (tab) => {
+    setInsightsTabRaw(tab)
+    if (tab === 'current') logEvent('view_current')
+    if (tab === 'dig') logEvent('view_dig')
+    // Scroll insights panel to top on tab switch to prevent flash/jump
+    requestAnimationFrame(() => {
+      const panel = document.querySelector('.insights-panel') || document.querySelector('.insights-main-panel')
+      if (panel) panel.scrollTop = 0
+    })
+  }
   const [constellationTick, setConstellationTick] = useState(0)
   const [newMembersForChart,    setNewMembersForChart]    = useState(0)
   const [newEdgesForInsights,   setNewEdgesForInsights]   = useState(0)

@@ -44,6 +44,10 @@
 }
 
 /* Placeholder shown while lazy tab content loads — prevents panel collapse */
+.insights-tab-content {
+  min-height: 70dvh;
+}
+
 .insights-tab-placeholder {
   min-height: 70dvh;
 }

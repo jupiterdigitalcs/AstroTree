@@ -1,22 +1,20 @@
-import { PLANET_THEMES } from './currentData'
+import { NATAL_TARGET_THEMES, getGroupHeadline } from './currentData'
 
-export default function HeadlineCard({ dominantPlanet }) {
-  if (!dominantPlanet) return null
+export default function HeadlineCard({ natalTargets, mood, totalMembers }) {
+  if (!natalTargets?.length) return null
 
-  const theme = PLANET_THEMES[dominantPlanet.planet]
-  if (!theme) return null
+  const top = natalTargets[0]
+  const theme = NATAL_TARGET_THEMES[top.planet]
+  const headline = getGroupHeadline(top.planet, mood)
+  if (!headline) return null
 
   return (
-    <div className="current-card current-headline" style={{ '--accent': theme.color }}>
-      <div className="current-headline-glyph">{theme.glyph}</div>
-      <h3 className="current-headline-title">{theme.season}</h3>
-      <p className="current-headline-theme">{theme.theme}</p>
-      <p className="current-headline-desc">{theme.description}</p>
+    <div className="current-card current-headline">
+      <div className="current-headline-glyph">{theme?.glyph ?? '✦'}</div>
+      <h3 className="current-headline-title">{headline.title}</h3>
+      <p className="current-headline-desc">{headline.desc}</p>
       <p className="current-headline-stat">
-        Touching <strong>{dominantPlanet.memberCount}</strong> of{' '}
-        <strong>{dominantPlanet.totalMembers}</strong> members
-        {' '}&middot;{' '}
-        {dominantPlanet.transitCount} active transit{dominantPlanet.transitCount !== 1 ? 's' : ''}
+        {top.count} transit{top.count !== 1 ? 's' : ''} touching {top.planet.toLowerCase()} across your group
       </p>
     </div>
   )
