@@ -44,6 +44,7 @@ export default function AdminStatsPanel({ excludeOwner = false, ownerEmail = '' 
   const stats = useMemo(() => {
     if (!dateFrom || !allCharts) return rpcStats
     const filtered = allCharts.filter(c => {
+      if (c.isTest) return false
       const saved = c.savedAt || c.createdAt
       return saved && saved >= dateFrom
     })
