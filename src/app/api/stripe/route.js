@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getSupabase } from '../_lib/supabase.js'
+import { isValidDeviceId } from '../_lib/validate.js'
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -8,7 +9,7 @@ function getStripe() {
 
 async function handleCreateSession(request) {
   const deviceId = request.headers.get('x-device-id')
-  if (!deviceId) return NextResponse.json({ error: 'Missing device ID' }, { status: 400 })
+  if (!isValidDeviceId(deviceId)) return NextResponse.json({ error: 'Missing device ID' }, { status: 400 })
   const { productKey, metadata: extraMeta } = await request.json()
   if (!productKey) return NextResponse.json({ error: 'Missing productKey' }, { status: 400 })
 
@@ -58,7 +59,7 @@ async function handleCreateSession(request) {
 
 async function handleStatus(request) {
   const deviceId = request.headers.get('x-device-id')
-  if (!deviceId) return NextResponse.json({ error: 'Missing device ID' }, { status: 400 })
+  if (!isValidDeviceId(deviceId)) return NextResponse.json({ error: 'Missing device ID' }, { status: 400 })
 
   const sb = getSupabase()
   const { data: device } = await sb.from('devices').select('tier').eq('id', deviceId).single()

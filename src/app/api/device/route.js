@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
 import { getSupabase } from '../_lib/supabase.js'
 import { getAuthUser } from '../_lib/authUser.js'
+import { isValidDeviceId, isValidEmail } from '../_lib/validate.js'
 
 async function handleRegister(request) {
   const { deviceId, referrer, timezone, userAgent, country, city } = await request.json()
-  if (!deviceId) return NextResponse.json({ error: 'Missing device ID' }, { status: 400 })
+  if (!isValidDeviceId(deviceId)) return NextResponse.json({ error: 'Missing device ID' }, { status: 400 })
   const sb = getSupabase()
   const { error: insertError } = await sb.from('devices').insert({
     id: deviceId, referrer: referrer ?? 'direct', timezone: timezone ?? null,
@@ -19,7 +20,7 @@ async function handleRegister(request) {
 
 async function handleEmail(request) {
   const { deviceId, email } = await request.json()
-  if (!deviceId || !email) return NextResponse.json({ ok: false }, { status: 400 })
+  if (!isValidDeviceId(deviceId) || !isValidEmail(email)) return NextResponse.json({ ok: false }, { status: 400 })
   const { error } = await getSupabase()
     .from('devices')
     .update({ email: email.trim().slice(0, 254), email_opt_in: true })

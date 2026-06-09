@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSupabase } from '../_lib/supabase.js'
 import { sendPremiumConfirmation, sendOwnerPurchaseNotification } from '../_lib/email.js'
+import { isValidDeviceId, isValidEmail } from '../_lib/validate.js'
 
 export async function POST(request) {
   try {
@@ -9,30 +10,24 @@ export async function POST(request) {
     if (!code || !email || !deviceId) {
       return NextResponse.json({ ok: false, error: 'Missing fields' }, { status: 400 })
     }
+    if (!isValidDeviceId(deviceId) || !isValidEmail(email)) {
+      return NextResponse.json({ ok: false, error: 'Invalid fields' }, { status: 400 })
+    }
 
     const sb = getSupabase()
 
-    // Load promo codes from paywall_config
-    const { data: row } = await sb.from('paywall_config').select('value').eq('key', 'promo_codes').single()
-    const promoCodes = row?.value ?? []
-    // Each code: { code: string, tier: string, active: boolean }
-    const matchIdx = promoCodes.findIndex(p => p.code === code && p.active !== false)
-    const match = matchIdx >= 0 ? promoCodes[matchIdx] : null
-
-    if (!match) {
-      return NextResponse.json({ ok: false, error: 'Invalid code' }, { status: 400 })
+    // Validate + increment the code atomically (row lock in redeem_promo_code,
+    // migration 008) — a plain read-check-write here let two concurrent
+    // requests both pass the max_uses check.
+    const { data: redemption, error: rpcError } = await sb.rpc('redeem_promo_code', { p_code: String(code) })
+    if (rpcError) {
+      return NextResponse.json({ ok: false, error: rpcError.message }, { status: 500 })
+    }
+    if (!redemption?.ok) {
+      return NextResponse.json({ ok: false, error: redemption?.error || 'Invalid code' }, { status: 400 })
     }
 
-    // Check expiration
-    if (match.expires_at && new Date(match.expires_at) < new Date()) {
-      return NextResponse.json({ ok: false, error: 'This code has expired' }, { status: 400 })
-    }
-
-    // Check usage limit
-    if (match.max_uses && (match.uses ?? 0) >= match.max_uses) {
-      return NextResponse.json({ ok: false, error: 'This code has reached its usage limit' }, { status: 400 })
-    }
-
+    const match = redemption.match
     const tier = match.tier || 'premium'
     const cleanEmail = email.trim().slice(0, 254)
 
@@ -73,10 +68,6 @@ export async function POST(request) {
       }, { onConflict: 'auth_user_id' })
     }
 
-    // Increment usage counter on the promo code
-    promoCodes[matchIdx] = { ...match, uses: (match.uses ?? 0) + 1 }
-    await sb.from('paywall_config').update({ value: promoCodes }).eq('key', 'promo_codes')
-
     // Log the redemption as a purchase record for admin visibility
     await sb.from('purchases').insert({
       device_id: deviceId,
@@ -97,8 +88,12 @@ export async function POST(request) {
         .eq('device_id', deviceId)
         .order('saved_at', { ascending: false })
       const parsed = (charts || []).map(c => {
-        const d = typeof c.tree_data === 'string' ? JSON.parse(c.tree_data) : c.tree_data
-        return { title: c.title, nodes: d?.nodes || [] }
+        try {
+          const d = typeof c.tree_data === 'string' ? JSON.parse(c.tree_data) : c.tree_data
+          return { title: c.title, nodes: d?.nodes || [] }
+        } catch {
+          return { title: c.title, nodes: [] }
+        }
       })
       sendPremiumConfirmation({ to: cleanEmail, charts: parsed }).catch(err =>
         console.error('[redeem] email send error:', err)
