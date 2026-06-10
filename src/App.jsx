@@ -1399,8 +1399,12 @@ export default function App() {
                 <button type="button" className="tree-connect-reminder-body" onClick={() => { setShowAddMore(true); goTab('add') }}>
                   <span className="tree-connect-reminder-icon">＋</span>
                   <span className="tree-connect-reminder-text">
-                    <strong>Add more people</strong>
-                    <span>Add family, friends, or coworkers to see how your signs connect</span>
+                    <strong>
+                      {nodes[0]?.data?.sign
+                        ? `${nodes[0].data.name} is a ${nodes[0].data.sign} — who's next?`
+                        : 'Add more people'}
+                    </strong>
+                    <span>Add a parent, partner, or friend to see your first connection</span>
                   </span>
                   <span className="tree-connect-reminder-arrow">→</span>
                 </button>
@@ -1454,6 +1458,7 @@ export default function App() {
               onDemo={handleLoadDemo}
               onDemoCrew={handleLoadDemoCrew}
               onLoadCharts={() => goTab('charts')}
+              onLoadChart={loadChart}
               onNewChart={() => goTab('add')}
               hasUsedApp={hasUsedApp}
             />

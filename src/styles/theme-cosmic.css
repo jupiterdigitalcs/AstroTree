@@ -1913,3 +1913,169 @@
   font-family: 'Instrument Serif', serif;
   font-weight: 400;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ONBOARDING REVAMP — sign reveal, rotating insights, what-is, moon, charts
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Sign reveal: the "You" node blooms with their real sun sign */
+.onboarding-mini-node--lit {
+  opacity: 1;
+  border-color: var(--el);
+  animation: mini-node-bloom 0.9s ease-out forwards;
+}
+.onboarding-mini-node--lit .onboarding-mini-glyph {
+  font-size: 0.95rem;
+}
+.onboarding-mini-node--lit .onboarding-mini-name {
+  color: var(--a-text-soft);
+}
+@keyframes mini-node-bloom {
+  0%   { opacity: 1; box-shadow: 0 0 8px var(--el); }
+  45%  { box-shadow: 0 0 26px var(--el), 0 0 52px var(--el); filter: brightness(1.55); }
+  100% { opacity: 1; box-shadow: 0 0 14px var(--el), 0 0 28px var(--el); filter: brightness(1.1); }
+}
+
+/* Rotating example insights — quick fade on each cycle (first uses entrance) */
+.onboarding-mini-insight--cycle {
+  animation: mini-insight-cycle 0.45s ease-out forwards;
+}
+@keyframes mini-insight-cycle {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Personalized insight once their sign is known */
+.onboarding-mini-insight--you {
+  opacity: 1;
+  animation: mini-insight-cycle 0.5s ease-out;
+  border-color: rgba(212,168,76,0.45);
+  background: rgba(212,168,76,0.06);
+  box-shadow: 0 0 24px rgba(212,168,76,0.1);
+}
+
+/* Demo buttons: name + descriptor */
+.cosmic-onboarding-demo-primary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  align-items: center;
+  padding: 0.5rem 0.7rem;
+}
+.onboarding-demo-title {
+  color: var(--a-text-soft);
+  font-weight: 600;
+}
+.onboarding-demo-sub {
+  font-size: 0.6rem;
+  color: var(--a-text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* "What is AstroDig?" expander */
+.onboarding-whatis-toggle {
+  margin-top: 0.7rem;
+  background: none;
+  border: none;
+  color: var(--a-text-muted);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.onboarding-whatis-toggle:hover { color: var(--a-text-soft); }
+
+.onboarding-whatis {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.6rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--a-border);
+  animation: mini-insight-cycle 0.3s ease-out;
+}
+.onboarding-whatis-step {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.68rem;
+  color: var(--a-text-soft);
+  line-height: 1.45;
+  text-align: left;
+}
+.onboarding-whatis-num {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(212,168,76,0.4);
+  border-radius: 50%;
+  color: var(--a-gold);
+  font-size: 0.58rem;
+}
+.onboarding-whatis-by {
+  font-size: 0.6rem;
+  color: var(--a-text-muted);
+  font-style: italic;
+  margin-top: 0.2rem;
+}
+
+/* Tonight's moon — ambient footer on both welcome cards */
+.onboarding-moon {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.62rem;
+  color: var(--a-text-muted);
+  letter-spacing: 0.04em;
+}
+.onboarding-moon-glyph { flex-shrink: 0; opacity: 0.9; }
+
+/* Welcome Back: recent charts, one tap to resume */
+.onboarding-chart-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.2rem 0 0.4rem;
+}
+.onboarding-chart-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--a-border);
+  border-radius: 10px;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font: inherit;
+  color: var(--a-text-soft);
+  text-align: left;
+}
+.onboarding-chart-row:hover {
+  border-color: rgba(212,168,76,0.5);
+  background: rgba(212,168,76,0.06);
+}
+.onboarding-chart-row-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.onboarding-chart-row-meta {
+  font-size: 0.62rem;
+  color: var(--a-text-muted);
+  flex-shrink: 0;
+}

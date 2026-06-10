@@ -3,12 +3,58 @@ import { JupiterIcon } from './JupiterIcon.jsx'
 import { DateInput } from './DateInput.jsx'
 import { logEvent } from '../utils/cloudStorage.js'
 import { getDeviceId } from '../utils/identity.js'
+import { getSunSign, getElement } from '../utils/astrology.js'
+import { getMoonTonight } from '../utils/moonTonight.js'
+import { loadCharts } from '../utils/storage.js'
+import { formatRelativeTime } from '../utils/format.js'
 
-export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNewChart, hasUsedApp }) {
+// Rotating preview lines shown before the visitor has typed a birthday —
+// real examples of what the app surfaces, not marketing copy
+const PREVIEW_INSIGHTS = [
+  { heading: 'Family Signature', body: <>Your family is <strong>Fire + Water</strong> dominant — passion meets intuition</> },
+  { heading: 'Shared Moons', body: <>Three of you carry a <strong>Cancer moon</strong> — the same emotional language</> },
+  { heading: 'Hidden Connections', body: <>Mom's Venus sits on your Sun — <strong>warmth runs down the line</strong></> },
+]
+
+function MoonGlyph({ illumination, waxing, size = 14 }) {
+  // Lit fraction rendered as an offset overlay disc — approximate but readable at 14px
+  const r = size / 2
+  const shift = (1 - illumination) * size * (waxing ? 1 : -1)
+  return (
+    <svg className="onboarding-moon-glyph" width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+      <defs>
+        <clipPath id="moon-disc"><circle cx={r} cy={r} r={r - 0.5} /></clipPath>
+      </defs>
+      <circle cx={r} cy={r} r={r - 0.5} fill="rgba(237,230,255,0.12)" />
+      <circle cx={r + shift} cy={r} r={r - 0.5} fill="#e6c76e" clipPath="url(#moon-disc)" />
+    </svg>
+  )
+}
+
+function MoonTonight() {
+  const [moon, setMoon] = useState(null)
+  useEffect(() => {
+    let alive = true
+    getMoonTonight().then(m => { if (alive) setMoon(m) })
+    return () => { alive = false }
+  }, [])
+  if (!moon) return null
+  return (
+    <p className="onboarding-moon">
+      <MoonGlyph illumination={moon.illumination} waxing={moon.waxing} />
+      <span>Tonight: {moon.name}{moon.moonSign ? ` in ${moon.moonSign}` : ''}</span>
+    </p>
+  )
+}
+
+export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLoadChart, onNewChart, hasUsedApp }) {
   const [name, setName] = useState('')
   const [birthdate, setBirthdate] = useState('')
+  const [showWhatIs, setShowWhatIs] = useState(false)
+  const [previewIdx, setPreviewIdx] = useState(0)
   const hasLogged = useRef(false)
   const tookAction = useRef(false)
+  const revealLogged = useRef(false)
 
   // Track that the onboarding screen was seen + bounce detection
   useEffect(() => {
@@ -28,6 +74,24 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNe
     return () => window.removeEventListener('beforeunload', handleUnload)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // The instant payoff: their sun sign, live, as soon as the birthday is typed
+  const sun = birthdate ? getSunSign(birthdate) : null
+  const el = sun ? getElement(sun.sign) : null
+
+  useEffect(() => {
+    if (sun && !revealLogged.current) {
+      revealLogged.current = true
+      logEvent('onboarding_sign_revealed')
+    }
+  }, [sun])
+
+  // Rotate example insights until the personalized one takes over
+  useEffect(() => {
+    if (sun) return
+    const t = setInterval(() => setPreviewIdx(i => (i + 1) % PREVIEW_INSIGHTS.length), 4200)
+    return () => clearInterval(t)
+  }, [sun])
+
   function handleSubmit(e) {
     e.preventDefault()
     tookAction.current = true
@@ -41,6 +105,10 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNe
   }
 
   if (hasUsedApp) {
+    const charts = loadCharts()
+      .slice()
+      .sort((a, b) => new Date(b.savedAt ?? 0) - new Date(a.savedAt ?? 0))
+      .slice(0, 3)
     return (
       <div className="cosmic-onboarding">
         <div className="cosmic-onboarding-brand">
@@ -50,18 +118,38 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNe
         </div>
         <h2>Welcome Back</h2>
         <p>Your charts are waiting — pick up where you left off.</p>
+        {charts.length > 0 && (
+          <div className="onboarding-chart-list">
+            {charts.map(c => (
+              <button
+                key={c.id}
+                type="button"
+                className="onboarding-chart-row"
+                onClick={() => { tookAction.current = true; onLoadChart?.(c) }}
+              >
+                <span className="onboarding-chart-row-title">{c.title || 'Untitled Chart'}</span>
+                <span className="onboarding-chart-row-meta">
+                  {c.nodes?.length ?? 0} {(c.nodes?.length ?? 0) === 1 ? 'person' : 'people'}
+                  {c.savedAt ? ` · ${formatRelativeTime(new Date(c.savedAt))}` : ''}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
         <button type="button" className="cosmic-onboarding-btn" onClick={() => { tookAction.current = true; onLoadCharts() }}>
-          Load Saved Chart
+          {charts.length > 0 ? 'All Saved Charts' : 'Load Saved Chart'}
         </button>
         <button type="button" className="cosmic-onboarding-skip" onClick={() => { tookAction.current = true; onNewChart() }}>
           + Start a New Chart
         </button>
+        <MoonTonight />
       </div>
     )
   }
 
   const trimmedName = name.trim()
   const canSubmit = trimmedName && birthdate
+  const preview = PREVIEW_INSIGHTS[previewIdx]
 
   return (
     <div className="cosmic-onboarding cosmic-onboarding--hero">
@@ -96,17 +184,30 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNe
             <span className="onboarding-mini-glyph">♏</span>
             <span className="onboarding-mini-name">Dad</span>
           </div>
-          <div className="onboarding-mini-node onboarding-mini-node--bc" style={{ '--el': '#5bc8f5' }}>
-            <span className="onboarding-mini-glyph">♊</span>
-            <span className="onboarding-mini-name">You</span>
+          <div
+            className={`onboarding-mini-node onboarding-mini-node--bc${sun ? ' onboarding-mini-node--lit' : ''}`}
+            style={{ '--el': el?.color ?? '#5bc8f5' }}
+          >
+            <span className="onboarding-mini-glyph">{sun ? sun.symbol : '♊'}</span>
+            <span className="onboarding-mini-name">{sun && trimmedName ? trimmedName.split(' ')[0] : 'You'}</span>
           </div>
         </div>
 
-        {/* Mini insight card */}
-        <div className="onboarding-mini-insight">
-          <span className="onboarding-mini-insight-heading">Family Signature</span>
-          <span className="onboarding-mini-insight-body">Your family is <strong>Fire + Water</strong> dominant — passion meets intuition</span>
-        </div>
+        {/* Mini insight card — rotates examples, then personalizes */}
+        {sun ? (
+          <div className="onboarding-mini-insight onboarding-mini-insight--you">
+            <span className="onboarding-mini-insight-heading">Your Sign</span>
+            <span className="onboarding-mini-insight-body">
+              <strong style={{ color: el.color }}>{sun.symbol} {sun.sign}</strong> — {el.element} energy.
+              Add your people to see what you share.
+            </span>
+          </div>
+        ) : (
+          <div className={`onboarding-mini-insight${previewIdx > 0 ? ' onboarding-mini-insight--cycle' : ''}`} key={previewIdx}>
+            <span className="onboarding-mini-insight-heading">{preview.heading}</span>
+            <span className="onboarding-mini-insight-body">{preview.body}</span>
+          </div>
+        )}
       </div>
 
       {/* ── Inline form ── */}
@@ -139,17 +240,48 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onNe
       </form>
 
       {/* ── Divider ── */}
-      <div className="cosmic-onboarding-divider"><span>or try an example</span></div>
+      <div className="cosmic-onboarding-divider"><span>or explore a finished chart</span></div>
 
       {/* ── Demo links ── */}
       <div className="cosmic-onboarding-demos cosmic-onboarding-demos--primary">
         <button type="button" className="cosmic-onboarding-demo-primary" onClick={() => { tookAction.current = true; onDemo() }}>
-          Family Tree
+          <span className="onboarding-demo-title">The Andersons</span>
+          <span className="onboarding-demo-sub">family of 9</span>
         </button>
         <button type="button" className="cosmic-onboarding-demo-primary" onClick={() => { tookAction.current = true; onDemoCrew() }}>
-          Friend Group
+          <span className="onboarding-demo-title">The Crew</span>
+          <span className="onboarding-demo-sub">friends & coworkers</span>
         </button>
       </div>
+
+      {/* ── What is AstroDig? ── */}
+      <button
+        type="button"
+        className="onboarding-whatis-toggle"
+        aria-expanded={showWhatIs}
+        onClick={() => setShowWhatIs(v => !v)}
+      >
+        What is AstroDig? {showWhatIs ? '▴' : '▾'}
+      </button>
+      {showWhatIs && (
+        <div className="onboarding-whatis">
+          <div className="onboarding-whatis-step">
+            <span className="onboarding-whatis-num">1</span>
+            <span>Add your people — just names and birthdays</span>
+          </div>
+          <div className="onboarding-whatis-step">
+            <span className="onboarding-whatis-num">2</span>
+            <span>We map their sky — sun, moon, and planets for each person</span>
+          </div>
+          <div className="onboarding-whatis-step">
+            <span className="onboarding-whatis-num">3</span>
+            <span>Discover the patterns you share — and the story to pass on</span>
+          </div>
+          <p className="onboarding-whatis-by">From the astrologer behind Jupiter Digital.</p>
+        </div>
+      )}
+
+      <MoonTonight />
     </div>
   )
 }
