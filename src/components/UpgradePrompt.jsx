@@ -61,7 +61,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
   if (codeSuccess) {
     return (
       <DialogBackdrop onClose={onClose}>
-        <div className="save-dialog upgrade-prompt">
+        <div className="save-dialog upgrade-prompt" role="dialog" aria-modal="true" aria-label="Celestial unlocked">
           <p className="save-dialog-title">✦ Celestial Unlocked!</p>
           <p className="save-dialog-sub">
             All Celestial features are now yours. Welcome to the full cosmos.
@@ -78,7 +78,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
 
   return (
     <DialogBackdrop onClose={onClose}>
-      <div className="save-dialog upgrade-prompt">
+      <div className="save-dialog upgrade-prompt" role="dialog" aria-modal="true" aria-label="Unlock Celestial">
         <p className="save-dialog-title">✦ Unlock Celestial</p>
         {feature ? (
           <p className="save-dialog-sub">
@@ -129,7 +129,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
           )}
         </div>
         {!authUser && (
-          <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: '0.5rem', textAlign: 'center' }}>
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '0.5rem', textAlign: 'center' }}>
             Sign in first so your purchase is tied to your account
           </p>
         )}

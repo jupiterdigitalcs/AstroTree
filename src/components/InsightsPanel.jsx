@@ -159,7 +159,7 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
         <span className="signature-modality">{dominantModality}</span>
       </div>
       {desc && (
-        <p className="insight-note signature-desc">Your {g} {desc}.</p>
+        <p className="insight-note signature-desc">Your {g} {desc}</p>
       )}
       <div className="signature-polarity-row">
         <span className="signature-polarity-label">Active</span>

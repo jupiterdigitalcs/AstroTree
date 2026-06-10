@@ -4,7 +4,7 @@
  */
 export function LockedOverlay({ feature, description, onUpgrade }) {
   return (
-    <div className="locked-overlay">
+    <div className="locked-overlay" role="region" aria-label={`${feature} — locked, upgrade to view`}>
       <div className="locked-overlay-content">
         <span className="locked-overlay-icon">🔒</span>
         <h3 className="locked-overlay-title">{feature}</h3>

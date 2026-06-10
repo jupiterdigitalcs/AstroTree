@@ -550,3 +550,15 @@
   filter: sepia(1) saturate(3) hue-rotate(-10deg);
   opacity: 0.85;
 }
+
+/* ── Mobile touch targets — pills sit well under the 44px guideline ──────── */
+@media (max-width: 768px) {
+  .row-rel-pill,
+  .row-rel-person-pill {
+    padding: 0.45rem 0.65rem;
+    font-size: 0.72rem;
+  }
+  .row-rel-select-btn {
+    padding: 0.5rem 0.6rem;
+  }
+}

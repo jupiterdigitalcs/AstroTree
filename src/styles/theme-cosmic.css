@@ -583,7 +583,7 @@
 }
 
 .cosmic-bottom-nav-btn:disabled {
-  opacity: 0.25;
+  opacity: 0.45;
   cursor: default;
 }
 
@@ -794,6 +794,26 @@
 .tree-nudge-mini:hover {
   background: rgba(212,168,76,0.2);
   border-color: rgba(212,168,76,0.55);
+}
+
+/* When the sample-chart banner is visible it occupies the same slot —
+   push the nudge down so they stack instead of overlap (the banner lives
+   inside <main>, the nudges outside it, hence :has() on the app root) */
+.app--cosmic:has(.sample-chart-banner) .tree-connect-reminder,
+.app--cosmic:has(.sample-chart-banner) .tree-nudge-mini {
+  top: calc(0.75rem + 42px + 0.6rem + 62px);
+}
+@media (max-width: 520px) {
+  .app--cosmic:has(.sample-chart-banner) .tree-connect-reminder,
+  .app--cosmic:has(.sample-chart-banner) .tree-nudge-mini {
+    top: calc(0.75rem + 42px + 0.6rem + 112px); /* banner wraps taller on phones */
+  }
+}
+
+/* On phones the two-line nudge eats a quarter of the canvas — keep the
+   headline + arrow, drop the descriptive sub-line */
+@media (max-width: 480px) {
+  .tree-connect-reminder-text > span { display: none; }
 }
 
 .tree-connect-reminder:hover {

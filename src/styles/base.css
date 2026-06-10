@@ -24,6 +24,12 @@
   --text-muted:  #8878aa;
   --text-soft:   #b8aad4;
 
+  /* Previously referenced but never defined — see tabs/dialogs/canvas/admin */
+  --text-dim:     rgba(237,230,255,0.55);
+  --text-primary: var(--text);
+  --bg-card:      var(--surface);
+  --bg-deep:      #060414;
+
   --red:         #ff6b7a;
   --radius:      14px;
   --sidebar-w:   345px;
@@ -63,4 +69,25 @@ body {
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
+}
+
+/* ── Keyboard focus (WCAG 2.4.7) — mouse clicks don't trigger :focus-visible ── */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="tab"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* ── Reduced motion (WCAG 2.3.3) ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
