@@ -306,18 +306,17 @@ describe('findGaps', () => {
     expect(findGaps([])).toBeNull()
   })
 
-  it('CURRENT BEHAVIOR: gapSigns can include the sign holding the gap-ending planet (suspected off-by-one)', () => {
+  it('excludes the signs holding the gap-edge planets from gapSigns', () => {
     // Gap from abs 10 (Aries 10°) to abs 230 (Scorpio 20°), arc 220°.
-    // numSigns = floor(220/30) = 7 counts from Taurus → includes Scorpio,
-    // even though person b has their sun IN Scorpio (only 6 signs are fully empty).
-    // Suspected bug at groupChartCalc.js:348 — numSigns should be derived from
-    // floor(gapEnd/30) - ceil(gapStart/30), not floor(maxGap/30).
+    // Only Taurus..Libra are fully empty — Aries and Scorpio hold the
+    // gap-edge suns and must not be reported as empty.
     const a = member('a', { sun: ['Aries', 10] })
     const b = member('b', { sun: ['Scorpio', 20] })
     const gap = findGaps([a, b])
 
-    expect(gap.gapSigns).toHaveLength(7)
-    expect(gap.gapSigns).toContain('Scorpio') // documents current (suspect) behavior
+    expect(gap.gapSigns).toEqual(['Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra'])
+    expect(gap.gapSigns).not.toContain('Scorpio')
+    expect(gap.gapSigns).not.toContain('Aries')
   })
 })
 

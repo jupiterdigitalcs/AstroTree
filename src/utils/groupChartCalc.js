@@ -342,10 +342,12 @@ export function findGaps(nodes) {
   const startSign = signAt(gapStart)
   const endSign = signAt(gapEnd)
 
-  // Collect all signs fully within the gap
+  // Collect all signs fully within the gap — start after the sign holding
+  // the gap-start planet, stop before the sign holding the gap-end planet
   const gapSigns = []
-  const startIdx = Math.ceil(gapStart / 30)
-  const numSigns = Math.floor(maxGap / 30)
+  const startIdx = (Math.floor(gapStart / 30) + 1) % 12
+  const endIdx = Math.floor(gapEnd / 30) % 12
+  const numSigns = (endIdx - startIdx + 12) % 12
   for (let i = 0; i < numSigns; i++) {
     const idx = (startIdx + i) % 12
     gapSigns.push(SIGN_ORDER[idx])

@@ -416,7 +416,7 @@ describe('buildSlides — connector and bridge slides', () => {
     expect(types(slides)).not.toContain('connector')
   })
 
-  it('connector appears when the bridge person has Air energy — and bridge currently duplicates it', () => {
+  it('connector appears when the bridge person has Air energy — and suppresses the bridge slide for the same person', () => {
     const nodes = fireSuns()
     nodes[0].data.moonSign = 'Gemini'
     nodes[0].data.moonDegree = 5
@@ -425,11 +425,7 @@ describe('buildSlides — connector and bridge slides', () => {
     expect(connector).toBeDefined()
     expect(connector.data.node.id).toBe('n1')
     expect(connector.data.chartBacked).toBe(true)
-    // Current behavior: the bridge slide ALSO appears for the same person,
-    // because the featured-set check runs before any candidate executes.
-    const bridge = slides.find(s => s.type === 'bridge')
-    expect(bridge).toBeDefined()
-    expect(bridge.data.node.id).toBe('n1')
+    expect(types(slides)).not.toContain('bridge')
   })
 })
 
@@ -508,18 +504,21 @@ describe('buildDigSummaryHtml', () => {
     expect(html).toContain('2 Earth placements')
   })
 
-  it('BUG: throws on venusVibes slides produced by buildSlides (s.data.node is undefined)', () => {
+  it('renders venusVibes and marsEnergy rows from group-level slide data', () => {
     const nodes = [
       makeNode('n1', { name: 'A', sign: 'Aries', element: 'Fire', innerPlanets: { venus: { sign: 'Gemini' }, mars: { sign: 'Leo' } } }),
       makeNode('n2', { name: 'B', sign: 'Taurus', element: 'Earth', innerPlanets: { venus: { sign: 'Libra' }, mars: { sign: 'Aries' } } }),
     ]
     const digData = makeDigData(nodes)
     const slides = buildSlides(digData)
-    expect(types(slides)).toContain('venusVibes') // confirm the fixture reaches the buggy branch
-    expect(() => buildDigSummaryHtml(digData, slides, 'Bug')).toThrow(TypeError)
+    expect(types(slides)).toContain('venusVibes')
+    const html = buildDigSummaryHtml(digData, slides, 'Fixed')
+    expect(html).toContain('Venus Vibes')
+    expect(html).toContain('Venus in Air signs')
+    expect(html).toContain('A, B')
   })
 
-  it('BUG: throws on the no-shared-moons moonMirror variant (s.data.nodeA is undefined)', () => {
+  it('renders the no-shared-moons moonMirror variant without throwing', () => {
     const nodes = [
       makeNode('n1', { sign: 'Aries', element: 'Fire', moonSign: 'Taurus' }),
       makeNode('n2', { sign: 'Gemini', element: 'Air', moonSign: 'Cancer' }),
@@ -529,6 +528,8 @@ describe('buildDigSummaryHtml', () => {
     const digData = makeDigData(nodes)
     const slides = buildSlides(digData)
     expect(slides.find(s => s.type === 'moonMirror')?.data.noSharedMoons).toBe(true)
-    expect(() => buildDigSummaryHtml(digData, slides, 'Bug')).toThrow(TypeError)
+    const html = buildDigSummaryHtml(digData, slides, 'Fixed')
+    expect(html).toContain('Moon Mirror')
+    expect(html).toContain('no twins')
   })
 })

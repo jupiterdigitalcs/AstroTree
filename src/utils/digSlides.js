@@ -467,8 +467,11 @@ export function buildSlides(digData) {
   // Bridge — person whose chart touches the most others (always chart-based)
   if (nodes.length >= 4) {
     const bridge = findBridgePerson(nodes)
-    if (bridge && !featured.has(bridge.node.id)) {
+    if (bridge) {
       candidates.push(() => {
+        // Featured check must happen at pick time, after the connector
+        // candidate (same person) has had its chance to run
+        if (featured.has(bridge.node.id)) return null
         featured.add(bridge.node.id)
         return { type: 'bridge', data: bridge, mood: 'orbits' }
       })
@@ -575,13 +578,17 @@ export function buildDigSummaryHtml(digData, slides, chartTitle) {
     } else if (s.type === 'clone') {
       rows += row('The Clone', `${s.data.nodeA.data?.name} & ${s.data.nodeB.data?.name}`, `${s.data.matchCount} matching placements — ${s.data.matches.join(', ')}`)
     } else if (s.type === 'venusVibes') {
-      const venusSign = s.data.node.data?.innerPlanets?.venus?.sign
-      rows += row('Venus Vibes', `♀ ${s.data.node.data?.name}`, `Venus in ${venusSign} — how they love and what they value`)
+      const names = (s.data.topNames || []).filter(Boolean).join(', ')
+      rows += row('Venus Vibes', `♀ ${s.data.topElement} hearts`, `${s.data.topCount} member${s.data.topCount === 1 ? '' : 's'} with Venus in ${s.data.topElement} signs${names ? ` — ${names}` : ''}`)
     } else if (s.type === 'marsEnergy') {
-      const marsSign = s.data.node.data?.innerPlanets?.mars?.sign
-      rows += row('Mars Energy', `♂ ${s.data.node.data?.name}`, `Mars in ${marsSign} — how they fight, chase, and get things done`)
+      const names = (s.data.topNames || []).filter(Boolean).join(', ')
+      rows += row('Mars Energy', `♂ ${s.data.topElement} drive`, `${s.data.topCount} member${s.data.topCount === 1 ? '' : 's'} with Mars in ${s.data.topElement} signs${names ? ` — ${names}` : ''}`)
     } else if (s.type === 'moonMirror') {
-      rows += row('Moon Mirror', `${s.data.nodeA.data?.name} & ${s.data.nodeB.data?.name}`, `Both carry a ${s.data.moonSign} Moon — emotional twins`)
+      if (s.data.noSharedMoons) {
+        rows += row('Moon Mirror', `☽ ${s.data.moonCount} moons, no twins`, 'Every moon sign in this chart is unique — each person feels in their own language')
+      } else {
+        rows += row('Moon Mirror', `${s.data.nodeA.data?.name} & ${s.data.nodeB.data?.name}`, `Both carry a ${s.data.moonSign} Moon — emotional twins`)
+      }
     } else if (s.type === 'oldSoul') {
       rows += row('The Anchor', `${s.data.node.data?.name}`, `${s.data.earthCount} Earth placements — the steadying presence in the chart`)
     } else if (s.type === 'rebel') {
