@@ -2060,7 +2060,7 @@
 /* ── Zodiac wheel entry: member markers fly from the center out to their
    sign positions, staggered around the wheel. --fly-x/y/i set per marker
    in ZodiacWheel.jsx; disabled under prefers-reduced-motion (base.css). */
-.zodiac-member-marker {
+.zodiac-entrance .zodiac-member-marker {
   animation: zodiac-fly-in 0.9s cubic-bezier(0.18, 0.85, 0.3, 1) backwards;
   /* released in ring waves (sun, then moon, then inner planets), each wave
      sweeping clockwise from Aries */

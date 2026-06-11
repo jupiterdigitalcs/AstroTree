@@ -20,7 +20,9 @@ export function DraggableFab({ onClick }) {
   const fabRef = useRef(null)
   const didDrag = useRef(false)
 
-  // Clamp position to viewport
+  // Clamp position to the visible canvas area — top margin clears the
+  // floating pills, bottom margin clears the bottom nav (the fab could
+  // otherwise be parked underneath them and look lost)
   const clamp = useCallback((x, y) => {
     const el = fabRef.current
     if (!el) return { x, y }
@@ -28,9 +30,21 @@ export function DraggableFab({ onClick }) {
     const h = el.offsetHeight
     return {
       x: Math.max(8, Math.min(window.innerWidth - w - 8, x)),
-      y: Math.max(8, Math.min(window.innerHeight - h - 8, y)),
+      y: Math.max(64, Math.min(window.innerHeight - h - 92, y)),
     }
   }, [])
+
+  // Saved positions can be off-screen if the viewport changed since the
+  // last visit (rotation, browser chrome showing/hiding) — re-clamp once
+  // on mount, after the button has a measurable size
+  useEffect(() => {
+    setPos(prev => {
+      if (!prev) return prev
+      const clamped = clamp(prev.x, prev.y)
+      if (clamped.x !== prev.x || clamped.y !== prev.y) savePos(clamped)
+      return clamped
+    })
+  }, [clamp])
 
   // Re-clamp on resize
   useEffect(() => {
@@ -44,7 +58,11 @@ export function DraggableFab({ onClick }) {
       })
     }
     window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    window.addEventListener('orientationchange', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      window.removeEventListener('orientationchange', onResize)
+    }
   }, [pos, clamp])
 
   const onPointerDown = useCallback((e) => {

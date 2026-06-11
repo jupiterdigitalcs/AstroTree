@@ -135,6 +135,7 @@ export default function App() {
     setInsightsTabRaw(tab)
     if (tab === 'current') logEvent('view_current')
     if (tab === 'dig') logEvent('view_dig')
+    if (tab === 'eras') logEvent('view_eras')
     // Scroll insights panel to top on tab switch to prevent flash/jump
     requestAnimationFrame(() => {
       const panel = document.querySelector('.insights-panel') || document.querySelector('.insights-main-panel')
@@ -897,6 +898,8 @@ export default function App() {
               showDig={showDig}
               onShowDig={() => { setShowDig(true); logEvent('dig_opened') }}
               onCloseDig={() => { setShowDig(false); setInsightsTab('insights') }}
+              authUser={authUser}
+              onSignIn={() => setShowEmailCapture(true)}
             />
 
           /* ── Saved charts ───────────────────────────────────────────── */
@@ -1338,6 +1341,8 @@ export default function App() {
               showDig={showDig}
               onShowDig={() => { setShowDig(true); logEvent('dig_opened') }}
               onCloseDig={() => { setShowDig(false); setInsightsTab('insights') }}
+              authUser={authUser}
+              onSignIn={() => setShowEmailCapture(true)}
             /></Suspense>
           </div>
         ) : treeView === 'tables' && nodes.length > 0 ? (
@@ -1667,6 +1672,8 @@ export default function App() {
               showDig={showDig}
               onShowDig={() => { setShowDig(true); logEvent('dig_opened') }}
               onCloseDig={() => { setShowDig(false); setInsightsTab('insights') }}
+              authUser={authUser}
+              onSignIn={() => setShowEmailCapture(true)}
             /></Suspense>
           </BottomSheet>
 

@@ -446,3 +446,94 @@
   width: 1300px !important;
 }
 
+
+/* ── Eras (Beta) ─────────────────────────────────────────────────────────── */
+.eras-view {
+  width: 100%;
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 0.6rem 1rem 1.5rem;
+}
+.eras-intro {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  margin: 0.2rem auto 1rem;
+  max-width: 460px;
+}
+.eras-svg { width: 100%; display: block; }
+.eras-band-label {
+  font-family: 'Raleway', sans-serif;
+  font-size: 10px;
+  fill: rgba(237,230,255,0.4);
+  letter-spacing: 0.05em;
+}
+.eras-decade {
+  font-family: 'Raleway', sans-serif;
+  font-size: 10px;
+  fill: rgba(237,230,255,0.35);
+}
+.eras-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  fill: rgba(237,230,255,0.85);
+}
+.eras-year {
+  font-family: 'Raleway', sans-serif;
+  font-size: 9.5px;
+  fill: rgba(237,230,255,0.4);
+}
+.eras-thread {
+  animation: eras-thread 1.6s ease-out 0.9s backwards;
+}
+@keyframes eras-thread {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+.eras-star {
+  animation: eras-star-in 0.5s ease-out backwards;
+}
+@keyframes eras-star-in {
+  from { opacity: 0; }
+}
+
+/* Sign-in gate */
+.eras-gate {
+  max-width: 380px;
+  margin: 2.5rem auto;
+  text-align: center;
+  padding: 1.6rem 1.4rem;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.eras-gate-icon { font-size: 1.4rem; color: var(--gold); }
+.eras-gate-title {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  margin: 0.5rem 0;
+}
+.eras-gate-desc {
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  margin-bottom: 1rem;
+}
+
+/* Four tabs no longer fit a phone width — scroll the row instead of wrapping */
+@media (max-width: 768px) {
+  .insights-subnav {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .insights-subnav::-webkit-scrollbar { display: none; }
+  .insights-subnav-btn { flex-shrink: 0; }
+}

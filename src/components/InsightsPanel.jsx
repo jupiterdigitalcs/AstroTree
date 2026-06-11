@@ -23,6 +23,7 @@ import {
   ASPECT_PAIR_BLURB,
 } from './insights/insightsData.js'
 import { GroupAnalysisCards } from './insights/GroupAnalysisCards.jsx'
+import { ErasView, extractEraMembers } from './ErasView.jsx'
 
 const TheDig = lazy(() => import('./dig/TheDig.jsx'))
 const TheCurrent = lazy(() => import('./current/TheCurrent.jsx'))
@@ -870,10 +871,12 @@ function buildGenerationalChain(memberIds, nodes, edges) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements, chartTitle, insightsTab = 'insights', onInsightsTabChange, showDig, onShowDig, onCloseDig }) {
+export default function InsightsPanel({ nodes, edges, onExport, exporting, onAddMore, onGoToTree, onEditFirst, onUpgrade, entitlements, chartTitle, insightsTab = 'insights', onInsightsTabChange, showDig, onShowDig, onCloseDig, authUser, onSignIn }) {
   const hasAdvanced = canAccess('advanced_insights', entitlements?.tier, entitlements?.config)
   const hasFullDig = canAccess('full_dig', entitlements?.tier, entitlements?.config)
   const hasFullCompat = canAccess('full_compatibility', entitlements?.tier, entitlements?.config)
+  // Eras needs 2+ members with usable birth years to be worth showing
+  const erasEligible = useMemo(() => extractEraMembers(nodes).length >= 2, [nodes])
   const [digExporting, setDigExporting] = useState(false)
   const [currentVisited, setCurrentVisited] = useState(false)
   if (insightsTab === 'current' && !currentVisited) setCurrentVisited(true)
@@ -2067,6 +2070,13 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               className={`insights-subnav-btn${insightsTab === 'current' ? ' active' : ''}${!hasAdvanced ? ' insights-subnav-btn--locked' : ''}`}
               onClick={() => onInsightsTabChange?.('current')}
             >✦ The Current <span className="current-beta-tag">Beta</span>{hasAdvanced && <span className="pro-tag pro-tag--subtle">✦</span>}</button>
+            {erasEligible && (
+              <button
+                type="button"
+                className={`insights-subnav-btn${insightsTab === 'eras' ? ' active' : ''}${!authUser ? ' insights-subnav-btn--locked' : ''}`}
+                onClick={() => onInsightsTabChange?.('eras')}
+              >✦ Eras <span className="current-beta-tag">Beta</span></button>
+            )}
           </nav>
           {onExport && (
             <button
@@ -2250,6 +2260,26 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             <TheCurrent nodes={nodes} edges={edges} entitlements={entitlements} />
           </Suspense>
         </div>
+      )}
+
+      {/* ── Eras section (Beta) — free with an account ───────────────── */}
+      {insightsTab === 'eras' && erasEligible && (
+        authUser ? (
+          <ErasView nodes={nodes} isGroupOnly={isGroupOnly} />
+        ) : (
+          <div className="eras-gate">
+            <span className="eras-gate-icon">✦</span>
+            <h4 className="eras-gate-title">Eras</h4>
+            <p className="eras-gate-desc">
+              Your {isGroupOnly ? 'group' : 'family'} on a timeline: everyone in the
+              order they arrived, set against the Pluto generations they came
+              through. Free with an account.
+            </p>
+            <button type="button" className="dig-launch-btn" onClick={onSignIn}>
+              Sign in to unlock
+            </button>
+          </div>
+        )
       )}
 
       {/* ── Insight cards (hidden when DIG/Current tab active) ──────── */}

@@ -113,6 +113,15 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
   const [selectedNode, setSelectedNode] = useState(null)
   const [hoveredSign, setHoveredSign] = useState(null)
   const [zoom, setZoom] = useState(1)
+
+  // Entrance fly-in plays only in the first moments after the wheel mounts —
+  // without this window, toggling a ring on later replays the wave delays
+  // and the new markers look missing for over a second
+  const [entering, setEntering] = useState(true)
+  useEffect(() => {
+    const t = setTimeout(() => setEntering(false), 3500)
+    return () => clearTimeout(t)
+  }, [])
   const [pan,  setPan]  = useState({ x: 0, y: 0 })
   const dragBase = useRef(null)
   const zoomAreaRef = useRef(null)
@@ -303,7 +312,7 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
   const hoveredInner = hoveredNode ? innerByNode[hoveredNode] : null
 
   return (
-    <div className="zodiac-wheel-wrap">
+    <div className={`zodiac-wheel-wrap${entering ? ' zodiac-entrance' : ''}`}>
       {/* ── Zoomable + pannable SVG ────────────────────────────────────────── */}
       <div
         ref={zoomAreaRef}
