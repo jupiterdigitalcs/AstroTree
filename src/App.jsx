@@ -1401,7 +1401,7 @@ export default function App() {
                   <span className="tree-connect-reminder-text">
                     <strong>
                       {nodes[0]?.data?.sign
-                        ? `${nodes[0].data.name} is a ${nodes[0].data.sign} — who's next?`
+                        ? `${nodes[0].data.name} is a ${nodes[0].data.sign}. Who's next?`
                         : 'Add more people'}
                     </strong>
                     <span>Add a parent, partner, or friend to see your first connection</span>

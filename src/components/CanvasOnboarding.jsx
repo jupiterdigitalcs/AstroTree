@@ -11,9 +11,9 @@ import { formatRelativeTime } from '../utils/format.js'
 // Rotating preview lines shown before the visitor starts typing — phrased
 // about other people (never "you"/"your") so they can't read as claims
 const PREVIEW_INSIGHTS = [
-  { heading: 'Family Signature', body: <>A family that runs <strong>Fire + Water</strong> — passion meets intuition</> },
-  { heading: 'Shared Moons', body: <>Three cousins, one <strong>Cancer moon</strong> — the same emotional language</> },
-  { heading: 'Hidden Connections', body: <>Her Venus on his Sun — <strong>warmth that runs both ways</strong></> },
+  { heading: 'Family Signature', body: <>A family that runs <strong>Fire + Water</strong>. Passion meets intuition.</> },
+  { heading: 'Shared Moons', body: <>Three cousins, one <strong>Cancer moon</strong>. The same emotional language.</> },
+  { heading: 'Hidden Connections', body: <>Her Venus on his Sun, <strong>warmth that runs both ways</strong></> },
 ]
 
 function MoonGlyph({ illumination, waxing, size = 14 }) {
@@ -119,7 +119,7 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
           <span className="cosmic-onboarding-brand-by">by Jupiter Digital</span>
         </div>
         <h2>Welcome Back</h2>
-        <p>Your charts are waiting — pick up where you left off.</p>
+        <p>Your charts are waiting. Pick up where you left off.</p>
         {charts.length > 0 && (
           <div className="onboarding-chart-list">
             {charts.map(c => (
@@ -200,7 +200,7 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
           <div className="onboarding-mini-insight onboarding-mini-insight--you">
             <span className="onboarding-mini-insight-heading">Your Sign</span>
             <span className="onboarding-mini-insight-body">
-              <strong style={{ color: el.color }}>{sun.symbol} {sun.sign}</strong> — {el.element} energy.
+              <strong style={{ color: el.color }}>{sun.symbol} {sun.sign}</strong>. {el.element} energy.
               Add your people to see what you share.
             </span>
           </div>
@@ -274,15 +274,15 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
         <div className="onboarding-whatis">
           <div className="onboarding-whatis-step">
             <span className="onboarding-whatis-num">1</span>
-            <span>Add your people — just names and birthdays</span>
+            <span>Add your people. Names and birthdays are all it takes.</span>
           </div>
           <div className="onboarding-whatis-step">
             <span className="onboarding-whatis-num">2</span>
-            <span>We map their sky — sun, moon, and planets for each person</span>
+            <span>We map their sky: sun, moon, and planets for each person</span>
           </div>
           <div className="onboarding-whatis-step">
             <span className="onboarding-whatis-num">3</span>
-            <span>Discover the patterns you share — and the story to pass on</span>
+            <span>Discover the patterns you share, and the story to pass on</span>
           </div>
           <p className="onboarding-whatis-by">From the astrologer behind Jupiter Digital.</p>
         </div>

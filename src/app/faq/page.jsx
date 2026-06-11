@@ -32,7 +32,7 @@ const faqs = [
   },
   {
     q: 'What information do I need to add someone?',
-    a: 'Just a name and birthdate. Birth time is optional but improves accuracy — the moon moves through a sign every 2–3 days, so if someone was born near the end or beginning of a lunar shift, their moon sign can vary. If AstroDig detects a planet changes sign on someone\'s birthday, it shows an ingress warning with the exact changeover time.',
+    a: 'Just a name and birthdate. Birth time is optional but improves accuracy. The moon moves through a sign every 2 to 3 days, so if someone was born near the end or beginning of a lunar shift, their moon sign can vary. If AstroDig detects a planet changed sign on someone\'s birthday, it flags it with the exact changeover time.',
   },
   {
     q: 'What\'s the difference between a sun sign and a moon sign?',
@@ -76,7 +76,7 @@ const faqs = [
   },
   {
     q: 'How accurate are the planetary calculations?',
-    a: 'Planetary positions are calculated using Celestine, a precise astronomy library. Sun sign results are exact for nearly all birthdates. Moon and inner planet signs are accurate when birth time is provided, and for most birthdates even without it. If a planet changes sign on or near someone\'s birthday, AstroDig shows an ingress warning with the exact changeover time so you can double-check with a recorded birth time.',
+    a: 'Planetary positions are calculated using Celestine, a precise astronomy library. Sun sign results are exact for nearly all birthdates. Moon and inner planet signs are accurate when birth time is provided, and for most birthdates even without it. If a planet changes sign on or near someone\'s birthday, AstroDig flags the changeover with the exact time so you can double-check against a recorded birth time.',
   },
   {
     q: 'What\'s the difference between the tree view and constellation view?',

@@ -64,7 +64,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
         <div className="save-dialog upgrade-prompt" role="dialog" aria-modal="true" aria-label="Celestial unlocked">
           <p className="save-dialog-title">✦ Celestial Unlocked!</p>
           <p className="save-dialog-sub">
-            All Celestial features are now yours. Welcome to the full cosmos.
+            All Celestial features are now yours. Welcome in.
           </p>
           <div className="save-dialog-btns">
             <button type="button" className="save-dialog-save upgrade-btn" onClick={onClose}>
@@ -86,14 +86,14 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
           </p>
         ) : (
           <p className="save-dialog-sub">
-            One upgrade, the full cosmos unlocked — for all your charts, forever.
+            One upgrade unlocks Celestial for all your charts, forever.
           </p>
         )}
 
         <ul className="upgrade-features-list">
           <li>☉ <strong>Extra Views</strong> · zodiac wheel, tables, and more</li>
           <li>✦ <strong>Full Insights</strong> · roles, zodiac threads, and deeper analysis</li>
-          <li>✦ <strong>The Current</strong> · live group transits, shared storms, and rare moments</li>
+          <li>✦ <strong>The Current</strong> · what the sky is doing to your whole group right now</li>
           <li>✦ <strong>The Full DIG</strong> · every slide in your cosmic story</li>
           <li>🗂️ <strong>More Charts</strong> · save and manage more charts</li>
         </ul>
