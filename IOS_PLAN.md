@@ -1,8 +1,31 @@
 # iOS App Plan
 
-Status: pre-work. Refactors 1 (API base URL) and 3 (kv storage adapter) are DONE
-(June 2026) — the codebase no longer assumes same-origin APIs or raw localStorage.
-Tech approach (Capacitor wrap vs native Swift) not yet decided — see Decisions.
+Status: pre-work done, tech DECIDED June 2026: **Capacitor wrap** of the existing
+app, with a local test build on Christina's phone as the first milestone before
+committing further. Refactors 1 (API base URL) and 3 (kv storage adapter) are
+DONE — the codebase no longer assumes same-origin APIs or raw localStorage.
+Christina is enrolling in the Apple Developer Program.
+
+## Why Capacitor (decision record, June 2026)
+- AstroDig is custom canvas UI (React Flow tree, SVG wheel, constellation, DIG),
+  not native-list UI — the usual WebView "jank" (faked native scroll/transitions)
+  mostly doesn't apply. Risk areas to test on device: edit-panel keyboard
+  behavior, insights scroll feel.
+- Solo maintainer: native Swift means every feature ships twice forever; the
+  web codebase is where all velocity is.
+- Industry norm: existing-web-product teams wrap; mobile-first funded teams use
+  React Native/Flutter; full Swift is for teams with dedicated iOS engineers.
+- Checkpoint, not forever-commitment: see "Switching to native later" below.
+
+## Switching to native Swift later (Christina asked)
+YES — painless from the store side. The App Store identity is the app record +
+bundle ID in App Store Connect, not the technology. A Swift rewrite shipped
+under the same bundle ID goes through normal review and arrives on users'
+phones as a regular update. Keeps: name, reviews, rankings, IAP products,
+subscribers/purchasers. No re-registration of anything.
+One real caveat: WKWebView localStorage data (drafts, device ID) would not carry
+into a native rewrite automatically — keep entitlements and charts account-bound
+(they already are) and nudge sign-in, so an update can never strand anyone's data.
 
 ## Remaining refactors (do when the iOS build starts)
 
@@ -58,12 +81,39 @@ Tech approach (Capacitor wrap vs native Swift) not yet decided — see Decisions
 - [ ] Support URL (astrodig.com/faq works).
 
 ## Decisions to make
-1. **Tech: Capacitor wrap vs native Swift vs React Native** (see discussion
-   June 2026; recommendation was Capacitor — one codebase, ~95% reuse — but
-   Christina wants to weigh "real" native).
-2. Individual vs LLC developer account (above).
+1. ~~Tech: Capacitor vs native Swift~~ — DECIDED: Capacitor (see decision record above).
+2. Individual vs LLC developer account (above) — Christina handling enrollment.
 3. RevenueCat vs raw StoreKit for IAP.
 4. iPhone-only at launch vs iPad too (iPhone-only recommended initially).
 5. Minimum iOS version (iOS 16+ reasonable in 2026).
 6. Whether web Celestial purchasers get iOS unlocked via sign-in (yes —
    entitlements are account-bound already; just confirm the flow).
+
+
+## NEXT SESSION HANDOFF — build the local test version
+Goal: AstroDig running on Christina's iPhone (or simulator) so she can judge
+the feel with her thumbs. This is a TEST build, not a submission.
+
+Fastest path (recommended for this milestone):
+1. Prereq: Xcode installed from the Mac App Store (large download — start it
+   first), plus `xcode-select --install` for CLI tools.
+2. `npm i -D @capacitor/core @capacitor/cli @capacitor/ios` then `npx cap init`
+   (app name "AstroDig", bundle id com.jupiterdigital.astrodig — keep this id,
+   it's permanent) and `npx cap add ios`.
+3. For the first feel-test ONLY: set `server.url = "https://astrodig.com"` in
+   capacitor.config — zero build changes, app loads production in the native
+   shell. (Not App Store compliant; the bundled Vite build — refactor #5 — is
+   the real path later.)
+4. `npx cap open ios`, select her iPhone as target, run. A free Apple ID can
+   sideload to her own device (7-day cert); TestFlight needs the paid account.
+
+Expected broken-in-test-build (do NOT debug these, they're known pending work):
+- Google sign-in (blocked in WebViews — refactor #2)
+- Stripe checkout opens inside the WebView (IAP replaces it — refactor #4)
+What should already feel right: canvas views, animations, bottom sheets,
+safe areas, swipes, the DIG, share sheet (navigator.share works in WKWebView).
+
+Codebase facts the next session needs: apiUrl() in src/utils/apiBase.js
+(NEXT_PUBLIC_API_BASE env), kv adapter in src/utils/kvStore.js, all context in
+this file + CLAUDE.md. Dev server runs on port 3001 via `npm run dev` (a
+long-running one often already sits on 3000).
