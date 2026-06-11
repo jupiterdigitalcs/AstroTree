@@ -396,13 +396,19 @@
 /* ── Column layout applied during export (CSS columns = natural fill, no blank gaps) ── */
 .insights-panel--exporting {
   display: block !important;
-  columns: 2;
-  column-gap: 1.1rem;
   padding: 1.5rem !important;
   width: 740px !important;
 }
-/* Every direct child: no card splits, consistent spacing */
-.insights-panel--exporting > * {
+/* Columns live on the tab-content wrapper — the panel's direct children are
+   non-card wrappers (header, subnav, brand footer) and using columns on the
+   outer panel with break-inside:avoid on those wrappers collapsed everything
+   into a single column. */
+.insights-panel--exporting .insights-tab-content {
+  columns: 2;
+  column-gap: 1.1rem;
+}
+/* Every direct child of tab-content: no card splits, consistent spacing */
+.insights-panel--exporting .insights-tab-content > * {
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
   margin-bottom: 0.6rem;
@@ -437,13 +443,17 @@
 
 /* 3 columns for medium charts (9–15 insight cards) */
 .insights-panel--exporting--wide {
-  columns: 3 !important;
   width: 1020px !important;
+}
+.insights-panel--exporting--wide .insights-tab-content {
+  columns: 3 !important;
 }
 /* 4 columns for large charts (16+ insight cards) */
 .insights-panel--exporting--xl {
-  columns: 4 !important;
   width: 1300px !important;
+}
+.insights-panel--exporting--xl .insights-tab-content {
+  columns: 4 !important;
 }
 
 
@@ -583,6 +593,28 @@
   cursor: pointer;
 }
 .eras-pluto-link:hover { color: var(--gold); }
+.eras-legend { text-align: center; }
+.eras-legend-list {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.eras-legend-item {
+  color: var(--text-soft);
+  font-size: 0.73rem;
+  line-height: 1.55;
+  text-align: left;
+  padding: 0.45rem 0.7rem;
+  background: rgba(201,168,76,0.04);
+  border: 1px solid rgba(201,168,76,0.15);
+  border-radius: 8px;
+}
+.eras-legend-item strong { color: var(--text); font-weight: 600; }
+.eras-legend-years { color: var(--text-muted); font-size: 0.68rem; }
 
 /* Breathing room between insight cards + roomier card interiors */
 .insights-tab-content .insight-card:not(:last-child),

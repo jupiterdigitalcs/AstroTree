@@ -57,7 +57,7 @@ export function extractEraMembers(nodes) {
     .sort((a, b) => a.birthdate < b.birthdate ? -1 : 1)
 }
 
-export function ErasView({ nodes, isGroupOnly, onShowPluto }) {
+export function ErasView({ nodes, isGroupOnly }) {
   const [wrapRef, containerW] = useContainerWidth()
   const vertical = containerW < 700 // includes pre-measure first paint (0)
   const [selectedEra, setSelectedEra] = useState(null)
@@ -220,11 +220,28 @@ export function ErasView({ nodes, isGroupOnly, onShowPluto }) {
           </g>
         ))}
       </svg>
-      {onShowPluto && (
-        <button type="button" className="eras-pluto-link" onClick={onShowPluto}>
-          What these eras mean · Pluto Generations →
-        </button>
-      )}
+      {(() => {
+        const presentEras = ERAS.filter(e =>
+          placed.some(m => m.year >= e.from && m.year < e.to)
+        )
+        if (presentEras.length === 0) return null
+        return (
+          <details className="eras-legend">
+            <summary className="eras-pluto-link">What these eras mean</summary>
+            <div className="eras-legend-list">
+              {presentEras.map(e => {
+                const gen = PLUTO_GENS[e.sign]
+                if (!gen) return null
+                return (
+                  <p key={e.sign} className="eras-legend-item">
+                    <strong>{e.label}</strong> <span className="eras-legend-years">({gen.years})</span> — a generation {gen.flavor}.
+                  </p>
+                )
+              })}
+            </div>
+          </details>
+        )
+      })()}
     </div>
   )
 }

@@ -2276,16 +2276,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* ── Eras section (Beta) — free with an account ───────────────── */}
       {insightsTab === 'eras' && erasEligible && (
         authUser ? (
-          <ErasView
-            nodes={nodes}
-            isGroupOnly={isGroupOnly}
-            onShowPluto={() => {
-              onInsightsTabChange?.('insights')
-              setTimeout(() => {
-                panelRef.current?.querySelector('#pluto-generations-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }, 300)
-            }}
-          />
+          <ErasView nodes={nodes} isGroupOnly={isGroupOnly} />
         ) : (
           <div className="eras-gate">
             <span className="eras-gate-icon">✦</span>
@@ -2602,7 +2593,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           groupGaps && { icon: '◌', label: 'The Gaps', detail: 'what the group may be missing' },
           groupSaturnLines.length > 0 && { icon: '♄', label: 'Saturn Lines', detail: 'shared growth & responsibility' },
           groupJupiterGifts.length > 0 && { icon: '♃', label: 'Jupiter Gifts', detail: 'where the group expands' },
-          aspectThreadData.totalCount > 0 && { icon: '✦', label: 'Cosmic Inheritance', detail: `${aspectThreadData.totalCount} pattern${aspectThreadData.totalCount !== 1 ? 's' : ''} found` },
+          !isGroupOnly && aspectThreadData.totalCount > 0 && { icon: '✦', label: 'Cosmic Inheritance', detail: `${aspectThreadData.totalCount} pattern${aspectThreadData.totalCount !== 1 ? 's' : ''} found` },
         ].filter(Boolean)
         return (
         <div className="insight-card" style={{ padding: '1.2rem 1rem' }}>
@@ -2634,8 +2625,9 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <FamilyRoles memberRoles={memberRoles} isExporting={exporting} generationLevel={generationLevel} isGroupOnly={isGroupOnly} />
       )}
 
-      {/* Cosmic Inheritance — shared / hereditary natal aspects */}
+      {/* Cosmic Inheritance — shared / hereditary natal aspects (families only) */}
       {(() => {
+        if (isGroupOnly) return null
         const { rareBonds, heredThreads, famSigs, totalWithBirthdata } = aspectThreadData
         if (aspectThreadData.totalCount === 0) return null
 
