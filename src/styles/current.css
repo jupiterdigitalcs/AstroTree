@@ -808,3 +808,31 @@
   opacity: 0.6;
   margin-top: 0.5rem;
 }
+
+/* ── Aurora behind The Mood — hue/speed/strength set from the live reading
+   in MoodGauge.jsx (ease = calm teal-gold, intensity = violet-crimson).
+   Stilled by prefers-reduced-motion via base.css. ── */
+.current-mood {
+  position: relative;
+  overflow: hidden;
+}
+.current-mood-aurora {
+  position: absolute;
+  inset: -40% -20%;
+  pointer-events: none;
+  opacity: var(--aurora-opacity, 0.12);
+  background:
+    radial-gradient(60% 45% at 25% 30%, hsl(var(--aurora-h, 200) 70% 55% / 0.55) 0%, transparent 70%),
+    radial-gradient(50% 40% at 75% 60%, hsl(calc(var(--aurora-h, 200) + 40) 65% 50% / 0.45) 0%, transparent 70%),
+    radial-gradient(45% 50% at 55% 20%, hsl(calc(var(--aurora-h, 200) - 30) 60% 60% / 0.35) 0%, transparent 70%);
+  filter: blur(18px);
+  animation: aurora-drift var(--aurora-speed, 14s) ease-in-out infinite alternate;
+}
+@keyframes aurora-drift {
+  from { transform: translate3d(-4%, -2%, 0) rotate(-2deg) scale(1); }
+  to   { transform: translate3d(4%, 3%, 0) rotate(2deg) scale(1.08); }
+}
+.current-mood > :not(.current-mood-aurora) {
+  position: relative;
+  z-index: 1;
+}

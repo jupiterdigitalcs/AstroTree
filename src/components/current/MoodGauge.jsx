@@ -7,8 +7,18 @@ export default function MoodGauge({ mood }) {
   const moodLabel  = getMoodLabel(mood)
   const phaseLabel = getPhaseLabel(mood)
 
+  // Aurora backdrop driven by the actual reading: ease leans calm teal-gold
+  // and drifts slowly, intensity leans violet-crimson and moves faster
+  const auroraHue = Math.round(330 - easePct * 1.8)
+  const auroraStyle = {
+    '--aurora-h': auroraHue,
+    '--aurora-speed': `${9 + easePct * 0.09}s`,
+    '--aurora-opacity': (0.1 + (100 - easePct) * 0.0012).toFixed(3),
+  }
+
   return (
-    <div className="current-card current-mood" role="region" aria-label="Group mood">
+    <div className="current-card current-mood" role="region" aria-label="Group mood" style={auroraStyle}>
+      <div className="current-mood-aurora" aria-hidden="true" />
       <h4 className="current-card-heading">The Mood</h4>
       <p className="current-card-whisper">
         Some transits open doors. Others test and transform. This is the
