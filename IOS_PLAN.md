@@ -94,18 +94,29 @@ into a native rewrite automatically — keep entitlements and charts account-bou
 Goal: AstroDig running on Christina's iPhone (or simulator) so she can judge
 the feel with her thumbs. This is a TEST build, not a submission.
 
-Fastest path (recommended for this milestone):
-1. Prereq: Xcode installed from the Mac App Store (large download — start it
-   first), plus `xcode-select --install` for CLI tools.
-2. `npm i -D @capacitor/core @capacitor/cli @capacitor/ios` then `npx cap init`
-   (app name "AstroDig", bundle id com.jupiterdigital.astrodig — keep this id,
-   it's permanent) and `npx cap add ios`.
-3. For the first feel-test ONLY: set `server.url = "https://astrodig.com"` in
-   capacitor.config — zero build changes, app loads production in the native
-   shell. (Not App Store compliant; the bundled Vite build — refactor #5 — is
-   the real path later.)
-4. `npx cap open ios`, select her iPhone as target, run. A free Apple ID can
-   sideload to her own device (7-day cert); TestFlight needs the paid account.
+STATUS (June 10, 2026, overnight session): all the Capacitor-side work is DONE.
+- Capacitor 8.4.0 installed; `capacitor.config.json` at repo root with
+  `server.url = "https://astrodig.com"` (feel-test only, not App Store
+  compliant — the bundled Vite build, refactor #5, is the real path later).
+- `ios/` project scaffolded with `--packagemanager SPM` (no CocoaPods on this
+  Mac, and SPM avoids needing it at all). `cap-shell/` is a placeholder webDir,
+  unused at runtime while server.url is set.
+- Info.plist locked to `UIUserInterfaceStyle = Dark` (app is dark-only).
+- BLOCKER FOUND: the Mac was on macOS 14.2, which caps Xcode at 15.x — too old
+  to deploy to a 2026 iPhone and below Capacitor 8's minimum. Xcode 15.4 did
+  finish downloading from the App Store that night (it auto-became the active
+  toolchain; license unaccepted). Fix: upgrade to macOS Tahoe 26.5.1 (Software
+  Update offers it; M2 Air supports it), THEN update Xcode in the App Store.
+
+Remaining steps (need Xcode + Christina present, ~morning after OS upgrade):
+1. App Store > Xcode > Update (15.4 -> current; post-upgrade it will offer it).
+   Open it once: accept license, let it install the iOS platform component.
+2. Xcode > Settings > Accounts > add Apple ID (free ID can sideload 7-day
+   builds to her own phone; TestFlight proper needs the paid program).
+3. iPhone over cable: Trust This Computer, then enable Developer Mode
+   (Settings > Privacy & Security > Developer Mode, phone reboots).
+4. `npx cap open ios`, set the signing Team on the App target, select her
+   iPhone, Run.
 
 Expected broken-in-test-build (do NOT debug these, they're known pending work):
 - Google sign-in (blocked in WebViews — refactor #2)
