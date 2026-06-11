@@ -399,16 +399,17 @@
   padding: 1.5rem !important;
   width: 740px !important;
 }
-/* Columns live on the tab-content wrapper — the panel's direct children are
-   non-card wrappers (header, subnav, brand footer) and using columns on the
-   outer panel with break-inside:avoid on those wrappers collapsed everything
-   into a single column. */
-.insights-panel--exporting .insights-tab-content {
+/* Columns live on the cards wrapper — .insights-tab-content has hidden tab
+   sections as siblings, each a single block child that would prevent
+   columns from working at that level. */
+.insights-panel--exporting .insights-cards-wrapper {
   columns: 2;
   column-gap: 1.1rem;
 }
-/* Every direct child of tab-content: no card splits, consistent spacing */
-.insights-panel--exporting .insights-tab-content > * {
+/* Each card: no splits across columns, consistent spacing */
+.insights-panel--exporting .insight-card,
+.insights-panel--exporting .insight-add-more,
+.insights-panel--exporting .insight-whisper--standalone {
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
   margin-bottom: 0.6rem;
@@ -445,14 +446,14 @@
 .insights-panel--exporting--wide {
   width: 1020px !important;
 }
-.insights-panel--exporting--wide .insights-tab-content {
+.insights-panel--exporting--wide .insights-cards-wrapper {
   columns: 3 !important;
 }
 /* 4 columns for large charts (16+ insight cards) */
 .insights-panel--exporting--xl {
   width: 1300px !important;
 }
-.insights-panel--exporting--xl .insights-tab-content {
+.insights-panel--exporting--xl .insights-cards-wrapper {
   columns: 4 !important;
 }
 

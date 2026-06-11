@@ -123,12 +123,12 @@ export function ErasView({ nodes, isGroupOnly }) {
   // Map (t, c) into svg space per orientation
   const X = p => vertical ? p.c : p.t
   const Y = p => vertical ? p.t : p.c
-  // Name labels sit beside markers in vertical mode — clamp so they can't
-  // run off the right edge or into the rotated era-label rail on the left
+  // Name labels sit to the RIGHT of each marker in vertical mode — this keeps
+  // them clear of the rotated era-label rail on the left regardless of lane.
   const nameX = m => {
     if (!vertical) return X(m)
     const off = (markerR ?? 14) + 8
-    return m.lane > 0 ? Math.min(X(m) + off, W - 10) : Math.max(X(m) - off, 76)
+    return Math.min(X(m) + off, W - 10)
   }
   const W = vertical ? C : T
   const H = vertical ? T : C
@@ -222,13 +222,13 @@ export function ErasView({ nodes, isGroupOnly }) {
               <text
                 x={nameX(m)}
                 y={vertical ? Y(m) - 4 : Y(m) - markerR - 9}
-                textAnchor={vertical ? (m.lane > 0 ? 'start' : 'end') : 'middle'}
+                textAnchor={vertical ? 'start' : 'middle'}
                 className="eras-name"
               >{m.name}</text>
               <text
                 x={nameX(m)}
                 y={vertical ? Y(m) + 10 : Y(m) + markerR + 13}
-                textAnchor={vertical ? (m.lane > 0 ? 'start' : 'end') : 'middle'}
+                textAnchor={vertical ? 'start' : 'middle'}
                 className="eras-year"
               >{m.year}</text>
             </g>

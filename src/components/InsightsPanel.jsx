@@ -2294,7 +2294,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       )}
 
       {/* ── Insight cards (hidden when DIG/Current tab active) ──────── */}
-      <div style={insightsTab !== 'insights' ? { display: 'none' } : undefined}>
+      <div className="insights-cards-wrapper" style={insightsTab !== 'insights' ? { display: 'none' } : undefined}>
       {<>
 
       <p className="insight-whisper insight-whisper--standalone" style={{ textAlign: 'center', padding: '0.2rem 1rem 0.4rem' }}>
