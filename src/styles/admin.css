@@ -2056,3 +2056,17 @@
   padding-top: 0.6rem;
   border-top: 1px solid rgba(201,168,76,0.15);
 }
+
+/* ── Zodiac wheel entry: member markers fly from the center out to their
+   sign positions, staggered around the wheel. --fly-x/y/i set per marker
+   in ZodiacWheel.jsx; disabled under prefers-reduced-motion (base.css). */
+.zodiac-member-marker {
+  animation: zodiac-fly-in 0.7s cubic-bezier(0.22, 0.9, 0.35, 1) backwards;
+  animation-delay: calc(var(--fly-i, 0) * 0.06s + 0.2s);
+}
+@keyframes zodiac-fly-in {
+  from {
+    opacity: 0;
+    transform: translate(var(--fly-x, 0px), var(--fly-y, 0px)) scale(0.4);
+  }
+}

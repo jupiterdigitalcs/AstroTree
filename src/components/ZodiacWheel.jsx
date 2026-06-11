@@ -424,7 +424,11 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
                       onClick={() => setSelectedNode(id => id === n.id ? null : n.id)}
                       onMouseEnter={() => setHoveredNode(n.id)}
                       onMouseLeave={() => setHoveredNode(null)}
-                      style={{ cursor: 'pointer', opacity: isDimmed ? 0.15 : 1, transition: 'opacity 0.2s ease' }}
+                      style={{
+                        cursor: 'pointer', opacity: isDimmed ? 0.15 : 1, transition: 'opacity 0.2s ease',
+                        // Entry animation: fly from the wheel center to this position
+                        '--fly-x': `${cx - pos.x}px`, '--fly-y': `${cy - pos.y}px`, '--fly-i': si + mi,
+                      }}
                     >
                       <circle
                         cx={pos.x} cy={pos.y} r={r}

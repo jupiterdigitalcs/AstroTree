@@ -18,7 +18,7 @@ import {
   VENUS_SIGN_BLURB, MARS_SIGN_BLURB,
   ELEMENT_THREAD_BLURB, SIBLING_ADAPTABILITY,
   PLUTO_GENS, PLUTO_ORDER, OPPOSITE_SIGNS,
-  ELEMENT_QUALITY, MOON_STYLE, ZODIAC_THREAD_BLURB, SIGN_SHORT,
+  ELEMENT_QUALITY, MOON_STYLE, ZODIAC_THREAD_BLURB, ZODIAC_THREAD_BLURB_GROUP, SIGN_SHORT,
   SQUAD_ELEMENT_VIBE, SQUAD_MODALITY_VIBE, SQUAD_POLARITY_NOTE,
   ASPECT_PAIR_BLURB,
 } from './insights/insightsData.js'
@@ -222,7 +222,7 @@ function SquadEnergyCard({ nodes, allPlanetCounts, dominant, dominantModality, i
       </div>
       <p className="insight-note">{vibe?.vibe}</p>
       <p className="insight-note" style={{ marginTop: '0.35rem' }}>
-        <strong>{dominantModality}</strong> — {modVibe}.
+        <strong>{dominantModality}</strong>: {modVibe}.
       </p>
       <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.74rem', marginTop: '0.3rem' }}>
         {SQUAD_POLARITY_NOTE[polKey]}
@@ -236,13 +236,13 @@ function SquadEnergyCard({ nodes, allPlanetCounts, dominant, dominantModality, i
           return (
             <p key={m.name} className="insight-note" style={{ fontSize: '0.78rem' }}>
               <strong>{m.name}</strong>
-              <span style={{ color: ELEMENT_COLORS[m.topElement] }}> — {desc[m.topElement] || m.topElement}</span>
+              <span style={{ color: ELEMENT_COLORS[m.topElement] }}>: {desc[m.topElement] || m.topElement}</span>
             </p>
           )
         })}
       </div>
       <p className="insight-whisper" style={{ marginTop: '0.4rem' }}>
-        Based on Sun, Moon, Mercury, Venus, and Mars — not just sun signs.
+        Based on Sun, Moon, Mercury, Venus, and Mars, not just sun signs.
       </p>
     </div>
   )
@@ -250,10 +250,10 @@ function SquadEnergyCard({ nodes, allPlanetCounts, dominant, dominantModality, i
 
 // ── Social Chemistry — Venus/Mars dynamics across friend group ─────────────
 const VENUS_ELEMENT_STYLE = {
-  Fire:  'bold and direct — shows affection openly, loves through enthusiasm and big gestures',
-  Earth: 'steady and physical — shows love through presence, touch, and reliability',
-  Air:   'social and cerebral — connects through conversation, humor, and ideas',
-  Water: 'deep and intuitive — bonds emotionally, picks up on what\'s unspoken',
+  Fire:  'bold and direct. Shows affection openly, loves through enthusiasm and big gestures',
+  Earth: 'steady and physical. Shows love through presence, touch, and reliability',
+  Air:   'social and cerebral. Connects through conversation, humor, and ideas',
+  Water: 'deep and intuitive. Bonds emotionally, picks up on what\'s unspoken',
 }
 const MARS_ELEMENT_STYLE = {
   Fire:  'charges in head-first, brings energy and momentum to the group',
@@ -347,7 +347,7 @@ function SocialChemistryCard({ nodes, innerPlanetMap, edges }) {
             <strong>The Glue:</strong> {glue.name}
           </p>
           <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-            Venus in {glue.venusSign} — {VENUS_ELEMENT_STYLE[glue.venusElement]}. Naturally compatible with the most people in this group.
+            Venus in {glue.venusSign}: {VENUS_ELEMENT_STYLE[glue.venusElement]}. Naturally compatible with the most people in this group.
           </p>
         </div>
       )}
@@ -358,7 +358,7 @@ function SocialChemistryCard({ nodes, innerPlanetMap, edges }) {
             <strong>The Spark:</strong> {spark.name}
           </p>
           <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-            Mars in {spark.marsSign} — {MARS_ELEMENT_STYLE[spark.marsElement]}.
+            Mars in {spark.marsSign}: {MARS_ELEMENT_STYLE[spark.marsElement]}.
           </p>
         </div>
       )}
@@ -366,13 +366,13 @@ function SocialChemistryCard({ nodes, innerPlanetMap, edges }) {
       {crossPulls.length > 0 && (
         <div style={{ marginTop: '0.3rem' }}>
           <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>
-            Natural draws — pairs where one person's drive energy clicks with what the other values:
+            Natural draws (pairs where one person's drive energy clicks with what the other values):
           </p>
           {crossPulls.slice(0, 4).map((cp, i) => (
             <p key={i} className="insight-note" style={{ fontSize: '0.76rem' }}>
               <strong>{cp.driver.name}</strong> → <strong>{cp.drawn.name}</strong>
               <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>
-                {' '}— {cp.driver.name} brings the energy {cp.drawn.name} is drawn to
+                {' · '}{cp.driver.name} brings the energy {cp.drawn.name} is drawn to
               </span>
             </p>
           ))}
@@ -399,11 +399,11 @@ function SocialChemistryCard({ nodes, innerPlanetMap, edges }) {
 
 // Tier definitions: label, explanation, and grouping order
 const COMPAT_TIERS = {
-  'Cosmic Echo':           { order: 1, explain: 'All four personal planets (Sun, Moon, Venus, Mars) land in the same signs. This is unusually close — it means these two share the same outward identity, emotional instincts, love language, and drive.' },
+  'Cosmic Echo':           { order: 1, explain: 'All four personal planets (Sun, Moon, Venus, Mars) land in the same signs. This is unusually close. These two share the same outward identity, emotional instincts, love language, and drive.' },
   'Rare Triple Alignment': { order: 2, explain: 'Three of their four personal planets match signs. Most people share one placement at most, so three is a remarkably deep resonance.' },
   'Soul Twins':            { order: 3, explain: 'Same Sun and Moon signs. Sun is how you show up in the world; Moon is your emotional core. Sharing both means they tend to express and feel in very similar ways.' },
-  'Cosmic Twins':          { order: 4, explain: 'Same Sun sign. The Sun represents outward identity and ego — they may recognize their own qualities reflected in each other.' },
-  'Mirror Signs':          { order: 5, explain: 'Their Sun signs sit directly opposite each other on the zodiac wheel. Opposite signs carry complementary qualities — what one lacks, the other tends to embody.' },
+  'Cosmic Twins':          { order: 4, explain: 'Same Sun sign. The Sun represents outward identity and ego. They may recognize their own qualities reflected in each other.' },
+  'Mirror Signs':          { order: 5, explain: 'Their Sun signs sit directly opposite each other on the zodiac wheel. Opposite signs carry complementary qualities: what one lacks, the other tends to embody.' },
   'Lunar Bond':            { order: 6, explain: 'Same Moon sign. The Moon governs emotional needs, instincts, and how someone processes feelings. These two may understand each other without much explanation.' },
   'Sun-Moon Reflection':   { order: 7, explain: 'One person\'s Sun sign matches the other\'s Moon sign. The Sun person outwardly embodies what the Moon person feels inwardly, which can create a natural sense of comfort.' },
 }
@@ -505,7 +505,7 @@ function FullCompatPairs({ pairs, title, isExporting, generationLevel, notableBo
             )}
             <p className="insight-note">
               <strong>{a.data.name}</strong> & <strong>{b.data.name}</strong>
-              {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> — {rel}</span>}
+              {rel && <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}> · {rel}</span>}
             </p>
             <p className="insight-compat" style={{ color }}>{note}</p>
             {needsTimeCheck && (
@@ -606,7 +606,7 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
               <div className="family-role-body">
                 {role.derivedRole ? (
                   <p className="insight-note" style={{ fontWeight: 500 }}>
-                    {role.node.data.name} — {role.derivedRole}.
+                    {role.node.data.name}: {role.derivedRole}.
                   </p>
                 ) : (
                   <p className="insight-note">{buildRoleBlurb(role)}</p>
@@ -620,7 +620,7 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
                   const moonStyle = MOON_STYLE[role.node.data.moonSign]
                   return moonStyle ? (
                     <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>
-                      ☽ {role.node.data.moonSign} moon — {moonStyle}.
+                      ☽ {role.node.data.moonSign} moon: {moonStyle}.
                     </p>
                   ) : null
                 })()}
@@ -633,7 +633,7 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
                   </p>
                 )}
                 {role.isBridge && !role.derivedRole && (
-                  <p className="insight-note family-role-special">✦ The Bridge — brings {role.node.data.element} energy no one else carries</p>
+                  <p className="insight-note family-role-special">✦ The Bridge: brings {role.node.data.element} energy no one else carries</p>
                 )}
               </div>
             )}
@@ -652,16 +652,16 @@ function FamilyRoles({ memberRoles, isExporting, generationLevel, isGroupOnly })
 // ── Sibling Dynamics ──────────────────────────────────────────────────────────
 
 const SIBLING_ELEMENT_DYNAMIC = {
-  'Fire-Fire':   'double fire — passionate, competitive, and rarely boring together.',
-  'Fire-Earth':  'fire meets earth — one ignites, the other grounds. Friction that builds something real.',
-  'Fire-Air':    'fire and air fuel each other — big ideas, fast energy, and natural creative spark.',
-  'Fire-Water':  'fire and water — steam. Intense emotional dynamics but deep mutual growth.',
-  'Earth-Earth': 'double earth — shared practicality, stubbornness, and quiet strength.',
-  'Earth-Air':   'earth and air — different languages. One thinks, one does. Complementary when patient.',
-  'Earth-Water': 'earth and water — nurturing ground. Emotional depth meets steady support.',
-  'Air-Air':     'double air — endless conversation, shared curiosity, and a world of ideas.',
-  'Air-Water':   'air and water — mind meets heart. Can feel mismatched but balance each other beautifully.',
-  'Water-Water': 'double water — deep emotional bond, intuitive understanding, shared sensitivity.',
+  'Fire-Fire':   'double fire. Passionate, competitive, and rarely boring together.',
+  'Fire-Earth':  'fire meets earth. One ignites, the other grounds. Friction that builds something real.',
+  'Fire-Air':    'fire and air fuel each other. Big ideas, fast energy, and natural creative spark.',
+  'Fire-Water':  'fire and water make steam. Intense emotional dynamics but deep mutual growth.',
+  'Earth-Earth': 'double earth. Shared practicality, stubbornness, and quiet strength.',
+  'Earth-Air':   'earth and air speak different languages. One thinks, one does. Complementary when patient.',
+  'Earth-Water': 'earth and water, nurturing ground. Emotional depth meets steady support.',
+  'Air-Air':     'double air. Endless conversation, shared curiosity, and a world of ideas.',
+  'Air-Water':   'air and water, mind meets heart. Can feel mismatched but balance each other beautifully.',
+  'Water-Water': 'double water. Deep emotional bond, intuitive understanding, shared sensitivity.',
 }
 
 function getSiblingElementKey(el1, el2) {
@@ -728,7 +728,7 @@ function SiblingDynamics({ siblingGroups, isExporting }) {
                       <span className="sibling-section-label">Dynamics</span>
                       {pairs.map(({ child, other, blurb }) => (
                         <p key={`${child.id}-${other.id}`} className="sibling-section-content">
-                          <strong>{child.data.name} & {other.data.name}</strong> — {blurb}
+                          <strong>{child.data.name} & {other.data.name}</strong>: {blurb}
                         </p>
                       ))}
                     </div>
@@ -744,9 +744,9 @@ function SiblingDynamics({ siblingGroups, isExporting }) {
                   const elEntries = Object.entries(elCounts).sort((a, b) => b[1] - a[1])
                   const topEl = elEntries[0]
                   if (topEl[1] >= Math.ceil(n * 0.6) && n >= 2) {
-                    parts.push(`Heavy on ${topEl[0]} — ${topEl[0] === 'Fire' ? 'high energy and competition' : topEl[0] === 'Earth' ? 'grounded and dependable together' : topEl[0] === 'Air' ? 'idea-driven and talkative' : 'emotionally attuned and intuitive'}.`)
+                    parts.push(`Heavy on ${topEl[0]}: ${topEl[0] === 'Fire' ? 'high energy and competition' : topEl[0] === 'Earth' ? 'grounded and dependable together' : topEl[0] === 'Air' ? 'idea-driven and talkative' : 'emotionally attuned and intuitive'}.`)
                   } else if (elEntries.length >= 3 && elEntries[2][1] > 0) {
-                    parts.push('An eclectic elemental mix — they stretch each other in different directions.')
+                    parts.push('An eclectic elemental mix. They stretch each other in different directions.')
                   } else if (elEntries.length === 2 && elEntries[1][1] > 0) {
                     const [a, b] = elEntries.map(e => e[0])
                     const PAIR_VIBE = {
@@ -754,7 +754,7 @@ function SiblingDynamics({ siblingGroups, isExporting }) {
                       'Fire+Air':   'Big ideas and the energy to chase them.',
                       'Fire+Water': 'Passion and sensitivity in tension.',
                       'Earth+Air':  'Practicality and imagination side by side.',
-                      'Earth+Water':'Nurturing and reliable — a solid emotional core.',
+                      'Earth+Water':'Nurturing and reliable, a solid emotional core.',
                       'Air+Water':  'Head and heart in constant dialogue.',
                     }
                     const key = [a, b].sort().join('+')
@@ -767,18 +767,18 @@ function SiblingDynamics({ siblingGroups, isExporting }) {
                   if (outward > 0 && inward > 0 && Math.abs(outward - inward) <= 1) {
                     parts.push('Balanced between outward and inward energy.')
                   } else if (outward >= inward + 2) {
-                    parts.push('Mostly outward energy — expressive, social, and action-oriented.')
+                    parts.push('Mostly outward energy: expressive, social, and action-oriented.')
                   } else if (inward >= outward + 2) {
-                    parts.push('Mostly inward energy — reflective, steady, and emotionally deep.')
+                    parts.push('Mostly inward energy: reflective, steady, and emotionally deep.')
                   }
 
                   // Rhythm — how they approach change
                   const topMod = Object.entries(modCounts).sort((a, b) => b[1] - a[1])
                   if (topMod.length === 1 || (topMod[0] && topMod[0][1] > n / 2)) {
                     const m = topMod[0][0]
-                    parts.push(m === 'Cardinal' ? 'Natural initiators — they push each other to start things.' : m === 'Fixed' ? 'Steady and loyal, but watch for stubbornness standoffs.' : 'Highly adaptable together — they flow with change easily.')
+                    parts.push(m === 'Cardinal' ? 'Natural initiators who push each other to start things.' : m === 'Fixed' ? 'Steady and loyal, but watch for stubbornness standoffs.' : 'Highly adaptable together, flowing with change easily.')
                   } else if (topMod.length >= 3 && topMod[2][1] > 0) {
-                    parts.push('A mix of starters, holders, and adapters — all bases covered.')
+                    parts.push('A mix of starters, holders, and adapters, so all bases are covered.')
                   }
 
                   if (parts.length === 0) return null
@@ -803,7 +803,7 @@ function SiblingDynamics({ siblingGroups, isExporting }) {
                     <div className="sibling-section">
                       <span className="sibling-section-label">Moon Bond</span>
                       <p className="sibling-section-content">
-                        ☽ {names} share {el} moons — a similar emotional wavelength beneath the surface.
+                        ☽ {names} share {el} moons, a similar emotional wavelength beneath the surface.
                       </p>
                     </div>
                   )
@@ -1064,18 +1064,18 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
 
   const PERSONAL_SET = new Set(['Sun', 'Moon', 'Mercury', 'Venus', 'Mars'])
   const SYNASTRY_BLURBS = {
-    'Venus:Mars': { soft: 'Desire and affection tend to flow easily between them.', hard: 'A push-pull of attraction — magnetic, but may require patience.' },
+    'Venus:Mars': { soft: 'Desire and affection tend to flow easily between them.', hard: 'A push-pull of attraction that\'s magnetic but may require patience.' },
     'Venus:Sun':  { soft: 'One person naturally admires and is drawn to the other.', hard: 'Admiration is there, but expressing it may not always land as intended.' },
-    'Moon:Sun':   { soft: 'A natural comfort — one person\'s identity tends to nurture the other\'s emotional needs.', hard: 'Identity and emotional needs can bump — growth comes from not taking reactions personally.' },
+    'Moon:Sun':   { soft: 'A natural comfort. One person\'s identity tends to nurture the other\'s emotional needs.', hard: 'Identity and emotional needs can bump. Growth comes from not taking reactions personally.' },
     'Moon:Venus': { soft: 'Emotional warmth flows easily. They tend to feel safe with each other.', hard: 'Care is there, but the way it\'s expressed may sometimes miss the mark.' },
-    'Moon:Mars':  { soft: 'Feelings and drive complement each other — a lively but supportive dynamic.', hard: 'One person\'s energy may sometimes overwhelm the other\'s emotional space.' },
-    'Venus:Venus':{ soft: 'They tend to value and enjoy the same things — a natural ease in shared taste.', hard: 'Similar values expressed in clashing ways — they want the same things but pursue them differently.' },
-    'Sun:Mars':   { soft: 'They tend to energize each other — action and identity in easy collaboration.', hard: 'A competitive spark — can fuel motivation or create friction depending on the day.' },
-    'Moon:Moon':  { soft: 'Emotional rhythms in sync — they tend to understand each other\'s moods instinctively.', hard: 'Both have strong emotional needs that can sometimes collide.' },
-    'Sun:Sun':    { soft: 'A feeling of recognition — they may see themselves reflected in each other.', hard: 'Two strong identities that may sometimes compete for the spotlight.' },
-    'Sun:Saturn': { soft: 'A stabilizing bond — one person helps ground and structure the other.', hard: 'One person may feel held back or judged by the other, even when that\'s not the intent.' },
-    'Moon:Saturn':{ soft: 'Emotional security through commitment — a bond that tends to deepen over time.', hard: 'Warmth may sometimes feel conditional — a relationship that asks both to grow.' },
-    'Venus:Saturn':{ soft: 'Love that builds slowly and lasts — loyalty and devotion over flash.', hard: 'Affection meets restraint — one may need more warmth than the other easily gives.' },
+    'Moon:Mars':  { soft: 'Feelings and drive complement each other, a lively but supportive dynamic.', hard: 'One person\'s energy may sometimes overwhelm the other\'s emotional space.' },
+    'Venus:Venus':{ soft: 'They tend to value and enjoy the same things, a natural ease in shared taste.', hard: 'Similar values expressed in clashing ways. They want the same things but pursue them differently.' },
+    'Sun:Mars':   { soft: 'They tend to energize each other, with action and identity in easy collaboration.', hard: 'A competitive spark that can fuel motivation or create friction depending on the day.' },
+    'Moon:Moon':  { soft: 'Emotional rhythms in sync. They tend to understand each other\'s moods instinctively.', hard: 'Both have strong emotional needs that can sometimes collide.' },
+    'Sun:Sun':    { soft: 'A feeling of recognition. They may see themselves reflected in each other.', hard: 'Two strong identities that may sometimes compete for the spotlight.' },
+    'Sun:Saturn': { soft: 'A stabilizing bond where one person helps ground and structure the other.', hard: 'One person may feel held back or judged by the other, even when that\'s not the intent.' },
+    'Moon:Saturn':{ soft: 'Emotional security through commitment, a bond that tends to deepen over time.', hard: 'Warmth may sometimes feel conditional. This bond asks both to grow.' },
+    'Venus:Saturn':{ soft: 'Love that builds slowly and lasts — loyalty and devotion over flash.', hard: 'Affection meets restraint. One may need more warmth than the other easily gives.' },
   }
 
   function getSynastryBlurb(pA, pB, aspect) {
@@ -1123,7 +1123,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     // Same moon sign — emotional twins
     if (srcMoon && tgtMoon && srcMoon === tgtMoon)
       insights.push({ score: 7, tagline: 'Emotional Twins', color: '#9dbbd4',
-        text: `Both ${srcMoon} moons. They tend to feel and process in similar ways — a shared emotional rhythm.` })
+        text: `Both ${srcMoon} moons. They tend to feel and process in similar ways, a shared emotional rhythm.` })
 
     // Same Venus sign — identical love language
     if (srcVenus && tgtVenus && srcVenus === tgtVenus)
@@ -1168,10 +1168,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     // Fallback: sun element clash with no moon data
     if (!growthEdge && !areCompatible(src.data.element, tgt.data.element)) {
       const SUNEDGE = {
-        'Fire-Water': 'Fire\'s directness and Water\'s sensitivity may sometimes clash — patience with each other\'s pace tends to help.',
-        'Fire-Earth': 'Fire\'s spontaneity and Earth\'s caution can create friction — they may do best when they take turns leading.',
-        'Air-Water': 'Air\'s detachment and Water\'s depth can feel like different languages — checking in rather than assuming tends to help.',
-        'Air-Earth': 'Air\'s restlessness and Earth\'s need for stability can create tension — both may benefit from honoring what the other needs.',
+        'Fire-Water': 'Fire\'s directness and Water\'s sensitivity may sometimes clash. Patience with each other\'s pace tends to help.',
+        'Fire-Earth': 'Fire\'s spontaneity and Earth\'s caution can create friction. They may do best when they take turns leading.',
+        'Air-Water': 'Air\'s detachment and Water\'s depth can feel like different languages. Checking in rather than assuming tends to help.',
+        'Air-Earth': 'Air\'s restlessness and Earth\'s need for stability can create tension. Both may benefit from honoring what the other needs.',
       }
       const key = [src.data.element, tgt.data.element].sort().join('-')
       growthEdge = SUNEDGE[key] || null
@@ -1563,21 +1563,21 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         score    = is4 ? 25 : 20
         noteType = is4 ? 'cosmic-echo' : 'rare-alignment'
         const label = is4
-          ? 'All four personal planets in the same signs — an unusually close match'
-          : 'Three planets aligned — a notably uncommon bond'
-        note = `${matchedPlanets.join(' · ')} — ${label}`
+          ? 'all four personal planets in the same signs, an unusually close match'
+          : 'three planets aligned, a notably uncommon bond'
+        note = `${matchedPlanets.join(' · ')}: ${label}`
       } else if (sameSun && sameMoon) {
         score = 12; noteType = 'soul-twins'
-        note = `Both ${a.data.symbol} ${a.data.sign} ☀ & ☽ ${aMoon} moon — soul twins`
+        note = `Both ${a.data.symbol} ${a.data.sign} ☀ & ☽ ${aMoon} moon: soul twins`
       } else if (sameSun) {
         score = 10; noteType = 'cosmic-twins'
-        note = `Both ${a.data.symbol} ${a.data.sign} ☀ — cosmic twins`
+        note = `Both ${a.data.symbol} ${a.data.sign} ☀: cosmic twins`
       } else if (sameMoon) {
         score = 9; noteType = 'lunar-bond'
-        note = `Both ☽ ${aMoon} moon — lunar bond`
+        note = `Both ☽ ${aMoon} moon: lunar bond`
       } else if (isOpposite) {
         score = 8; noteType = 'mirror'
-        note = `${a.data.symbol} ${a.data.sign} & ${b.data.symbol} ${b.data.sign} — mirror signs`
+        note = `${a.data.symbol} ${a.data.sign} & ${b.data.symbol} ${b.data.sign}: mirror signs`
       } else if (aSunBMoon) {
         score = 7; noteType = 'sun-moon-reflection'
         note = `${a.data.symbol} ${a.data.sign} ☀ meets ${b.data.name}'s ☽ ${bMoon} moon`
@@ -1586,7 +1586,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         note = `${b.data.symbol} ${b.data.sign} ☀ meets ${a.data.name}'s ☽ ${aMoon} moon`
       } else if (compatElem && (isSibling || isCousin)) {
         score = 5; noteType = 'natural-flow'
-        note = `${a.data.element} & ${b.data.element} — natural flow`
+        note = `${a.data.element} & ${b.data.element}: natural flow`
       }
       if (score === 0) continue
       const rel = isSibling ? 'siblings' : isCousin ? 'cousins' : ''
@@ -1660,7 +1660,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         if (aMoon && bMoon) moonNote = `Different moons: ☽ ${aMoon} & ☽ ${bMoon}`
       } else if (oppSun) {
         score = 5; compatLabel = 'Mirror Signs'; color = 'var(--rose)'
-        if (sameMoon) moonNote = `Same ☽ ${aMoon} moon — emotional mirror too`
+        if (sameMoon) moonNote = `Same ☽ ${aMoon} moon, an emotional mirror too`
       } else if (sameMoon) {
         score = 4; compatLabel = 'Lunar Bond'; color = '#9dbbd4'
       } else if (sunMoonMirror) {
@@ -1758,23 +1758,23 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         let flavor = ''
         if (involvedPlanets.has('Venus') && involvedPlanets.has('Moon')) {
           flavor = softCount >= hardCount
-            ? 'There tends to be a natural warmth when they\'re together — an easy emotional rapport.'
+            ? 'There tends to be a natural warmth when they\'re together, an easy emotional rapport.'
             : 'There\'s a pull between them that can feel intense. They tend to bring out strong reactions in each other.'
         } else if (involvedPlanets.has('Sun') && involvedPlanets.has('Moon')) {
           flavor = softCount >= hardCount
-            ? 'Something clicks when they\'re in the same room — a sense of recognition, even if they don\'t see each other often.'
+            ? 'Something clicks when they\'re in the same room: a sense of recognition, even if they don\'t see each other often.'
             : 'When they\'re together, they tend to push each other in subtle ways. Not always comfortable, but often catalytic.'
         } else if (involvedPlanets.has('Mars')) {
           flavor = softCount >= hardCount
-            ? 'They tend to energize each other — the dynamic picks up when they\'re both around.'
+            ? 'They tend to energize each other. The dynamic picks up when they\'re both around.'
             : 'There\'s a spark between them that can read as friction or motivation, depending on the day.'
         } else if (involvedPlanets.has('Saturn')) {
           flavor = softCount >= hardCount
-            ? 'A quietly stabilizing connection — they may not realize how much they anchor each other.'
+            ? 'A quietly stabilizing connection. They may not realize how much they anchor each other.'
             : 'There\'s a weight to this connection. They tend to feel more "seen" by each other, for better or worse.'
         } else {
           flavor = softCount >= hardCount
-            ? 'Their charts are unexpectedly in sync — a quiet resonance that may not be obvious on the surface.'
+            ? 'Their charts are unexpectedly in sync, a quiet resonance that may not be obvious on the surface.'
             : 'There\'s a dynamic tension here. They tend to notice each other, even from across the room.'
         }
         // Strength rating based on count + tightness
@@ -2348,7 +2348,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             <div style={{ marginTop: '0.55rem' }}>
               {mix.perElement.map(({ element, count, blurb }) => (
                 <p key={element} className="insight-note" style={{ margin: '0.15rem 0' }}>
-                  <strong style={{ color: ELEMENT_COLORS[element] }}>{count} {element}</strong> — {blurb}.
+                  <strong style={{ color: ELEMENT_COLORS[element] }}>{count} {element}</strong>: {blurb}.
                 </p>
               ))}
               <p className="insight-note" style={{ marginTop: '0.4rem' }}>{mix.summary}</p>
@@ -2395,7 +2395,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               <div style={{ marginTop: '0.55rem' }}>
                 {mix.perElement.map(({ element, count, blurb }) => (
                   <p key={element} className="insight-note" style={{ margin: '0.15rem 0' }}>
-                    <strong style={{ color: ELEMENT_COLORS[element] }}>{count} {element}</strong> — {blurb}.
+                    <strong style={{ color: ELEMENT_COLORS[element] }}>{count} {element}</strong>: {blurb}.
                   </p>
                 ))}
                 <p className="insight-note" style={{ marginTop: '0.4rem' }}>{mix.summary}</p>
@@ -2486,7 +2486,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                 <p key={sign} className="insight-note">
                   {SIGN_SYMBOLS[sign]} <strong>{sign}</strong>
                   <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                    {' '}— {data.total} placement{data.total > 1 ? 's' : ''} ({parts.join(', ')})
+                    {': '}{data.total} placement{data.total > 1 ? 's' : ''} ({parts.join(', ')})
                   </span>
                 </p>
               )
@@ -2504,7 +2504,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             return (
               <p key={sign} className="insight-note">
                 <PlanetSign planet="moon" symbol={members[0].data.moonSymbol} sign={sign} />
-                {' '}—{' '}
+                {': '}
                 {members.map((m, i) => (
                   <span key={m.id}>
                     {i > 0 && ', '}
@@ -2546,7 +2546,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {!hasAdvanced && (() => {
         const items = [
           (sharedVenusSigns.length + sharedMarsSigns.length) > 0 && { icon: '♀♂', label: 'Venus & Mars Shared Signs', detail: `${sharedVenusSigns.length + sharedMarsSigns.length} match${sharedVenusSigns.length + sharedMarsSigns.length > 1 ? 'es' : ''} found` },
-          couples.length > 0 && { icon: '💕', label: 'Partner Harmony', detail: `${couples.length} pair${couples.length > 1 ? 's' : ''} — ${couples[0]?.src.data.name} & ${couples[0]?.tgt.data.name}${couples.length > 1 ? ' + more' : ''}` },
+          couples.length > 0 && { icon: '💕', label: 'Partner Harmony', detail: `${couples.length} pair${couples.length > 1 ? 's' : ''}: ${couples[0]?.src.data.name} & ${couples[0]?.tgt.data.name}${couples.length > 1 ? ' + more' : ''}` },
           (signThreadList.length > 0 || topZodiacThreads.length > 0) && { icon: '🧬', label: 'Zodiac Threads', detail: 'signs echoing through generations' },
           { icon: '★', label: 'Planetary Patterns', detail: 'sign concentrations across the group' },
           { icon: '🎭', label: `${isGroupOnly ? 'Group' : 'Family'} Roles & Archetypes`, detail: `${nodes.length} members analyzed` },
@@ -2572,7 +2572,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', fontSize: '0.78rem' }}>
                 <span style={{ flexShrink: 0, width: '1.4rem', textAlign: 'center' }}>{item.icon}</span>
                 <span style={{ color: 'var(--text)' }}>{item.label}</span>
-                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>— {item.detail}</span>
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>· {item.detail}</span>
               </div>
             ))}
           </div>
@@ -2602,7 +2602,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         return (
           <div className="insight-card" data-count={aspectThreadData.totalCount} data-label={aspectThreadData.totalCount === 1 ? 'pattern' : 'patterns'}>
             <h3 className="insight-heading">✦ Cosmic Inheritance<span className="insight-pro-tag">✦</span></h3>
-            <p className="insight-whisper">Patterns appearing independently in each person's own birth chart — not connections between charts, but the same energy recurring across them.</p>
+            <p className="insight-whisper">Patterns appearing independently in each person's own birth chart: not connections between charts, but the same energy recurring across them.</p>
 
             {rareBonds.length > 0 && rareBonds.map((p, i) => {
               const exact = p.members.filter(m => m.orb <= 0.5)
@@ -2616,7 +2616,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                       : <strong>{p.planet1} {p.aspect} {p.planet2}</strong>}
                   </p>
                   <p className="insight-note" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                    {exact.map(m => m.name).join(' and ')} — within {exact.map(m => `${m.orb}°`).join(' and ')}
+                    {exact.map(m => m.name).join(' and ')}, within {exact.map(m => `${m.orb}°`).join(' and ')}
                   </p>
                   <p className="insight-note" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.7 }}>
                     {p.planet1} {p.aspect} {p.planet2}
@@ -2747,7 +2747,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {hiddenConnections.length > 0 && hasFullCompat && (
         <div className="insight-card" data-count={hiddenConnections.length} data-label={hiddenConnections.length === 1 ? 'connection' : 'connections'}>
           <h3 className="insight-heading">Hidden Connections<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-whisper">These pairs don't share obvious sign placements, but their charts form tight angles to each other — a subtler kind of connection that may show up when they spend time together.</p>
+          <p className="insight-whisper">These pairs don't share obvious sign placements, but their charts form tight angles to each other, a subtler kind of connection that may show up when they spend time together.</p>
           {hiddenConnections.map((hc, i) => (
             <div key={i} style={{ marginBottom: '0.6rem' }}>
               <p className="insight-note">
@@ -2768,7 +2768,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               </p>
             </div>
           ))}
-          <p className="insight-whisper" style={{ marginTop: '0.3rem' }}>In astrology, an "aspect" is a meaningful angle between two planets. When one person's planets form tight angles to another person's, it can create a sense of connection or friction — even without shared signs.</p>
+          <p className="insight-whisper" style={{ marginTop: '0.3rem' }}>In astrology, an "aspect" is a meaningful angle between two planets. When one person's planets form tight angles to another person's, it can create a sense of connection or friction, even without shared signs.</p>
         </div>
       )}
 
@@ -2812,7 +2812,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                         <span style={{ color: ELEMENT_COLORS[child.data.element] }}>
                           {SIGN_SYMBOLS[child.data.sign]} <strong>{child.data.name}</strong>
                         </span>
-                        {' '}— {main}
+                        {': '}{main}
                       </p>
                       {detail && (
                         <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem', marginTop: '0.05rem' }}>
@@ -2868,7 +2868,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                 <div key={sign} style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
                   <p className="insight-note">
                     <strong>{SIGN_SYMBOLS[sign]} {sign}</strong>
-                    {' '}—{' '}
+                    {': '}
                     {gens.map((gen, gi) => (
                       <span key={gen}>
                         {gi > 0 && <span style={{ color: 'var(--text-muted)' }}> → </span>}
@@ -2887,7 +2887,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                   </p>
                   {ZODIAC_THREAD_BLURB[sign] && (
                     <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem' }}>
-                      {isGroupOnly ? ZODIAC_THREAD_BLURB[sign].replace(/\bthis family\b/gi, 'this group').replace(/\bthe family\b/gi, 'the group') : ZODIAC_THREAD_BLURB[sign]}
+                      {isGroupOnly ? (ZODIAC_THREAD_BLURB_GROUP[sign] ?? ZODIAC_THREAD_BLURB[sign]) : ZODIAC_THREAD_BLURB[sign]}
                     </p>
                   )}
                 </div>
@@ -2903,12 +2903,12 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         const vmCount = sharedVenusSigns.length + sharedMarsSigns.length
         return (
         <div className="insight-card" data-count={vmCount} data-label={vmCount === 1 ? 'match' : 'matches'}>
-          <h3 className="insight-heading">♀ Venus · ♂ Mars — Shared Signs<span className="insight-pro-tag">✦</span></h3>
+          <h3 className="insight-heading">♀ Venus · ♂ Mars Shared Signs<span className="insight-pro-tag">✦</span></h3>
           {sharedVenusSigns.map(({ sign, symbol, members }) => (
             <div key={`v-${sign}`} style={{ marginBottom: '0.35rem' }}>
               <p className="insight-note">
                 <PlanetSign planet="venus" symbol={symbol} sign={sign} />
-                {' '}— {members.map(m => m.data.name).join(', ')}
+                {': '}{members.map(m => m.data.name).join(', ')}
               </p>
               {VENUS_SIGN_BLURB[sign] && (
                 <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem', marginTop: '0.1rem' }}>
@@ -2921,7 +2921,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             <div key={`m-${sign}`} style={{ marginBottom: '0.35rem' }}>
               <p className="insight-note">
                 <PlanetSign planet="mars" symbol={symbol} sign={sign} />
-                {' '}— {members.map(m => m.data.name).join(', ')}
+                {': '}{members.map(m => m.data.name).join(', ')}
               </p>
               {MARS_SIGN_BLURB[sign] && (
                 <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1rem', marginTop: '0.1rem' }}>
@@ -2975,7 +2975,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                     {SIGN_SYMBOLS[sign]}{' '}
                     <strong>Pluto in {sign}</strong>{' '}
                     <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>({gen.years})</span>
-                    {' — '}{members.length} {members.length === 1 ? 'member' : 'members'}
+                    {' · '}{members.length} {members.length === 1 ? 'member' : 'members'}
                     <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>
                       {' · '}{members.map(m => m.data.name).join(', ')}
                     </span>

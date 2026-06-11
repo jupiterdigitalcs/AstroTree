@@ -114,31 +114,31 @@ export default function AboutPanel() {
           <div className="about-howit-item">
             <span className="about-howit-glyph">☀</span>
             <div>
-              <strong>Sun</strong> — direction, purpose, ego, identity. The sign most people know ("I'm a Scorpio"), but only one piece of the full picture.
+              <strong>Sun</strong>: direction, purpose, ego, identity. The sign most people know ("I'm a Scorpio"), but only one piece of the full picture.
             </div>
           </div>
           <div className="about-howit-item">
             <span className="about-howit-glyph">☽</span>
             <div>
-              <strong>Moon</strong> — emotions, body, inner world. How you feel, react, and what you need to feel safe. Requires birth date only, no time needed.
+              <strong>Moon</strong>: emotions, body, inner world. How you feel, react, and what you need to feel safe. Requires birth date only, no time needed.
             </div>
           </div>
           <div className="about-howit-item">
             <span className="about-howit-glyph">☿</span>
             <div>
-              <strong>Mercury</strong> — communication, mind, thinking. Quick or deliberate? Detail-focused or big-picture? Two people with the same Mercury understand each other's logic instantly.
+              <strong>Mercury</strong>: communication, mind, thinking. Quick or deliberate? Detail-focused or big-picture? Two people with the same Mercury understand each other's logic instantly.
             </div>
           </div>
           <div className="about-howit-item">
             <span className="about-howit-glyph">♀</span>
             <div>
-              <strong>Venus</strong> — love, values, finances, beauty. Your relationship style, what you're drawn to, and how you express affection.
+              <strong>Venus</strong>: love, values, finances, beauty. Your relationship style, what you're drawn to, and how you express affection.
             </div>
           </div>
           <div className="about-howit-item">
             <span className="about-howit-glyph">♂</span>
             <div>
-              <strong>Mars</strong> — actions, physical energy, drive. How you go after what you want and how you handle conflict.
+              <strong>Mars</strong>: actions, physical energy, drive. How you go after what you want and how you handle conflict.
             </div>
           </div>
         </div>
@@ -170,13 +170,13 @@ export default function AboutPanel() {
           <li>To sync and store your charts across devices</li>
           <li>To link purchases (Celestial) to your account</li>
           <li>To send purchase confirmations and occasional updates from Jupiter Digital</li>
-          <li>To study anonymized, aggregated astrological patterns across families (e.g. how often family members share moon signs). No individual names, birthdates, or identifying details are ever published — only statistical trends across all users combined.</li>
+          <li>To study anonymized, aggregated astrological patterns across families (e.g. how often family members share moon signs). No individual names, birthdates, or identifying details are ever published, only statistical trends across all users combined.</li>
         </ul>
 
         <p className="about-data-subhead">What we don't do</p>
         <ul className="about-data-list">
           <li>Sell your data or share it with third parties</li>
-          <li>Publish or share any individual chart data, names, or birthdates — research uses only anonymous aggregate patterns</li>
+          <li>Publish or share any individual chart data, names, or birthdates (research uses only anonymous aggregate patterns)</li>
         </ul>
 
         <p className="about-data-subhead">Adding other people</p>

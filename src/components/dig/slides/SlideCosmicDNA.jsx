@@ -32,7 +32,7 @@ export default function SlideCosmicDNA({ data, active }) {
         The {thread.sign} Line
       </h2>
       <p className="dig-body dig-fly-in" style={{ '--i': 2 }}>
-        {flavor} — this energy echoes across {generationWord}.
+        {flavor}, echoing across {generationWord}.
         The same {planetLabel} keeps showing up.
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />

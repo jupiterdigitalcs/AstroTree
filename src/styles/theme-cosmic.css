@@ -2095,3 +2095,14 @@
   margin-left: 0.3rem;
   vertical-align: middle;
 }
+
+/* One-line philosophy under the welcome tagline */
+.cosmic-onboarding-credo {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--a-gold-soft, #d4b87a);
+  letter-spacing: 0.06em;
+  margin-top: -0.3rem;
+  opacity: 0.85;
+}

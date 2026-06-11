@@ -19,7 +19,7 @@ export default function SlideWildcard({ data }) {
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3 }}>
         While the rest of the group runs on {familyElement.toLowerCase()}, {d.name.split(' ')[0]} is
-        wired differently — none of that element shows up in their chart.
+        wired differently. None of that element shows up in their chart.
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.82rem', marginTop: '0.5rem' }}>
         The one who keeps this {familyElement.toLowerCase()}-heavy group balanced.

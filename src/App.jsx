@@ -8,6 +8,7 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
+  useNodesInitialized,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
@@ -63,6 +64,19 @@ function getUxMode() {
 }
 
 // ── Fit the view whenever fitTick increments ──────────────────────────────────
+// Fire once each time all nodes finish measuring — the moment the canvas is
+// actually visible, so the entrance cascade doesn't run while RF is still
+// laying out hidden nodes
+function TreeEntranceTrigger({ onReady }) {
+  const ready = useNodesInitialized()
+  const fired = useRef(false)
+  useEffect(() => {
+    if (ready && !fired.current) { fired.current = true; onReady() }
+    if (!ready) fired.current = false
+  }, [ready, onReady])
+  return null
+}
+
 function FitViewOnLayout({ fitTick, fitViewRef }) {
   const rf = useReactFlow()
   fitViewRef.current = rf
@@ -257,6 +271,44 @@ export default function App() {
   })
   const familyLabel = isGroupOnly ? 'Group' : 'Family'
   const familyLabelLower = isGroupOnly ? 'group' : 'family'
+
+  // ── Generational cascade: stagger tree entrance by layout row ────────────
+  // Each node/edge gets a --gen CSS var (row index); canvas.css uses it for
+  // animation-delay so generations fade in top-down (or left-right in LR).
+  const { nodesForCanvas, edgesForCanvas } = useMemo(() => {
+    if (nodes.length === 0) return { nodesForCanvas: nodes, edgesForCanvas: edgesForDisplay }
+    const isLR = nodes.find(n => !n.hidden)?.data?.layoutDirection === 'LR'
+    const coord = n => Math.round((isLR ? n.position.x : n.position.y) / 80)
+    const rows = [...new Set(nodes.map(coord))].sort((a, b) => a - b)
+    const rowIdx = new Map(rows.map((r, i) => [r, i]))
+    const genOf = {}
+    const outNodes = nodes.map(n => {
+      const gen = rowIdx.get(coord(n)) ?? 0
+      genOf[n.id] = gen
+      return { ...n, style: { ...n.style, '--gen': gen } }
+    })
+    const outEdges = edgesForDisplay.map(e => ({
+      ...e,
+      style: { ...e.style, '--gen': genOf[e.source] ?? 0 },
+    }))
+    return { nodesForCanvas: outNodes, edgesForCanvas: outEdges }
+  }, [nodes, edgesForDisplay])
+
+  // Entrance plays only once React Flow has measured and shown the canvas —
+  // animations started at mount run out while nodes are still hidden
+  const [treeAnimating, setTreeAnimating] = useState(false)
+  const treeAnimTimer = useRef(null)
+  const handleTreeInit = useCallback(() => {
+    setTreeAnimating(true)
+    clearTimeout(treeAnimTimer.current)
+    treeAnimTimer.current = setTimeout(() => setTreeAnimating(false), 3200)
+  }, [])
+
+  // Replay the cascade on manual re-layout (chart load/measure is handled
+  // by TreeEntranceTrigger inside the canvas)
+  useEffect(() => {
+    if (fitTick > 0 && nodes.length > 0) handleTreeInit()
+  }, [fitTick]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Auto-switch to constellation for friend/coworker-only groups ─────────
   useEffect(() => {
@@ -635,7 +687,7 @@ export default function App() {
       {premiumToast && (
         <div className="premium-toast">
           <p className="premium-toast-title">✦ Welcome to Celestial</p>
-          <p className="premium-toast-sub">The full cosmos is yours — all views, insights, and The DIG unlocked.</p>
+          <p className="premium-toast-sub">All views, insights, and The DIG are unlocked.</p>
         </div>
       )}
 
@@ -1329,7 +1381,7 @@ export default function App() {
           </Suspense>
         ) : (
         <ReactFlow
-          nodes={nodes} edges={isGroupOnly ? [] : edgesForDisplay}
+          nodes={nodesForCanvas} edges={isGroupOnly ? [] : edgesForCanvas}
           onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
           onConnect={onConnect} onNodeClick={(e, node) => {
             if (e.target.closest('.node-collapse-btn')) {
@@ -1365,11 +1417,13 @@ export default function App() {
           // and the click handler suppressed itself thinking it was a drag.
           nodeDragThreshold={6}
           nodeTypes={NODE_TYPES}
+          className={treeAnimating ? 'tree-entrance' : undefined}
           fitView fitViewOptions={{ padding: 0.4 }}
           minZoom={0.1} colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >
           <FitViewOnLayout fitTick={fitTick} fitViewRef={fitViewRef} />
+          <TreeEntranceTrigger onReady={handleTreeInit} />
           <Background color="#1a1040" gap={36} size={1} />
           {nodes.length > 0 && <Controls showInteractive={false} fitViewOptions={{ padding: 0.4 }} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }} />}
         </ReactFlow>

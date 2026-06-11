@@ -3,7 +3,7 @@ import Link from 'next/link'
 export const metadata = {
   title: 'FAQ — AstroDig | Family Astrology Chart Builder',
   description:
-    'Frequently asked questions about AstroDig — how to build astrology charts for families, friend groups, and coworkers. Free tool by Jupiter Digital.',
+    'Frequently asked questions about AstroDig: how to build astrology charts for families, friend groups, and coworkers. Free tool by Jupiter Digital.',
   alternates: { canonical: '/faq' },
   robots: 'index, follow',
   openGraph: {
@@ -12,7 +12,7 @@ export const metadata = {
     siteName: 'AstroDig by Jupiter Digital',
     title: 'FAQ — AstroDig | Family Astrology Chart Builder',
     description:
-      'Frequently asked questions about AstroDig — how to build astrology charts for families, friend groups, and coworkers.',
+      'Frequently asked questions about AstroDig: how to build astrology charts for families, friend groups, and coworkers.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'AstroDig by Jupiter Digital' }],
   },
 }
@@ -20,15 +20,15 @@ export const metadata = {
 const faqs = [
   {
     q: 'What is AstroDig?',
-    a: 'AstroDig is a free astrology web app that builds charts for groups of people — family, friends, coworkers, or anyone you know. Enter birthdates and AstroDig calculates sun signs, moon signs, and inner planetary placements (Mercury, Venus, Mars), then visualizes how everyone\'s charts connect through multiple views and an automated insights panel.',
+    a: 'AstroDig is a free astrology web app that builds charts for groups of people: family, friends, coworkers, or anyone you know. Enter birthdates and AstroDig calculates sun signs, moon signs, and inner planetary placements (Mercury, Venus, Mars), then visualizes how everyone\'s charts connect through multiple views and an automated insights panel.',
   },
   {
     q: 'Is AstroDig free to use?',
-    a: 'Yes — the core experience is free with no account required. You can add unlimited people, explore the family tree view, see sun signs and elemental patterns, save and share charts, and export as PNG. A one-time $9.99 Celestial unlock adds advanced views (Zodiac Wheel, Tables, Constellation), the full Insights analysis, The Current (live group transit analysis), the complete DIG experience, and up to 50 saved charts.',
+    a: 'Yes. The core experience is free with no account required. You can add unlimited people, explore the family tree view, see sun signs and elemental patterns, save and share charts, and export as PNG. A one-time $9.99 Celestial unlock adds advanced views (Zodiac Wheel, Tables, Constellation), the full Insights analysis, The Current (live group transit analysis), the complete DIG experience, and up to 50 saved charts.',
   },
   {
     q: 'Do I need to create an account?',
-    a: 'No account required. AstroDig works instantly in the browser. You can optionally add an email address after saving your first chart — this lets you restore your chart from any device if you clear your browser or switch devices.',
+    a: 'No account required. AstroDig works instantly in the browser. You can optionally add an email address after saving your first chart. This lets you restore your chart from any device if you clear your browser or switch devices.',
   },
   {
     q: 'What information do I need to add someone?',
@@ -36,31 +36,31 @@ const faqs = [
   },
   {
     q: 'What\'s the difference between a sun sign and a moon sign?',
-    a: 'Your sun sign is set by the day you were born and reflects core identity and outward energy — it\'s the sign most people know. Your moon sign is where the moon was when you were born and reflects emotional nature, instincts, and inner life. In a family chart, moon sign patterns can be especially revealing about how people connect on a feeling level.',
+    a: 'Your sun sign is set by the day you were born and reflects core identity and outward energy. It\'s the sign most people know. Your moon sign is where the moon was when you were born and reflects emotional nature, instincts, and inner life. In a family chart, moon sign patterns can be especially revealing about how people connect on a feeling level.',
   },
   {
     q: 'Do families actually share astrological patterns?',
-    a: 'Families frequently share astrological patterns — certain signs, elements, or planetary placements that cluster across generations in ways that feel too consistent to be random. You might find that nearly everyone carries strong Scorpio energy, or that water signs dominate one branch while fire signs run through another. These patterns show up not just between parents and children, but in aunts, uncles, and grandparents too. Whether that\'s meaningful or coincidental depends on your perspective, but seeing it laid out visually tends to prompt a lot of recognition.',
+    a: 'Families frequently share astrological patterns: certain signs, elements, or planetary placements that cluster across generations in ways that feel too consistent to be random. You might find that nearly everyone carries strong Scorpio energy, or that water signs dominate one branch while fire signs run through another. These patterns show up not just between parents and children, but in aunts, uncles, and grandparents too. Whether that\'s meaningful or coincidental depends on your perspective, but seeing it laid out visually tends to prompt a lot of recognition.',
   },
   {
     q: 'How does astrological inheritance differ from genetic inheritance?',
-    a: 'Genetic inheritance follows bloodlines. Astrological patterns don\'t have to. Stepparents, adoptive families, and chosen families often show up in each other\'s charts in striking ways — shared elements, mirrored placements, or complementary signs that create a kind of cosmic coherence that has nothing to do with DNA. Some people find this more interesting than genetic inheritance, because it suggests that the connections we form aren\'t purely biological. It\'s worth exploring your whole constellation of people, not just blood relatives.',
+    a: 'Genetic inheritance follows bloodlines. Astrological patterns don\'t have to. Stepparents, adoptive families, and chosen families often show up in each other\'s charts in striking ways: shared elements, mirrored placements, or complementary signs that create a kind of cosmic coherence that has nothing to do with DNA. Some people find this more interesting than genetic inheritance, because it suggests that the connections we form aren\'t purely biological. It\'s worth exploring your whole constellation of people, not just blood relatives.',
   },
   {
     q: 'What are generational astrology patterns?',
-    a: 'Slower-moving planets like Pluto, Neptune, and Saturn spend years — sometimes decades — in a single sign, so entire generations share those placements. Pluto, for example, defines the core transformational theme of a generation: Pluto in Scorpio (roughly 1983–1995) shaped millennials around themes of depth, power, and hidden systems; Pluto in Sagittarius (1995–2008) shaped Gen Z around belief, expansion, and global connection. When you map a multi-generational family, these Pluto placements can help explain why different age groups in the same family seem to operate from fundamentally different worldviews — it\'s not just personality, it\'s the era they came through.',
+    a: 'Slower-moving planets like Pluto, Neptune, and Saturn spend years, sometimes decades, in a single sign, so entire generations share those placements. Pluto, for example, defines the core transformational theme of a generation: Pluto in Scorpio (roughly 1983–1995) shaped millennials around themes of depth, power, and hidden systems; Pluto in Sagittarius (1995–2008) shaped Gen Z around belief, expansion, and global connection. When you map a multi-generational family, these Pluto placements can help explain why different age groups in the same family seem to operate from fundamentally different worldviews. It\'s not just personality, it\'s the era they came through.',
   },
   {
     q: 'Can astrology explain why certain family dynamics feel so fixed?',
-    a: 'Family dynamics often map onto astrological signatures — the peacemaker, the catalyst, the one who carries everyone\'s emotions tend to reflect identifiable chart patterns. A family with heavy Capricorn energy might feel a strong pull toward achievement and structure; one with a lot of Cancer placements might organize itself around home and care. These aren\'t deterministic — knowing the pattern doesn\'t lock anyone into it — but naming it can shift how you relate to it. That\'s part of what AstroDig is for: making the invisible visible enough to actually look at.',
+    a: 'Family dynamics often map onto astrological signatures. The peacemaker, the catalyst, the one who carries everyone\'s emotions tend to reflect identifiable chart patterns. A family with heavy Capricorn energy might feel a strong pull toward achievement and structure; one with a lot of Cancer placements might organize itself around home and care. These aren\'t deterministic (knowing the pattern doesn\'t lock anyone into it), but naming it can shift how you relate to it. That\'s part of what AstroDig is for: making the invisible visible enough to actually look at.',
   },
   {
     q: 'What is "The DIG"?',
-    a: 'The DIG is AstroDig\'s signature Wrapped-style story experience — a series of personalized slides that tell your group\'s cosmic narrative. It highlights dominant elements, standout planetary patterns, compatibility threads, and generational themes. Free users see the first 3 slides; the complete DIG experience unlocks with Celestial.',
+    a: 'The DIG is AstroDig\'s signature Wrapped-style story experience: a series of personalized slides that tell your group\'s cosmic narrative. It highlights dominant elements, standout planetary patterns, compatibility threads, and generational themes. Free users see the first 3 slides; the complete DIG experience unlocks with Celestial.',
   },
   {
     q: 'Can I use AstroDig for friend groups or coworkers, not just families?',
-    a: 'Absolutely. AstroDig works for any group of people. The Constellation View is especially suited to non-hierarchical groups like friend circles or teams — it shows everyone as connected nodes in a star map rather than a structured family tree. You can mix relationship types freely within a single chart.',
+    a: 'Absolutely. AstroDig works for any group of people. The Constellation View is especially suited to non-hierarchical groups like friend circles or teams. It shows everyone as connected nodes in a star map rather than a structured family tree. You can mix relationship types freely within a single chart.',
   },
   {
     q: 'What does the Celestial unlock include?',
@@ -68,11 +68,11 @@ const faqs = [
   },
   {
     q: 'Can I share my chart with others?',
-    a: 'Yes. Every chart has a shareable link — anyone with the link can view your chart without needing an account or paying anything. Shared links are view-only, so your data stays yours.',
+    a: 'Yes. Every chart has a shareable link. Anyone with the link can view your chart without needing an account or paying anything. Shared links are view-only, so your data stays yours.',
   },
   {
     q: 'Can I export my chart as an image?',
-    a: 'Yes. Any view — tree, zodiac wheel, constellation, tables, or insights — can be exported as a PNG. Tree view export is free. Zodiac wheel and other view exports are part of the Celestial unlock.',
+    a: 'Yes. Any view (tree, zodiac wheel, constellation, tables, or insights) can be exported as a PNG. Tree view export is free. Zodiac wheel and other view exports are part of the Celestial unlock.',
   },
   {
     q: 'How accurate are the planetary calculations?',
@@ -80,7 +80,7 @@ const faqs = [
   },
   {
     q: 'What\'s the difference between the tree view and constellation view?',
-    a: 'The tree view shows hierarchical family relationships — parents, children, spouses — in a structured layout. The constellation view is a force-directed star map that works for any group, hierarchical or not. It\'s well suited for friend groups, teams, or any mix of people where a family tree structure doesn\'t apply.',
+    a: 'The tree view shows hierarchical family relationships (parents, children, spouses) in a structured layout. The constellation view is a force-directed star map that works for any group, hierarchical or not. It\'s well suited for friend groups, teams, or any mix of people where a family tree structure doesn\'t apply.',
   },
 ]
 
@@ -92,7 +92,7 @@ const faqJsonLd = {
       '@id': 'https://astrodig.com/faq#faqpage',
       url: 'https://astrodig.com/faq',
       name: 'AstroDig FAQ',
-      description: 'Frequently asked questions about AstroDig — the free family astrology chart builder by Jupiter Digital.',
+      description: 'Frequently asked questions about AstroDig, the free family astrology chart builder by Jupiter Digital.',
       isPartOf: { '@id': 'https://astrodig.com/#webapp' },
       mainEntity: faqs.map(({ q, a }) => ({
         '@type': 'Question',
@@ -245,7 +245,7 @@ export default function FaqPage() {
               fontSize: '0.9rem',
               marginBottom: '1.5rem',
             }}>
-              Free to use — no account required.
+              Free to use, no account required.
             </p>
             <Link href="/" style={{
               display: 'inline-block',

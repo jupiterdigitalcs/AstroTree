@@ -561,45 +561,45 @@ export function buildDigSummaryHtml(digData, slides, chartTitle) {
     } else if (s.type === 'superlative') {
       rows += row(s.data.title, `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}`, `${s.data.sub} · ${s.data.score} of ${s.data.total} placements in ${s.data.node.data?.element}`)
     } else if (s.type === 'emotionalForecast') {
-      rows += row('Emotional Landscape', `☽ ${s.data.node.data?.name || '—'}`, `${s.data.node.data?.moonSign} Moon — ${s.data.moonVibe}`)
+      rows += row('Emotional Landscape', `☽ ${s.data.node.data?.name || '—'}`, `${s.data.node.data?.moonSign} Moon: ${s.data.moonVibe}`)
     } else if (s.type === 'cosmicDuo') {
       const b = s.data.bond
       rows += row('Cosmic Duo', `${b.a?.data?.name || '—'} + ${b.b?.data?.name || '—'}`, `${b.title || 'Strongest cosmic bond in the chart'}${s.data.totalBonds > 1 ? ` · ${s.data.totalBonds} total bonds found` : ''}`)
     } else if (s.type === 'wildcard') {
-      rows += row('The Wildcard', `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}`, `The one who breaks the mold — zero ${s.data.familyElement} energy in a ${s.data.familyElement}-dominant family`)
+      rows += row('The Wildcard', `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}`, `The one who breaks the mold: zero ${s.data.familyElement} energy in a ${s.data.familyElement}-dominant family`)
     } else if (s.type === 'cosmicDNA') {
       const t = s.data.thread
       const chain = (t.chain || t.members || []).map(m => typeof m === 'string' ? m : m.name).join(' → ')
       rows += row('Cosmic DNA', `${SYM[t.sign] || ''} The ${t.sign} Gene`, `${chain}${s.data.totalThreads > 1 ? ` · ${s.data.totalThreads} zodiac threads running through the family` : ''}`)
     } else if (s.type === 'connector') {
-      rows += row('The Connector', `${s.data.node.data?.name || '—'}`, `Chart aspects to ${s.data.connectedTo?.length || 0} people — chart-backed linking energy`)
+      rows += row('The Connector', `${s.data.node.data?.name || '—'}`, `Chart aspects to ${s.data.connectedTo?.length || 0} people · chart-backed linking energy`)
     } else if (s.type === 'elementClash') {
-      rows += row('Element Clash', `${s.data.nodeA.data?.name} vs ${s.data.nodeB.data?.name}`, `${s.data.elementA} meets ${s.data.elementB} — the most cosmically opposed pair`)
+      rows += row('Element Clash', `${s.data.nodeA.data?.name} vs ${s.data.nodeB.data?.name}`, `${s.data.elementA} meets ${s.data.elementB}, the most cosmically opposed pair`)
     } else if (s.type === 'clone') {
-      rows += row('The Clone', `${s.data.nodeA.data?.name} & ${s.data.nodeB.data?.name}`, `${s.data.matchCount} matching placements — ${s.data.matches.join(', ')}`)
+      rows += row('The Clone', `${s.data.nodeA.data?.name} & ${s.data.nodeB.data?.name}`, `${s.data.matchCount} matching placements: ${s.data.matches.join(', ')}`)
     } else if (s.type === 'venusVibes') {
       const names = (s.data.topNames || []).filter(Boolean).join(', ')
-      rows += row('Venus Vibes', `♀ ${s.data.topElement} hearts`, `${s.data.topCount} member${s.data.topCount === 1 ? '' : 's'} with Venus in ${s.data.topElement} signs${names ? ` — ${names}` : ''}`)
+      rows += row('Venus Vibes', `♀ ${s.data.topElement} hearts`, `${s.data.topCount} member${s.data.topCount === 1 ? '' : 's'} with Venus in ${s.data.topElement} signs${names ? `: ${names}` : ''}`)
     } else if (s.type === 'marsEnergy') {
       const names = (s.data.topNames || []).filter(Boolean).join(', ')
-      rows += row('Mars Energy', `♂ ${s.data.topElement} drive`, `${s.data.topCount} member${s.data.topCount === 1 ? '' : 's'} with Mars in ${s.data.topElement} signs${names ? ` — ${names}` : ''}`)
+      rows += row('Mars Energy', `♂ ${s.data.topElement} drive`, `${s.data.topCount} member${s.data.topCount === 1 ? '' : 's'} with Mars in ${s.data.topElement} signs${names ? `: ${names}` : ''}`)
     } else if (s.type === 'moonMirror') {
       if (s.data.noSharedMoons) {
-        rows += row('Moon Mirror', `☽ ${s.data.moonCount} moons, no twins`, 'Every moon sign in this chart is unique — each person feels in their own language')
+        rows += row('Moon Mirror', `☽ ${s.data.moonCount} moons, no twins`, 'Every moon sign in this chart is unique. Each person feels in their own language')
       } else {
-        rows += row('Moon Mirror', `${s.data.nodeA.data?.name} & ${s.data.nodeB.data?.name}`, `Both carry a ${s.data.moonSign} Moon — emotional twins`)
+        rows += row('Moon Mirror', `${s.data.nodeA.data?.name} & ${s.data.nodeB.data?.name}`, `Both carry a ${s.data.moonSign} Moon: emotional twins`)
       }
     } else if (s.type === 'oldSoul') {
-      rows += row('The Anchor', `${s.data.node.data?.name}`, `${s.data.earthCount} Earth placements — the steadying presence in the chart`)
+      rows += row('The Anchor', `${s.data.node.data?.name}`, `${s.data.earthCount} Earth placements · the steadying presence in the chart`)
     } else if (s.type === 'rebel') {
-      rows += row('The Free Thinker', `${s.data.node.data?.name}`, `${s.data.airCount} Air placements — leads with ideas and perspective`)
+      rows += row('The Free Thinker', `${s.data.node.data?.name}`, `${s.data.airCount} Air placements · leads with ideas and perspective`)
     } else if (s.type === 'genBridge') {
       rows += row('Generational Bridge', `${s.data.parent.data?.name} → ${s.data.child.data?.name}`, `${SYM[s.data.sign] || ''} ${s.data.sign} energy passed from ${s.data.parentPlanet} to ${s.data.childPlanet}`)
     } else if (s.type === 'rareOne') {
       rows += row('The Rare One', `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name}`, `The only ${s.data.node.data?.sign} in a chart of ${s.data.totalMembers}`)
     } else if (s.type === 'aspectThreads') {
       const tierLabel = s.data.topType === 'heredThread' ? 'Passed Down' : s.data.topType === 'rareBond' ? 'Rare Bond' : 'Family Pattern'
-      rows += row('Cosmic Inheritance', `${tierLabel} — ${s.data.planetLabel}`, s.data.blurb ?? s.data.chainNames)
+      rows += row('Cosmic Inheritance', `${tierLabel}: ${s.data.planetLabel}`, s.data.blurb ?? s.data.chainNames)
     } else if (s.type === 'paywall') {
       // Skip paywall slide in summary export
     }

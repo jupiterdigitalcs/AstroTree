@@ -165,8 +165,9 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
       {/* ── Headline ── */}
       <h2>Map your people's cosmic&nbsp;DNA</h2>
       <p className="cosmic-onboarding-tagline">
-        See the sun signs, moon signs, and planets across your family, friends, or crew — all in one&nbsp;chart.
+        See the sun signs, moon signs, and planets across your family, friends, or crew, all in one&nbsp;chart.
       </p>
+      <p className="cosmic-onboarding-credo">Awareness, not destiny.</p>
 
       {/* ── Mini preview: tree + insight ── */}
       <div className="onboarding-preview-row" aria-hidden="true">

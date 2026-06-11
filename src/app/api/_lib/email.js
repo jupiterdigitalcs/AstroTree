@@ -58,9 +58,9 @@ export async function sendPremiumConfirmation({ to, charts }) {
           <p style="margin:0 0 10px;font-size:14px;color:#c9a84c;font-weight:600">What's now yours:</p>
           <ul style="margin:0;padding:0 0 0 18px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.9">
             <li>Zodiac Wheel &amp; Constellation views</li>
-            <li>Tables — sortable sun, moon &amp; planet grid</li>
-            <li>Full Insights — roles, zodiac threads, and deeper analysis</li>
-            <li>The complete DIG — every slide in your cosmic story</li>
+            <li>Tables · sortable sun, moon &amp; planet grid</li>
+            <li>Full Insights · roles, zodiac threads, and deeper analysis</li>
+            <li>The complete DIG · every slide in your cosmic story</li>
             <li>Unlimited charts</li>
           </ul>
         </div>
@@ -99,7 +99,7 @@ export async function sendPremiumConfirmation({ to, charts }) {
     const result = await resend.emails.send({
       from: FROM,
       to,
-      subject: '✦ Welcome to AstroDig Celestial — Your Charts Inside',
+      subject: '✦ Welcome to Celestial. Your charts are inside.',
       html,
     })
     console.log(`[email] purchase confirmation sent to ${to}:`, result)
@@ -174,7 +174,7 @@ export async function sendRefundConfirmation({ to }) {
           Your Celestial purchase has been refunded. The charge will be reversed on your statement within 5–10 business days.
         </p>
         <p style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.7;margin:0 0 16px">
-          Your account has been moved back to the free tier. Your saved charts and members are still there — you just won't have access to Celestial features.
+          Your account has been moved back to the free tier. Your saved charts and members are still there. You just won't have access to Celestial features.
         </p>
         <p style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.7;margin:0">
           If you change your mind, you can upgrade again anytime at <a href="https://astrodig.com" style="color:#c9a84c;text-decoration:none">astrodig.com</a>.

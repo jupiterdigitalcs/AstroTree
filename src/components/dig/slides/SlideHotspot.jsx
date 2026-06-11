@@ -17,7 +17,7 @@ export default function SlideHotspot({ data }) {
         {spot.position} {spot.sign}
       </h2>
       <p className="dig-body dig-fly-in" style={{ '--i': 2 }}>
-        {spot.peopleCount} of you have planets clustered in the same zone of {spot.sign} — when something
+        {spot.peopleCount} of you have planets clustered in the same zone of {spot.sign}. When something
         happens in this part of the sky, you all tend to feel it.
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />

@@ -27,7 +27,7 @@ export default function SlideElementClash({ data }) {
         <span style={{ color: ELEMENT_COLOR[elementA] }}>{elementA}</span>
         {' meets '}
         <span style={{ color: ELEMENT_COLOR[elementB] }}>{elementB}</span>
-        {' — '}{flavor.tension}
+        {': '}{flavor.tension}
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3 }}>

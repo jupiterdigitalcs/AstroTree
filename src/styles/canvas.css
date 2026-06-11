@@ -486,3 +486,36 @@
   from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
+
+/* ── Generational cascade on tree entry ──────────────────────────────────
+   --gen (layout row index) is set per node/edge in App.jsx. Nodes fade in
+   row by row, cards rise slightly, then the connecting lines follow.
+   Newly added members fade in the same way. Disabled automatically under
+   prefers-reduced-motion (base.css). */
+.tree-entrance .react-flow__node {
+  animation: tree-node-in 0.45s ease-out backwards;
+  animation-delay: calc(var(--gen, 0) * 0.16s);
+}
+@keyframes tree-node-in {
+  from { opacity: 0; }
+}
+.tree-entrance .react-flow__node .astro-node {
+  animation: tree-card-rise 0.45s ease-out backwards;
+  animation-delay: calc(var(--gen, 0) * 0.16s);
+}
+@keyframes tree-card-rise {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+}
+.tree-entrance .react-flow__edge-path {
+  animation: tree-edge-in 0.5s ease-out backwards;
+  animation-delay: calc(var(--gen, 0) * 0.16s + 0.28s);
+}
+/* RF "animated" edges have their own dashdraw animation that would override
+   the entrance fade, so compose both */
+.tree-entrance .react-flow__edge.animated .react-flow__edge-path {
+  animation: dashdraw 0.5s linear infinite, tree-edge-in 0.5s ease-out backwards;
+  animation-delay: 0s, calc(var(--gen, 0) * 0.16s + 0.28s);
+}
+@keyframes tree-edge-in {
+  from { opacity: 0; }
+}

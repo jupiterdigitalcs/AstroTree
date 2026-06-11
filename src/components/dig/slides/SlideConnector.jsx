@@ -25,7 +25,7 @@ export default function SlideConnector({ data }) {
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3 }}>
         {node.data?.name.split(' ')[0]}'s planets form aspects to {connectedTo?.length || 0} other
-        people — and their chart carries the Air or Venus energy that supports a natural linking role.
+        people, and their chart carries the Air or Venus energy that supports a natural linking role.
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.7rem', opacity: 0.5, marginTop: '0.4rem' }}>
         An aspect is the angle between two planets. When one person's planets make many angles to others' charts, they tend to be felt by everyone in the group.

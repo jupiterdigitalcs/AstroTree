@@ -16,7 +16,7 @@ export default function SlideRebel({ data }) {
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3 }}>
-        {airCount} Air placement{airCount > 1 ? 's' : ''} — {d.name.split(' ')[0]} tends to lead with
+        {airCount} Air placement{airCount > 1 ? 's' : ''}. {d.name.split(' ')[0]} tends to lead with
         ideas, questions, and perspective. The one who steps back to see the bigger picture.
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.75rem', opacity: 0.5, marginTop: '0.6rem' }}>

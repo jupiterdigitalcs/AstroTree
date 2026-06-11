@@ -49,18 +49,18 @@ const ASPECTS = [
 
 // Saturn sign themes — responsibility, structure, lessons
 const SATURN_THEMES = {
-  Aries:       'learning to lead without burning out — finding patience within urgency',
-  Taurus:      'building real security — lessons around self-worth and material stability',
-  Gemini:      'learning to commit to ideas — depth over breadth in thinking',
-  Cancer:      'carrying emotional responsibility early — lessons around home and belonging',
-  Leo:         'earning recognition through discipline — learning that confidence takes work',
-  Virgo:       'holding themselves to high standards — learning when "good enough" is enough',
-  Libra:       'navigating partnership with care — lessons around fairness and compromise',
-  Scorpio:     'facing hard truths — learning to let go and rebuild from deep places',
-  Sagittarius: 'grounding big ideas into action — learning that freedom requires structure',
-  Capricorn:   'taking on responsibility naturally — learning to balance ambition with rest',
-  Aquarius:    'questioning the rules — learning to build new systems, not just critique old ones',
-  Pisces:      'holding boundaries in a boundless inner world — lessons around trust and faith',
+  Aries:       'learning to lead without burning out, finding patience within urgency',
+  Taurus:      'building real security, with lessons around self-worth and material stability',
+  Gemini:      'learning to commit to ideas, choosing depth over breadth in thinking',
+  Cancer:      'carrying emotional responsibility early, with lessons around home and belonging',
+  Leo:         'earning recognition through discipline, learning that confidence takes work',
+  Virgo:       'holding themselves to high standards, learning when "good enough" is enough',
+  Libra:       'navigating partnership with care, with lessons around fairness and compromise',
+  Scorpio:     'facing hard truths, learning to let go and rebuild from deep places',
+  Sagittarius: 'grounding big ideas into action, learning that freedom requires structure',
+  Capricorn:   'taking on responsibility naturally, learning to balance ambition with rest',
+  Aquarius:    'questioning the rules, learning to build new systems rather than just critique old ones',
+  Pisces:      'holding boundaries in a boundless inner world, with lessons around trust and faith',
 }
 
 // Jupiter sign themes — growth, expansion, gifts
@@ -362,7 +362,7 @@ export function findGaps(nodes) {
     gapSigns,
     qualities,
     description: gapSigns.length > 0
-      ? `No one in this group has planets in ${gapSigns.join(', ')} — the qualities of ${qualities.slice(0, 3).join(', ')} may not come naturally to the group as a whole.`
+      ? `No one in this group has planets in ${gapSigns.join(', ')}. The qualities of ${qualities.slice(0, 3).join(', ')} may not come naturally to the group as a whole.`
       : null,
   }
 }
@@ -451,7 +451,7 @@ export function deriveRoles(nodes) {
       if (elementCarriers[el].length === 1 && elementCarriers[el][0].id === node.id) {
         contributions.push({
           type: 'sole_element',
-          description: `the only one bringing ${el} energy to the group — without them, that quality would be entirely absent`,
+          description: `the only one bringing ${el} energy to the group. Without them, that quality would be entirely absent`,
         })
       }
     }
@@ -461,7 +461,7 @@ export function deriveRoles(nodes) {
       if (elementLeaders[el]?.id === node.id && eCounts[el] >= 3) {
         contributions.push({
           type: 'element_leader',
-          description: `the group's strongest source of ${el} energy — ${eCounts[el]} of their personal planets are in ${el} signs`,
+          description: `the group's strongest source of ${el} energy: ${eCounts[el]} of their personal planets are in ${el} signs`,
         })
       }
     }
@@ -471,14 +471,14 @@ export function deriveRoles(nodes) {
     if (tension) {
       contributions.push({
         type: 'tension',
-        description: `shows up as ${tension.sunEl} but processes emotions through ${tension.moonEl} — they may carry a push-pull the group senses but can't quite name`,
+        description: `shows up as ${tension.sunEl} but processes emotions through ${tension.moonEl}. They may carry a push-pull the group senses but can't quite name`,
       })
     }
 
     // Modality standout
     const topMod = Object.entries(mods).sort((a, b) => b[1] - a[1])[0]
     if (topMod[1] >= 3) {
-      const modDesc = { Cardinal: 'an initiator — tends to be the one who starts things', Fixed: 'a stabilizer — tends to hold things together once started', Mutable: 'an adapter — tends to be the one who shifts when things change' }
+      const modDesc = { Cardinal: 'an initiator, the one who tends to start things', Fixed: 'a stabilizer, the one who tends to hold things together once started', Mutable: 'an adapter, the one who tends to shift when things change' }
       contributions.push({
         type: 'modality',
         description: modDesc[topMod[0]] || `strongly ${topMod[0]}`,
@@ -490,7 +490,7 @@ export function deriveRoles(nodes) {
     if (presentElements.length === 4) {
       contributions.push({
         type: 'balanced',
-        description: `has all four elements represented — may naturally mediate between different energies in the group`,
+        description: `has all four elements represented and may naturally mediate between different energies in the group`,
       })
     }
 
@@ -501,7 +501,7 @@ export function deriveRoles(nodes) {
         const venusRole = { Water: 'emotional vulnerability', Fire: 'passionate expression', Air: 'intellectual connection', Earth: 'grounded, physical affection' }
         contributions.push({
           type: 'rare_venus',
-          description: `one of the few with Venus in ${venusEl} — may be the group's access point to ${venusRole[venusEl] || 'a different way of connecting'}`,
+          description: `one of the few with Venus in ${venusEl}, and may be the group's access point to ${venusRole[venusEl] || 'a different way of connecting'}`,
         })
       }
     }
@@ -513,7 +513,7 @@ export function deriveRoles(nodes) {
         const marsRole = { Water: 'emotionally driven action', Fire: 'impulsive directness', Air: 'strategic thinking', Earth: 'steady, methodical follow-through' }
         contributions.push({
           type: 'rare_mars',
-          description: `Mars in ${marsEl} — may approach conflict and motivation differently than the rest of the group, through ${marsRole[marsEl] || 'a distinct style'}`,
+          description: `Mars in ${marsEl}: they may approach conflict and motivation differently than the rest of the group, through ${marsRole[marsEl] || 'a distinct style'}`,
         })
       }
     }
@@ -645,7 +645,7 @@ export function findBridgePerson(nodes) {
     node: bestNode,
     aspectCount: bestCount,
     connectedTo: [...bestConnected],
-    description: `${bestNode.data?.name}'s chart touches ${bestConnected.size} other people's — the cosmic connector of the group`,
+    description: `${bestNode.data?.name}'s chart touches ${bestConnected.size} other people's, making them the cosmic connector of the group`,
   }
 }
 

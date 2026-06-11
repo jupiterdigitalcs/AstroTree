@@ -18,7 +18,7 @@ export default function SlideClone({ data }) {
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3 }}>
-        {matchCount} matching placement{matchCount > 1 ? 's' : ''} — these two share the same cosmic blueprint.
+        {matchCount} matching placement{matchCount > 1 ? 's' : ''}. These two share the same cosmic blueprint.
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.8rem', opacity: 0.6 }}>
         {matches.join(' · ')}

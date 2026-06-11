@@ -19,7 +19,7 @@ export default function SlideEmotionalForecast({ data }) {
         With a {d.moonSign} Moon, {d.name.split(' ')[0]} {moonVibe}.
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.78rem', opacity: 0.5, marginTop: '0.6rem' }}>
-        {waterCount} water placements — this one feels everything
+        {waterCount} water placements · this one feels everything
       </p>
     </div>
   )

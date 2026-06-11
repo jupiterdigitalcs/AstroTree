@@ -93,7 +93,7 @@ export const SIBLING_ADAPTABILITY = {
 }
 
 export const PLUTO_GENS = {
-  Cancer:      { years: '~1914–1939', flavor: 'shaped by home, survival, and deep loyalty to family' },
+  Cancer:      { years: '~1914–1939', flavor: 'shaped by home, survival, and deep loyalty to their people' },
   Leo:         { years: '~1939–1957', flavor: 'driven by identity, pride, and a need to leave their mark' },
   Virgo:       { years: '~1958–1971', flavor: 'defined by craft, critical thinking, and a drive to improve' },
   Libra:       { years: '~1972–1983', flavor: 'formed by ideals of fairness, partnership, and social harmony' },
@@ -138,17 +138,33 @@ export const MOON_STYLE = {
 
 export const ZODIAC_THREAD_BLURB = {
   Aries:       'A streak of boldness runs in this family. Independent thinkers who act on instinct and resist being told what to do.',
-  Taurus:      'A deep rootedness passes through the generations. This family prizes stability, comfort, and building things that last.',
+  Taurus:      'A deep rootedness passes through the generations. Stability, comfort, and building things that last matter here.',
   Gemini:      'Curiosity is the family inheritance. Quick minds, a gift for conversation, and a need to keep learning.',
   Cancer:      'The home and its memory bind this family. Emotional attunement, loyalty, and a fierce protectiveness of those they love.',
-  Leo:         'A warmth and need for self-expression flows through. This family carries a natural light and doesn\'t shrink from being seen.',
+  Leo:         'A warmth and need for self-expression flows through. There\'s a natural light here that doesn\'t shrink from being seen.',
   Virgo:       'A thread of precision and quiet devotion. These are the ones who notice the details, show up consistently, and fix things without being asked.',
-  Libra:       'A need for harmony and fairness is woven through. This family values beauty, balance, and keeping the peace, sometimes to a fault.',
-  Scorpio:     'Emotional depth and perception run strong. This family feels things fully, sees beneath the surface, and is shaped by transformation.',
-  Sagittarius: 'An expansive, searching spirit recurs. This family is restless with meaning, drawn to big ideas, travel, and the question of why.',
-  Capricorn:   'An ambition to build something lasting runs in the blood. This family respects discipline, earns trust slowly, and plays the long game.',
+  Libra:       'A need for harmony and fairness is woven through. Beauty, balance, and keeping the peace are core values, sometimes to a fault.',
+  Scorpio:     'Emotional depth and perception run strong. People here feel things fully, see beneath the surface, and are shaped by transformation.',
+  Sagittarius: 'An expansive, searching spirit recurs. Restless with meaning, drawn to big ideas, travel, and the question of why.',
+  Capricorn:   'An ambition to build something lasting runs in the blood. Discipline is respected, trust is earned slowly, and the long game wins.',
   Aquarius:    'An independent streak and a vision that runs ahead of its time. This family thinks differently and doesn\'t follow trends.',
   Pisces:      'A deep empathy and sensitivity recurs across the line. This family feels the world more than most and carries a strong imaginative inner life.',
+}
+
+// Same threads, written for friend/coworker charts (no lineage language)
+export const ZODIAC_THREAD_BLURB_GROUP = {
+  Aries:       'A streak of boldness runs through this group. Independent thinkers who act on instinct and resist being told what to do.',
+  Taurus:      'A shared steadiness holds this group together. People who prize comfort, loyalty, and things that last.',
+  Gemini:      'Curiosity is the common thread. Quick minds, a gift for conversation, and a need to keep learning.',
+  Cancer:      'Care runs deep here. Emotional attunement, loyalty, and a fierce protectiveness of their own.',
+  Leo:         'A warmth and need for self-expression flows through. This group carries a natural light and doesn\'t shrink from being seen.',
+  Virgo:       'A thread of precision and quiet devotion. These are the ones who notice the details, show up consistently, and fix things without being asked.',
+  Libra:       'A need for harmony and fairness is woven through. Beauty, balance, and keeping the peace are core values, sometimes to a fault.',
+  Scorpio:     'Emotional depth and perception run strong. People here feel things fully, see beneath the surface, and are shaped by transformation.',
+  Sagittarius: 'An expansive, searching spirit recurs. This group is restless with meaning, drawn to big ideas, travel, and the question of why.',
+  Capricorn:   'A shared ambition to build something lasting. Discipline is respected, trust is earned slowly, and the long game wins.',
+  Aquarius:    'An independent streak and a vision that runs ahead of its time. This group thinks differently and doesn\'t follow trends.',
+  Pisces:      'A deep empathy and sensitivity recurs across the group. People who feel the world more than most and carry strong imaginative inner lives.',
 }
 
 export const SIGN_SHORT = {
@@ -174,9 +190,9 @@ export const SQUAD_ELEMENT_VIBE = {
 }
 
 export const SQUAD_MODALITY_VIBE = {
-  Cardinal: 'initiators — always planning the next thing, pushing each other to start',
-  Fixed:    'ride-or-die loyal — once this group forms, it holds. Not easily shaken',
-  Mutable:  'adaptable and flexible — this group goes with the flow and rarely gets stuck',
+  Cardinal: 'initiators, always planning the next thing and pushing each other to start',
+  Fixed:    'ride-or-die loyal. Once this group forms, it holds',
+  Mutable:  'adaptable and flexible, the kind of group that goes with the flow and rarely gets stuck',
 }
 
 export const SQUAD_POLARITY_NOTE = {
