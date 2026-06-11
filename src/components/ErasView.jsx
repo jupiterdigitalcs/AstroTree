@@ -11,7 +11,7 @@
  * - Axis zooms to the group's actual year spread, so same-age friend
  *   groups don't get one giant empty band
  */
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 
 // Pluto generation eras (numeric mirror of PLUTO_GENS in insightsData.js)
 const ERAS = [
@@ -25,16 +25,20 @@ const ERAS = [
   { sign: 'Aquarius',    from: 2023, to: 2044, color: 'rgba(91,200,245,0.07)',  label: '♒ Pluto in Aquarius' },
 ]
 
-function useNarrow() {
-  const [narrow, setNarrow] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches)
+// Orientation follows the CONTAINER, not the window — the insights panel
+// is a narrow column even on desktop, where the horizontal layout would
+// render unreadably small
+function useContainerWidth() {
+  const ref = useRef(null)
+  const [width, setWidth] = useState(0)
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 640px)')
-    const onChange = e => setNarrow(e.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
+    const el = ref.current
+    if (!el) return
+    const ro = new ResizeObserver(entries => setWidth(entries[0].contentRect.width))
+    ro.observe(el)
+    return () => ro.disconnect()
   }, [])
-  return narrow
+  return [ref, width]
 }
 
 export function extractEraMembers(nodes) {
@@ -52,7 +56,8 @@ export function extractEraMembers(nodes) {
 }
 
 export function ErasView({ nodes, isGroupOnly }) {
-  const vertical = useNarrow()
+  const [wrapRef, containerW] = useContainerWidth()
+  const vertical = containerW < 700 // includes pre-measure first paint (0)
 
   const data = useMemo(() => {
     const members = extractEraMembers(nodes)
@@ -69,9 +74,11 @@ export function ErasView({ nodes, isGroupOnly }) {
     const minYear = Math.floor((members[0].year - pad) / 10) * 10
     const maxYear = Math.ceil((members[n - 1].year + pad) / 10) * 10
 
-    // Layout space: t = along time, c = across lanes
+    // Layout space: t = along time, c = across lanes. In vertical mode the
+    // cross axis matches the real container width so 1 SVG unit ≈ 1px and
+    // text renders at its intended size
     const T = vertical ? Math.max(560, n * 86) : 1100
-    const C = vertical ? 420 : 450
+    const C = vertical ? Math.round(Math.min(480, Math.max(330, containerW || 380))) : 450
     const PAD_T = vertical ? 56 : 60
     const MID_C = C / 2 + (vertical ? 10 : 0)
     const t = year => PAD_T + ((year - minYear) / (maxYear - minYear)) * (T - PAD_T * 2)
@@ -93,10 +100,10 @@ export function ErasView({ nodes, isGroupOnly }) {
       .filter(e => e.t2 - e.t1 > 24)
 
     return { placed, decades, eras, markerR, T, C }
-  }, [nodes, vertical])
+  }, [nodes, vertical, containerW])
 
-  if (!data) return null
-  const { placed, decades, eras, markerR, T, C } = data
+  const { placed, decades, eras, markerR, T, C } = data ?? {}
+  if (!data) return <div ref={wrapRef} className="eras-view" />
 
   // Map (t, c) into svg space per orientation
   const X = p => vertical ? p.c : p.t
@@ -107,7 +114,7 @@ export function ErasView({ nodes, isGroupOnly }) {
   const thread = placed.map(m => `${X(m)},${Y(m)}`).join(' ')
 
   return (
-    <div className="eras-view">
+    <div ref={wrapRef} className="eras-view">
       <p className="eras-intro">
         Everyone, in the order they arrived. The bands are Pluto generations,
         the eras people came through. {isGroupOnly ? 'Groups' : 'Families'} that

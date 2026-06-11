@@ -476,13 +476,13 @@
 }
 .eras-name {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   fill: rgba(237,230,255,0.85);
 }
 .eras-year {
   font-family: 'Raleway', sans-serif;
-  font-size: 9.5px;
+  font-size: 10px;
   fill: rgba(237,230,255,0.4);
 }
 .eras-thread {
@@ -527,13 +527,30 @@
 
 /* Four tabs no longer fit a phone width — scroll the row instead of wrapping */
 @media (max-width: 768px) {
+  .insights-subnav-row {
+    max-width: 100%;
+  }
   .insights-subnav {
     overflow-x: auto;
     flex-wrap: nowrap;
     white-space: nowrap;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
+    /* without this the nowrap content widens the flex row past the
+       viewport instead of scrolling inside it */
+    min-width: 0;
   }
   .insights-subnav::-webkit-scrollbar { display: none; }
-  .insights-subnav-btn { flex-shrink: 0; }
+  .insights-subnav-btn {
+    flex-shrink: 0;
+    font-size: 0.68rem;
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+  }
+  /* Compact labels on phones: drop the "The " and shrink beta tags */
+  .subnav-long { display: none; }
+  .insights-subnav .current-beta-tag {
+    font-size: 0.42rem;
+    padding: 0.06rem 0.2rem;
+  }
 }

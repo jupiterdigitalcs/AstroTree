@@ -2064,12 +2064,12 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               type="button"
               className={`insights-subnav-btn${insightsTab === 'dig' ? ' active' : ''}`}
               onClick={() => onInsightsTabChange?.('dig')}
-            >✦ The DIG{hasAdvanced && <span className="pro-tag pro-tag--subtle">✦</span>}</button>
+            >✦ <span className="subnav-long">The </span>DIG{hasAdvanced && <span className="pro-tag pro-tag--subtle">✦</span>}</button>
             <button
               type="button"
               className={`insights-subnav-btn${insightsTab === 'current' ? ' active' : ''}${!hasAdvanced ? ' insights-subnav-btn--locked' : ''}`}
               onClick={() => onInsightsTabChange?.('current')}
-            >✦ The Current <span className="current-beta-tag">Beta</span>{hasAdvanced && <span className="pro-tag pro-tag--subtle">✦</span>}</button>
+            >✦ <span className="subnav-long">The </span>Current <span className="current-beta-tag">Beta</span>{hasAdvanced && <span className="pro-tag pro-tag--subtle">✦</span>}</button>
             {erasEligible && (
               <button
                 type="button"
