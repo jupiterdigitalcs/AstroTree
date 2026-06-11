@@ -146,7 +146,7 @@ export default function AboutPanel() {
           Each sign belongs to an <strong>element</strong> (Fire, Earth, Air, Water) and a <strong>modality</strong> (Cardinal, Fixed, Mutable), which is how AstroDig spots patterns across a whole group. When two people share placements, it often shows up as a natural understanding between them.
         </p>
         <p className="about-bio" style={{ marginTop: '0.5rem', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-          Note that humans have free will and choice. Astrology provides awareness of the energy present and how it might manifest. It is up to you what you do with those energies.
+          Note that humans have free will and choice. Astrology provides awareness of the energy present and how it might show up. It is up to you what you do with those energies.
         </p>
       </div>
 
