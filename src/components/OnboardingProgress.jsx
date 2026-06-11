@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
+import { kv } from '../utils/kvStore.js'
 
 const STORAGE_KEY = 'astrotree_insights_seen'
 
 export function OnboardingProgress({ nodes, edges, onGoToTree, onGoToInsights, onConnectFirst }) {
   const [insightsSeen, setInsightsSeen] = useState(() => {
-    try { return localStorage.getItem(STORAGE_KEY) === '1' } catch { return false }
+    try { return kv.get(STORAGE_KEY) === '1' } catch { return false }
   })
 
   useEffect(() => {
@@ -24,7 +25,7 @@ export function OnboardingProgress({ nodes, edges, onGoToTree, onGoToInsights, o
   function handleStepClick(step) {
     if (step === 2) { onConnectFirst ? onConnectFirst() : onGoToTree?.() }
     if (step === 3) {
-      try { localStorage.setItem(STORAGE_KEY, '1') } catch {}
+      try { kv.set(STORAGE_KEY, '1') } catch {}
       setInsightsSeen(true)
       onGoToInsights?.()
     }
@@ -59,5 +60,5 @@ export function OnboardingProgress({ nodes, edges, onGoToTree, onGoToInsights, o
 }
 
 export function markInsightsSeen() {
-  try { localStorage.setItem(STORAGE_KEY, '1') } catch {}
+  try { kv.set(STORAGE_KEY, '1') } catch {}
 }

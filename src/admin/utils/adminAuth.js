@@ -1,3 +1,4 @@
+import { apiUrl } from '../../utils/apiBase.js'
 const SESSION_KEY = 'admin_authed'
 const TOKEN_KEY   = 'admin_token'
 
@@ -11,7 +12,7 @@ export function getAdminToken() {
 
 export async function attemptAdminLogin(password) {
   try {
-    const res = await fetch('/api/admin?action=login', {
+    const res = await fetch(apiUrl('/api/admin?action=login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),

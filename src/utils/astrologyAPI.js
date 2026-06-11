@@ -1,3 +1,4 @@
+import { apiUrl } from './apiBase.js'
 /**
  * Client-side wrapper for the server-side astrology API.
  * Celestine calculations run on the server — this module fetches the results.
@@ -6,7 +7,7 @@
 /** Compute astrology data for a single member */
 export async function computeAstrology(birthdate, birthTime = null, birthTimezone = null) {
   try {
-    const res = await fetch('/api/astrology', {
+    const res = await fetch(apiUrl('/api/astrology'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -26,7 +27,7 @@ export async function computeAstrology(birthdate, birthTime = null, birthTimezon
 /** Compute astrology data for multiple members in a single request */
 export async function computeAstrologyBatch(members) {
   try {
-    const res = await fetch('/api/astrology', {
+    const res = await fetch(apiUrl('/api/astrology'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -1,4 +1,5 @@
 import { getAdminToken } from './adminAuth.js'
+import { apiUrl } from '../../utils/apiBase.js'
 
 function adminHeaders() {
   return { 'Authorization': `Bearer ${getAdminToken()}` }
@@ -31,7 +32,7 @@ function fromRow(row) {
 export async function fetchAllCharts({ search = '', email = '', dateFrom = '', dateTo = '', page = 0 } = {}) {
   try {
     const params = new URLSearchParams({ search, email, dateFrom, dateTo, page: String(page) })
-    const res = await fetch(`/api/admin?action=charts&${params}`, { headers: adminHeaders() })
+    const res = await fetch(apiUrl(`/api/admin?action=charts&${params}`), { headers: adminHeaders() })
     if (res.status === 401) return { error: 'auth' }
     if (!res.ok) {
       const body = await res.text().catch(() => '')
@@ -48,7 +49,7 @@ export async function fetchAllCharts({ search = '', email = '', dateFrom = '', d
 
 export async function fetchAdminStatsManual() {
   try {
-    const res = await fetch('/api/admin?action=stats', { headers: adminHeaders() })
+    const res = await fetch(apiUrl('/api/admin?action=stats'), { headers: adminHeaders() })
     if (!res.ok) return null
     return await res.json()
   } catch (e) {
@@ -59,7 +60,7 @@ export async function fetchAdminStatsManual() {
 
 export async function fetchDevicesGrouped() {
   try {
-    const res = await fetch('/api/admin?action=devices', { headers: adminHeaders() })
+    const res = await fetch(apiUrl('/api/admin?action=devices'), { headers: adminHeaders() })
     if (!res.ok) return []
     const data = await res.json()
     return (data ?? []).map(r => ({
@@ -81,7 +82,7 @@ export async function fetchDevicesGrouped() {
 
 export async function fetchTreesPerDay() {
   try {
-    const res = await fetch('/api/admin?action=trees-per-day', { headers: adminHeaders() })
+    const res = await fetch(apiUrl('/api/admin?action=trees-per-day'), { headers: adminHeaders() })
     if (!res.ok) return []
     const data = await res.json()
     return (data ?? []).map(r => ({ day: r.day, count: Number(r.count) }))
@@ -93,7 +94,7 @@ export async function fetchTreesPerDay() {
 
 export async function fetchPaywallConfig() {
   try {
-    const res = await fetch('/api/admin?action=paywall-config', { headers: adminHeaders() })
+    const res = await fetch(apiUrl('/api/admin?action=paywall-config'), { headers: adminHeaders() })
     if (!res.ok) return []
     const data = await res.json()
     // Convert array of { key, value, updated_at } to a map
@@ -108,7 +109,7 @@ export async function fetchPaywallConfig() {
 
 export async function updatePaywallConfig(key, value) {
   try {
-    const res = await fetch('/api/admin?action=paywall-config-set', {
+    const res = await fetch(apiUrl('/api/admin?action=paywall-config-set'), {
       method: 'POST',
       headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ key, value }),
@@ -122,7 +123,7 @@ export async function updatePaywallConfig(key, value) {
 
 export async function fetchPurchases() {
   try {
-    const res = await fetch('/api/admin?action=purchases', { headers: adminHeaders() })
+    const res = await fetch(apiUrl('/api/admin?action=purchases'), { headers: adminHeaders() })
     if (!res.ok) return []
     return await res.json()
   } catch (e) {
@@ -133,7 +134,7 @@ export async function fetchPurchases() {
 
 export async function fetchCelestialUsers() {
   try {
-    const res = await fetch('/api/admin?action=celestial-users', { headers: adminHeaders() })
+    const res = await fetch(apiUrl('/api/admin?action=celestial-users'), { headers: adminHeaders() })
     if (!res.ok) return []
     return await res.json()
   } catch (e) {
@@ -144,7 +145,7 @@ export async function fetchCelestialUsers() {
 
 export async function downgradeUser(authUserId, email) {
   try {
-    const res = await fetch('/api/admin?action=downgrade-user', {
+    const res = await fetch(apiUrl('/api/admin?action=downgrade-user'), {
       method: 'POST',
       headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ authUserId, email }),
@@ -159,7 +160,7 @@ export async function downgradeUser(authUserId, email) {
 export async function fetchFunnel({ dateFrom = '', dateTo = '', excludeDevices = '', excludeEmails = '' } = {}) {
   try {
     const params = new URLSearchParams({ dateFrom, dateTo, excludeDevices, excludeEmails })
-    const res = await fetch(`/api/admin?action=funnel&${params}`, { headers: adminHeaders() })
+    const res = await fetch(apiUrl(`/api/admin?action=funnel&${params}`), { headers: adminHeaders() })
     if (!res.ok) return []
     return await res.json()
   } catch (e) {
@@ -170,7 +171,7 @@ export async function fetchFunnel({ dateFrom = '', dateTo = '', excludeDevices =
 
 export async function markChartAsTest(chartId, isTest) {
   try {
-    const res = await fetch('/api/admin?action=mark-chart-test', {
+    const res = await fetch(apiUrl('/api/admin?action=mark-chart-test'), {
       method: 'POST',
       headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ chartId, isTest }),
@@ -184,7 +185,7 @@ export async function markChartAsTest(chartId, isTest) {
 
 export async function fetchResearchData() {
   try {
-    const res = await fetch('/api/admin?action=research', { headers: adminHeaders() })
+    const res = await fetch(apiUrl('/api/admin?action=research'), { headers: adminHeaders() })
     if (res.status === 401) return { error: 'auth' }
     if (!res.ok) return null
     return await res.json()
@@ -196,7 +197,7 @@ export async function fetchResearchData() {
 
 export async function fetchEngagementStats() {
   try {
-    const res = await fetch('/api/admin?action=engagement', { headers: adminHeaders() })
+    const res = await fetch(apiUrl('/api/admin?action=engagement'), { headers: adminHeaders() })
     if (!res.ok) return null
     return await res.json()
   } catch (e) {

@@ -55,12 +55,13 @@ import { FloatingPills } from './components/FloatingPills.jsx'
 import { CanvasOnboarding } from './components/CanvasOnboarding.jsx'
 import { TreeLegend } from './components/TreeLegend.jsx'
 import { ConstellationLegend } from './components/ConstellationLegend.jsx'
+import { kv } from './utils/kvStore.js'
 
 const NODE_TYPES = { astro: AstroNode }
 
 // UX mode — cosmic is the default layout (bottom-nav + sheets)
 function getUxMode() {
-  try { return localStorage.getItem('astrodig_ux') || 'cosmic' } catch { return 'cosmic' }
+  try { return kv.get('astrodig_ux') || 'cosmic' } catch { return 'cosmic' }
 }
 
 // ── Fit the view whenever fitTick increments ──────────────────────────────────
@@ -208,7 +209,7 @@ export default function App() {
   }, [resetEntitlements, rawSignOut, refreshEntitlements])
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
   const [pendingUpgrade, setPendingUpgrade] = useState(() => {
-    try { const v = localStorage.getItem('astrotree_pending_upgrade'); if (v) { localStorage.removeItem('astrotree_pending_upgrade'); return true } } catch {}
+    try { const v = kv.get('astrotree_pending_upgrade'); if (v) { kv.remove('astrotree_pending_upgrade'); return true } } catch {}
     return false
   })
 
@@ -680,7 +681,7 @@ export default function App() {
           onClose={() => setShowUpgradePrompt(false)}
           onRedeemed={() => { refreshEntitlements(); setPremiumToast(true); setTimeout(() => setPremiumToast(false), 5000) }}
           authUser={authUser}
-          onSignIn={() => { setShowUpgradePrompt(false); setPendingUpgrade(true); try { localStorage.setItem('astrotree_pending_upgrade', '1') } catch {}; setShowEmailCapture(true) }}
+          onSignIn={() => { setShowUpgradePrompt(false); setPendingUpgrade(true); try { kv.set('astrotree_pending_upgrade', '1') } catch {}; setShowEmailCapture(true) }}
         />
       )}
 
@@ -1119,7 +1120,7 @@ export default function App() {
             <div style={{ marginTop: '0.4rem', textAlign: 'center' }}>
               {entitlements?.tier === 'premium' ? (<>
                 <span className="tier-badge tier-badge--celestial">✦ Celestial</span>
-                {(() => { try { const e = localStorage.getItem('astrotree_user_email'); return e ? <span className="tier-email">{e}</span> : null } catch { return null } })()}
+                {(() => { try { const e = kv.get('astrotree_user_email'); return e ? <span className="tier-email">{e}</span> : null } catch { return null } })()}
               </>) : (
                 <button type="button" className="tier-badge tier-badge--free" onClick={() => setShowUpgradePrompt(true)} style={{ cursor: 'pointer', background: 'none' }}>
                   ✦ Unlock Celestial

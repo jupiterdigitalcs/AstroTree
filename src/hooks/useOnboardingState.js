@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { kv } from '../utils/kvStore.js'
 
 /**
  * Manages localStorage-persisted onboarding flags.
@@ -8,18 +9,18 @@ import { useState } from 'react'
  */
 export function useOnboardingState() {
   const [hasUsedApp, setHasUsedApp] = useState(() => {
-    try { return localStorage.getItem('astrotree_used') === '1' } catch { return false }
+    try { return kv.get('astrotree_used') === '1' } catch { return false }
   })
 
   const [insightsSeen, setInsightsSeen] = useState(() => {
-    try { return localStorage.getItem('astrotree_insights_seen') === '1' } catch { return false }
+    try { return kv.get('astrotree_insights_seen') === '1' } catch { return false }
   })
 
   const [returnVisit, setReturnVisit] = useState(() => {
     try {
-      const last = localStorage.getItem('astrotree_last_visit')
+      const last = kv.get('astrotree_last_visit')
       const now  = Date.now()
-      localStorage.setItem('astrotree_last_visit', String(now))
+      kv.set('astrotree_last_visit', String(now))
       if (!last) return false
       return (now - parseInt(last, 10)) > 3 * 24 * 60 * 60 * 1000
     } catch { return false }
@@ -28,7 +29,7 @@ export function useOnboardingState() {
   function markUsed() {
     setHasUsedApp(prev => {
       if (prev) return prev
-      try { localStorage.setItem('astrotree_used', '1') } catch {}
+      try { kv.set('astrotree_used', '1') } catch {}
       return true
     })
   }

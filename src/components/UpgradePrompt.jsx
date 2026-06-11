@@ -3,6 +3,7 @@ import { startCheckout } from '../utils/checkout.js'
 import { getDeviceId } from '../utils/identity.js'
 import { logEvent } from '../utils/cloudStorage.js'
 import { DialogBackdrop } from './DialogBackdrop.jsx'
+import { apiUrl } from '../utils/apiBase.js'
 
 export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn }) {
   const [loading, setLoading] = useState(false)
@@ -36,7 +37,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
     setCodeLoading(true)
     setCodeError(null)
     try {
-      const res = await fetch('/api/redeem', {
+      const res = await fetch(apiUrl('/api/redeem'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

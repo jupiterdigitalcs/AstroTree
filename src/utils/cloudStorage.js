@@ -1,4 +1,5 @@
 import { getDeviceId } from './identity.js'
+import { apiUrl } from './apiBase.js'
 
 // Cloud is always enabled — Next.js API routes work in dev and production
 export function isCloudEnabled() {
@@ -33,7 +34,7 @@ async function fetchGeo() {
 
 export async function uploadChart(chart) {
   try {
-    const res = await fetch('/api/chart?action=save', {
+    const res = await fetch(apiUrl('/api/chart?action=save'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,7 +63,7 @@ export async function uploadChart(chart) {
 
 export async function fetchCharts() {
   try {
-    const res = await fetch('/api/chart?action=list', {
+    const res = await fetch(apiUrl('/api/chart?action=list'), {
       headers: { 'x-device-id': getDeviceId() },
     })
     return await res.json()
@@ -73,7 +74,7 @@ export async function fetchCharts() {
 
 export async function deleteChartCloud(id) {
   try {
-    const res = await fetch('/api/chart?action=delete', {
+    const res = await fetch(apiUrl('/api/chart?action=delete'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -89,7 +90,7 @@ export async function deleteChartCloud(id) {
 
 export async function fetchPublicCharts() {
   try {
-    const res = await fetch('/api/chart?action=public')
+    const res = await fetch(apiUrl('/api/chart?action=public'))
     return await res.json()
   } catch {
     return []
@@ -98,7 +99,7 @@ export async function fetchPublicCharts() {
 
 export async function fetchChartByToken(token) {
   try {
-    const res = await fetch(`/api/chart?action=load&token=${encodeURIComponent(token)}`)
+    const res = await fetch(apiUrl(`/api/chart?action=load&token=${encodeURIComponent(token)}`))
     if (!res.ok) return null
     return await res.json()
   } catch {
@@ -108,7 +109,7 @@ export async function fetchChartByToken(token) {
 
 export async function generateShareToken(id) {
   try {
-    const res = await fetch('/api/chart?action=share', {
+    const res = await fetch(apiUrl('/api/chart?action=share'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -125,7 +126,7 @@ export async function generateShareToken(id) {
 
 export async function restoreChartsByEmail(email) {
   try {
-    const res = await fetch('/api/chart?action=restore', {
+    const res = await fetch(apiUrl('/api/chart?action=restore'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, deviceId: getDeviceId() }),
@@ -140,7 +141,7 @@ export async function restoreChartsByEmail(email) {
 
 export async function fetchEntitlements({ isSignedIn = false } = {}) {
   try {
-    const res = await fetch('/api/device?action=entitlements', {
+    const res = await fetch(apiUrl('/api/device?action=entitlements'), {
       headers: {
         'x-device-id': getDeviceId(),
         'x-auth-status': isSignedIn ? 'signed-in' : 'signed-out',
@@ -158,7 +159,7 @@ export async function fetchEntitlements({ isSignedIn = false } = {}) {
 export async function upsertDevice() {
   try {
     const geo = await fetchGeo()
-    await fetch('/api/device?action=register', {
+    await fetch(apiUrl('/api/device?action=register'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -175,7 +176,7 @@ export async function upsertDevice() {
 
 export async function updateDeviceEmail(email) {
   try {
-    const res = await fetch('/api/device?action=email', {
+    const res = await fetch(apiUrl('/api/device?action=email'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deviceId: getDeviceId(), email }),
@@ -189,7 +190,7 @@ export async function updateDeviceEmail(email) {
 export async function pingVisit() {
   if (!isCloudEnabled()) return
   try {
-    await fetch('/api/device?action=ping', {
+    await fetch(apiUrl('/api/device?action=ping'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deviceId: getDeviceId() }),
@@ -200,7 +201,7 @@ export async function pingVisit() {
 export async function logEvent(eventName) {
   if (!isCloudEnabled()) return
   try {
-    await fetch('/api/device?action=event', {
+    await fetch(apiUrl('/api/device?action=event'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deviceId: getDeviceId(), eventName }),

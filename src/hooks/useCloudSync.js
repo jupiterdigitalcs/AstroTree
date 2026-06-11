@@ -4,18 +4,19 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { uploadChart, deleteChartCloud as _deleteCloud, fetchCharts, isCloudEnabled, upsertDevice, fetchEntitlements, restoreChartsByEmail } from '../utils/cloudStorage.js'
 import { saveChart, loadCharts } from '../utils/storage.js'
 import { setCachedEntitlements } from '../utils/entitlements.js'
+import { kv } from '../utils/kvStore.js'
 
 const ENT_CACHE_KEY = 'astrotree_entitlements'
 
 function readCachedEntitlements() {
   try {
-    const raw = localStorage.getItem(ENT_CACHE_KEY)
+    const raw = kv.get(ENT_CACHE_KEY)
     return raw ? JSON.parse(raw) : null
   } catch { return null }
 }
 
 function writeCachedEntitlements(ent) {
-  try { localStorage.setItem(ENT_CACHE_KEY, JSON.stringify(ent)) } catch {}
+  try { kv.set(ENT_CACHE_KEY, JSON.stringify(ent)) } catch {}
 }
 
 // syncStatus: 'idle' | 'syncing' | 'synced' | 'error'
@@ -65,9 +66,9 @@ export function useCloudSync({ onMergeCharts, authUser }) {
     upsertDevice()
     fetchEntitlements({ isSignedIn: !!authUser }).then(ent => {
       applyEntitlements(ent)
-      if (ent.email && !localStorage.getItem('astrotree_user_email')) {
-        localStorage.setItem('astrotree_user_email', ent.email)
-        localStorage.setItem('astrotree_email_asked', '1')
+      if (ent.email && !kv.get('astrotree_user_email')) {
+        kv.set('astrotree_user_email', ent.email)
+        kv.set('astrotree_email_asked', '1')
       }
     })
     mergeCloudCharts().finally(() => setCloudLoading(false))
@@ -120,8 +121,8 @@ export function useCloudSync({ onMergeCharts, authUser }) {
     setCloudLoading(true)
     // Clear local charts + draft so a different user doesn't see the previous user's data
     try {
-      localStorage.removeItem('astrotree_charts')
-      localStorage.removeItem('astrotree_draft')
+      kv.remove('astrotree_charts')
+      kv.remove('astrotree_draft')
     } catch {}
     try {
       const ent = await fetchEntitlements({ isSignedIn: true })
@@ -138,7 +139,7 @@ export function useCloudSync({ onMergeCharts, authUser }) {
     try {
       const local = loadCharts()
       if (local.length === 0) {
-        const email = localStorage.getItem('astrotree_user_email')
+        const email = kv.get('astrotree_user_email')
         if (email) {
           const result = await restoreChartsByEmail(email)
           if (result?.ok && result.count > 0) await mergeCloudCharts()

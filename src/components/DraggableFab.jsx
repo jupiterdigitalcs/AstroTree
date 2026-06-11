@@ -1,17 +1,18 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { kv } from '../utils/kvStore.js'
 
 const STORAGE_KEY = 'astrodig_fab_pos'
 
 function loadPos() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = kv.get(STORAGE_KEY)
     if (raw) return JSON.parse(raw)
   } catch {}
   return null
 }
 
 function savePos(pos) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(pos)) } catch {}
+  try { kv.set(STORAGE_KEY, JSON.stringify(pos)) } catch {}
 }
 
 export function DraggableFab({ onClick }) {

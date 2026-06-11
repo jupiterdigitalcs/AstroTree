@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { fetchAdminStatsManual, fetchTreesPerDay, fetchEngagementStats, fetchFunnel, fetchAllCharts } from './utils/adminStorage.js'
+import { kv } from '../utils/kvStore.js'
 
 const DEVICE_ID_KEY = 'astrotree_device_id'
 
@@ -13,7 +14,7 @@ export default function AdminStatsPanel({ excludeOwner = false, ownerEmail = '' 
   const [excludeMe,      setExcludeMe]      = useState(true)
   const [allCharts,  setAllCharts]  = useState(null) // loaded on demand for date filtering
 
-  const myDeviceId = typeof localStorage !== 'undefined' ? localStorage.getItem(DEVICE_ID_KEY) ?? '' : ''
+  const myDeviceId = typeof localStorage !== 'undefined' ? kv.get(DEVICE_ID_KEY) ?? '' : ''
 
   useEffect(() => {
     fetchAdminStatsManual().then(s => { if (s) setRpcStats(s) })

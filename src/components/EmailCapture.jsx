@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { DialogBackdrop } from './DialogBackdrop.jsx'
+import { kv } from '../utils/kvStore.js'
 
 const PROMPT_KEY = 'astrotree_auth_prompt'
 const EMAIL_KEY  = 'astrotree_user_email'
@@ -7,11 +8,11 @@ const ASKED_KEY  = 'astrotree_email_asked'
 
 function getPromptState() {
   try {
-    const raw = localStorage.getItem(PROMPT_KEY)
+    const raw = kv.get(PROMPT_KEY)
     if (raw) return JSON.parse(raw)
   } catch {}
   try {
-    if (localStorage.getItem(ASKED_KEY) === '1') {
+    if (kv.get(ASKED_KEY) === '1') {
       return { dismissCount: 1, lastDismissed: new Date().toISOString() }
     }
   } catch {}
@@ -20,8 +21,8 @@ function getPromptState() {
 
 function savePromptState(state) {
   try {
-    localStorage.setItem(PROMPT_KEY, JSON.stringify(state))
-    localStorage.setItem(ASKED_KEY, '1')
+    kv.set(PROMPT_KEY, JSON.stringify(state))
+    kv.set(ASKED_KEY, '1')
   } catch {}
 }
 
@@ -33,7 +34,7 @@ export function hasBeenAsked() {
   if (state.dismissCount === 1 && state.lastDismissed) {
     const daysSince = (Date.now() - new Date(state.lastDismissed).getTime()) / (1000 * 60 * 60 * 24)
     try {
-      const charts = JSON.parse(localStorage.getItem('astrotree_charts') || '[]')
+      const charts = JSON.parse(kv.get('astrotree_charts') || '[]')
       if (daysSince >= 7 && charts.length >= 3) return false
     } catch {}
   }
@@ -45,20 +46,20 @@ export function shouldForcePrompt() {
 }
 
 export function getSavedEmail() {
-  try { return localStorage.getItem(EMAIL_KEY) ?? null } catch { return null }
+  try { return kv.get(EMAIL_KEY) ?? null } catch { return null }
 }
 
 export function clearEmailAsked() {
   try {
-    localStorage.removeItem(PROMPT_KEY)
-    localStorage.removeItem(ASKED_KEY)
+    kv.remove(PROMPT_KEY)
+    kv.remove(ASKED_KEY)
   } catch {}
 }
 
 export function isAtRisk() {
   if (getSavedEmail()) return false
   try {
-    const charts = JSON.parse(localStorage.getItem('astrotree_charts') || '[]')
+    const charts = JSON.parse(kv.get('astrotree_charts') || '[]')
     return charts.length > 0
   } catch { return false }
 }
@@ -127,7 +128,7 @@ export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, ini
     setErrorMsg('')
     const result = await signInWithEmail(email.trim())
     if (result.ok) {
-      try { localStorage.setItem(EMAIL_KEY, email.trim()) } catch {}
+      try { kv.set(EMAIL_KEY, email.trim()) } catch {}
       setStatus('sent')
     } else {
       setErrorMsg(result.error || 'Something went wrong — try again')

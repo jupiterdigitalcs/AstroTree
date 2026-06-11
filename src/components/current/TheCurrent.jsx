@@ -7,6 +7,7 @@ import RareTransitCard from './RareTransitCard'
 import QuickHitsCard   from './QuickHitsCard'
 import BabyMoodsCard   from './BabyMoodsCard'
 import CarryingCard    from './CarryingCard'
+import { apiUrl } from '../../utils/apiBase.js'
 
 const MONTH_NAMES = [
   'January','February','March','April','May','June',
@@ -74,7 +75,7 @@ export default function TheCurrent({ nodes, edges, entitlements }) {
     setLoading(true)
     setError(null)
 
-    fetch('/api/current', {
+    fetch(apiUrl('/api/current'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ members }),

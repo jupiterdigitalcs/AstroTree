@@ -1,3 +1,4 @@
+import { kv } from './kvStore.js'
 const KEY = 'astrotree_device_id'
 
 // Fallback for private/incognito mode where localStorage is blocked
@@ -5,10 +6,10 @@ let _sessionId = null
 
 export function getDeviceId() {
   try {
-    let id = localStorage.getItem(KEY)
+    let id = kv.get(KEY)
     if (!id) {
       id = crypto.randomUUID()
-      localStorage.setItem(KEY, id)
+      kv.set(KEY, id)
     }
     return id
   } catch {

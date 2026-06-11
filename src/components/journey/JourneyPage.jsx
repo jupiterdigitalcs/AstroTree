@@ -3,6 +3,7 @@
 import { useState }     from 'react'
 import JourneyEntry     from './JourneyEntry.jsx'
 import TransitRiver     from './TransitRiver.jsx'
+import { apiUrl } from '../../utils/apiBase.js'
 
 export default function JourneyPage() {
   const [phase,       setPhase]       = useState('entry') // 'entry' | 'loading' | 'river'
@@ -17,7 +18,7 @@ export default function JourneyPage() {
     setPhase('loading')
 
     try {
-      const res = await fetch('/api/journey', {
+      const res = await fetch(apiUrl('/api/journey'), {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({

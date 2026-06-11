@@ -1,8 +1,9 @@
 import { getDeviceId } from './identity.js'
+import { apiUrl } from './apiBase.js'
 
 // Start a Stripe Checkout session and redirect to payment page
 export async function startCheckout(productKey, metadata = {}) {
-  const res = await fetch('/api/stripe?action=create-session', {
+  const res = await fetch(apiUrl('/api/stripe?action=create-session'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

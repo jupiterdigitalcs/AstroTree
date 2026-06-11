@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getSupabaseBrowser } from '../utils/supabaseClient.js'
 import { getDeviceId } from '../utils/identity.js'
+import { apiUrl } from '../utils/apiBase.js'
+import { kv } from '../utils/kvStore.js'
 
 export function useAuth() {
   const [user, setUser] = useState(null)       // Supabase auth user object
@@ -14,7 +16,7 @@ export function useAuth() {
     async function linkDevice(authUser) {
       try {
         const deviceId = getDeviceId()
-        const res = await fetch('/api/device?action=link-auth', {
+        const res = await fetch(apiUrl('/api/device?action=link-auth'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -25,8 +27,8 @@ export function useAuth() {
         })
         const result = await res.json()
         if (result.ok) {
-          localStorage.setItem('astrotree_user_email', authUser.email)
-          localStorage.setItem('astrotree_email_asked', '1')
+          kv.set('astrotree_user_email', authUser.email)
+          kv.set('astrotree_email_asked', '1')
         }
       } catch (e) {
         console.error('[auth] link device error:', e)
@@ -153,7 +155,7 @@ export function useAuth() {
   const signOut = useCallback(async () => {
     // Unlink device from auth user so entitlements reset to free
     try {
-      const res = await fetch('/api/device?action=unlink-auth', {
+      const res = await fetch(apiUrl('/api/device?action=unlink-auth'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deviceId: getDeviceId() }),
@@ -167,9 +169,9 @@ export function useAuth() {
     if (supabase) await supabase.auth.signOut()
     // Clear local data so next user doesn't see this user's charts
     try {
-      localStorage.removeItem('astrotree_charts')
-      localStorage.removeItem('astrotree_draft')
-      localStorage.removeItem('astrotree_user_email')
+      kv.remove('astrotree_charts')
+      kv.remove('astrotree_draft')
+      kv.remove('astrotree_user_email')
     } catch {}
     setUser(null)
   }, [])
