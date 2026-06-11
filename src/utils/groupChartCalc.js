@@ -624,7 +624,8 @@ export function findBridgePerson(nodes) {
 
       for (const mine of myPlacements) {
         for (const theirs of otherPlacements) {
-          if (findAspect(mine.absPos, theirs.absPos, 6)) {
+          // 4° orb: at 6°+ everyone aspects everyone and the title means nothing
+          if (findAspect(mine.absPos, theirs.absPos, 4)) {
             aspectCount++
             connectedTo.add(other.data?.name || other.id)
           }
@@ -639,7 +640,7 @@ export function findBridgePerson(nodes) {
     }
   }
 
-  if (!bestNode || bestCount < 3) return null
+  if (!bestNode || bestCount < 5) return null
 
   return {
     node: bestNode,

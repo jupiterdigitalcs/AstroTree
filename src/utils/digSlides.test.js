@@ -400,8 +400,14 @@ describe('buildSlides — group pattern slides', () => {
 describe('buildSlides — connector and bridge slides', () => {
   // Four suns at Aries 10°, Aries 12°, Leo 10°, Sagittarius 10° — everyone
   // aspects everyone (conjunction + trines), first node wins the tie.
+  // n1 also carries tight Mercury/Venus squares to n2 so their aspect count
+  // clears findBridgePerson's 5-aspect floor without making n1 an element
+  // superlative (which would feature them and suppress the bridge slide)
   const fireSuns = () => [
-    makeNode('n1', { name: 'W', sign: 'Aries', element: 'Fire', sunDegree: 10 }),
+    makeNode('n1', {
+      name: 'W', sign: 'Aries', element: 'Fire', sunDegree: 10,
+      innerPlanets: { mercury: { sign: 'Capricorn', degree: 12 }, venus: { sign: 'Cancer', degree: 13 } },
+    }),
     makeNode('n2', { name: 'X', sign: 'Aries', element: 'Fire', sunDegree: 12 }),
     makeNode('n3', { name: 'Y', sign: 'Leo', element: 'Fire', sunDegree: 10 }),
     makeNode('n4', { name: 'Z', sign: 'Sagittarius', element: 'Fire', sunDegree: 10 }),
@@ -419,7 +425,7 @@ describe('buildSlides — connector and bridge slides', () => {
   it('connector appears when the bridge person has Air energy — and suppresses the bridge slide for the same person', () => {
     const nodes = fireSuns()
     nodes[0].data.moonSign = 'Gemini'
-    nodes[0].data.moonDegree = 5
+    nodes[0].data.moonDegree = 10 // sextiles/opposes the other suns within 4°
     const slides = buildSlides(makeDigData(nodes))
     const connector = slides.find(s => s.type === 'connector')
     expect(connector).toBeDefined()

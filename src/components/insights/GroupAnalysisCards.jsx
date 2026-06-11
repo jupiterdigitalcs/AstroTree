@@ -62,6 +62,7 @@ export function GroupAnalysisCards({ topSigns, groupHotspots, groupGaps, groupSa
         return (
         <div className="insight-card" data-count={hotspotCount} data-label={hotspotCount === 1 ? 'hotspot' : 'hotspots'}>
           <h3 className="insight-heading">Group Hotspots<span className="insight-pro-tag">✦</span></h3>
+          <p className="insight-whisper">Inner-planet positions are based on birth dates. Exact birth times sharpen this.</p>
           <p className="insight-whisper">Zones of the zodiac where multiple people's planets concentrate. These themes tend to echo through the group's daily life.</p>
           {groupHotspots.slice(0, 3).map((spot, i) => (
             <div key={i} style={{ marginBottom: '0.6rem' }}>

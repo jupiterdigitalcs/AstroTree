@@ -450,22 +450,22 @@ describe('findBridgePerson', () => {
   })
 
   it('finds the member whose planets aspect the most others', () => {
-    // a: sun 0° Aries (abs 0), moon 0° Leo (abs 120)
-    // b: sun 2° Aries (abs 2)   → conj a.sun, trine a.moon
-    // c: sun 0° Libra (abs 180) → opp a.sun, sextile a.moon
-    // a makes 4 aspects (b and c make 3 each) → a is the bridge
-    const a = member('a', { sun: ['Aries', 0], moon: ['Leo', 0] })
+    // a: sun 0° Aries (abs 0), moon 0° Leo (abs 120), mercury 0° Sag (abs 240)
+    // b: sun 2° Aries (abs 2)   → conj a.sun, trine a.moon, trine a.mercury
+    // c: sun 0° Libra (abs 180) → opp a.sun, sextile a.moon, sextile a.mercury
+    // a makes 6 aspects within the 4° orb → a is the bridge
+    const a = member('a', { sun: ['Aries', 0], moon: ['Leo', 0], mercury: ['Sagittarius', 0] })
     const b = member('b', { sun: ['Aries', 2] })
     const c = member('c', { sun: ['Libra', 0] })
     const bridge = findBridgePerson([a, b, c])
 
     expect(bridge.node.id).toBe('a')
-    expect(bridge.aspectCount).toBe(4)
+    expect(bridge.aspectCount).toBe(6)
     expect(bridge.connectedTo.sort()).toEqual(['b', 'c'])
     expect(bridge.description).toContain('a')
   })
 
-  it('returns null when the best member has fewer than 3 aspects', () => {
+  it('returns null when the best member has fewer than 5 aspects', () => {
     // Positions 0, 25, 50 — no pair forms a major aspect within orb 6
     const a = member('a', { sun: ['Aries', 0] })
     const b = member('b', { sun: ['Aries', 25] })

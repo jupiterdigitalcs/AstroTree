@@ -324,6 +324,7 @@ function SocialChemistryCard({ nodes, innerPlanetMap, edges }) {
   return (
     <div className="insight-card">
       <h3 className="insight-heading">♀♂ Social Chemistry</h3>
+      <p className="insight-whisper">Inner-planet positions are based on birth dates. Exact birth times sharpen this.</p>
       <p className="insight-whisper" style={{ marginBottom: '0.3rem' }}>
         Venus is how you connect. Mars is how you show up. Together they shape the social energy of the group.
       </p>
@@ -929,7 +930,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   const PERSONAL_PLANETS = ['sun', 'moon', 'mercury', 'venus', 'mars']
   const groupElementMap = useMemo(() => collectiveElementMap(nodes, PERSONAL_PLANETS), [nodes])
   const groupHotspots = useMemo(() => findHotspots(nodes), [nodes])
-  const groupGaps = useMemo(() => findGaps(nodes), [nodes])
+  const groupGaps = useMemo(() => nodes.length >= 4 ? findGaps(nodes) : null, [nodes])
   const groupSaturnLines = useMemo(() => saturnLines(nodes), [nodes])
   const groupJupiterGifts = useMemo(() => jupiterGifts(nodes), [nodes])
   const groupSignMap = useMemo(() => allPlanetsBySign(nodes), [nodes])
@@ -1317,8 +1318,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   // ── Shared moon signs ─────────────────────────────────────────────────────────
   const moonSignCounts = {}
   moonNodes.forEach(n => { moonSignCounts[n.data.moonSign] = (moonSignCounts[n.data.moonSign] || 0) + 1 })
+  // 2 of 5 people sharing a moon sign happens by chance well over half the
+  // time — only 3+ is a pattern worth naming
   const sharedMoonSigns = Object.entries(moonSignCounts)
-    .filter(([, c]) => c > 1)
+    .filter(([, c]) => c > 2)
     .sort((a, b) => b[1] - a[1])
 
   function sharedInnerSign(planet) {
@@ -1328,7 +1331,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       if (sign) counts[sign] = (counts[sign] || 0) + 1
     })
     return Object.entries(counts)
-      .filter(([, c]) => c > 1)
+      .filter(([, c]) => c > 2) // 3+ people, same reasoning as shared moons
       .sort((a, b) => b[1] - a[1])
       .map(([sign]) => ({
         sign,
@@ -2511,7 +2514,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             const total = filtered.reduce((s, [, c]) => s + c, 0)
             return [sign, { total, planets: Object.fromEntries(filtered) }]
           })
-          .filter(([, data]) => data.total >= 2)
+          .filter(([, data]) => data.total >= 3) // 2 placements is base-rate noise
           .sort((a, b) => b[1].total - a[1].total)
         if (concentrated.length === 0) return null
         return (
@@ -2999,6 +3002,11 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         })
         const present = PLUTO_ORDER.filter(s => genMap[s])
         if (present.length < 2) return null
+        // Friends born a couple of years apart can straddle an era boundary —
+        // that's a birth-year fact, not a generational pattern. Require a
+        // real age spread before calling it one.
+        const years = nodes.map(n => Number(n.data?.birthdate?.slice(0, 4))).filter(Number.isFinite)
+        if (years.length && Math.max(...years) - Math.min(...years) < 15) return null
         return (
           <div className="insight-card" id="pluto-generations-card" data-count={present.length} data-label={present.length === 1 ? 'generation' : 'generations'}>
             <h3 className="insight-heading">✦ Pluto Generations<span className="insight-pro-tag">✦</span></h3>
