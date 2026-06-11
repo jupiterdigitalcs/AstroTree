@@ -175,3 +175,30 @@
   text-align: center;
   margin-bottom: 0.4rem;
 }
+
+/* ── Entrance: stars pop in, then connection lines draw themselves ────────
+   (backwards fill keeps elements hidden until their stagger delay; the
+   global prefers-reduced-motion rule in base.css disables all of this) */
+.constellation-star-enter {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: constellation-star-in 0.5s ease-out backwards;
+}
+@keyframes constellation-star-in {
+  from { opacity: 0; transform: scale(0.4); }
+}
+
+/* Solid edges draw in via pathLength=1 + dashoffset; dashed edges fade */
+.constellation-edge--draw {
+  stroke-dashoffset: 0;
+  animation: constellation-draw 0.9s ease-out backwards;
+}
+@keyframes constellation-draw {
+  from { stroke-dashoffset: 1; }
+}
+.constellation-edge--fade {
+  animation: constellation-edge-fade 0.7s ease-out backwards;
+}
+@keyframes constellation-edge-fade {
+  from { opacity: 0; }
+}

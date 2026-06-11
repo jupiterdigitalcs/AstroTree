@@ -267,14 +267,17 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
             ))}
           </defs>
 
-          {/* Edges — curved to reduce intersections, highlight on hover */}
-          {positions.length === nodes.length && edges.map(e => {
+          {/* Edges — curved to reduce intersections, highlight on hover.
+              On entry, solid edges draw themselves in (pathLength trick);
+              dashed edges fade — staggered after the stars appear. */}
+          {positions.length === nodes.length && edges.map((e, idx) => {
             const si = nodeIndex[e.source]
             const ti = nodeIndex[e.target]
             if (si == null || ti == null) return null
             const relType = e.data?.relationType || 'parent-child'
             const color = EDGE_COLORS[relType] || '#c9a84c'
             const dash = EDGE_DASH[relType] || 'none'
+            const isSolid = dash === 'none'
             const isHoveredEdge = hoveredNode && (e.source === hoveredNode || e.target === hoveredNode)
             const x1 = positions[si].x, y1 = positions[si].y
             const x2 = positions[ti].x, y2 = positions[ti].y
@@ -291,9 +294,12 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
                 d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
                 stroke={color}
                 strokeWidth={isHoveredEdge ? 1.6 : 1.2}
-                strokeDasharray={dash}
+                pathLength={isSolid ? 1 : undefined}
+                strokeDasharray={isSolid ? 1 : dash}
+                className={isSolid ? 'constellation-edge--draw' : 'constellation-edge--fade'}
                 fill="none"
                 opacity={isHoveredEdge ? 0.7 : 0.4}
+                style={{ animationDelay: `${0.45 + idx * 0.09}s` }}
               />
             )
           })}
@@ -305,7 +311,8 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
               cx={positions[i].x} cy={positions[i].y}
               r={hoveredNode === n.id ? 35 : 28}
               fill={`url(#node-glow-${n.id})`}
-              style={{ transition: dragging != null ? 'none' : 'all 0.15s ease' }}
+              className="constellation-star-enter"
+              style={{ transition: dragging != null ? 'none' : 'all 0.15s ease', animationDelay: `${i * 0.07}s` }}
             />
           ))}
 
@@ -325,7 +332,8 @@ export default function ConstellationView({ nodes, edges, onSelectNode, layoutTi
                 onMouseEnter={() => setHoveredNode(n.id)}
                 onMouseLeave={() => setHoveredNode(null)}
                 onPointerDown={(e) => handlePointerDown(e, i, n.id)}
-                style={{ cursor: dragging === i ? 'grabbing' : 'grab' }}
+                className="constellation-star-enter"
+                style={{ cursor: dragging === i ? 'grabbing' : 'grab', animationDelay: `${i * 0.07}s` }}
               >
                 <circle
                   cx={positions[i].x} cy={positions[i].y}

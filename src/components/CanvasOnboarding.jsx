@@ -8,12 +8,12 @@ import { getMoonTonight } from '../utils/moonTonight.js'
 import { loadCharts } from '../utils/storage.js'
 import { formatRelativeTime } from '../utils/format.js'
 
-// Rotating preview lines shown before the visitor has typed a birthday —
-// real examples of what the app surfaces, not marketing copy
+// Rotating preview lines shown before the visitor starts typing — phrased
+// about other people (never "you"/"your") so they can't read as claims
 const PREVIEW_INSIGHTS = [
-  { heading: 'Family Signature', body: <>Your family is <strong>Fire + Water</strong> dominant — passion meets intuition</> },
-  { heading: 'Shared Moons', body: <>Three of you carry a <strong>Cancer moon</strong> — the same emotional language</> },
-  { heading: 'Hidden Connections', body: <>Mom's Venus sits on your Sun — <strong>warmth runs down the line</strong></> },
+  { heading: 'Family Signature', body: <>A family that runs <strong>Fire + Water</strong> — passion meets intuition</> },
+  { heading: 'Shared Moons', body: <>Three cousins, one <strong>Cancer moon</strong> — the same emotional language</> },
+  { heading: 'Hidden Connections', body: <>Her Venus on his Sun — <strong>warmth that runs both ways</strong></> },
 ]
 
 function MoonGlyph({ illumination, waxing, size = 14 }) {
@@ -85,12 +85,14 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
     }
   }, [sun])
 
-  // Rotate example insights until the personalized one takes over
+  // Rotate example insights only while the card is idle — the moment the
+  // visitor starts typing, examples stop (they read as claims otherwise)
+  const engaged = name.trim().length > 0 || !!birthdate
   useEffect(() => {
-    if (sun) return
+    if (engaged) return
     const t = setInterval(() => setPreviewIdx(i => (i + 1) % PREVIEW_INSIGHTS.length), 4200)
     return () => clearInterval(t)
-  }, [sun])
+  }, [engaged])
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -193,7 +195,7 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
           </div>
         </div>
 
-        {/* Mini insight card — rotates examples, then personalizes */}
+        {/* Mini insight card — rotates examples while idle, then personalizes */}
         {sun ? (
           <div className="onboarding-mini-insight onboarding-mini-insight--you">
             <span className="onboarding-mini-insight-heading">Your Sign</span>
@@ -202,9 +204,14 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
               Add your people to see what you share.
             </span>
           </div>
+        ) : engaged ? (
+          <div className="onboarding-mini-insight onboarding-mini-insight--cycle">
+            <span className="onboarding-mini-insight-heading">Your Sign</span>
+            <span className="onboarding-mini-insight-body">Finish adding your birthday and your sign appears here ✦</span>
+          </div>
         ) : (
           <div className={`onboarding-mini-insight${previewIdx > 0 ? ' onboarding-mini-insight--cycle' : ''}`} key={previewIdx}>
-            <span className="onboarding-mini-insight-heading">{preview.heading}</span>
+            <span className="onboarding-mini-insight-heading">{preview.heading} <em className="onboarding-mini-insight-tag">example</em></span>
             <span className="onboarding-mini-insight-body">{preview.body}</span>
           </div>
         )}

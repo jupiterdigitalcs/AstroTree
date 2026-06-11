@@ -147,7 +147,10 @@ function getArrivalStory(child, parents, elderSiblings) {
 function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, total, missingElements, isGroupOnly }) {
   const g = isGroupOnly ? 'group' : 'family'
   const G = isGroupOnly ? 'Group' : 'Family'
-  const desc = FAMILY_SIGNATURE_DESCRIPTIONS[dominant]?.[dominantModality]
+  const rawDesc = FAMILY_SIGNATURE_DESCRIPTIONS[dominant]?.[dominantModality]
+  // Descriptions are written for families ("A family of champions") —
+  // soften for friend/coworker charts
+  const desc = isGroupOnly && rawDesc ? rawDesc.replace(/\ba family of\b/i, 'a group of') : rawDesc
   const mascPct = total > 0 ? Math.round(masculine / total * 100) : 50
   const femPct  = total > 0 ? Math.round(feminine  / total * 100) : 50
   return (
@@ -1946,7 +1949,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       memberCount: nodes.length,
       familyName: isGroupOnly ? 'group' : 'family',
       dominant, dominantModality, masculine, feminine, total, missingElements,
-      signatureDesc: FAMILY_SIGNATURE_DESCRIPTIONS[dominant]?.[dominantModality] ?? '',
+      signatureDesc: (FAMILY_SIGNATURE_DESCRIPTIONS[dominant]?.[dominantModality] ?? '')
+        .replace(/\ba family of\b/i, isGroupOnly ? 'a group of' : 'a family of'),
       topBonds,
       signThreadList,
       memberRoles,
@@ -2084,7 +2088,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         <div className="dig-section" style={insightsTab !== 'dig' ? { display: 'none' } : undefined}>
           <div className="dig-section-header">
             <h3 className="dig-section-title">✦ The DIG</h3>
-            <p className="dig-section-desc">Your family's cosmic story. A Wrapped-style experience of your family's astrological DNA.</p>
+            <p className="dig-section-desc">Your {isGroupOnly ? 'group' : 'family'}'s cosmic story. A Wrapped-style experience of your {isGroupOnly ? 'group' : 'family'}'s astrological DNA.</p>
           </div>
           {nodes.length < 3 ? (
             <div className="dig-section-gate">
@@ -2142,7 +2146,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                   if (isMobile && navigator.share) {
                     const file = new File([blob], filename, { type: 'image/png' })
                     if (navigator.canShare?.({ files: [file] })) {
-                      await navigator.share({ files: [file], title: 'The DIG, AstroDig', text: 'My family\'s cosmic story ✦' })
+                      await navigator.share({ files: [file], title: 'The DIG, AstroDig', text: `My ${isGroupOnly ? 'group' : 'family'}'s cosmic story ✦` })
                       setDigExporting(false)
                       return
                     }
@@ -2205,7 +2209,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                 if (isMobile && navigator.share) {
                   const file = new File([blob], `the-dig-${slug}-summary.png`, { type: 'image/png' })
                   if (navigator.canShare?.({ files: [file] })) {
-                    await navigator.share({ files: [file], title: 'The DIG, AstroDig', text: 'My family\'s cosmic story ✦' })
+                    await navigator.share({ files: [file], title: 'The DIG, AstroDig', text: `My ${isGroupOnly ? 'group' : 'family'}'s cosmic story ✦` })
                     setDigExporting(false)
                     return
                   }

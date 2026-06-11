@@ -68,7 +68,9 @@ export default function TheDig({ digData, onClose, chartTitle, isPremium = true,
     try {
       const { getToPng, shareOrDownload } = await import('../../hooks/useExport.js')
       const toPng = await getToPng()
-      const slug = chartTitle ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase() : 'family'
+      const slug = chartTitle
+        ? chartTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase()
+        : (digData?.familyName === 'group' ? 'group' : 'family')
       const filename = `the-dig-${slug}-${current + 1}.png`
       const captureOpts = {
         backgroundColor: '#05031a',
@@ -92,7 +94,7 @@ export default function TheDig({ digData, onClose, chartTitle, isPremium = true,
       await shareOrDownload(
         dataUrl, filename,
         'The DIG — AstroDig',
-        'My family\'s cosmic story ✦ astrodig.com',
+        `My ${digData?.familyName === 'group' ? 'group' : 'family'}'s cosmic story ✦ astrodig.com`,
       )
     } catch (e) {
       if (e?.name === 'AbortError') { setSharing(false); return }
