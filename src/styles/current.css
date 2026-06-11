@@ -820,7 +820,7 @@
   position: absolute;
   inset: -40% -20%;
   pointer-events: none;
-  opacity: var(--aurora-opacity, 0.12);
+  opacity: var(--aurora-opacity, 0.3);
   background:
     radial-gradient(60% 45% at 25% 30%, hsl(var(--aurora-h, 200) 70% 55% / 0.55) 0%, transparent 70%),
     radial-gradient(50% 40% at 75% 60%, hsl(calc(var(--aurora-h, 200) + 40) 65% 50% / 0.45) 0%, transparent 70%),

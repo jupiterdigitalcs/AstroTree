@@ -493,28 +493,28 @@
    Newly added members fade in the same way. Disabled automatically under
    prefers-reduced-motion (base.css). */
 .tree-entrance .react-flow__node {
-  animation: tree-node-in 0.45s ease-out backwards;
-  animation-delay: calc(var(--gen, 0) * 0.16s);
+  animation: tree-node-in 0.8s ease-out backwards;
+  animation-delay: calc(var(--gen, 0) * 0.45s);
 }
 @keyframes tree-node-in {
   from { opacity: 0; }
 }
 .tree-entrance .react-flow__node .astro-node {
-  animation: tree-card-rise 0.45s ease-out backwards;
-  animation-delay: calc(var(--gen, 0) * 0.16s);
+  animation: tree-card-rise 0.8s ease-out backwards;
+  animation-delay: calc(var(--gen, 0) * 0.45s);
 }
 @keyframes tree-card-rise {
   from { opacity: 0; transform: translateY(8px) scale(0.97); }
 }
 .tree-entrance .react-flow__edge-path {
-  animation: tree-edge-in 0.5s ease-out backwards;
-  animation-delay: calc(var(--gen, 0) * 0.16s + 0.28s);
+  animation: tree-edge-in 0.7s ease-out backwards;
+  animation-delay: calc(var(--gen, 0) * 0.45s + 0.55s);
 }
 /* RF "animated" edges have their own dashdraw animation that would override
    the entrance fade, so compose both */
 .tree-entrance .react-flow__edge.animated .react-flow__edge-path {
-  animation: dashdraw 0.5s linear infinite, tree-edge-in 0.5s ease-out backwards;
-  animation-delay: 0s, calc(var(--gen, 0) * 0.16s + 0.28s);
+  animation: dashdraw 0.5s linear infinite, tree-edge-in 0.7s ease-out backwards;
+  animation-delay: 0s, calc(var(--gen, 0) * 0.45s + 0.55s);
 }
 @keyframes tree-edge-in {
   from { opacity: 0; }

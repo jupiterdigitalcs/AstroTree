@@ -13,7 +13,7 @@ export default function MoodGauge({ mood }) {
   const auroraStyle = {
     '--aurora-h': auroraHue,
     '--aurora-speed': `${9 + easePct * 0.09}s`,
-    '--aurora-opacity': (0.1 + (100 - easePct) * 0.0012).toFixed(3),
+    '--aurora-opacity': (0.26 + (100 - easePct) * 0.0022).toFixed(3),
   }
 
   return (

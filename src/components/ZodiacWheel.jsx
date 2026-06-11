@@ -426,8 +426,10 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
                       onMouseLeave={() => setHoveredNode(null)}
                       style={{
                         cursor: 'pointer', opacity: isDimmed ? 0.15 : 1, transition: 'opacity 0.2s ease',
-                        // Entry animation: fly from the wheel center to this position
-                        '--fly-x': `${cx - pos.x}px`, '--fly-y': `${cy - pos.y}px`, '--fly-i': si + mi,
+                        // Entry: markers are released from the center star in
+                        // ring waves (sun first), sweeping clockwise from Aries
+                        '--fly-x': `${cx - pos.x}px`, '--fly-y': `${cy - pos.y}px`,
+                        '--fly-i': si, '--fly-wave': Math.max(0, PLANET_DISPLAY_ORDER.indexOf(ring.key)),
                       }}
                     >
                       <circle
@@ -488,7 +490,9 @@ export default function ZodiacWheel({ nodes, edges, onSelectNode }) {
               })
             })}
 
-            {/* Center */}
+            {/* Center — pulse rings mark each wave of markers leaving */}
+            <circle className="zodiac-center-pulse" cx={cx} cy={cy} r={52} fill="none" stroke="rgba(201,168,76,0.5)" strokeWidth="1.5" />
+            <circle className="zodiac-center-pulse zodiac-center-pulse--2" cx={cx} cy={cy} r={52} fill="none" stroke="rgba(157,187,212,0.4)" strokeWidth="1.5" />
             <circle cx={cx} cy={cy} r={52}
               fill="rgba(9,7,26,0.92)" stroke="rgba(201,168,76,0.2)" strokeWidth="1" />
             <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
