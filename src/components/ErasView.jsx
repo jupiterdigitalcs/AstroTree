@@ -12,6 +12,7 @@
  *   groups don't get one giant empty band
  */
 import { useMemo, useState, useEffect, useRef } from 'react'
+import { PLUTO_GENS } from './insights/insightsData.js'
 
 // Pluto generation eras (numeric mirror of PLUTO_GENS in insightsData.js)
 const ERAS = [
@@ -47,17 +48,19 @@ export function extractEraMembers(nodes) {
     .map(n => ({
       id: n.id,
       name: n.data.name,
+      birthdate: n.data.birthdate,
       year: Number(n.data.birthdate.slice(0, 4)),
       symbol: n.data.symbol ?? '✦',
       color: n.data.elementColor ?? '#c9a84c',
     }))
     .filter(m => Number.isFinite(m.year) && m.year > 1900)
-    .sort((a, b) => a.year - b.year)
+    .sort((a, b) => a.birthdate < b.birthdate ? -1 : 1)
 }
 
-export function ErasView({ nodes, isGroupOnly }) {
+export function ErasView({ nodes, isGroupOnly, onShowPluto }) {
   const [wrapRef, containerW] = useContainerWidth()
   const vertical = containerW < 700 // includes pre-measure first paint (0)
+  const [selectedEra, setSelectedEra] = useState(null)
 
   const data = useMemo(() => {
     const members = extractEraMembers(nodes)
@@ -83,11 +86,21 @@ export function ErasView({ nodes, isGroupOnly }) {
     const MID_C = C / 2 + (vertical ? 10 : 0)
     const t = year => PAD_T + ((year - minYear) / (maxYear - minYear)) * (T - PAD_T * 2)
 
-    const placed = members.map((m, i) => {
-      const prev = members[i - 1]
-      const crowded = prev && t(m.year) - t(prev.year) < markerR * 5
-      const lane = crowded || i % 2 === 1 ? lanes[i % lanes.length] : lanes[0]
-      return { ...m, t: t(m.year), c: MID_C + lane * laneGap, lane }
+    // Collision-aware placement: members born close together cascade
+    // diagonally — alternating lanes AND stepping forward along the axis —
+    // so no marker or name can sit on top of a neighbor
+    const minGap = markerR * 2.6
+    const placed = []
+    members.forEach((m, i) => {
+      const tm = t(m.year)
+      const neighbors = placed.filter(p => tm - p.t < minGap)
+      const lane = neighbors.length === 0
+        ? lanes[i % 2]
+        : (lanes.find(l => !neighbors.some(p => p.lane === l)) ?? lanes[neighbors.length % lanes.length])
+      const tFinal = neighbors.length === 0
+        ? tm
+        : Math.max(tm, Math.max(...neighbors.map(p => p.t)) + minGap * 0.85)
+      placed.push({ ...m, t: tFinal, c: MID_C + lane * laneGap, lane })
     })
 
     const decadeStep = span > 70 ? 20 : 10
@@ -98,6 +111,8 @@ export function ErasView({ nodes, isGroupOnly }) {
       .filter(e => e.to > minYear && e.from < maxYear)
       .map(e => ({ ...e, t1: t(Math.max(e.from, minYear)), t2: t(Math.min(e.to, maxYear)) }))
       .filter(e => e.t2 - e.t1 > 24)
+      // a label needs room — narrow slivers stay as silent color bands
+      .map(e => ({ ...e, labeled: e.t2 - e.t1 > 64 }))
 
     return { placed, decades, eras, markerR, T, C }
   }, [nodes, vertical, containerW])
@@ -108,33 +123,61 @@ export function ErasView({ nodes, isGroupOnly }) {
   // Map (t, c) into svg space per orientation
   const X = p => vertical ? p.c : p.t
   const Y = p => vertical ? p.t : p.c
+  // Name labels sit beside markers in vertical mode — clamp so they can't
+  // run off the right edge or into the rotated era-label rail on the left
+  const nameX = m => {
+    if (!vertical) return X(m)
+    const off = (markerR ?? 14) + 8
+    return m.lane > 0 ? Math.min(X(m) + off, W - 10) : Math.max(X(m) - off, 76)
+  }
   const W = vertical ? C : T
   const H = vertical ? T : C
   const axisC = vertical ? 34 : H - 44 // decade label edge
   const thread = placed.map(m => `${X(m)},${Y(m)}`).join(' ')
+
+  const eraInfo = selectedEra ? PLUTO_GENS[selectedEra] : null
 
   return (
     <div ref={wrapRef} className="eras-view">
       <p className="eras-intro">
         Everyone, in the order they arrived. The bands are Pluto generations,
         the eras people came through. {isGroupOnly ? 'Groups' : 'Families'} that
-        span bands often span worldviews too.
+        span bands often span worldviews too. Tap a band to read its era.
       </p>
+      {eraInfo && (
+        <p className="eras-era-detail">
+          <strong>Pluto in {selectedEra}</strong> ({eraInfo.years}): a generation {eraInfo.flavor}.
+        </p>
+      )}
       <svg viewBox={`0 0 ${W} ${H}`} className="eras-svg">
-        {/* Era bands */}
+        {/* Era bands — tap for the generation's meaning */}
         {eras.map(e => (
-          <g key={e.sign}>
+          <g
+            key={e.sign}
+            onClick={() => setSelectedEra(s => s === e.sign ? null : e.sign)}
+            style={{ cursor: 'pointer' }}
+          >
             {vertical ? (
-              <rect x={50} y={e.t1} width={W - 60} height={e.t2 - e.t1} fill={e.color} rx={6} />
+              <rect x={50} y={e.t1} width={W - 60} height={e.t2 - e.t1} rx={6}
+                fill={e.color} stroke={selectedEra === e.sign ? 'rgba(201,168,76,0.4)' : 'none'} />
             ) : (
-              <rect x={e.t1} y={28} width={e.t2 - e.t1} height={H - 86} fill={e.color} rx={6} />
+              <rect x={e.t1} y={28} width={e.t2 - e.t1} height={H - 86} rx={6}
+                fill={e.color} stroke={selectedEra === e.sign ? 'rgba(201,168,76,0.4)' : 'none'} />
             )}
-            <text
-              x={vertical ? 58 : (e.t1 + e.t2) / 2}
-              y={vertical ? e.t1 + 14 : 44}
-              textAnchor={vertical ? 'start' : 'middle'}
-              className="eras-band-label"
-            >{e.label}</text>
+            {e.labeled && (vertical ? (
+              <text
+                transform={`rotate(-90 60 ${(e.t1 + e.t2) / 2})`}
+                x={60} y={(e.t1 + e.t2) / 2}
+                textAnchor="middle"
+                className="eras-band-label"
+              >{e.label}</text>
+            ) : (
+              <text
+                x={(e.t1 + e.t2) / 2} y={44}
+                textAnchor="middle"
+                className="eras-band-label"
+              >{e.label}</text>
+            ))}
           </g>
         ))}
 
@@ -163,13 +206,13 @@ export function ErasView({ nodes, isGroupOnly }) {
             <text x={X(m)} y={Y(m)} textAnchor="middle" dominantBaseline="central"
               fontSize={markerR - 3} fill={m.color}>{m.symbol}</text>
             <text
-              x={vertical ? X(m) + (m.lane > 0 ? markerR + 8 : -(markerR + 8)) : X(m)}
+              x={nameX(m)}
               y={vertical ? Y(m) - 4 : Y(m) - markerR - 9}
               textAnchor={vertical ? (m.lane > 0 ? 'start' : 'end') : 'middle'}
               className="eras-name"
             >{m.name}</text>
             <text
-              x={vertical ? X(m) + (m.lane > 0 ? markerR + 8 : -(markerR + 8)) : X(m)}
+              x={nameX(m)}
               y={vertical ? Y(m) + 10 : Y(m) + markerR + 13}
               textAnchor={vertical ? (m.lane > 0 ? 'start' : 'end') : 'middle'}
               className="eras-year"
@@ -177,6 +220,11 @@ export function ErasView({ nodes, isGroupOnly }) {
           </g>
         ))}
       </svg>
+      {onShowPluto && (
+        <button type="button" className="eras-pluto-link" onClick={onShowPluto}>
+          What these eras mean · Pluto Generations →
+        </button>
+      )}
     </div>
   )
 }

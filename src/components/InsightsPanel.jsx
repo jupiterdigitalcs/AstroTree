@@ -2265,7 +2265,16 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* ── Eras section (Beta) — free with an account ───────────────── */}
       {insightsTab === 'eras' && erasEligible && (
         authUser ? (
-          <ErasView nodes={nodes} isGroupOnly={isGroupOnly} />
+          <ErasView
+            nodes={nodes}
+            isGroupOnly={isGroupOnly}
+            onShowPluto={() => {
+              onInsightsTabChange?.('insights')
+              setTimeout(() => {
+                document.getElementById('pluto-generations-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }, 150)
+            }}
+          />
         ) : (
           <div className="eras-gate">
             <span className="eras-gate-icon">✦</span>
@@ -2991,7 +3000,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         const present = PLUTO_ORDER.filter(s => genMap[s])
         if (present.length < 2) return null
         return (
-          <div className="insight-card" data-count={present.length} data-label={present.length === 1 ? 'generation' : 'generations'}>
+          <div className="insight-card" id="pluto-generations-card" data-count={present.length} data-label={present.length === 1 ? 'generation' : 'generations'}>
             <h3 className="insight-heading">✦ Pluto Generations<span className="insight-pro-tag">✦</span></h3>
             <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem' }}>
               Pluto's slow orbit imprints each generation with a shared undercurrent.
