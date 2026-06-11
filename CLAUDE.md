@@ -14,11 +14,11 @@ Built by Christina, sole developer and owner of JupiterDigital (Etsy astrology s
 - **Astrology:** Celestine (server-side birth chart calculations via `/api/astrology`)
 - **Payments:** Stripe (checkout sessions + webhooks)
 - **Email:** Resend
-- **Styling:** Dark celestial theme — CSS custom properties in `/src/styles/base.css`, split across 19 files in `/src/styles/`
-- **State:** React hooks (useTreeState, useChartManager, useExport, useCloudSync, useOnboardingState, useHistoryNav, useSwipe, useCountUp) + localStorage for drafts
+- **Styling:** Dark celestial theme — CSS custom properties in `/src/styles/base.css`, split across 21 files in `/src/styles/`. Global `:focus-visible` ring and `prefers-reduced-motion` kill switch live in base.css.
+- **State:** React hooks (useTreeState, useChartManager, useExport, useCloudSync, useAuth, useOnboardingState, useHistoryNav, useSwipe, useCountUp) + localStorage for drafts
 - **Backend:** Next.js route handlers in `/src/app/api/` proxying Supabase
 - **Database:** Supabase (Postgres) — accessed server-side only, never from client
-- **Testing:** Vitest (vite.config.js is test-only — app builds with Next.js)
+- **Testing:** Vitest, ~170 unit tests colocated as src/utils/*.test.js (vite.config.js is test-only — app builds with Next.js; excludes .claude/**)
 - **Code Splitting:** xyflow + dagre chunked separately; ZodiacWheel, ConstellationView, html-to-image lazy-loaded
 - **Analytics:** Vercel Analytics
 
@@ -29,11 +29,15 @@ Live at astrodig.com:
 - Add family members with name, birthdate, and relationships (parent/child/spouse/friend/coworker)
 - Sun sign, moon sign, and inner planets (Mercury, Venus, Mars) calculated server-side via Celestine
 - Four visualization modes: tree (React Flow), zodiac wheel, constellation (force-directed), tables (sortable grid)
-- The DIG: Wrapped-style personality story with swipeable slides (free users see 3, celestial see all)
+- The DIG: Wrapped-style personality story with swipeable slides (free users see 3, celestial see all); element-mood slides have animated particle backdrops
+- The Current: live group transit analysis tab inside Insights (Beta, Celestial); mood gauge has a data-driven aurora
+- Eras: timeline view inside Insights (Beta) — members by birth year against Pluto generation bands; FREE but sign-in gated (the account-creation incentive); needs 2+ dated members to appear
+- Welcome card reveals the visitor's sun sign live as they type their birthday; shows tonight's real moon phase (src/utils/moonTonight.js)
+- Entrance animations: tree cascades by generation (--gen CSS var per node/edge, triggered via useNodesInitialized — do NOT start canvas animations at mount, React Flow measures nodes hidden first), constellation draws in, zodiac markers fly from center in ring waves (mount-window gated so ring toggles aren't delayed)
 - Insights panel with 16+ cards (see card order below — source of truth is render order in InsightsPanel.jsx)
 - Optional auth via Google (GSI popup) or Supabase magic links — users start anonymous, prompted to sign in after first save
 - Chart save/load/rename/duplicate with cloud sync
-- Shared chart links via `?view=token`
+- Shared chart links via `/view/[token]` (server-rendered OG metadata; robots blocks AI crawlers on `/view`)
 - PNG export with brand bar (all views + insights)
 - Paywall/entitlements system with Stripe checkout ($9.99 one-time unlock)
 - Admin panel at `/admin` with server-side auth, stats, paywall config
@@ -59,9 +63,15 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
 
 **What to never lock:** member count, tree view, share links, basic PNG export.
 
+**Eras is NOT paywalled** — it's free but requires sign-in (deliberate: the only account incentive that isn't the $9.99 ask). Logs `view_eras`.
+
 ---
 
 ## Rules & Preferences
+- **All user-facing copy must follow Christina's voice guide** (iCloud: Christina_Soll_Voice_Guide_JupiterDigital.md). Hard rules: NO em dashes (the #1 AI tell — restructure the sentence instead), hedged framing ("tends to", "may", "often"), planets mirror not cause, no "manifest"/"vibrations"/deterministic claims, no clever mic-drop endings. Don't mimic surrounding legacy copy style — much of it predates the sweep.
+- **SQL migrations: any `CREATE OR REPLACE FUNCTION` must include `SET search_path = public`** — replacing a function silently resets it and undoes the security hardening (this regression happened once already).
+- The Supabase project also hosts `party_events`/`party_attendees`/`leads` tables — those belong to Jupiter Digital Events (a separate project), not this app. Exclude them from analyses and don't "fix" their policies.
+- **Insight cards are threshold-gated to avoid horoscope-effect noise** (see commit history June 2026): shared moon/Venus/Mars need 3+ people, Pluto Generations needs 15+ year spread, The Gaps needs 4+ members, Bridge needs 5+ aspects at 4° orb, weak compatibility tiers need a relationship edge. Don't loosen these without Christina's sign-off. Synastry orbs in src/lib/astrology-core/aspects.js are Christina's own spec — never change them unilaterally.
 - Keep components small and single-responsibility
 - Don't refactor working code unless asked
 - Astrology logic lives in `/src/utils/astrology/` — do not duplicate it elsewhere
@@ -83,7 +93,7 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
     /admin/page.jsx     # Admin panel entry
     /view/[token]/page.jsx  # Shared chart view
     /api
-      _lib/             # Shared server-side helpers (supabase client, admin auth, email)
+      _lib/             # Shared server-side helpers (supabase client, admin auth, email, validate.js)
       chart/route.js    # Chart CRUD (?action=save|load|list|delete|public|share|restore)
       device/route.js   # Device tracking (?action=register|email)
       admin/route.js    # Admin panel (?action=login|charts|stats|devices|trees-per-day)
@@ -93,6 +103,9 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
       redeem/route.js   # Entitlement/promo code redemption
   /admin                # Admin panel components + utils
   /components           # UI components
+    /insights           # Extracted insight cards (GroupAnalysisCards) + insightsData.js (blurb tables incl. group variants)
+    /current            # The Current (Beta, Celestial): TheCurrent, MoodGauge, cards, currentData.js
+    ErasView.jsx        # Eras timeline view (Beta, sign-in gated)
     /dig                # The DIG feature
       TheDig.jsx        # Main container (swipe/tap/keyboard navigation)
       DigProgressBar.jsx
@@ -108,6 +121,8 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
     useSwipe.js         # Touch swipe detection (for DIG)
     useCountUp.js       # Animated number counter
   /styles               # 19 CSS files (base, layout, sidebar, forms, canvas, tabs, etc.)
+  /lib
+    /astrology-core     # aspects.js — synastry/hereditary aspects, Christina's orbs
   /utils
     /astrology          # sunSign.js, elements.js, birthChart.js, index.js (barrel)
     astrology.js        # Re-export barrel (convenience import path)
@@ -123,13 +138,15 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
     digSlides.js        # DIG slide builder (selects 5-7 personalized slides)
     demoData.js         # Sample tree data
     dateInput.js        # Date parsing/validation helpers
+    moonTonight.js      # Tonight's moon phase (local math) + sign (via API), cached per day
+    groupChartCalc.js   # Group/transit math for The Current + DIG (tested)
   App.jsx               # Root component (~1600 lines) — layout, routing, orchestration
 ```
 
 ---
 
 ## What's Next
-- **Content Revamp (mostly done):** Phases 1–2 and 4–5 complete. Remaining: Jupiter/Saturn display in EditMemberPanel (Phase 3), "starting point" note at top of InsightsPanel (Phase 4), test file for groupChartCalc.js (Phase 2). See `CONTENT_REVAMP_PLAN.md`.
+- **Content Revamp (mostly done):** Phases 1–2 and 4–5 complete. Remaining: Jupiter/Saturn display in EditMemberPanel (Phase 3), "starting point" note at top of InsightsPanel (Phase 4). (groupChartCalc.js tests done — 45 tests in src/utils/groupChartCalc.test.js.) See `CONTENT_REVAMP_PLAN.md`.
 - **Advanced Charts (future):** Rising sign, house placements, aspects between members' charts (birth time capture already exists).
 
 ## Insights Panel Card Order (do not reorder unless asked)
@@ -137,26 +154,28 @@ Source of truth is the render order in InsightsPanel.jsx. Current order (as of c
   1. Family Signature (includes "Full element breakdown" expandable — the old Collective Element Map card, merged June 2026)
   2. Squad Energy (sun element)
   3. Social Chemistry (Venus/Mars dynamics)
-  5. Sign Threads (shared signs)
-  6. Shared Moon Signs
-  7. Cosmic Inheritance
-  8. Partner Compatibility ✦
-  9. Hidden Connections ✦
-  10. Family Roles ✦
-  11. Sibling Dynamics ✦
-  12. Family Arrivals ✦
-  13. Zodiac Threads ✦
-  14. Venus · Mars Shared Signs ✦
-  15. Planetary Patterns ✦
-  16. Group Hotspots ✦
-  17. The Gaps ✦
-  18. Saturn Lines ✦
-  19. Jupiter Gifts ✦
-  20. Pluto Generations ✦
+  4. Sign Threads (shared signs — needs 3+ placements)
+  5. Shared Moon Signs (needs 3+ people sharing)
+  6. Cosmic Inheritance
+  7. Partner Compatibility ✦
+  8. Hidden Connections ✦
+  9. Family Roles ✦
+  10. Sibling Dynamics ✦
+  11. Family Arrivals ✦
+  12. Zodiac Threads ✦
+  13. Venus · Mars Shared Signs ✦ (needs 3+ people sharing)
+  14. Planetary Patterns ✦
+  15. Group Hotspots ✦ (6° clusters)
+  16. The Gaps ✦ (needs 4+ members)
+  17. Saturn Lines ✦
+  18. Jupiter Gifts ✦
+  19. Pluto Generations ✦ (needs 15+ year birth spread)
+
+Insights tabs: Insights | The DIG | The Current (Beta, Celestial) | Eras (Beta, sign-in). Many cards are threshold-gated and intentionally absent on small or same-age charts.
 
 ## Component Size Guidelines
-  - App.jsx (~1700 lines) is orchestration/routing — if suggesting a split, prefer extracting a self-contained feature (auth flow, onboarding, export) into a hook or sub-component rather than splitting arbitrarily
-  - InsightsPanel.jsx (~3600 lines) has all insight cards in one file — splitting by feature area (element cards, compatibility cards, group analysis cards) is reasonable if it reduces cognitive load
+  - App.jsx (~1780 lines) is orchestration/routing — if suggesting a split, prefer extracting a self-contained feature (auth flow, onboarding, export) into a hook or sub-component rather than splitting arbitrarily
+  - InsightsPanel.jsx (~3100 lines) has most insight cards in one file (some extracted to src/components/insights/) — splitting by feature area is reasonable if it reduces cognitive load. NOTE: the app renders multiple InsightsPanel instances (sidebar + bottom sheet + main); use panelRef-scoped queries, never getElementById, and remember element ids are duplicated across instances
   - EditMemberPanel.jsx handles all member editing — keep it in one file unless it crosses ~500 lines of unrelated logic
   - The DIG uses many small slide components — each slide is its own file in /components/dig/slides/ (this pattern works well, keep it)
 
@@ -172,7 +191,11 @@ Source of truth is the render order in InsightsPanel.jsx. Current order (as of c
   - Mobile compact spacing is in `layout.js` — if edges look cramped, adjust GEN_GAP/DAGRE_NSEP/DAGRE_RSEP, not the edge type
 
 ## CSS Organization
-  - 19 CSS files in /src/styles/ — each maps to a feature area
+  - 21 CSS files in /src/styles/ — each maps to a feature area
+  - Cosmic-mode shell (bottom nav, bottom sheets, floating pills, welcome/onboarding card, sample-chart banner, tree nudges) -> theme-cosmic.css (uses --a-* variable namespace)
+  - The Current -> current.css; Eras + insight cards -> insights.css
+  - GOTCHA: bottom-sheet children are flex items — anything wide inside needs `min-width: 0` on the chain or the whole panel overflows the screen edge (caused two real mobile bugs)
+  - Zodiac wheel styles (including entrance animation) live in admin.css mobile section (legacy placement)
   - Birth time / edit panel styles -> edit-panel.css
   - Zodiac mobile hints, zoom controls -> admin.css (mobile media query section)
   - Tab bar / React Flow controls mobile positioning -> tabs.css
