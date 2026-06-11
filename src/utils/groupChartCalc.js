@@ -221,7 +221,7 @@ export function collectiveElementMap(nodes, onlyPlanets) {
  * Find degree zones where planets from different people cluster.
  * Returns array of hotspot objects sorted by participant count.
  */
-export function findHotspots(nodes, orb = 8) {
+export function findHotspots(nodes, orb = 6) {
   // Collect all placements with absolute positions
   const all = []
   for (const node of nodes) {
@@ -675,7 +675,7 @@ export function findGroupAspects(nodes, edges) {
 
       for (const pA of a.placements) {
         for (const pB of b.placements) {
-          const asp = findAspect(pA.absPos, pB.absPos, 6)
+          const asp = findAspect(pA.absPos, pB.absPos, 4)
           if (asp) {
             aspects.push({
               aspect: asp.name,

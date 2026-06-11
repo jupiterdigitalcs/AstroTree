@@ -583,3 +583,37 @@
   cursor: pointer;
 }
 .eras-pluto-link:hover { color: var(--gold); }
+
+/* Breathing room between insight cards + roomier card interiors */
+.insights-tab-content .insight-card:not(:last-child),
+.app--cosmic .insight-card:not(:last-child) {
+  margin-bottom: 0.6rem;
+}
+.app--cosmic .insight-card {
+  padding: 0.9rem 1rem;
+}
+
+/* Element breakdown folded into the Signature card */
+.signature-breakdown {
+  margin-top: 0.4rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.5rem;
+}
+.signature-breakdown summary {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  list-style-position: inside;
+}
+.signature-breakdown summary:hover { color: var(--text-soft); }
+.signature-breakdown[open] summary { margin-bottom: 0.4rem; }
+
+/* Era tap detail stays visible while scrolled into the chart */
+.eras-era-detail {
+  position: sticky;
+  top: 0.4rem;
+  z-index: 5;
+  background: rgba(13,11,30,0.92);
+  backdrop-filter: blur(8px);
+}

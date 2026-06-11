@@ -134,10 +134,9 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
 
 ## Insights Panel Card Order (do not reorder unless asked)
 Source of truth is the render order in InsightsPanel.jsx. Current order (as of content revamp):
-  1. Family Signature
+  1. Family Signature (includes "Full element breakdown" expandable — the old Collective Element Map card, merged June 2026)
   2. Squad Energy (sun element)
-  3. Social Chemistry (moon element)
-  4. Collective Element Map (free — all planets)
+  3. Social Chemistry (Venus/Mars dynamics)
   5. Sign Threads (shared signs)
   6. Shared Moon Signs
   7. Cosmic Inheritance

@@ -145,7 +145,7 @@ function getArrivalStory(child, parents, elderSiblings) {
 
 // ── Inner components ──────────────────────────────────────────────────────────
 
-function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, total, missingElements, isGroupOnly }) {
+function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, total, missingElements, isGroupOnly, children }) {
   const g = isGroupOnly ? 'group' : 'family'
   const G = isGroupOnly ? 'Group' : 'Family'
   const rawDesc = FAMILY_SIGNATURE_DESCRIPTIONS[dominant]?.[dominantModality]
@@ -184,6 +184,7 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
           No {missingElements.join(' or ')} energy. The {g} may seek this outside.
         </p>
       )}
+      {children}
     </div>
   )
 }
@@ -1705,9 +1706,16 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   }
   allCompatPairs.sort((x, y) => y.score - x.score || (x.a.data.birthdate || '9999').localeCompare(y.a.data.birthdate || '9999'))
 
-  // Select mode for large families: only show the most meaningful pairs
+  // Select mode for large families: only show the most meaningful pairs.
+  // Common tiers (Lunar Bond, Mirror Signs) only show for pairs with an
+  // actual relationship line — base rates are high enough that unrelated
+  // member pairs match constantly.
+  const relatedPairKeys = new Set(edges.map(e => [e.source, e.target].sort().join('|')))
+  const isRelatedPair = p => relatedPairKeys.has([p.a.id, p.b.id].sort().join('|'))
   const isSelectMode = allCompatPairs.length > 12
-  const compatDisplayPairs = isSelectMode ? allCompatPairs.filter(p => p.score >= 6) : allCompatPairs.filter(p => p.score >= 4)
+  const compatDisplayPairs = isSelectMode
+    ? allCompatPairs.filter(p => p.score >= 6)
+    : allCompatPairs.filter(p => p.score >= 6 || (p.score >= 4 && isRelatedPair(p)))
   const compatTitle = isSelectMode ? 'Strongest Connections' : 'Compatibility Map'
 
   // ── Hidden Connections — pairs with low sign-based scores but tight cross-chart aspects ─
@@ -2274,8 +2282,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
             onShowPluto={() => {
               onInsightsTabChange?.('insights')
               setTimeout(() => {
-                document.getElementById('pluto-generations-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }, 150)
+                panelRef.current?.querySelector('#pluto-generations-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }, 300)
             }}
           />
         ) : (
@@ -2311,7 +2319,42 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
         total={total}
         missingElements={missingElements}
         isGroupOnly={isGroupOnly}
-      />
+      >
+        {/* Full element breakdown — folded in from the old Collective Element Map card */}
+        {groupElementMap.total >= 4 && (
+          <details className="signature-breakdown">
+            <summary>Full element breakdown · all planets</summary>
+            <p className="insight-whisper">Counting personal planets (Sun, Moon, Mercury, Venus, and Mars) across every member.</p>
+            {ELEMENTS.map(el => {
+              const count = groupElementMap[el]
+              const pct = Math.round(count / groupElementMap.total * 100)
+              const color = ELEMENT_COLORS[el]
+              const bd = groupElementMap.breakdown[el]
+              const parts = Object.entries(bd).filter(([, c]) => c > 0)
+                .map(([planet, c]) => `${c} ${planet}`)
+              return (
+                <div key={el} style={{ marginBottom: '0.25rem' }}>
+                  <div className="element-bar-row">
+                    <span className="element-bar-label" style={{ color }}>{el}</span>
+                    <div className="element-bar-track">
+                      <div className="element-bar-fill" style={{ width: `${pct}%`, background: color }} />
+                    </div>
+                    <span className="element-bar-count" style={{ color }}>{count}</span>
+                  </div>
+                  {parts.length > 0 && (
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', paddingLeft: '3.2rem', marginTop: '0.05rem' }}>
+                      {parts.join(' · ')}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+            <p className="insight-whisper" style={{ marginTop: '0.4rem' }}>
+              {groupElementMap.total} total placements across {nodes.length} people. When one element dominates, its qualities tend to shape the group dynamic. Missing elements may show up as blind spots or things the group seeks elsewhere.
+            </p>
+          </details>
+        )}
+      </FamilySignatureCard>
 
       {/* Squad Energy — friend/coworker groups (including friend subgroups in mixed trees) */}
       {(isGroupOnly || hasFriendEdges) && (() => {
@@ -2463,46 +2506,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* Hint: moon data missing */}
       {!(moonNodes.length >= 2 && moonDominant) && nodes.length >= 2 && (
         <p className="insight-hint">☽ Add birth times to unlock moon element insights</p>
-      )}
-
-      {/* Collective Element Map — FREE, all planets across all members */}
-      {groupElementMap.total >= 4 && (
-        <div className="insight-card">
-          <h3 className="insight-heading">Collective Element Map</h3>
-          <p className="insight-whisper">Counting personal planets (Sun, Moon, Mercury, Venus, and Mars) across every member.</p>
-          {ELEMENTS.map(el => {
-            const count = groupElementMap[el]
-            const pct = Math.round(count / groupElementMap.total * 100)
-            const color = ELEMENT_COLORS[el]
-            const bd = groupElementMap.breakdown[el]
-            const parts = Object.entries(bd).filter(([, c]) => c > 0)
-              .map(([planet, c]) => `${c} ${planet}`)
-            return (
-              <div key={el} style={{ marginBottom: '0.25rem' }}>
-                <div className="element-bar-row">
-                  <span className="element-bar-label" style={{ color }}>{el}</span>
-                  <div className="element-bar-track">
-                    <div className="element-bar-fill" style={{ width: `${pct}%`, background: color }} />
-                  </div>
-                  <span className="element-bar-count" style={{ color }}>{count}</span>
-                </div>
-                {parts.length > 0 && (
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', paddingLeft: '3.2rem', marginTop: '0.05rem' }}>
-                    {parts.join(' · ')}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-          {groupElementMap.missing.length > 0 && (
-            <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.3rem' }}>
-              Missing {groupElementMap.missing.join(' and ')}. Those qualities may be sought outside the {isGroupOnly ? 'group' : 'family'}.
-            </p>
-          )}
-          <p className="insight-whisper" style={{ marginTop: '0.4rem' }}>
-            {groupElementMap.total} total placements across {nodes.length} people. When one element dominates, its qualities tend to shape the group dynamic. Missing elements may show up as blind spots or things the group seeks elsewhere.
-          </p>
-        </div>
       )}
 
       {/* 5. Sign Threads — personal planets only (Sun, Moon, Mercury, Venus, Mars) */}
