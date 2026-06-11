@@ -593,28 +593,7 @@
   cursor: pointer;
 }
 .eras-pluto-link:hover { color: var(--gold); }
-.eras-legend { text-align: center; }
-.eras-legend-list {
-  margin-top: 0.65rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-width: 460px;
-  margin-left: auto;
-  margin-right: auto;
-}
-.eras-legend-item {
-  color: var(--text-soft);
-  font-size: 0.73rem;
-  line-height: 1.55;
-  text-align: left;
-  padding: 0.45rem 0.7rem;
-  background: rgba(201,168,76,0.04);
-  border: 1px solid rgba(201,168,76,0.15);
-  border-radius: 8px;
-}
-.eras-legend-item strong { color: var(--text); font-weight: 600; }
-.eras-legend-years { color: var(--text-muted); font-size: 0.68rem; }
+.eras-era-names { color: var(--gold); font-weight: 600; }
 
 /* Breathing room between insight cards + roomier card interiors */
 .insights-tab-content .insight-card:not(:last-child),

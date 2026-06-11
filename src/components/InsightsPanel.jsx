@@ -3012,20 +3012,12 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               const gen = PLUTO_GENS[sign]
               const members = genMap[sign]
               return (
-                <div key={sign} style={{ display: 'flex', flexDirection: 'column', gap: '0.08rem' }}>
-                  <p className="insight-note">
-                    {SIGN_SYMBOLS[sign]}{' '}
-                    <strong>Pluto in {sign}</strong>{' '}
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>({gen.years})</span>
-                    {' · '}{members.length} {members.length === 1 ? 'member' : 'members'}
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>
-                      {' · '}{members.map(m => m.data.name).join(', ')}
-                    </span>
-                  </p>
-                  <p className="insight-note" style={{ color: 'var(--text-muted)', fontSize: '0.72rem', paddingLeft: '1.1rem', marginTop: '-0.05rem' }}>
-                    {gen.flavor}
-                  </p>
-                </div>
+                <p key={sign} className="insight-note">
+                  {SIGN_SYMBOLS[sign]}{' '}
+                  <strong>Pluto in {sign}</strong>{' '}
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>({gen.years})</span>
+                  {' · '}{members.map(m => m.data.name).join(', ')}
+                </p>
               )
             })}
           </div>

@@ -136,17 +136,28 @@ export function ErasView({ nodes, isGroupOnly }) {
   const thread = placed.map(m => `${X(m)},${Y(m)}`).join(' ')
 
   const eraInfo = selectedEra ? PLUTO_GENS[selectedEra] : null
+  const selectedEraRange = selectedEra ? ERAS.find(e => e.sign === selectedEra) : null
+  const eraMembersActive = selectedEraRange
+    ? new Set(placed.filter(m => m.year >= selectedEraRange.from && m.year < selectedEraRange.to).map(m => m.id))
+    : null
 
   return (
     <div ref={wrapRef} className="eras-view">
       <p className="eras-intro">
-        Everyone, in the order they arrived. The bands are Pluto generations,
-        the eras people came through. {isGroupOnly ? 'Groups' : 'Families'} that
-        span bands often span worldviews too. Tap a band to read its era.
+        Everyone, in the order they arrived. The bands are Pluto generations —
+        {isGroupOnly ? ' groups' : ' families'} that span bands often span worldviews too.
+        Tap a band to see who&rsquo;s in it.
       </p>
-      {eraInfo && (
+      {eraInfo && selectedEraRange && (
         <p className="eras-era-detail">
-          <strong>Pluto in {selectedEra}</strong> ({eraInfo.years}): a generation {eraInfo.flavor}.
+          <strong>Pluto in {selectedEra}</strong>{' '}
+          <span style={{ fontSize: '0.68rem' }}>({eraInfo.years})</span>
+          {eraMembersActive?.size > 0 && (
+            <span className="eras-era-names">
+              {' · '}{placed.filter(m => eraMembersActive.has(m.id)).map(m => m.name).join(', ')}
+            </span>
+          )}
+          <br />a generation {eraInfo.flavor}.
         </p>
       )}
       <svg viewBox={`0 0 ${W} ${H}`} className="eras-svg">
@@ -199,49 +210,31 @@ export function ErasView({ nodes, isGroupOnly }) {
         />
 
         {/* Members */}
-        {placed.map((m, i) => (
-          <g key={m.id} className="eras-star" style={{ animationDelay: `${0.15 + i * 0.12}s` }}>
-            <circle cx={X(m)} cy={Y(m)} r={markerR} fill="#0d0b1e" stroke={m.color} strokeWidth={1.5}
-              style={{ filter: `drop-shadow(0 0 6px ${m.color}88)` }} />
-            <text x={X(m)} y={Y(m)} textAnchor="middle" dominantBaseline="central"
-              fontSize={markerR - 3} fill={m.color}>{m.symbol}</text>
-            <text
-              x={nameX(m)}
-              y={vertical ? Y(m) - 4 : Y(m) - markerR - 9}
-              textAnchor={vertical ? (m.lane > 0 ? 'start' : 'end') : 'middle'}
-              className="eras-name"
-            >{m.name}</text>
-            <text
-              x={nameX(m)}
-              y={vertical ? Y(m) + 10 : Y(m) + markerR + 13}
-              textAnchor={vertical ? (m.lane > 0 ? 'start' : 'end') : 'middle'}
-              className="eras-year"
-            >{m.year}</text>
-          </g>
-        ))}
+        {placed.map((m, i) => {
+          const active = eraMembersActive ? eraMembersActive.has(m.id) : false
+          const dim    = eraMembersActive ? !active : false
+          return (
+            <g key={m.id} className="eras-star" style={{ animationDelay: `${0.15 + i * 0.12}s`, opacity: dim ? 0.25 : 1, transition: 'opacity 0.2s' }}>
+              <circle cx={X(m)} cy={Y(m)} r={active ? markerR + 2 : markerR} fill="#0d0b1e" stroke={m.color} strokeWidth={active ? 2.5 : 1.5}
+                style={{ filter: `drop-shadow(0 0 ${active ? 12 : 6}px ${m.color}${active ? 'cc' : '88'})`, transition: 'r 0.2s, stroke-width 0.2s' }} />
+              <text x={X(m)} y={Y(m)} textAnchor="middle" dominantBaseline="central"
+                fontSize={markerR - 3} fill={m.color}>{m.symbol}</text>
+              <text
+                x={nameX(m)}
+                y={vertical ? Y(m) - 4 : Y(m) - markerR - 9}
+                textAnchor={vertical ? (m.lane > 0 ? 'start' : 'end') : 'middle'}
+                className="eras-name"
+              >{m.name}</text>
+              <text
+                x={nameX(m)}
+                y={vertical ? Y(m) + 10 : Y(m) + markerR + 13}
+                textAnchor={vertical ? (m.lane > 0 ? 'start' : 'end') : 'middle'}
+                className="eras-year"
+              >{m.year}</text>
+            </g>
+          )
+        })}
       </svg>
-      {(() => {
-        const presentEras = ERAS.filter(e =>
-          placed.some(m => m.year >= e.from && m.year < e.to)
-        )
-        if (presentEras.length === 0) return null
-        return (
-          <details className="eras-legend">
-            <summary className="eras-pluto-link">What these eras mean</summary>
-            <div className="eras-legend-list">
-              {presentEras.map(e => {
-                const gen = PLUTO_GENS[e.sign]
-                if (!gen) return null
-                return (
-                  <p key={e.sign} className="eras-legend-item">
-                    <strong>{e.label}</strong> <span className="eras-legend-years">({gen.years})</span> — a generation {gen.flavor}.
-                  </p>
-                )
-              })}
-            </div>
-          </details>
-        )
-      })()}
     </div>
   )
 }
