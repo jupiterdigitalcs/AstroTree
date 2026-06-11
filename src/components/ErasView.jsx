@@ -81,8 +81,8 @@ export function ErasView({ nodes, isGroupOnly }) {
     // cross axis matches the real container width so 1 SVG unit ≈ 1px and
     // text renders at its intended size
     const T = vertical ? Math.max(560, n * 86) : 1100
-    const C = vertical ? Math.round(Math.min(480, Math.max(330, containerW || 380))) : 450
-    const PAD_T = vertical ? 56 : 60
+    const C = vertical ? Math.round(Math.min(480, Math.max(330, containerW || 380))) : 380
+    const PAD_T = vertical ? 56 : 50
     const MID_C = C / 2 + (vertical ? 10 : 0)
     const t = year => PAD_T + ((year - minYear) / (maxYear - minYear)) * (T - PAD_T * 2)
 
@@ -194,7 +194,7 @@ export function ErasView({ nodes, isGroupOnly }) {
               <rect x={50} y={e.t1} width={W - 60} height={e.t2 - e.t1} rx={6}
                 fill={e.color} stroke={selectedEra === e.sign ? 'rgba(201,168,76,0.4)' : 'none'} />
             ) : (
-              <rect x={e.t1} y={28} width={e.t2 - e.t1} height={H - 86} rx={6}
+              <rect x={e.t1} y={22} width={e.t2 - e.t1} height={H - 64} rx={6}
                 fill={e.color} stroke={selectedEra === e.sign ? 'rgba(201,168,76,0.4)' : 'none'} />
             )}
             {e.labeled && (vertical ? (
@@ -206,7 +206,7 @@ export function ErasView({ nodes, isGroupOnly }) {
               >{e.label}</text>
             ) : (
               <text
-                x={(e.t1 + e.t2) / 2} y={44}
+                x={(e.t1 + e.t2) / 2} y={36}
                 textAnchor="middle"
                 className="eras-band-label"
               >{e.label}</text>
@@ -258,13 +258,10 @@ export function ErasView({ nodes, isGroupOnly }) {
         })}
       </svg>
 
-      {largestGap && largestGap.gap >= 2 && (
+      {largestGap && largestGap.eraCount > 1 && (
         <p className="eras-gap-callout">
           Biggest gap: <strong>{largestGap.from.name}</strong> to <strong>{largestGap.to.name}</strong>
-          {' · '}{largestGap.gap} years
-          {largestGap.eraCount > 1
-            ? `, ${largestGap.eraCount} ${largestGap.eraCount === 1 ? 'era' : 'eras'} apart`
-            : ', same era'}
+          {' · '}{largestGap.gap} years · {largestGap.eraCount} eras apart
         </p>
       )}
     </div>

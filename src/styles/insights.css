@@ -463,14 +463,14 @@
   width: 100%;
   max-width: 1150px;
   margin: 0 auto;
-  padding: 0.6rem 1rem 1.5rem;
+  padding: 0.2rem 1rem 0.5rem;
 }
 .eras-intro {
   text-align: center;
   color: var(--text-muted);
   font-size: 0.74rem;
   line-height: 1.5;
-  margin: 0.2rem auto 1rem;
+  margin: 0.1rem auto 0.5rem;
   max-width: 460px;
 }
 .eras-svg { width: 100%; display: block; }
@@ -601,17 +601,21 @@
   font-family: 'Raleway', sans-serif;
   font-size: 0.72rem;
   letter-spacing: 0.06em;
-  margin: -0.3rem auto 0.75rem;
+  margin: 0 auto 0.5rem;
 }
 .eras-gap-callout {
   text-align: center;
-  color: var(--text-muted);
-  font-family: 'Raleway', sans-serif;
-  font-size: 0.7rem;
-  margin: 0.6rem auto 0;
-  max-width: 380px;
+  color: var(--text-soft);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  max-width: 440px;
+  margin: 0.5rem auto 0;
+  padding: 0.5rem 0.8rem;
+  background: rgba(201,168,76,0.06);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-radius: 10px;
 }
-.eras-gap-callout strong { color: var(--text-soft); font-weight: 600; }
+.eras-gap-callout strong { color: var(--gold); font-weight: 600; }
 
 /* Breathing room between insight cards + roomier card interiors */
 .insights-tab-content .insight-card:not(:last-child),
