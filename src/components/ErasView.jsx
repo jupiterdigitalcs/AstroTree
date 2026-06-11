@@ -114,10 +114,28 @@ export function ErasView({ nodes, isGroupOnly }) {
       // a label needs room — narrow slivers stay as silent color bands
       .map(e => ({ ...e, labeled: e.t2 - e.t1 > 64 }))
 
-    return { placed, decades, eras, markerR, T, C }
+    // Era summary stats
+    const yearSpan = members[n - 1].year - members[0].year
+    const presentEraCount = new Set(
+      members.map(m => ERAS.find(e => m.year >= e.from && m.year < e.to)?.sign).filter(Boolean)
+    ).size
+
+    // Largest consecutive gap (placed is in birth-year order)
+    let largestGap = null
+    for (let i = 1; i < members.length; i++) {
+      const gap = members[i].year - members[i - 1].year
+      if (!largestGap || gap > largestGap.gap) {
+        const y1 = members[i - 1].year
+        const y2 = members[i].year
+        const eraCount = ERAS.filter(e => e.to > y1 && e.from < y2).length
+        largestGap = { gap, from: members[i - 1], to: members[i], eraCount }
+      }
+    }
+
+    return { placed, decades, eras, markerR, T, C, yearSpan, presentEraCount, largestGap }
   }, [nodes, vertical, containerW])
 
-  const { placed, decades, eras, markerR, T, C } = data ?? {}
+  const { placed, decades, eras, markerR, T, C, yearSpan, presentEraCount, largestGap } = data ?? {}
   if (!data) return <div ref={wrapRef} className="eras-view" />
 
   // Map (t, c) into svg space per orientation
@@ -148,6 +166,10 @@ export function ErasView({ nodes, isGroupOnly }) {
         {isGroupOnly ? ' groups' : ' families'} that span bands often span worldviews too.
         Tap a band to see who&rsquo;s in it.
       </p>
+      <p className="eras-stats">
+        {presentEraCount} Pluto {presentEraCount === 1 ? 'era' : 'eras'} · {yearSpan} years between oldest and youngest
+      </p>
+
       {eraInfo && selectedEraRange && (
         <p className="eras-era-detail">
           <strong>Pluto in {selectedEra}</strong>{' '}
@@ -235,6 +257,16 @@ export function ErasView({ nodes, isGroupOnly }) {
           )
         })}
       </svg>
+
+      {largestGap && largestGap.gap >= 2 && (
+        <p className="eras-gap-callout">
+          Biggest gap: <strong>{largestGap.from.name}</strong> to <strong>{largestGap.to.name}</strong>
+          {' · '}{largestGap.gap} years
+          {largestGap.eraCount > 1
+            ? `, ${largestGap.eraCount} ${largestGap.eraCount === 1 ? 'era' : 'eras'} apart`
+            : ', same era'}
+        </p>
+      )}
     </div>
   )
 }

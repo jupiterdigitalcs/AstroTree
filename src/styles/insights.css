@@ -595,6 +595,23 @@
 }
 .eras-pluto-link:hover { color: var(--gold); }
 .eras-era-names { color: var(--gold); font-weight: 600; }
+.eras-stats {
+  text-align: center;
+  color: var(--gold);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  margin: -0.3rem auto 0.75rem;
+}
+.eras-gap-callout {
+  text-align: center;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.7rem;
+  margin: 0.6rem auto 0;
+  max-width: 380px;
+}
+.eras-gap-callout strong { color: var(--text-soft); font-weight: 600; }
 
 /* Breathing room between insight cards + roomier card interiors */
 .insights-tab-content .insight-card:not(:last-child),
