@@ -884,6 +884,19 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   if (insightsTab === 'current' && !currentVisited) setCurrentVisited(true)
   const panelRef = useRef(null)
 
+  // Subnav scroll fade — remove the right-edge mask once user has scrolled to end
+  useEffect(() => {
+    const nav = panelRef.current?.querySelector('.insights-subnav')
+    if (!nav) return
+    const update = () => {
+      const atEnd = nav.scrollWidth - nav.scrollLeft <= nav.clientWidth + 4
+      nav.classList.toggle('subnav--at-end', atEnd)
+    }
+    update() // initial check: if all tabs fit, mask off immediately
+    nav.addEventListener('scroll', update, { passive: true })
+    return () => nav.removeEventListener('scroll', update)
+  }, [erasEligible]) // re-run if the Eras tab appears/disappears
+
   // Inject toggle buttons into insight headings
   useEffect(() => {
     if (!panelRef.current) return
