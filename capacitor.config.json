@@ -1,5 +1,5 @@
 {
-  "appId": "com.jupiterdigital.astrodig",
+  "appId": "com.jupiterdigital.astrodigios",
   "appName": "AstroDig",
   "webDir": "cap-shell",
   "backgroundColor": "#09071a",
@@ -7,7 +7,7 @@
     "url": "https://astrodig.com"
   },
   "ios": {
-    "contentInset": "never",
+    "contentInset": "scrollableAxes",
     "appendUserAgent": "AstroDigApp/ios-test"
   }
 }

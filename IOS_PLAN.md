@@ -43,10 +43,26 @@ into a native rewrite automatically — keep entitlements and charts account-bou
    digital unlocks there) and Stripe on web. New server path (RevenueCat
    webhook or /api/iap receipt verification) writing the same tier fields the
    Stripe webhook writes — buy anywhere, unlocked everywhere.
-5. **Standalone build entry.** Bundle the SPA (App.jsx barely touches Next.js)
-   via a small Vite entry so the shell ships local files (App Review dislikes
-   pure remote-URL wrappers). Website stays on Next.js untouched.
-   Set NEXT_PUBLIC_API_BASE=https://astrodig.com in that build.
+5. ~~**Standalone build entry.**~~ DONE (June 17, 2026). The SPA bundles via a
+   dedicated Vite config, separate from the test-only vite.config.js and from
+   the Next.js website build (both untouched). App.jsx had ZERO next/* imports,
+   so this was clean. Files added:
+   - `vite.config.mobile.js` — react plugin; replaces the client `process.env.
+     NEXT_PUBLIC_*` reads (API base, Supabase URL/anon key, Google client ID)
+     at build time; API base defaults to https://astrodig.com. Outputs to
+     `cap-shell/` (the Capacitor webDir).
+   - `mobile/index.html` — HTML shell mirroring layout.jsx <head> (fonts,
+     theme-color, native-ios safe-area script, GSI preload).
+   - `mobile/entry.jsx` — mounts App.jsx into #root.
+   - scripts: `npm run build:mobile` (build only), `npm run ios:sync`
+     (build:mobile + `npx cap sync ios`).
+   Verified: builds 405 modules, code-splitting preserved, assets at /assets/*
+   (Capacitor serves these from root), favicon/apple-touch-icon copied from
+   public/, vitest unaffected.
+   TO ACTUALLY USE THE BUNDLE (submission path, not yet done): remove the
+   `server` block from capacitor.config.json so the app loads cap-shell locally
+   instead of https://astrodig.com, then `npm run ios:sync`. Left as-is for now
+   so the remote-URL feel-test still works.
 6. **Deep links.** Universal links for /view/[token] (shared charts open the
    app) and checkout/auth return URLs.
 
@@ -71,7 +87,18 @@ into a native rewrite automatically — keep entitlements and charts account-bou
 - [ ] Reserve the app name in App Store Connect once enrolled — "AstroDig" had
       no conflicts on the App Store as of June 2026 (names are first-come,
       first-served at registration).
-- [ ] Pick bundle ID (e.g. com.jupiterdigital.astrodig).
+- [x] Bundle ID (June 17, 2026): **com.jupiterdigital.astrodigios**.
+      GOTCHA: the original `com.jupiterdigital.astrodig` got auto-claimed by
+      Christina's PERSONAL Apple ID (free team YY2KT96S7D) during the earlier
+      on-device test build, and free accounts can't delete identifiers via the
+      portal — so it's stuck on the personal account. Switched to `...astrodigios`
+      everywhere (capacitor.config.json root + ios/App/App/, project.pbxproj x2).
+      Lesson: set the paid-org Team in Xcode BEFORE the first build next time.
+      The Xcode project still has DEVELOPMENT_TEAM = YY2KT96S7D (personal) —
+      must be switched to the paid org team in Signing & Capabilities.
+- [x] App record created in App Store Connect (June 17, 2026): name "AstroDig"
+      reserved, tied to com.jupiterdigital.astrodigios. Status: Prepare for
+      Submission (nothing submitted yet).
 - [ ] Public privacy policy URL (App Store requires one — the About panel's
       privacy section needs a real page, e.g. astrodig.com/privacy).
 - [ ] App Privacy "nutrition label" answers: device IDs, email (optional),

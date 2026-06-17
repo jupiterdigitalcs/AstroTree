@@ -38,3 +38,6 @@ backups/
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# Capacitor mobile build output (regenerate with npm run build:mobile)
+/cap-shell/

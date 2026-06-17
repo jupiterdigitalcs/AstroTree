@@ -9,6 +9,8 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
+    "build:mobile": "vite build --config vite.config.mobile.js",
+    "ios:sync": "npm run build:mobile && npx cap sync ios",
     "test:e2e": "playwright test --project=desktop-chrome --project=mobile-chrome",
     "test:e2e:all": "playwright test",
     "test:e2e:ui": "playwright test --ui",

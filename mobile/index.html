@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>AstroDig</title>
+    <meta name="theme-color" content="#09071a" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Fonts — same split as the website's layout.jsx -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Raleway:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+      fetchpriority="low"
+    />
+
+    <!-- Native iOS safe area — env(safe-area-inset-*) is unreliable in the
+         Capacitor WKWebView, so inject the insets directly. Mirrors layout.jsx. -->
+    <script>
+      (function () {
+        if (navigator.userAgent.indexOf('AstroDigApp') === -1) return;
+        var s = document.createElement('style');
+        s.id = 'native-ios-safe-area';
+        s.textContent = ':root{--sat:54px;--sab:34px;}';
+        document.head.appendChild(s);
+        document.documentElement.classList.add('native-ios');
+      })();
+    </script>
+
+    <!-- Google Identity (login is wired in a later refactor; harmless to preload) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/entry.jsx"></script>
+  </body>
+</html>
