@@ -1,5 +1,18 @@
 {
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); if printf '%s' \"$cmd\" | grep -Eqi 'vercel([[:space:]]|$)' && printf '%s' \"$cmd\" | grep -Eqi -- '(--prod|--production|[[:space:]]promote([[:space:]]|$))'; then echo 'Blocked: direct Vercel production deploy. This project auto-deploys to production on git push, so deploy by committing and running git push origin main. Do not run vercel --prod or vercel promote; that previously shipped uncommitted code and made production drift from git.' >&2; exit 2; fi"
+          }
+        ]
+      }
+    ]
   }
 }
