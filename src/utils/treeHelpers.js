@@ -97,6 +97,23 @@ export async function hydrateNodes(nodes) {
   })
 }
 
+// Extract unique planet positions from a node's natal aspects (they store longitudes).
+// Used for cross-chart (synastry) aspect calculations.
+export function extractPlanetPositions(node) {
+  const aspects = node.data?.natalAspects
+  if (!Array.isArray(aspects) || !aspects.length) return []
+  const seen = new Map()
+  for (const a of aspects) {
+    if (a.planet1?.longitude != null && !seen.has(a.planet1.name)) {
+      seen.set(a.planet1.name, { name: a.planet1.name, signName: a.planet1.sign, longitude: a.planet1.longitude })
+    }
+    if (a.planet2?.longitude != null && !seen.has(a.planet2.name)) {
+      seen.set(a.planet2.name, { name: a.planet2.name, signName: a.planet2.sign, longitude: a.planet2.longitude })
+    }
+  }
+  return [...seen.values()]
+}
+
 export function makeEdge(source, target, relationType = 'parent-child') {
   const isFamily = relationType === 'parent-child'
   const isHierarchical = relationType === 'parent-child' || relationType === 'step-parent'

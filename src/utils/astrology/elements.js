@@ -26,6 +26,15 @@ export function getElement(sign) {
   return { element, color }
 }
 
+// Element harmony: same element, or Fire-Air / Earth-Water pairings
+export function areCompatible(a, b) {
+  if (a === b) return true
+  return (
+    (a === 'Fire'  && b === 'Air'  ) || (a === 'Air'   && b === 'Fire' ) ||
+    (a === 'Earth' && b === 'Water') || (a === 'Water' && b === 'Earth')
+  )
+}
+
 export const SIGN_MODALITY = {
   Aries: 'Cardinal', Cancer: 'Cardinal', Libra: 'Cardinal', Capricorn: 'Cardinal',
   Taurus: 'Fixed',   Leo: 'Fixed',       Scorpio: 'Fixed',  Aquarius: 'Fixed',

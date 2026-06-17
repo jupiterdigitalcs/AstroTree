@@ -8,6 +8,10 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   justify-content: center;
+  /* Keep centered content clear of the notch / Dynamic Island and home bar
+     (native build injects --sat/--sab; on web these resolve to 0). */
+  padding-top: var(--sat, env(safe-area-inset-top, 0px));
+  padding-bottom: var(--sab, env(safe-area-inset-bottom, 0px));
   background: radial-gradient(ellipse at 50% 38%,
     rgba(30,15,60,0.82) 0%,
     rgba(9,7,26,0.55) 70%);

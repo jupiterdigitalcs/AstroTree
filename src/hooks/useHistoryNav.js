@@ -19,16 +19,17 @@ function shapesEqual(a, b) {
     && a.editing === b.editing
     && a.dig === b.dig
     && a.iTab === b.iTab
+    && (a.person ?? null) === (b.person ?? null)
 }
 
-export function useHistoryNav({ activeTab, treeView, editingNodeId, setActiveTab, setTreeView, setEditingNodeId, showDig, setShowDig, insightsTab, setInsightsTab }) {
+export function useHistoryNav({ activeTab, treeView, editingNodeId, setActiveTab, setTreeView, setEditingNodeId, showDig, setShowDig, insightsTab, setInsightsTab, viewingPersonId, setViewingPersonId }) {
   const lastPoppedRef = useRef(null)
   const showDigRef = useRef(showDig)
   showDigRef.current = showDig
 
   // Push current state to history when navigation changes
   useEffect(() => {
-    const state = { tab: activeTab, view: treeView, editing: editingNodeId, dig: !!showDig, iTab: insightsTab || 'insights' }
+    const state = { tab: activeTab, view: treeView, editing: editingNodeId, dig: !!showDig, iTab: insightsTab || 'insights', person: viewingPersonId ?? null }
     // If this state is the one we just applied from a popstate, skip pushing
     // (and clear the marker so the next user-driven nav still gets pushed).
     if (shapesEqual(lastPoppedRef.current, state)) {
@@ -38,7 +39,7 @@ export function useHistoryNav({ activeTab, treeView, editingNodeId, setActiveTab
     const current = window.history.state?.appNav
     if (shapesEqual(current, state)) return
     window.history.pushState({ appNav: state }, '')
-  }, [activeTab, treeView, editingNodeId, showDig, insightsTab])
+  }, [activeTab, treeView, editingNodeId, showDig, insightsTab, viewingPersonId])
 
   // Listen for back/forward navigation
   useEffect(() => {
@@ -62,9 +63,10 @@ export function useHistoryNav({ activeTab, treeView, editingNodeId, setActiveTab
       setEditingNodeId(nav.editing)
       if (setShowDig) setShowDig(!!nav.dig)
       if (setInsightsTab) setInsightsTab(nav.iTab || 'insights')
+      if (setViewingPersonId) setViewingPersonId(nav.person ?? null)
     }
     window.addEventListener('popstate', handlePopState)
-    const initial = { tab: activeTab, view: treeView, editing: editingNodeId, dig: !!showDig, iTab: insightsTab || 'insights' }
+    const initial = { tab: activeTab, view: treeView, editing: editingNodeId, dig: !!showDig, iTab: insightsTab || 'insights', person: viewingPersonId ?? null }
     window.history.replaceState({ appNav: initial }, '')
     return () => window.removeEventListener('popstate', handlePopState)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps

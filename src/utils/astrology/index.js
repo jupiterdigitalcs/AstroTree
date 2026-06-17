@@ -3,6 +3,7 @@ export { getSunSign } from './sunSign.js'
 export { getMoonSign, getInnerPlanetSigns, getSunSignAtTime, checkIngressWarnings } from './birthChart.js'
 export {
   getElement,
+  areCompatible,
   ELEMENT_COLORS,
   SIGN_MODALITY,
   POLARITY_GROUP,

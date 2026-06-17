@@ -268,6 +268,7 @@ export default function EditMemberPanel({
   onCancel,
   onGoToInsights,
   onGoToView,
+  onViewProfile,
   viewLabel,
 }) {
   const [name,           setName]           = useState(node.data.name)
@@ -838,6 +839,13 @@ export default function EditMemberPanel({
       })()}
 
       <div className="edit-cta-row">
+        {onViewProfile && (
+          <button type="button" className="edit-insights-cta" onClick={onViewProfile}>
+            <span>✦</span>
+            <span>View Profile</span>
+            <span>→</span>
+          </button>
+        )}
         {onGoToInsights && allNodes.length >= 2 && edges.length > 0 && (
           <button type="button" className="edit-insights-cta" onClick={onGoToInsights}>
             <span>✦</span>

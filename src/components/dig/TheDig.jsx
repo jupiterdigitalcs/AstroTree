@@ -56,6 +56,19 @@ export default function TheDig({ digData, onClose, chartTitle, isPremium = true,
     return () => window.removeEventListener('keydown', onKey)
   }, [go, onClose])
 
+  // Lock background scroll while the full-screen DIG is open. Without this, iOS
+  // WKWebView lets touch-scrolls chain to the page behind the overlay, which
+  // leaves the fixed top nav shifted up under the Dynamic Island after exit.
+  useEffect(() => {
+    const html = document.documentElement
+    const body = document.body
+    const prevHtml = html.style.overflow
+    const prevBody = body.style.overflow
+    html.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    return () => { html.style.overflow = prevHtml; body.style.overflow = prevBody }
+  }, [])
+
   const swipeHandlers = useSwipe({
     onSwipeLeft: () => go('forward'),
     onSwipeRight: () => go('back'),

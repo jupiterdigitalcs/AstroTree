@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react'
 import {
-  getElement,
+  getElement, areCompatible,
   ELEMENT_COLORS, SIGN_MODALITY, POLARITY_GROUP,
   FAMILY_SIGNATURE_DESCRIPTIONS, ELEMENT_ROLE_BLURB, MODALITY_MODIFIER,
 } from '../utils/astrology.js'
@@ -20,8 +20,9 @@ import {
   PLUTO_GENS, PLUTO_ORDER, OPPOSITE_SIGNS,
   ELEMENT_QUALITY, MOON_STYLE, ZODIAC_THREAD_BLURB, ZODIAC_THREAD_BLURB_GROUP, SIGN_SHORT,
   SQUAD_ELEMENT_VIBE, SQUAD_MODALITY_VIBE, SQUAD_POLARITY_NOTE,
-  ASPECT_PAIR_BLURB,
+  ASPECT_PAIR_BLURB, getSynastryBlurb,
 } from './insights/insightsData.js'
+import { extractPlanetPositions } from '../utils/treeHelpers.js'
 import { GroupAnalysisCards } from './insights/GroupAnalysisCards.jsx'
 import { ErasView, extractEraMembers } from './ErasView.jsx'
 
@@ -86,14 +87,6 @@ function getPlutoSign(birthdate) {
   return 'Aquarius'
 }
 
-
-function areCompatible(a, b) {
-  if (a === b) return true
-  return (
-    (a === 'Fire'  && b === 'Air'  ) || (a === 'Air'   && b === 'Fire' ) ||
-    (a === 'Earth' && b === 'Water') || (a === 'Water'  && b === 'Earth')
-  )
-}
 
 function pairKey(a, b) {
   return [a.id, b.id].sort().join('|')
@@ -1064,45 +1057,8 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
   }
 
   // ── Synastry helpers ──────────────────────────────────────────────────────────
-  // Extract unique planet positions from a node's natal aspects (they store longitudes)
-  function extractPlanetPositions(node) {
-    const aspects = node.data?.natalAspects
-    if (!Array.isArray(aspects) || !aspects.length) return []
-    const seen = new Map()
-    for (const a of aspects) {
-      if (a.planet1?.longitude != null && !seen.has(a.planet1.name)) {
-        seen.set(a.planet1.name, { name: a.planet1.name, signName: a.planet1.sign, longitude: a.planet1.longitude })
-      }
-      if (a.planet2?.longitude != null && !seen.has(a.planet2.name)) {
-        seen.set(a.planet2.name, { name: a.planet2.name, signName: a.planet2.sign, longitude: a.planet2.longitude })
-      }
-    }
-    return [...seen.values()]
-  }
-
+  // (extractPlanetPositions lives in treeHelpers.js; blurbs in insightsData.js)
   const PERSONAL_SET = new Set(['Sun', 'Moon', 'Mercury', 'Venus', 'Mars'])
-  const SYNASTRY_BLURBS = {
-    'Venus:Mars': { soft: 'Desire and affection tend to flow easily between them.', hard: 'A push-pull of attraction that\'s magnetic but may require patience.' },
-    'Venus:Sun':  { soft: 'One person naturally admires and is drawn to the other.', hard: 'Admiration is there, but expressing it may not always land as intended.' },
-    'Moon:Sun':   { soft: 'A natural comfort. One person\'s identity tends to nurture the other\'s emotional needs.', hard: 'Identity and emotional needs can bump. Growth comes from not taking reactions personally.' },
-    'Moon:Venus': { soft: 'Emotional warmth flows easily. They tend to feel safe with each other.', hard: 'Care is there, but the way it\'s expressed may sometimes miss the mark.' },
-    'Moon:Mars':  { soft: 'Feelings and drive complement each other, a lively but supportive dynamic.', hard: 'One person\'s energy may sometimes overwhelm the other\'s emotional space.' },
-    'Venus:Venus':{ soft: 'They tend to value and enjoy the same things, a natural ease in shared taste.', hard: 'Similar values expressed in clashing ways. They want the same things but pursue them differently.' },
-    'Sun:Mars':   { soft: 'They tend to energize each other, with action and identity in easy collaboration.', hard: 'A competitive spark that can fuel motivation or create friction depending on the day.' },
-    'Moon:Moon':  { soft: 'Emotional rhythms in sync. They tend to understand each other\'s moods instinctively.', hard: 'Both have strong emotional needs that can sometimes collide.' },
-    'Sun:Sun':    { soft: 'A feeling of recognition. They may see themselves reflected in each other.', hard: 'Two strong identities that may sometimes compete for the spotlight.' },
-    'Sun:Saturn': { soft: 'A stabilizing bond where one person helps ground and structure the other.', hard: 'One person may feel held back or judged by the other, even when that\'s not the intent.' },
-    'Moon:Saturn':{ soft: 'Emotional security through commitment, a bond that tends to deepen over time.', hard: 'Warmth may sometimes feel conditional. This bond asks both to grow.' },
-    'Venus:Saturn':{ soft: 'Love that builds slowly and lasts — loyalty and devotion over flash.', hard: 'Affection meets restraint. One may need more warmth than the other easily gives.' },
-  }
-
-  function getSynastryBlurb(pA, pB, aspect) {
-    const key = [pA, pB].sort().join(':')
-    const entry = SYNASTRY_BLURBS[key]
-    if (!entry) return null
-    const isHard = aspect === 'square' || aspect === 'opposition'
-    return isHard ? entry.hard : entry.soft
-  }
 
   function buildCoupleAnalysis(src, tgt) {
     const srcMoon   = src.data.moonSign && src.data.moonSign !== 'Unknown' ? src.data.moonSign : null

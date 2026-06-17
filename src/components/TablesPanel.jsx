@@ -31,7 +31,7 @@ function ElementTag({ sign }) {
   )
 }
 
-export function TablesPanel({ nodes, chartTitle }) {
+export function TablesPanel({ nodes, chartTitle, onSelectPerson }) {
   const [tab,         setTab]         = useState('planets') // 'planets' | 'aspects'
   const [sortBy,      setSortBy]      = useState('name')
   const [sortDir,     setSortDir]     = useState('asc')
@@ -223,7 +223,13 @@ export function TablesPanel({ nodes, chartTitle }) {
           <tbody>
             {rows.map(r => (
               <tr key={r.id}>
-                {visible.name    && <td className="tables-name">{r.name}</td>}
+                {visible.name    && (
+                  <td className="tables-name">
+                    {onSelectPerson ? (
+                      <button type="button" className="tables-name-btn" onClick={() => onSelectPerson(r.id)}>{r.name}</button>
+                    ) : r.name}
+                  </td>
+                )}
                 {visible.birthday && <td className="tables-date">{r.birthdate}</td>}
                 {visible.sun     && (
                   <td className="tables-sign">

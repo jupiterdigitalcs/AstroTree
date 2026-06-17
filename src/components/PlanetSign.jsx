@@ -6,6 +6,8 @@ export const PLANET_META = {
   mercury: { glyph: '☿', color: '#8ecfcf', label: 'Mercury' },  // teal-aqua
   venus:   { glyph: '♀', color: '#d4a0bc', label: 'Venus'   },  // rose-mauve (matches --rose)
   mars:    { glyph: '♂', color: '#d4826a', label: 'Mars'    },  // rust-terracotta
+  jupiter: { glyph: '♃', color: '#e0a458', label: 'Jupiter' },  // warm amber
+  saturn:  { glyph: '♄', color: '#8f9bb3', label: 'Saturn'  },  // cool slate
 }
 
 // Inline planet+sign display — color comes from PLANET_META, layout from parent.

@@ -1,6 +1,12 @@
 import { Analytics } from '@vercel/analytics/react'
 import '../styles/index.css'
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+}
+
 export const metadata = {
   title: 'AstroDig — Map Your Cosmic Connections | Jupiter Digital',
   description:
@@ -130,6 +136,8 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {/* Native iOS safe area — env(safe-area-inset-*) unreliable in Capacitor WKWebView; inject <style> so React hydration cannot clear it */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){if(navigator.userAgent.indexOf('AstroDigApp')===-1)return;var s=document.createElement('style');s.id='native-ios-safe-area';s.textContent=':root{--sat:54px;--sab:34px;}';document.head.appendChild(s);document.documentElement.classList.add('native-ios');})();` }} />
         <script src="https://accounts.google.com/gsi/client" async defer />
       </head>
       <body>

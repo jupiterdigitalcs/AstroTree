@@ -26,6 +26,7 @@ const AboutPanel        = lazy(() => import('./components/AboutPanel.jsx'))
 const SaveDialog        = lazy(() => import('./components/SaveDialog.jsx').then(m => ({ default: m.SaveDialog })))
 const NewTreeConfirm    = lazy(() => import('./components/NewTreeConfirm.jsx').then(m => ({ default: m.NewTreeConfirm })))
 const WelcomeScreen     = lazy(() => import('./components/WelcomeScreen.jsx').then(m => ({ default: m.WelcomeScreen })))
+const PersonView        = lazy(() => import('./components/person/PersonView.jsx').then(m => ({ default: m.PersonView })))
 import { JupiterIcon }            from './components/JupiterIcon.jsx'
 import { applyDagreLayout }      from './utils/layout.js'
 import { loadDraft, saveChart, loadCharts }  from './utils/storage.js'
@@ -149,6 +150,7 @@ export default function App() {
   const [savedToast,        setSavedToast]        = useState(false)
   const [premiumToast,      setPremiumToast]      = useState(false)
   const [showDig,            setShowDig]            = useState(false)
+  const [viewingPersonId,    setViewingPersonId]    = useState(null)
   const [isDemoChart,        setIsDemoChart]        = useState(false)
   const [uxMode] = useState(getUxMode) // 'classic' | 'cosmic'
   const isCosmic = uxMode === 'cosmic'
@@ -159,7 +161,17 @@ export default function App() {
   const isDraggingRef = useRef(false)
 
   // ── Browser history integration (back button) ──────────────────────────────
-  useHistoryNav({ activeTab, treeView, editingNodeId, setActiveTab, setTreeView, setEditingNodeId, showDig, setShowDig, insightsTab, setInsightsTab })
+  useHistoryNav({ activeTab, treeView, editingNodeId, setActiveTab, setTreeView, setEditingNodeId, showDig, setShowDig, insightsTab, setInsightsTab, viewingPersonId, setViewingPersonId })
+
+  // Close the person profile if its member leaves the chart (delete, chart switch)
+  useEffect(() => {
+    if (viewingPersonId && !nodes.some(n => n.id === viewingPersonId)) setViewingPersonId(null)
+  }, [nodes, viewingPersonId])
+
+  function openPersonProfile(id) {
+    setViewingPersonId(id)
+    logEvent('view_person')
+  }
 
   // Ingress warnings per node — read from precomputed node.data.ingressWarnings
   const nodeIngressWarnings = useMemo(() => {
@@ -685,6 +697,25 @@ export default function App() {
         />
       )}
 
+      {/* ── Person profile overlay ──────────────────────────────────────── */}
+      {viewingPersonId && (() => {
+        const person = nodes.find(n => n.id === viewingPersonId)
+        if (!person) return null
+        return (
+          <Suspense fallback={null}>
+            <PersonView
+              node={person}
+              nodes={nodes}
+              edges={edges}
+              entitlements={entitlements}
+              onClose={() => setViewingPersonId(null)}
+              onEdit={() => { setViewingPersonId(null); setEditingNodeId(person.id); setActiveTab('add') }}
+              onUpgrade={() => { setViewingPersonId(null); setShowUpgradePrompt(true) }}
+            />
+          </Suspense>
+        )
+      })()}
+
       {/* ── Premium welcome toast ────────────────────────────────────────── */}
       {premiumToast && (
         <div className="premium-toast">
@@ -871,6 +902,7 @@ export default function App() {
                 onRemoveEdge={handleRemoveEdge}
                 onCancel={() => setEditingNodeId(null)}
                 onGoToInsights={() => { setEditingNodeId(null); setInsightsTab('insights'); goTab('insights') }}
+                onViewProfile={() => openPersonProfile(editingNode.id)}
                 onGoToView={() => {
                   const groupOnly = edges.length > 0 && edges.every(e => { const t = e.data?.relationType; return t === 'friend' || t === 'coworker' })
                   setEditingNodeId(null)
@@ -1355,7 +1387,7 @@ export default function App() {
                 onUpgrade={() => setShowUpgradePrompt(true)}
               />
             )}
-            <Suspense fallback={null}><TablesPanel nodes={nodes} chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null} /></Suspense>
+            <Suspense fallback={null}><TablesPanel nodes={nodes} chartTitle={savedChartId ? (loadCharts().find(c => c.id === savedChartId)?.title ?? null) : null} onSelectPerson={openPersonProfile} /></Suspense>
           </div>
         ) : treeView === 'zodiac' && nodes.length > 0 ? (
           <div style={{ position: 'relative', flex: 1 }}>
@@ -1389,6 +1421,10 @@ export default function App() {
         <ReactFlow
           nodes={nodesForCanvas} edges={isGroupOnly ? [] : edgesForCanvas}
           onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
+          // Handles exist only to route edges, not for the user to draw new
+          // connections — drag-to-connect was firing by accident on touch.
+          // Relationships are created in the edit panel, so lock connecting off.
+          nodesConnectable={false}
           onConnect={onConnect} onNodeClick={(e, node) => {
             if (e.target.closest('.node-collapse-btn')) {
               const d = node.data
@@ -1555,6 +1591,7 @@ export default function App() {
                 onRemoveEdge={handleRemoveEdge}
                 onCancel={() => setEditingNodeId(null)}
                 onGoToInsights={() => { setEditingNodeId(null); setInsightsTab('insights'); goTab('insights') }}
+                onViewProfile={() => openPersonProfile(editingNode.id)}
                 onGoToView={() => {
                   const groupOnly = edges.length > 0 && edges.every(e => { const t = e.data?.relationType; return t === 'friend' || t === 'coworker' })
                   setEditingNodeId(null)

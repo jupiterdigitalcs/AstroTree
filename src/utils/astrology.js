@@ -6,6 +6,7 @@ export {
   getSunSignAtTime,
   checkIngressWarnings,
   getElement,
+  areCompatible,
   ELEMENT_COLORS,
   SIGN_MODALITY,
   POLARITY_GROUP,

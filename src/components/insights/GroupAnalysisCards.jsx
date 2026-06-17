@@ -62,16 +62,24 @@ export function GroupAnalysisCards({ topSigns, groupHotspots, groupGaps, groupSa
         return (
         <div className="insight-card" data-count={hotspotCount} data-label={hotspotCount === 1 ? 'hotspot' : 'hotspots'}>
           <h3 className="insight-heading">Group Hotspots<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-whisper">Inner-planet positions are based on birth dates. Exact birth times sharpen this.</p>
-          <p className="insight-whisper">Zones of the zodiac where multiple people's planets concentrate. These themes tend to echo through the group's daily life.</p>
-          {groupHotspots.slice(0, 3).map((spot, i) => (
+          <p className="insight-whisper">Where multiple planets cluster tightly by degree — not which sign has the most members.</p>
+          {groupHotspots.slice(0, 3).map((spot, i) => {
+            const planetCounts = ['sun','moon','mercury','venus','mars'].reduce((acc, p) => {
+              const matches = spot.planets.filter(pl => pl.planet === p)
+              if (matches.length) acc[p] = { glyph: matches[0].glyph, count: matches.length }
+              return acc
+            }, {})
+            const planetSummary = Object.values(planetCounts)
+              .map(({ glyph, count }) => `${glyph}${count > 1 ? ` ×${count}` : ''}`)
+              .join('  ')
+            return (
             <div key={i} style={{ marginBottom: '0.6rem' }}>
               <p className="insight-note">
                 <strong style={{ color: ELEMENT_COLORS[getElement(spot.sign).element] }}>
-                  {SIGN_SYMBOLS[spot.sign]} {spot.sign}
+                  {SIGN_SYMBOLS[spot.sign]} {spot.position} {spot.sign}
                 </strong>
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                  {' '}— {spot.planets.length} planets from {spot.peopleCount} people
+                  {' '}— {planetSummary} · {spot.peopleCount} people
                 </span>
               </p>
               <p className="insight-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', paddingLeft: '1rem' }}>
@@ -83,7 +91,8 @@ export function GroupAnalysisCards({ topSigns, groupHotspots, groupGaps, groupSa
                 </p>
               )}
             </div>
-          ))}
+            )
+          })}
           {/* What's missing — integrated from Gaps analysis */}
           {groupGaps && (
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.5rem', marginTop: '0.5rem' }}>

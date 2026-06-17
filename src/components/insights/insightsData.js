@@ -61,6 +61,21 @@ export const VENUS_SIGN_BLURB = {
   Pisces:      'Often deeply empathetic and emotionally open. May love without boundaries and absorb a partner\'s feelings easily.',
 }
 
+export const MERCURY_SIGN_BLURB = {
+  Aries:       'Tends to think fast and speak directly. May reach conclusions quickly and prefer getting straight to the point.',
+  Taurus:      'Often deliberate in thought and speech. May take time to decide but tends to hold steady once they do.',
+  Gemini:      'Tends to be quick, curious, and verbal. May juggle several ideas at once and think out loud.',
+  Cancer:      'Often processes through feeling and memory. May communicate indirectly but tends to read the room well.',
+  Leo:         'Tends to communicate with warmth and conviction. May tell a story rather than recite the facts.',
+  Virgo:       'Often precise and detail-oriented in thought. May notice what others miss and prefer clear, practical language.',
+  Libra:       'Tends to weigh both sides before speaking. May soften a message to keep the conversation in balance.',
+  Scorpio:     'Often perceptive and private in thought. May say little but notice everything, preferring depth over small talk.',
+  Sagittarius: 'Tends to think in big pictures and speak candidly. May skip the details in favor of the meaning.',
+  Capricorn:   'Often measured and pragmatic in communication. May think in structures and say only what needs saying.',
+  Aquarius:    'Tends to approach ideas from unexpected angles. May enjoy debate and resist conventional thinking.',
+  Pisces:      'Often intuitive and associative in thought. May communicate through impressions more than linear logic.',
+}
+
 export const MARS_SIGN_BLURB = {
   Aries:       'Tends to act quickly and directly. May be the first to take initiative and can bring high energy to any situation.',
   Taurus:      'Often slow to start but persistent once moving. May surprise others with quiet determination and staying power.',
@@ -417,4 +432,29 @@ export const ASPECT_PAIR_BLURB = {
     hard: 'Recurring encounters with loss, control, and deep pressure — having to earn endurance the hard way',
     conj: 'Endurance under pressure — shaped by difficulty, survival, and quiet resilience',
   },
+}
+
+// Cross-chart (synastry) blurbs, keyed by sorted planet pair.
+// Shared by Partner Compatibility (InsightsPanel) and PersonView.
+export const SYNASTRY_BLURBS = {
+  'Venus:Mars': { soft: 'Desire and affection tend to flow easily between them.', hard: 'A push-pull of attraction that\'s magnetic but may require patience.' },
+  'Venus:Sun':  { soft: 'One person naturally admires and is drawn to the other.', hard: 'Admiration is there, but expressing it may not always land as intended.' },
+  'Moon:Sun':   { soft: 'A natural comfort. One person\'s identity tends to nurture the other\'s emotional needs.', hard: 'Identity and emotional needs can bump. Growth comes from not taking reactions personally.' },
+  'Moon:Venus': { soft: 'Emotional warmth flows easily. They tend to feel safe with each other.', hard: 'Care is there, but the way it\'s expressed may sometimes miss the mark.' },
+  'Moon:Mars':  { soft: 'Feelings and drive complement each other, a lively but supportive dynamic.', hard: 'One person\'s energy may sometimes overwhelm the other\'s emotional space.' },
+  'Venus:Venus':{ soft: 'They tend to value and enjoy the same things, a natural ease in shared taste.', hard: 'Similar values expressed in clashing ways. They want the same things but pursue them differently.' },
+  'Sun:Mars':   { soft: 'They tend to energize each other, with action and identity in easy collaboration.', hard: 'A competitive spark that can fuel motivation or create friction depending on the day.' },
+  'Moon:Moon':  { soft: 'Emotional rhythms in sync. They tend to understand each other\'s moods instinctively.', hard: 'Both have strong emotional needs that can sometimes collide.' },
+  'Sun:Sun':    { soft: 'A feeling of recognition. They may see themselves reflected in each other.', hard: 'Two strong identities that may sometimes compete for the spotlight.' },
+  'Sun:Saturn': { soft: 'A stabilizing bond where one person helps ground and structure the other.', hard: 'One person may feel held back or judged by the other, even when that\'s not the intent.' },
+  'Moon:Saturn':{ soft: 'Emotional security through commitment, a bond that tends to deepen over time.', hard: 'Warmth may sometimes feel conditional. This bond asks both to grow.' },
+  'Venus:Saturn':{ soft: 'Love that builds slowly and lasts — loyalty and devotion over flash.', hard: 'Affection meets restraint. One may need more warmth than the other easily gives.' },
+}
+
+export function getSynastryBlurb(pA, pB, aspect) {
+  const key = [pA, pB].sort().join(':')
+  const entry = SYNASTRY_BLURBS[key]
+  if (!entry) return null
+  const isHard = aspect === 'square' || aspect === 'opposition'
+  return isHard ? entry.hard : entry.soft
 }

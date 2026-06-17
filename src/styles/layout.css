@@ -67,8 +67,8 @@
   .app--topnav .top-nav {
     display: flex;
     align-items: stretch;
-    height: 52px;
-    padding: 0 1.2rem;
+    height: calc(52px + var(--sat, env(safe-area-inset-top, 0px)));
+    padding: var(--sat, env(safe-area-inset-top, 0px)) 1.2rem 0;
     background: rgba(9,7,26,0.97);
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
@@ -177,8 +177,8 @@
   }
 
   /* When subnav is present, push sidebar and canvas down by subnav height (38px) */
-  .app--subnav .sidebar      { top: 90px !important; height: calc(100dvh - 90px) !important; }
-  .app--subnav .top-nav-backdrop { top: 90px; }
+  .app--subnav .sidebar      { top: calc(90px + var(--sat, env(safe-area-inset-top, 0px))) !important; height: calc(100dvh - 90px - var(--sat, env(safe-area-inset-top, 0px))) !important; }
+  .app--subnav .top-nav-backdrop { top: calc(90px + var(--sat, env(safe-area-inset-top, 0px))); }
 
   /* ── Section tabs (Charts / Family / Insights / Saved / About) ── */
   .top-nav-tabs {
@@ -245,10 +245,10 @@
   /* ── Sidebar becomes a left slide-over panel ── */
   .app--topnav .sidebar {
     position: fixed;
-    top: 52px;
+    top: calc(52px + var(--sat, env(safe-area-inset-top, 0px)));
     left: 0;
     width: min(92vw, 720px) !important; /* !important overrides TEMP C inline style */
-    height: calc(100dvh - 52px);
+    height: calc(100dvh - 52px - var(--sat, env(safe-area-inset-top, 0px)));
     transform: translateX(-100%);
     transition: transform 0.3s ease;
     border-right: 1px solid var(--border);
@@ -275,7 +275,7 @@
   .app--topnav .top-nav-backdrop {
     display: block;
     position: fixed;
-    top: 52px;
+    top: calc(52px + var(--sat, env(safe-area-inset-top, 0px)));
     inset-inline: 0;
     bottom: 0;
     background: rgba(0,0,0,0.4);
@@ -291,7 +291,7 @@
   /* ── Canvas fills full width below nav ── */
   .app--topnav .canvas {
     width: 100%;
-    height: calc(100dvh - 52px);
+    height: calc(100dvh - 52px - var(--sat, env(safe-area-inset-top, 0px)));
     flex: 1;
   }
 
