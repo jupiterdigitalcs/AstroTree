@@ -308,7 +308,10 @@
   transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
   flex-direction: column;
-  max-height: calc(100dvh - 80px - env(safe-area-inset-bottom));
+  /* Subtract the top inset too so a full-height sheet's header/handle stops
+     below the Dynamic Island instead of sliding under it. --sat is the reliable
+     injected value in the native app (env() is unreliable in the WKWebView). */
+  max-height: calc(100dvh - 80px - env(safe-area-inset-bottom) - var(--sat, env(safe-area-inset-top, 0px)));
   min-height: 50dvh;
   background: var(--a-surface);
   backdrop-filter: blur(32px) saturate(1.4);
@@ -860,7 +863,11 @@
 
 .cosmic-floating-pills {
   position: absolute;
-  top: 0.75rem;
+  /* Clear the Dynamic Island / notch — the canvas starts at y=0 in cosmic mode
+     (top nav is hidden), so without the inset these pills sit under the island.
+     Use --sat (injected 54px in the native app; env() is unreliable in the
+     Capacitor WKWebView — see layout.jsx / cap-shell index.html). */
+  top: calc(0.75rem + var(--sat, env(safe-area-inset-top, 0px)));
   left: 50%;
   transform: translateX(-50%);
   z-index: 15;

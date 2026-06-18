@@ -42,6 +42,12 @@
 }
 
 html, body, #root { height: 100%; }
+/* Lock the document so the iOS WKWebView can't rubber-band/chain-scroll the
+   whole page. Without overflow:hidden on <html> (not just <body>) a navigation
+   can leave the page scrolled, shifting fixed/absolute top chrome up under the
+   Dynamic Island. This is the global version of the per-overlay lock TheDig.jsx
+   already applies. overscroll-behavior:none kills the bounce. */
+html { overflow: hidden; overscroll-behavior: none; }
 
 /* ── Planet sign display (used across AstroNode, Tables, ZodiacWheel, etc.) ── */
 .planet-sign {
@@ -69,6 +75,7 @@ body {
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* ── Keyboard focus (WCAG 2.4.7) — mouse clicks don't trigger :focus-visible ── */
