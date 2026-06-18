@@ -3,11 +3,13 @@
   "appName": "AstroDig",
   "webDir": "cap-shell",
   "backgroundColor": "#09071a",
-  "server": {
-    "url": "https://astrodig.com"
-  },
   "ios": {
     "contentInset": "scrollableAxes",
     "appendUserAgent": "AstroDigApp/ios-test"
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
   }
 }
