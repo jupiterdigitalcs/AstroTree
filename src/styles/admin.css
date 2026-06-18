@@ -1596,7 +1596,8 @@
   .zodiac-zoom-controls {
     display: flex;
     flex-direction: row;
-    top: calc(0.5rem + var(--sat, env(safe-area-inset-top, 0px)));
+    /* Hug just below the island instead of +0.5rem, which pushed it onto the wheel. */
+    top: calc(var(--sat, env(safe-area-inset-top, 0px)) + 0.15rem);
     bottom: auto;
     left: 0.5rem;
     transform: none;
