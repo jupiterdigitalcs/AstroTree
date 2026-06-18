@@ -1908,7 +1908,9 @@
   }
 
   .app--cosmic .tables-canvas-wrap {
-    padding-top: 4rem;
+    /* +--sat keeps the table header clear of the floating chart nav, which is
+       itself offset by the Dynamic Island inset (see .cosmic-floating-pills). */
+    padding-top: calc(4rem + var(--sat, env(safe-area-inset-top, 0px)));
     padding-bottom: calc(80px + env(safe-area-inset-bottom) + 2rem);
   }
 }
