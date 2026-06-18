@@ -19,6 +19,10 @@
 
 /* ── Palette ─────────────────────────────────────────────────────────────── */
 .app--cosmic {
+  /* Top of the floating chart-nav pills, incl. the Dynamic Island inset. The
+     sample banner / tree nudges stack below this — all reference it so they
+     move together (they used to hardcode the offset and drifted apart). */
+  --pills-top: calc(0.75rem + var(--sat, env(safe-area-inset-top, 0px)));
   --a-deep:        #0a0d1a;
   --a-surface:     rgba(18, 16, 36, 0.75);
   --a-surface-solid: #12101e;
@@ -632,7 +636,7 @@
 /* ── Sample-chart banner: shown while viewing a demo tree ────────────── */
 .sample-chart-banner {
   position: absolute;
-  top: calc(0.75rem + 42px + 0.6rem); /* sits just under the floating pills */
+  top: calc(var(--pills-top) + 42px + 0.6rem); /* sits just under the floating pills */
   left: 50%;
   transform: translateX(-50%);
   z-index: 16;
@@ -722,7 +726,7 @@
 /* ── No-relationships reminder banner on the tree canvas ──────────────── */
 .tree-connect-reminder {
   position: absolute;
-  top: calc(0.75rem + 42px + 0.6rem); /* sits just under the floating pills */
+  top: calc(var(--pills-top) + 42px + 0.6rem); /* sits just under the floating pills */
   left: 50%;
   transform: translateX(-50%);
   z-index: 14;
@@ -777,7 +781,7 @@
 
 .tree-nudge-mini {
   position: absolute;
-  top: calc(0.75rem + 42px + 0.6rem);
+  top: calc(var(--pills-top) + 42px + 0.6rem);
   left: 50%;
   transform: translateX(-50%);
   z-index: 14;
@@ -804,12 +808,12 @@
    inside <main>, the nudges outside it, hence :has() on the app root) */
 .app--cosmic:has(.sample-chart-banner) .tree-connect-reminder,
 .app--cosmic:has(.sample-chart-banner) .tree-nudge-mini {
-  top: calc(0.75rem + 42px + 0.6rem + 62px);
+  top: calc(var(--pills-top) + 42px + 0.6rem + 62px);
 }
 @media (max-width: 520px) {
   .app--cosmic:has(.sample-chart-banner) .tree-connect-reminder,
   .app--cosmic:has(.sample-chart-banner) .tree-nudge-mini {
-    top: calc(0.75rem + 42px + 0.6rem + 112px); /* banner wraps taller on phones */
+    top: calc(var(--pills-top) + 42px + 0.6rem + 112px); /* banner wraps taller on phones */
   }
 }
 
@@ -865,9 +869,9 @@
   position: absolute;
   /* Clear the Dynamic Island / notch — the canvas starts at y=0 in cosmic mode
      (top nav is hidden), so without the inset these pills sit under the island.
-     Use --sat (injected 54px in the native app; env() is unreliable in the
-     Capacitor WKWebView — see layout.jsx / cap-shell index.html). */
-  top: calc(0.75rem + var(--sat, env(safe-area-inset-top, 0px)));
+     --pills-top folds in --sat (injected 54px in the native app; env() is
+     unreliable in the WKWebView — see layout.jsx / cap-shell index.html). */
+  top: var(--pills-top);
   left: 50%;
   transform: translateX(-50%);
   z-index: 15;
