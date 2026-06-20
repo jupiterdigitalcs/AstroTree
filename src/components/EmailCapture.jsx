@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { DialogBackdrop } from './DialogBackdrop.jsx'
 import { kv } from '../utils/kvStore.js'
+import { isNativeApp } from '../utils/platform.js'
 
 const PROMPT_KEY = 'astrotree_auth_prompt'
 const EMAIL_KEY  = 'astrotree_user_email'
@@ -64,7 +65,7 @@ export function isAtRisk() {
   } catch { return false }
 }
 
-export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, initGoogleButton, variant }) {
+export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, initGoogleButton, signInWithGoogleNative, signInWithAppleNative, variant }) {
   const [showEmailFallback, setShowEmailFallback] = useState(false)
   const [email,      setEmail]      = useState('')
   const [status,     setStatus]     = useState('idle') // idle | submitting | sent | error
@@ -74,11 +75,15 @@ export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, ini
   const [gsiReady, setGsiReady] = useState(false)
 
   const isPostPurchase = variant === 'post-purchase'
+  // In the iOS app, Google's web GSI button is blocked inside the WebView, so
+  // we show native sheets (Apple + Google) instead. See nativeAuth.js.
+  const native = isNativeApp()
 
-  // Render Google's native sign-in button.
-  // On mobile, GSI uses redirect mode (login_uri) instead of popup mode,
+  // Render Google's native sign-in button (web only).
+  // On mobile web, GSI uses redirect mode (login_uri) instead of popup mode,
   // so the button works the same way but the redirect is handled server-side.
   useEffect(() => {
+    if (native) return // native app uses the Capacitor sheets, not the web GSI button
     if (!initGoogleButton || !googleBtnRef.current) return
     initGoogleButton(googleBtnRef.current, (result) => {
       if (!result.ok) {
@@ -95,7 +100,19 @@ export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, ini
     }, 200)
     const timeout = setTimeout(() => { clearInterval(check) }, 5000)
     return () => { clearInterval(check); clearTimeout(timeout) }
-  }, [initGoogleButton])
+  }, [initGoogleButton, native])
+
+  // Native (iOS) sign-in via Capacitor sheets. On success, onAuthStateChange
+  // links the device and the parent closes this dialog.
+  async function handleNative(fn, label) {
+    setStatus('submitting')
+    setErrorMsg('')
+    const result = await fn()
+    if (!result.ok && !result.cancelled) {
+      setErrorMsg(result.error || `Could not sign in with ${label}`)
+    }
+    if (!result.ok) setStatus('idle')
+  }
 
   function handleDismiss() {
     const state = getPromptState()
@@ -168,24 +185,58 @@ export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, ini
             : 'Sign in so your charts follow you everywhere — new phone, new browser, always yours.'}
         </p>
 
-        {/* Primary: Google Sign-In (native GSI button — popup on desktop, redirect on mobile) */}
-        <div ref={googleBtnRef} className="auth-google-gsi" style={{ display: 'flex', justifyContent: 'center', minHeight: 44 }} />
-        {/* Fallback if GSI doesn't load */}
-        {!gsiReady && (
-          <button
-            type="button"
-            className="auth-google-btn"
-            onClick={handleGoogle}
-            disabled={status === 'submitting'}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            {status === 'submitting' ? 'Connecting...' : 'Continue with Google'}
-          </button>
+        {native ? (
+          <>
+            {/* iOS: Sign in with Apple first (App Review 4.8 — must be at least
+                as prominent as other providers), then native Google. */}
+            <button
+              type="button"
+              className="auth-apple-btn"
+              onClick={() => handleNative(signInWithAppleNative, 'Apple')}
+              disabled={status === 'submitting'}
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M17.05 12.6c-.03-2.7 2.2-4 2.3-4.06-1.25-1.83-3.2-2.08-3.9-2.11-1.66-.17-3.24.97-4.08.97-.84 0-2.14-.95-3.52-.92-1.81.03-3.48 1.05-4.41 2.67-1.88 3.27-.48 8.1 1.35 10.76.9 1.3 1.97 2.76 3.38 2.71 1.36-.05 1.87-.88 3.51-.88 1.64 0 2.1.88 3.53.85 1.46-.03 2.38-1.33 3.27-2.64 1.03-1.51 1.46-2.98 1.48-3.05-.03-.01-2.84-1.09-2.87-4.32-.02-2.7 0 0 0 0zM14.4 4.6c.74-.9 1.24-2.15 1.1-3.4-1.07.04-2.36.71-3.13 1.61-.69.79-1.29 2.06-1.13 3.27 1.19.09 2.42-.6 3.16-1.48z"/>
+              </svg>
+              {status === 'submitting' ? 'Signing in...' : 'Sign in with Apple'}
+            </button>
+            <button
+              type="button"
+              className="auth-google-btn"
+              onClick={() => handleNative(signInWithGoogleNative, 'Google')}
+              disabled={status === 'submitting'}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              {status === 'submitting' ? 'Signing in...' : 'Continue with Google'}
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Web: Google Sign-In (native GSI button — popup on desktop, redirect on mobile) */}
+            <div ref={googleBtnRef} className="auth-google-gsi" style={{ display: 'flex', justifyContent: 'center', minHeight: 44 }} />
+            {/* Fallback if GSI doesn't load */}
+            {!gsiReady && (
+              <button
+                type="button"
+                className="auth-google-btn"
+                onClick={handleGoogle}
+                disabled={status === 'submitting'}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                {status === 'submitting' ? 'Connecting...' : 'Continue with Google'}
+              </button>
+            )}
+          </>
         )}
 
         {errorMsg && <p className="email-capture-error">{errorMsg}</p>}

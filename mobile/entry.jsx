@@ -7,5 +7,10 @@
 import { createRoot } from 'react-dom/client'
 import '../src/styles/index.css'
 import App from '../src/App.jsx'
+import { initRevenueCat } from '../src/utils/revenuecat.js'
 
 createRoot(document.getElementById('root')).render(<App />)
+
+// Configure In-App Purchases (no-op until the RevenueCat key is set). Fire and
+// forget — the upgrade flow also calls initRevenueCat() defensively.
+initRevenueCat().catch(() => {})

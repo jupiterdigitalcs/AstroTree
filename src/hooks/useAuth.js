@@ -3,6 +3,8 @@ import { getSupabaseBrowser } from '../utils/supabaseClient.js'
 import { getDeviceId } from '../utils/identity.js'
 import { apiUrl } from '../utils/apiBase.js'
 import { kv } from '../utils/kvStore.js'
+import { isNativeApp } from '../utils/platform.js'
+import { initNativeAuth, nativeGoogleToken, nativeAppleToken } from '../utils/nativeAuth.js'
 
 export function useAuth() {
   const [user, setUser] = useState(null)       // Supabase auth user object
@@ -34,6 +36,9 @@ export function useAuth() {
         console.error('[auth] link device error:', e)
       }
     }
+
+    // Configure native sign-in plugin on the iOS build (no-op on web).
+    if (isNativeApp()) initNativeAuth().catch(e => console.error('[auth] native init:', e))
 
     // Check for existing session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -141,6 +146,30 @@ export function useAuth() {
     return { ok: !error, error: error?.message }
   }, [])
 
+  // Exchange a native provider idToken (Google or Apple, from the iOS sheets)
+  // for a Supabase session — same mechanism the web GSI flow uses.
+  const signInWithProviderToken = useCallback(async (provider, token) => {
+    const supabase = getSupabaseBrowser()
+    if (!supabase) return { ok: false, error: 'Auth not configured' }
+    const { error } = await supabase.auth.signInWithIdToken({ provider, token })
+    return { ok: !error, error: error?.message }
+  }, [])
+
+  // Native Google sign-in (iOS app). Opens the native Google sheet, then
+  // exchanges the token with Supabase. Returns { ok } / { cancelled } / { error }.
+  const signInWithGoogleNative = useCallback(async () => {
+    const r = await nativeGoogleToken()
+    if (!r.ok) return r
+    return signInWithProviderToken('google', r.token)
+  }, [signInWithProviderToken])
+
+  // Native Sign in with Apple (iOS app) — also required by App Review 4.8.
+  const signInWithAppleNative = useCallback(async () => {
+    const r = await nativeAppleToken()
+    if (!r.ok) return r
+    return signInWithProviderToken('apple', r.token)
+  }, [signInWithProviderToken])
+
   // Fallback: magic link for non-Google users
   const signInWithEmail = useCallback(async (email) => {
     const supabase = getSupabaseBrowser()
@@ -176,5 +205,5 @@ export function useAuth() {
     setUser(null)
   }, [])
 
-  return { user, loading, signInWithGoogle, signInWithEmail, signOut, initGoogleButton }
+  return { user, loading, signInWithGoogle, signInWithEmail, signOut, initGoogleButton, signInWithGoogleNative, signInWithAppleNative }
 }

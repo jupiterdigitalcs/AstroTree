@@ -92,7 +92,7 @@ function FitViewOnLayout({ fitTick, fitViewRef }) {
 
 
 export default function App() {
-  const { user: authUser, loading: authLoading, signInWithGoogle, signInWithEmail, signOut: rawSignOut, initGoogleButton } = useAuth()
+  const { user: authUser, loading: authLoading, signInWithGoogle, signInWithEmail, signOut: rawSignOut, initGoogleButton, signInWithGoogleNative, signInWithAppleNative } = useAuth()
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const [counter,           setCounter]           = useState(1)
@@ -675,6 +675,8 @@ export default function App() {
           signInWithGoogle={signInWithGoogle}
           signInWithEmail={signInWithEmail}
           initGoogleButton={initGoogleButton}
+          signInWithGoogleNative={signInWithGoogleNative}
+          signInWithAppleNative={signInWithAppleNative}
         />
       )}
       {postPurchaseCapture && !authUser && (
@@ -683,6 +685,8 @@ export default function App() {
           signInWithGoogle={signInWithGoogle}
           signInWithEmail={signInWithEmail}
           initGoogleButton={initGoogleButton}
+          signInWithGoogleNative={signInWithGoogleNative}
+          signInWithAppleNative={signInWithAppleNative}
           variant="post-purchase"
         />
       )}

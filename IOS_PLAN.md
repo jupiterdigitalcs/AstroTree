@@ -29,20 +29,40 @@ into a native rewrite automatically — keep entitlements and charts account-bou
 
 ## Remaining refactors (do when the iOS build starts)
 
-2. **Auth abstraction.** Google blocks OAuth inside embedded WebViews
-   (disallowed_useragent), so the GSI button cannot work in a wrapper as-is.
-   Extract "sign in with Google" from useAuth/EmailCapture into one provider
-   module; the iOS build swaps in a native plugin or ASWebAuthenticationSession
-   producing the same credential /api/auth/gsi already accepts. Magic links
-   need a universal link so the email opens the app.
-   ALSO REQUIRED: **Sign in with Apple** — App Review guideline 4.8 mandates it
-   for any app offering third-party login. Supabase supports the Apple provider;
-   /api/auth needs a matching endpoint.
-4. **Platform flag + IAP entitlement path.** `isNativeApp()` helper; upgrade
-   prompt shows In-App Purchase on iOS (Stripe checkout is not allowed for
-   digital unlocks there) and Stripe on web. New server path (RevenueCat
-   webhook or /api/iap receipt verification) writing the same tier fields the
-   Stripe webhook writes — buy anywhere, unlocked everywhere.
+2. **Auth abstraction.** CODE DONE (June 2026). Native Google + Sign in with
+   Apple via `@capgo/capacitor-social-login` (only Cap-8 option, does both).
+   Both return an idToken handed to `supabase.auth.signInWithIdToken` — the SAME
+   path the web GSI flow uses, so NO new /api/auth endpoint was needed. Files:
+   `src/utils/nativeAuth.js`, `useAuth.js` (signInWithGoogleNative /
+   signInWithAppleNative), `EmailCapture.jsx` (native branch: Apple button on top
+   per 4.8, then Google; web branch untouched), `dialogs.css` (.auth-apple-btn),
+   `vite.config.mobile.js` (NEXT_PUBLIC_GOOGLE_IOS_CLIENT_ID). Plugin synced into
+   SPM. REMAINING (dashboards + Xcode, no code): see **IOS_AUTH_SETUP.md** —
+   Google Cloud iOS client + reversed-id URL scheme in Info.plist, Supabase Apple
+   provider (add bundle id), Xcode "Sign in with Apple" capability.
+   NOTE: magic-link universal link (so the email opens the app vs the website)
+   is still a nicety, not done — email sign-in in the app currently round-trips
+   through the website redirect. Native Google/Apple are the primary paths.
+4. **Platform flag + IAP entitlement path.** CODE DONE (June 18, 2026) — via
+   RevenueCat (decision #3 resolved: RevenueCat over raw StoreKit). Files:
+   - `src/utils/platform.js` — `isNativeApp()` (window.Capacitor or AstroDigApp UA).
+   - `src/utils/revenuecat.js` — dynamic-imports `@revenuecat/purchases-capacitor`
+     (v13.2.0); `purchaseCelestial()` / `restorePurchases()`; configured with
+     `appUserID = deviceId` and entitlement id `celestial`. No-op off-device.
+   - `mobile/entry.jsx` — calls `initRevenueCat()` on launch.
+   - `UpgradePrompt.jsx` — native → RevenueCat purchase, web → Stripe (unchanged);
+     "Restore purchase" link; native can buy without sign-in (binds to deviceId).
+   - `src/app/api/revenuecat-webhook/route.js` — mirrors stripe-webhook: on
+     NON_RENEWING_PURCHASE writes tier='premium', on CANCELLATION downgrades, to
+     the SAME devices.tier + user_profiles.tier rows (app_user_id === deviceId).
+     Auth via `REVENUECAT_WEBHOOK_AUTH` Authorization header (fails closed).
+   - `vite.config.mobile.js` injects `NEXT_PUBLIC_REVENUECAT_IOS_KEY`.
+   REMAINING (Christina's side, no code): create the App Store Connect IAP product
+   `celestial_unlock` + agreements/banking/tax; set up the RevenueCat project,
+   entitlement `celestial`, default Offering, webhook; add the In-App Purchase
+   capability in Xcode; set the two keys (see SETUP below). Buy-on-web→unlock-on-
+   phone works automatically (same tier rows); the only later nicety is pushing a
+   device's tier to user_profiles on a fresh sign-in.
 5. ~~**Standalone build entry.**~~ DONE (June 17, 2026). The SPA bundles via a
    dedicated Vite config, separate from the test-only vite.config.js and from
    the Next.js website build (both untouched). App.jsx had ZERO next/* imports,

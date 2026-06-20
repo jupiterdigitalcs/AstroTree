@@ -71,6 +71,36 @@
   cursor: default;
 }
 
+/* ── Sign in with Apple (iOS app only) ──────────────────────────────────── */
+/* Apple HIG: black button, white logo + label, full width, matching height. */
+.auth-apple-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  margin-bottom: 0.5rem;
+  background: #000;
+  border: 1px solid #000;
+  border-radius: 8px;
+  color: #fff;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.auth-apple-btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.auth-apple-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 /* ── Email fallback toggle ──────────────────────────────────────────────── */
 .auth-email-toggle {
   background: none;

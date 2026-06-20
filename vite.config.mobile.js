@@ -27,6 +27,10 @@ export default defineConfig(({ mode }) => {
       'process.env.NEXT_PUBLIC_SUPABASE_URL': JSON.stringify(env.NEXT_PUBLIC_SUPABASE_URL || ''),
       'process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''),
       'process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID': JSON.stringify(env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''),
+      // RevenueCat public Apple SDK key — client-safe, drives In-App Purchase (src/utils/revenuecat.js)
+      'process.env.NEXT_PUBLIC_REVENUECAT_IOS_KEY': JSON.stringify(env.NEXT_PUBLIC_REVENUECAT_IOS_KEY || ''),
+      // Google iOS OAuth client id — native Google sign-in (src/utils/nativeAuth.js)
+      'process.env.NEXT_PUBLIC_GOOGLE_IOS_CLIENT_ID': JSON.stringify(env.NEXT_PUBLIC_GOOGLE_IOS_CLIENT_ID || ''),
     },
     build: {
       outDir: fileURLToPath(new URL('./cap-shell', import.meta.url)),
