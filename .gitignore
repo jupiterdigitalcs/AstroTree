@@ -41,3 +41,14 @@ backups/
 
 # Capacitor mobile build output (regenerate with npm run build:mobile)
 /cap-shell/
+
+# Private keys — never commit
+*.p8
+*.p12
+*.pem
+*.mobileprovision
+*.cer
+client_*.plist
+
+# Temp scripts
+.tmp-*.mjs
