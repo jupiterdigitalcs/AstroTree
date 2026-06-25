@@ -1,5 +1,21 @@
 import { getDeviceId } from './identity.js'
 import { apiUrl } from './apiBase.js'
+import { getSupabaseBrowser } from './supabaseClient.js'
+
+// In the native iOS app the Supabase session lives in localStorage, not cookies,
+// so the server can't read it from request.cookies. We send the access token as
+// Authorization: Bearer so getAuthUser() can fall back to it for native clients.
+async function getAuthHeader() {
+  try {
+    const sb = getSupabaseBrowser()
+    if (!sb) return {}
+    const { data: { session } } = await sb.auth.getSession()
+    if (!session?.access_token) return {}
+    return { Authorization: `Bearer ${session.access_token}` }
+  } catch {
+    return {}
+  }
+}
 
 // Cloud is always enabled — Next.js API routes work in dev and production
 export function isCloudEnabled() {
@@ -39,6 +55,7 @@ export async function uploadChart(chart) {
       headers: {
         'Content-Type': 'application/json',
         'x-device-id': getDeviceId(),
+        ...await getAuthHeader(),
       },
       body: JSON.stringify({
         ...chart,
@@ -64,7 +81,7 @@ export async function uploadChart(chart) {
 export async function fetchCharts() {
   try {
     const res = await fetch(apiUrl('/api/chart?action=list'), {
-      headers: { 'x-device-id': getDeviceId() },
+      headers: { 'x-device-id': getDeviceId(), ...await getAuthHeader() },
     })
     return await res.json()
   } catch {
@@ -79,6 +96,7 @@ export async function deleteChartCloud(id) {
       headers: {
         'Content-Type': 'application/json',
         'x-device-id': getDeviceId(),
+        ...await getAuthHeader(),
       },
       body: JSON.stringify({ id }),
     })

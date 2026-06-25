@@ -55,18 +55,32 @@ function generateNonce() {
   return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('')
 }
 
+async function sha256hex(str) {
+  const data = new TextEncoder().encode(str)
+  const buf = await crypto.subtle.digest('SHA-256', data)
+  return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('')
+}
+
 // Returns { ok, token, nonce } with a Google OpenID idToken.
-// Nonce must be passed to Supabase's signInWithIdToken so it can verify the token.
+//
+// Nonce flow (mirrors Supabase's Apple Sign In convention):
+//   1. rawNonce  → passed to Supabase's signInWithIdToken
+//   2. hashedNonce (SHA256 of raw) → passed to GIDSignIn, embedded in JWT
+//   3. GoTrue SHA256s rawNonce and compares with hashedNonce in JWT → match
+//
+// forcePrompt: true → Swift sets forceAuthCode=true, bypassing the
+// restorePreviousSignIn path that would skip embedding the nonce.
 export async function nativeGoogleToken() {
   if (!isNativeApp()) return { ok: false, error: 'Native sign-in only' }
   try {
     await initNativeAuth()
     const SocialLogin = await load()
-    const nonce = generateNonce()
-    const res = await SocialLogin.login({ provider: 'google', options: { scopes: ['email', 'profile'], nonce } })
+    const rawNonce = generateNonce()
+    const hashedNonce = await sha256hex(rawNonce)
+    const res = await SocialLogin.login({ provider: 'google', options: { scopes: ['email', 'profile'], nonce: hashedNonce, forcePrompt: true } })
     const token = res?.result?.idToken
     if (!token) return { ok: false, error: 'No Google token returned' }
-    return { ok: true, token, nonce }
+    return { ok: true, token, nonce: rawNonce }
   } catch (e) {
     if (cancelled(e)) return { ok: false, cancelled: true }
     return { ok: false, error: e?.message || 'Google sign-in failed' }

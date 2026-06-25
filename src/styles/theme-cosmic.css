@@ -953,13 +953,15 @@
 /* Hero variant — scrollable on short screens */
 .cosmic-onboarding--hero {
   width: min(420px, calc(100% - 2rem));
-  /* Replace top/transform centering with margin-based so scroll works */
+  /* Replace top/transform centering with margin-based so scroll works.
+     top accounts for Dynamic Island (--sat) so card clears the notch;
+     max-height stays clear of the fixed nav (80px) + home indicator. */
   position: absolute;
-  top: 1.5rem;
+  top: calc(var(--sat, env(safe-area-inset-top, 0px)) + 1rem);
   bottom: auto;
   transform: none;
   margin-bottom: 1.5rem;
-  max-height: calc(100dvh - 3rem);
+  max-height: calc(100dvh - var(--sat, env(safe-area-inset-top, 0px)) - 80px - env(safe-area-inset-bottom) - 2rem);
   overflow-y: auto;
   padding: 1.6rem 1.8rem 1.4rem;
   gap: 0.45rem;
