@@ -15,9 +15,10 @@ export async function getAuthUser(request) {
   const authHeader = request.headers.get('authorization') || ''
   if (authHeader.startsWith('Bearer ')) {
     const token = authHeader.slice(7)
-    // createClient with anon key + explicit JWT → verifies token via Auth API
-    const sb = createClient(url, key, { global: { headers: { Authorization: `Bearer ${token}` } } })
-    const { data: { user }, error } = await sb.auth.getUser()
+    // Pass the JWT directly to getUser() — this validates it via the Auth API
+    // without needing a local session (which doesn't exist server-side).
+    const sb = createClient(url, key)
+    const { data: { user }, error } = await sb.auth.getUser(token)
     if (!error && user) return { id: user.id, email: user.email }
     // Fall through to cookie path if token is invalid/expired
   }
