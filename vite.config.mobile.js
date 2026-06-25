@@ -35,6 +35,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: fileURLToPath(new URL('./cap-shell', import.meta.url)),
       emptyOutDir: true,
+      modulePreload: false,
     },
   }
 })

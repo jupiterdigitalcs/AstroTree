@@ -695,7 +695,7 @@ export default function App() {
       {showUpgradePrompt && (
         <UpgradePrompt
           onClose={() => setShowUpgradePrompt(false)}
-          onRedeemed={() => { refreshEntitlements(); setPremiumToast(true); setTimeout(() => setPremiumToast(false), 5000) }}
+          onRedeemed={() => { refreshEntitlements(); setPremiumToast(true); setTimeout(() => setPremiumToast(false), 5000); setTimeout(() => refreshEntitlements(), 3500) }}
           authUser={authUser}
           onSignIn={() => { setShowUpgradePrompt(false); setPendingUpgrade(true); try { kv.set('astrotree_pending_upgrade', '1') } catch {}; setShowEmailCapture(true) }}
         />

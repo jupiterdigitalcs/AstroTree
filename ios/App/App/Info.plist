@@ -49,5 +49,14 @@
 	<string>Dark</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.689450553041-lsp230jkgbkk5cg7o53u103iogrvds7k</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

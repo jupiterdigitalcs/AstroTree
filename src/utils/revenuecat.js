@@ -26,12 +26,19 @@ const API_KEY = process.env.NEXT_PUBLIC_REVENUECAT_IOS_KEY || ''
 let _Purchases = null
 let _configured = false
 
-async function loadSDK() {
-  if (_Purchases) return _Purchases
-  const mod = await import('@revenuecat/purchases-capacitor')
-  _Purchases = mod.Purchases
-  return _Purchases
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out`)), ms)),
+  ])
 }
+
+// Called from mobile/entry.jsx with a static import of the SDK so we never
+// use a dynamic import at runtime (WKWebView + capacitor:// hangs on those).
+// IMPORTANT: never pass _Purchases itself through Promise.resolve/race — the
+// Capacitor plugin proxy intercepts .then access and routes it to native,
+// making it look like an unresolvable thenable. Only pass method call results.
+export function setRevenueCatSDK(sdk) { _Purchases = sdk }
 
 // Configure RevenueCat once, on app launch. Safe to call anywhere.
 export async function initRevenueCat() {
@@ -40,8 +47,12 @@ export async function initRevenueCat() {
     console.warn('[rc] NEXT_PUBLIC_REVENUECAT_IOS_KEY not set — IAP disabled')
     return
   }
-  const Purchases = await loadSDK()
-  await Purchases.configure({ apiKey: API_KEY, appUserID: getDeviceId() })
+  if (!_Purchases) throw new Error('RevenueCat SDK not injected')
+  await withTimeout(
+    _Purchases.configure({ apiKey: API_KEY, appUserID: getDeviceId() }),
+    8000,
+    'Purchases.configure'
+  )
   _configured = true
 }
 
@@ -50,21 +61,19 @@ function isCelestialActive(customerInfo) {
   return typeof customerInfo?.entitlements?.active?.[ENTITLEMENT_ID] !== 'undefined'
 }
 
-// Buy the Celestial unlock. Returns { ok, unlocked } on success,
-// { ok: false, cancelled } if the user backed out, or { ok: false, error }.
 export async function purchaseCelestial() {
   if (!isNativeApp()) return { ok: false, error: 'In-app purchase is only available in the app' }
+  if (!API_KEY) return { ok: false, error: 'RevenueCat key not configured — check env setup' }
+  if (!_Purchases) return { ok: false, error: 'RevenueCat SDK not available' }
   try {
-    await initRevenueCat()
-    if (!_configured) return { ok: false, error: 'Purchases are not available yet' }
-    const Purchases = await loadSDK()
-    const offerings = await Purchases.getOfferings()
+    await withTimeout(initRevenueCat(), 10000, 'RevenueCat init')
+    if (!_configured) return { ok: false, error: 'RevenueCat init completed but not configured' }
+    const offerings = await withTimeout(_Purchases.getOfferings(), 15000, 'getOfferings')
     const pkg = offerings?.current?.availablePackages?.[0]
     if (!pkg) return { ok: false, error: 'Celestial is not available yet — check back soon' }
-    const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg })
+    const { customerInfo } = await _Purchases.purchasePackage({ aPackage: pkg })
     return { ok: true, unlocked: isCelestialActive(customerInfo) }
   } catch (e) {
-    // RevenueCat sets userCancelled on the StoreKit cancel; never show an error for that.
     if (e?.userCancelled || e?.code === '1' || /cancel/i.test(e?.message || '')) {
       return { ok: false, cancelled: true }
     }
@@ -76,11 +85,11 @@ export async function purchaseCelestial() {
 // reinstall or on a new device with the same Apple ID).
 export async function restorePurchases() {
   if (!isNativeApp()) return { ok: false, error: 'Restore is only available in the app' }
+  if (!_Purchases) return { ok: false, error: 'RevenueCat SDK not available' }
   try {
     await initRevenueCat()
     if (!_configured) return { ok: false, error: 'Purchases are not available yet' }
-    const Purchases = await loadSDK()
-    const { customerInfo } = await Purchases.restorePurchases()
+    const { customerInfo } = await _Purchases.restorePurchases()
     return { ok: true, unlocked: isCelestialActive(customerInfo) }
   } catch (e) {
     return { ok: false, error: e?.message || 'Restore failed — please try again' }

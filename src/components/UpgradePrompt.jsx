@@ -32,7 +32,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
     // webhook writes premium to the same `devices` row refreshEntitlements reads.
     if (native) {
       const result = await purchaseCelestial()
-      if (result.ok && result.unlocked) {
+      if (result.ok) {
         if (onRedeemed) onRedeemed()
         setCodeSuccess(true)
       } else if (!result.cancelled) {
