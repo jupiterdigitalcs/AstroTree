@@ -163,7 +163,7 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
       </div>
 
       {/* ── Headline ── */}
-      <h2>Map your people's cosmic&nbsp;DNA</h2>
+      <h2>Your group's cosmic story starts&nbsp;here</h2>
       <p className="cosmic-onboarding-tagline">
         See the sun signs, moon signs, and planets across your family, friends, or crew, all in one&nbsp;chart.
       </p>
@@ -202,7 +202,7 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
             <span className="onboarding-mini-insight-heading">Your Sign</span>
             <span className="onboarding-mini-insight-body">
               <strong style={{ color: el.color }}>{sun.symbol} {sun.sign}</strong>. {el.element} energy.
-              Add your people to see what you share.
+              Add everyone to see what you share.
             </span>
           </div>
         ) : engaged ? (
@@ -275,7 +275,7 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
         <div className="onboarding-whatis">
           <div className="onboarding-whatis-step">
             <span className="onboarding-whatis-num">1</span>
-            <span>Add your people. Names and birthdays are all it takes.</span>
+            <span>Add everyone. Names and birthdays are all it takes.</span>
           </div>
           <div className="onboarding-whatis-step">
             <span className="onboarding-whatis-num">2</span>

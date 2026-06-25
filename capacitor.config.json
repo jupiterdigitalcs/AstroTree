@@ -5,7 +5,7 @@
   "backgroundColor": "#09071a",
   "ios": {
     "contentInset": "scrollableAxes",
-    "appendUserAgent": "AstroDigApp/ios-test"
+    "appendUserAgent": "AstroDigApp/ios"
   },
   "plugins": {
     "CapacitorHttp": {

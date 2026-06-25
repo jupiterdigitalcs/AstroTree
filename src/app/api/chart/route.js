@@ -71,6 +71,14 @@ async function handleSave(request) {
       .eq('id', chart.id)
       .maybeSingle()
     if (existing && new Date(existing.updated_at) > new Date(chart.lastKnownSavedAt)) {
+      // Content conflict — don't overwrite newer data. Still claim the chart for
+      // this signed-in user so it shows up in their cross-device list.
+      if (authUser) {
+        await sb.from('charts')
+          .update({ auth_user_id: authUser.id })
+          .eq('id', chart.id)
+          .is('auth_user_id', null)
+      }
       return NextResponse.json(
         { ok: false, error: 'conflict', serverSavedAt: existing.updated_at },
         { status: 409 },

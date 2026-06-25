@@ -183,8 +183,8 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
           </p>
         )}
 
-        {/* Promo code section */}
-        <div style={{ marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.8rem' }}>
+        {/* Promo code section — hidden in native (App Store 3.1.1: IAP is the only unlock path) */}
+        {!native && <div style={{ marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.8rem' }}>
           {!showCode ? (
             <button
               type="button"
@@ -240,7 +240,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
               )}
             </form>
           )}
-        </div>
+        </div>}
       </div>
     </DialogBackdrop>
   )
