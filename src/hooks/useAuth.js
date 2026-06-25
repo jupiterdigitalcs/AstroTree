@@ -148,10 +148,11 @@ export function useAuth() {
 
   // Exchange a native provider idToken (Google or Apple, from the iOS sheets)
   // for a Supabase session — same mechanism the web GSI flow uses.
-  const signInWithProviderToken = useCallback(async (provider, token) => {
+  const signInWithProviderToken = useCallback(async (provider, token, nonce) => {
     const supabase = getSupabaseBrowser()
     if (!supabase) return { ok: false, error: 'Auth not configured' }
-    const { error } = await supabase.auth.signInWithIdToken({ provider, token })
+    const credentials = nonce ? { provider, token, nonce } : { provider, token }
+    const { error } = await supabase.auth.signInWithIdToken(credentials)
     return { ok: !error, error: error?.message }
   }, [])
 
@@ -160,7 +161,7 @@ export function useAuth() {
   const signInWithGoogleNative = useCallback(async () => {
     const r = await nativeGoogleToken()
     if (!r.ok) return r
-    return signInWithProviderToken('google', r.token)
+    return signInWithProviderToken('google', r.token, r.nonce)
   }, [signInWithProviderToken])
 
   // Native Sign in with Apple (iOS app) — also required by App Review 4.8.

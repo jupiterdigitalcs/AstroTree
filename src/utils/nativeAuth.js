@@ -49,17 +49,24 @@ function cancelled(e) {
   return e?.code === 'CANCELLED' || /cancel/i.test(e?.message || '')
 }
 
-// Returns { ok, token } with a Google OpenID idToken, or { ok:false, cancelled }
-// / { ok:false, error }.
+function generateNonce() {
+  const bytes = new Uint8Array(32)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('')
+}
+
+// Returns { ok, token, nonce } with a Google OpenID idToken.
+// Nonce must be passed to Supabase's signInWithIdToken so it can verify the token.
 export async function nativeGoogleToken() {
   if (!isNativeApp()) return { ok: false, error: 'Native sign-in only' }
   try {
     await initNativeAuth()
     const SocialLogin = await load()
-    const res = await SocialLogin.login({ provider: 'google', options: { scopes: ['email', 'profile'] } })
+    const nonce = generateNonce()
+    const res = await SocialLogin.login({ provider: 'google', options: { scopes: ['email', 'profile'], nonce } })
     const token = res?.result?.idToken
     if (!token) return { ok: false, error: 'No Google token returned' }
-    return { ok: true, token }
+    return { ok: true, token, nonce }
   } catch (e) {
     if (cancelled(e)) return { ok: false, cancelled: true }
     return { ok: false, error: e?.message || 'Google sign-in failed' }
