@@ -119,6 +119,24 @@ export function useCloudSync({ onMergeCharts, authUser }) {
   const refreshAfterAuth = useCallback(async () => {
     if (!isCloudEnabled()) return
     setCloudLoading(true)
+
+    // Before clearing, upload any local-only charts so they reach the cloud under
+    // this auth user. Many charts live only in localStorage (failed syncs, pre-cloud
+    // sessions). Sort newest first so the most recently-used charts are uploaded
+    // first in case the chart limit is hit.
+    try {
+      const localBefore = loadCharts()
+      if (localBefore.length > 0) {
+        const sorted = [...localBefore].sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt))
+        for (const chart of sorted) {
+          const result = await uploadChart(chart)
+          if (result?.error === 'chart_limit_reached') break
+        }
+      }
+    } catch (err) {
+      console.error('[cloud] pre-auth chart upload failed:', err)
+    }
+
     // Clear local charts + draft so a different user doesn't see the previous user's data
     try {
       kv.remove('astrotree_charts')
