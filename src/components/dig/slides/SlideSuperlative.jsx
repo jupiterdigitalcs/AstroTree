@@ -22,7 +22,7 @@ export default function SlideSuperlative({ data, active }) {
         {sub}
       </p>
       <p className="dig-body dig-fade-in" style={{ '--i': 4, fontSize: '0.75rem', opacity: 0.5, marginTop: '0.6rem' }}>
-        {animScore} of {total} placements in {d.element}
+        {animScore} of {total} placements in {data.element || d.element}
       </p>
     </div>
   )

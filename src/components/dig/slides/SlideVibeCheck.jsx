@@ -40,6 +40,7 @@ export default function SlideVibeCheck({ data }) {
               <span style={{ fontSize: '1.1rem', display: 'block' }}>{ELEMENT_EMOJI[el]}</span>
               <strong>{data.elementCounts[el] || 0}</strong>
               <span style={{ fontSize: '0.6rem', display: 'block', opacity: 0.5 }}>{el}</span>
+              <span style={{ fontSize: '0.55rem', display: 'block', opacity: 0.35 }}>placements</span>
             </span>
           ))}
         </div>

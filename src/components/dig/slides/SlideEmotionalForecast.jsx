@@ -1,5 +1,5 @@
 export default function SlideEmotionalForecast({ data }) {
-  const { node, moonVibe, waterCount } = data
+  const { node, moonVibe, waterCount, isGroup } = data
   const d = node.data
 
   return (
@@ -12,7 +12,7 @@ export default function SlideEmotionalForecast({ data }) {
         {d.name}
       </h2>
       <p className="dig-body dig-fly-in" style={{ '--i': 2, color: '#5b8fd4', fontWeight: 500, fontSize: '1rem' }}>
-        The Family Empath
+        {isGroup ? 'The Group Empath' : 'The Family Empath'}
       </p>
       <div className="dig-divider dig-fly-in" style={{ '--i': 3 }} />
       <p className="dig-body dig-fade-in" style={{ '--i': 3 }}>

@@ -169,7 +169,7 @@ export function buildSlides(digData) {
       if (sup) {
         candidates.push(() => {
           featured.add(bestNode.id)
-          return { type: 'superlative', data: { node: bestNode, title: sup.title, sub: sup.sub, score: bestScore, total: totalPlanetCount(bestNode) }, mood: ELEMENT_MOOD[bestEl] || 'starfield' }
+          return { type: 'superlative', data: { node: bestNode, title: sup.title, sub: sup.sub, score: bestScore, total: totalPlanetCount(bestNode), element: bestEl }, mood: ELEMENT_MOOD[bestEl] || 'starfield' }
         })
       }
     }
@@ -329,7 +329,7 @@ export function buildSlides(digData) {
       candidates.push(() => {
         const pick = ranked.find(r => !featured.has(r.node.id)) || ranked[0]
         featured.add(pick.node.id)
-        return { type: 'emotionalForecast', data: { node: pick.node, moonVibe: MOON_VIBES[pick.node.data.moonSign], waterCount: pick.water }, mood: 'water' }
+        return { type: 'emotionalForecast', data: { node: pick.node, moonVibe: MOON_VIBES[pick.node.data.moonSign], waterCount: pick.water, isGroup: digData.familyName === 'group' }, mood: 'water' }
       })
     }
   }
@@ -371,7 +371,8 @@ export function buildSlides(digData) {
       .sort((a, b) => b.earth - a.earth)
     if (ranked[0]) {
       candidates.push(() => {
-        const pick = ranked.find(r => !featured.has(r.node.id)) || ranked[0]
+        const pick = ranked.find(r => !featured.has(r.node.id))
+        if (!pick) return null
         featured.add(pick.node.id)
         return { type: 'oldSoul', data: { node: pick.node, earthCount: pick.earth }, mood: 'earth' }
       })
@@ -386,7 +387,8 @@ export function buildSlides(digData) {
       .sort((a, b) => b.air - a.air)
     if (ranked[0]) {
       candidates.push(() => {
-        const pick = ranked.find(r => !featured.has(r.node.id)) || ranked[0]
+        const pick = ranked.find(r => !featured.has(r.node.id))
+        if (!pick) return null
         featured.add(pick.node.id)
         return { type: 'rebel', data: { node: pick.node, airCount: pick.air }, mood: 'air' }
       })
@@ -559,7 +561,7 @@ export function buildDigSummaryHtml(digData, slides, chartTitle) {
       const missing = s.data.missingElements?.length > 0 ? ` · Missing: ${s.data.missingElements.join(', ')}` : ''
       rows += row('Family Vibe', `${s.data.dominant} ${s.data.dominantModality}`, `Dominant element: ${s.data.dominant} · ${s.data.dominantModality} energy${missing}`)
     } else if (s.type === 'superlative') {
-      rows += row(s.data.title, `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}`, `${s.data.sub} · ${s.data.score} of ${s.data.total} placements in ${s.data.node.data?.element}`)
+      rows += row(s.data.title, `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}`, `${s.data.sub} · ${s.data.score} of ${s.data.total} placements in ${s.data.element || s.data.node.data?.element}`)
     } else if (s.type === 'emotionalForecast') {
       rows += row('Emotional Landscape', `☽ ${s.data.node.data?.name || '—'}`, `${s.data.node.data?.moonSign} Moon: ${s.data.moonVibe}`)
     } else if (s.type === 'cosmicDuo') {
