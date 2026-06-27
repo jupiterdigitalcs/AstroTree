@@ -3023,7 +3023,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
           onClick={() => onInsightsTabChange?.('dig')}
         >
           <span className="dig-teaser-label">✦ The DIG</span>
-          <span className="dig-teaser-text">See your family's cosmic story. Wrapped-style slides, shareable highlights, and more.</span>
+          <span className="dig-teaser-text">See your {isGroupOnly ? 'group' : 'family'}'s cosmic story. Wrapped-style slides, shareable highlights, and more.</span>
           <span className="dig-teaser-arrow">View The DIG →</span>
         </button>
       )}
@@ -3047,7 +3047,7 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
       {/* Consult CTA */}
       <div className="insight-consult-cta">
         <p className="insight-consult-cta-text">
-          <strong>Want a deeper reading?</strong> Book a personal astrology consultation with Christina. Explore your chart, your family's patterns, and what the stars reveal about your connections.
+          <strong>Want a deeper reading?</strong> Book a personal astrology consultation with Christina. Explore your chart, your {isGroupOnly ? 'group' : 'family'}'s patterns, and what the stars reveal about your connections.
         </p>
         {exporting ? (
           <p className="insight-consult-contact">

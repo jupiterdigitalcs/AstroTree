@@ -1,5 +1,5 @@
 const SLIDE_LABELS = {
-  vibeCheck: '✦ Family Vibe Check',
+  vibeCheck: '✦ Your Group\'s Element',
   superlative: '✦ Sign Superlative',
   emotionalForecast: '✦ Emotional Landscape',
   cosmicDuo: '✦ Cosmic Duo',

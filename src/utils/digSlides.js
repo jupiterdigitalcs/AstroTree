@@ -526,6 +526,7 @@ export function buildSlides(digData) {
       dominant: digData.dominant,
       bondCount: digData.topBonds?.length ?? 0,
       threadCount: digData.signThreadList?.length ?? 0,
+      isGroup: digData.familyName === 'group',
     },
     mood: 'starfield',
   })
@@ -553,13 +554,15 @@ function row(label, main, sub) {
 }
 
 export function buildDigSummaryHtml(digData, slides, chartTitle) {
-  const name = chartTitle || (digData.familyName === 'group' ? 'Your Group' : 'Your Family')
+  const isGroup = digData.familyName === 'group'
+  const groupOrFamily = isGroup ? 'group' : 'family'
+  const name = chartTitle || (isGroup ? 'Your Group' : 'Your Family')
   const contentSlides = slides.filter(s => s.type !== 'intro' && s.type !== 'outro')
   let rows = ''
   for (const s of contentSlides) {
     if (s.type === 'vibeCheck') {
       const missing = s.data.missingElements?.length > 0 ? ` · Missing: ${s.data.missingElements.join(', ')}` : ''
-      rows += row('Family Vibe', `${s.data.dominant} ${s.data.dominantModality}`, `Dominant element: ${s.data.dominant} · ${s.data.dominantModality} energy${missing}`)
+      rows += row(`${isGroup ? 'Group' : 'Family'} Vibe`, `${s.data.dominant} ${s.data.dominantModality}`, `Dominant element: ${s.data.dominant} · ${s.data.dominantModality} energy${missing}`)
     } else if (s.type === 'superlative') {
       rows += row(s.data.title, `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}`, `${s.data.sub} · ${s.data.score} of ${s.data.total} placements in ${s.data.element || s.data.node.data?.element}`)
     } else if (s.type === 'emotionalForecast') {
@@ -568,11 +571,11 @@ export function buildDigSummaryHtml(digData, slides, chartTitle) {
       const b = s.data.bond
       rows += row('Cosmic Duo', `${b.a?.data?.name || '—'} + ${b.b?.data?.name || '—'}`, `${b.title || 'Strongest cosmic bond in the chart'}${s.data.totalBonds > 1 ? ` · ${s.data.totalBonds} total bonds found` : ''}`)
     } else if (s.type === 'wildcard') {
-      rows += row('The Wildcard', `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}`, `The one who breaks the mold: zero ${s.data.familyElement} energy in a ${s.data.familyElement}-dominant family`)
+      rows += row('The Wildcard', `${SYM[s.data.node.data?.sign] || ''} ${s.data.node.data?.name || '—'}`, `The one who breaks the mold: zero ${s.data.familyElement} energy in a ${s.data.familyElement}-dominant ${groupOrFamily}`)
     } else if (s.type === 'cosmicDNA') {
       const t = s.data.thread
       const chain = (t.chain || t.members || []).map(m => typeof m === 'string' ? m : m.name).join(' → ')
-      rows += row('Cosmic DNA', `${SYM[t.sign] || ''} The ${t.sign} Gene`, `${chain}${s.data.totalThreads > 1 ? ` · ${s.data.totalThreads} zodiac threads running through the family` : ''}`)
+      rows += row('Cosmic DNA', `${SYM[t.sign] || ''} The ${t.sign} Gene`, `${chain}${s.data.totalThreads > 1 ? ` · ${s.data.totalThreads} zodiac threads running through the ${groupOrFamily}` : ''}`)
     } else if (s.type === 'connector') {
       rows += row('The Connector', `${s.data.node.data?.name || '—'}`, `Chart aspects to ${s.data.connectedTo?.length || 0} people · chart-backed linking energy`)
     } else if (s.type === 'elementClash') {
