@@ -380,14 +380,16 @@ export function findGaps(nodes) {
 export function deriveRoles(nodes) {
   if (nodes.length < 2) return []
 
-  const groupMap = collectiveElementMap(nodes)
+  const groupMap = collectiveElementMap(nodes, PERSONAL_PLANETS)
   const allNodePlacements = new Map()
   const elementCarriers = { Fire: [], Earth: [], Air: [], Water: [] }
   const personElementCounts = new Map()
   const personPlanetSigns = new Map() // nodeId → { sun, moon, venus, mars, mercury }
 
   for (const node of nodes) {
-    const placements = getAllPlacements(node)
+    // Personal planets only — role/element counts stay consistent with
+    // Family Signature, the element makeup cards, and the DIG
+    const placements = getAllPlacements(node).filter(p => PERSONAL_PLANETS.includes(p.planet))
     allNodePlacements.set(node.id, placements)
     const eCounts = { Fire: 0, Earth: 0, Air: 0, Water: 0 }
     const personEls = new Set()
