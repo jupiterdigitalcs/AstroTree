@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Dev only: allow opening the dev server via this machine's LAN IP
+  // (HMR/chunk loading is blocked cross-origin without this).
+  allowedDevOrigins: ['10.0.0.99'],
   experimental: {
     // Tell Next.js to only import the specific parts of @xyflow/react that are
     // actually used, rather than the whole package. Reduces JS parse time on mobile.

@@ -1658,6 +1658,12 @@
   z-index: 5;
 }
 
+/* Sync status lives in the bottom nav tier row in cosmic mode; the floating
+   indicator would sit on top of the brand chip (both top-right). */
+.app--cosmic .canvas-sync-float {
+  display: none;
+}
+
 /* ── Mobile overrides for cosmic bottom nav height ───────────────────────── */
 @media (max-width: 768px) {
   /* Canvas fills above bottom nav */

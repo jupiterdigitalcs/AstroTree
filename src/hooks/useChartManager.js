@@ -19,6 +19,8 @@ export function useChartManager({
   onChartLimitHit,
   setCollapsedNodeIds,
   setForceExpandedIds,
+  isDemoChart,
+  setIsDemoChart,
 }) {
   const [savedChartId,       setSavedChartId]       = useState(null)
   const [showSaveDialog,     setShowSaveDialog]     = useState(false)
@@ -41,6 +43,10 @@ export function useChartManager({
       if (draft.edges?.length > 0) markInsightsSeen()
       setCounter(draft.counter ?? 1)
       if (draft.savedChartId) setSavedChartId(draft.savedChartId)
+      // Restore the "viewing a sample chart" flag too, so the sample banner
+      // (and its "Back to My Chart" exit) reappears after a reload instead
+      // of silently leaving the user editing a demo with no way back.
+      if (draft.isSample) setIsDemoChart?.(true)
       // In cosmic mode, stay on canvas; in classic mode, open family tab
       const ux = (typeof localStorage !== 'undefined' && kv.get('astrodig_ux')) || 'cosmic'
       if (ux === 'classic') setActiveTab('add')
@@ -52,9 +58,9 @@ export function useChartManager({
   // ── Autosave draft on every change (debounced 600ms) ─────────────────────
   useEffect(() => {
     if (viewOnly) return
-    const t = setTimeout(() => saveDraft(nodes, edges, counter, savedChartId), 600)
+    const t = setTimeout(() => saveDraft(nodes, edges, counter, savedChartId, isDemoChart), 600)
     return () => clearTimeout(t)
-  }, [nodes, edges, counter, savedChartId, viewOnly])
+  }, [nodes, edges, counter, savedChartId, viewOnly, isDemoChart])
 
   // ── Auto-save to named chart when tree has been saved once ────────────────
   useEffect(() => {

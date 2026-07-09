@@ -49,10 +49,10 @@ export default function HomePage() {
 
         <h2>Free vs Celestial ($9.99 one-time)</h2>
         <p>
-          <strong>Free:</strong> Unlimited people, family tree view, sun signs, element breakdown, cloud save, share links, PNG export, 3 DIG slides.
+          <strong>Free:</strong> Unlimited people, family tree view, Constellation View, sun signs, element breakdown, cloud save, share links, PNG export, 3 DIG slides.
         </p>
         <p>
-          <strong>Celestial unlock ($9.99):</strong> Zodiac Wheel, Tables View, Constellation View,
+          <strong>Celestial unlock ($9.99):</strong> Zodiac Wheel, Tables View,
           full Insights (Notable Bonds, Partner Compatibility, Zodiac Threads, Family Roles, Pluto Generations,
           Full Compatibility Report), the complete DIG experience, and up to 50 saved charts.
         </p>

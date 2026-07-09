@@ -4,7 +4,7 @@
  */
 
 import {
-  collectiveElementMap, findHotspots, findBridgePerson,
+  collectiveElementMap, findHotspots, findBridgePerson, PERSONAL_PLANETS,
 } from './groupChartCalc.js'
 
 const ELEMENT_MOOD = { Fire: 'fire', Earth: 'earth', Air: 'air', Water: 'water' }
@@ -127,7 +127,8 @@ export function buildSlides(digData) {
   })
 
   // 2. The Collective Chart (replaces Family Vibe Check)
-  const collectiveMap = collectiveElementMap(nodes)
+  // Personal planets only, so the counts here match the Insights cards
+  const collectiveMap = collectiveElementMap(nodes, PERSONAL_PLANETS)
   slides.push({
     type: 'vibeCheck',
     data: {

@@ -39,8 +39,8 @@ export function renameChart(id, newTitle) {
   return charts[idx]
 }
 
-export function saveDraft(nodes, edges, counter, savedChartId = null) {
-  try { kv.set(DRAFT_KEY, JSON.stringify({ nodes, edges, counter, savedChartId })) } catch {}
+export function saveDraft(nodes, edges, counter, savedChartId = null, isSample = false) {
+  try { kv.set(DRAFT_KEY, JSON.stringify({ nodes, edges, counter, savedChartId, isSample })) } catch {}
 }
 
 export function loadDraft() {

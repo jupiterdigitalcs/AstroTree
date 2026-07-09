@@ -15,12 +15,17 @@ const DEMO_MEMBERS = [
 const DEMO_EDGE_DEFS = [
   ['node-1', 'node-2', 'spouse'],      // Margaret & Robert
   ['node-1', 'node-3'],                 // Margaret → Susan
+  ['node-2', 'node-3'],                 // Robert → Susan
   ['node-1', 'node-6'],                 // Margaret → James
+  ['node-2', 'node-6'],                 // Robert → James
   ['node-3', 'node-4', 'spouse'],       // Susan & David
   ['node-6', 'node-5', 'spouse'],       // James & Lisa
   ['node-3', 'node-7'],                 // Susan → Emily
+  ['node-4', 'node-7'],                 // David → Emily
   ['node-3', 'node-8'],                 // Susan → Ryan
+  ['node-4', 'node-8'],                 // David → Ryan
   ['node-6', 'node-9'],                 // James → Olivia
+  ['node-5', 'node-9'],                 // Lisa → Olivia
 ]
 
 const DEMO_CREW_MEMBERS = [

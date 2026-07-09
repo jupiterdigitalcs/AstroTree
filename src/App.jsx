@@ -247,6 +247,8 @@ export default function App() {
     onChartLimitHit: () => setShowUpgradePrompt(true),
     setCollapsedNodeIds,
     setForceExpandedIds,
+    isDemoChart,
+    setIsDemoChart,
   })
 
   // Wrap handleLoadChart to set isDemoChart when loading a sample chart

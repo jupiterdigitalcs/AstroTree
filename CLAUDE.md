@@ -50,10 +50,10 @@ Live at astrodig.com:
 ## Paywall & Entitlements
 Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celestial" — the internal DB tier value is still `'premium'`.
 
-**Free tier:** Unlimited members, tree view, sun sign + element, basic elemental summary, cloud save, share links, tree PNG export, 3 DIG slides.
+**Free tier:** Unlimited members, tree view, constellation view (free on purpose: friend/coworker groups need it as their main view), sun sign + element, basic elemental summary, cloud save, share links, tree PNG export, 3 DIG slides.
 
 **Gated features (celestial):**
-- Views: zodiac_view, tables_view, constellation_view
+- Views: zodiac_view, tables_view
 - Insights: advanced_insights, full_compatibility
 - DIG: full_dig (beyond 3 slides)
 - Export: zodiac_export (PNG), pdf_export
@@ -156,7 +156,7 @@ Source of truth is the render order in InsightsPanel.jsx. Current order (as of c
   3. Social Chemistry (Venus/Mars dynamics)
   4. Sign Threads (shared signs — needs 3+ placements)
   5. Shared Moon Signs (needs 3+ people sharing)
-  6. Cosmic Inheritance
+  6. Cosmic Inheritance ✦ (families only)
   7. Partner Compatibility ✦
   8. Hidden Connections ✦
   9. Family Roles ✦

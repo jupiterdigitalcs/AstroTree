@@ -16,10 +16,11 @@ export function setCachedEntitlements(ent) {
 // are always gated unless an admin has explicitly turned the paywall off
 // via paywall_enabled: false in paywall_config. Without this default, a
 // missing config row meant free users could access everything.
+// constellation_view is deliberately absent: groups (friends/coworkers)
+// need it as their primary view, so it stays free.
 const DEFAULT_GATED_FEATURES = [
   'zodiac_view',
   'tables_view',
-  'constellation_view',
   'advanced_insights',
   'full_dig',
   'full_compatibility',
@@ -74,10 +75,13 @@ export const FEATURE_KEYS = [
   { key: 'unlimited_charts',   label: 'Unlimited Charts — beyond free tier limit', group: 'Export & Limits' },
 ]
 
-// Helper: quick check using cached entitlements
+// Helper: quick check using cached entitlements.
+// Fails CLOSED when entitlements haven't loaded: default-gated features stay
+// locked until we know the tier. The cache is seeded from localStorage on
+// startup (useCloudSync), so paying users don't see a lock flash.
 export function canAccessFeature(featureKey) {
   const ent = getCachedEntitlements()
-  if (!ent) return true // not loaded yet — don't block
+  if (!ent) return !isFeatureGated(featureKey, null)
   return canAccess(featureKey, ent.tier, ent.config)
 }
 

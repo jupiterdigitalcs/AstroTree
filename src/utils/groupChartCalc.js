@@ -182,6 +182,12 @@ export function getAllPlacements(node) {
   return placements
 }
 
+// Personal planets only — user-facing element counts (Family Signature,
+// element makeup cards, DIG element slide) all use this same set so their
+// totals agree. Jupiter/Saturn stay in getAllPlacements for the features
+// that need them (Saturn Lines, Jupiter Gifts, hotspots, gaps).
+export const PERSONAL_PLANETS = ['sun', 'moon', 'mercury', 'venus', 'mars']
+
 // ── Group analysis functions ─────────────────────────────────────────────────
 
 /**

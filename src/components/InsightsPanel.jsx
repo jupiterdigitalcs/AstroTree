@@ -9,7 +9,7 @@ import { canAccess } from '../utils/entitlements.js'
 import {
   collectiveElementMap, findHotspots, findGaps,
   saturnLines, jupiterGifts, allPlanetsBySign,
-  findBridgePerson, deriveRoles, PLANET_GLYPHS,
+  findBridgePerson, deriveRoles, PLANET_GLYPHS, PERSONAL_PLANETS,
 } from '../utils/groupChartCalc.js'
 import { findHereditaryAspects, findSharedContacts, calcCrossAspects, PLANET_GLYPHS as ASPECT_PLANET_GLYPHS } from '../lib/astrology-core/aspects.js'
 import {
@@ -143,8 +143,10 @@ function FamilySignatureCard({ dominant, dominantModality, masculine, feminine, 
   const G = isGroupOnly ? 'Group' : 'Family'
   const rawDesc = FAMILY_SIGNATURE_DESCRIPTIONS[dominant]?.[dominantModality]
   // Descriptions are written for families ("A family of champions") —
-  // soften for friend/coworker charts
-  const desc = isGroupOnly && rawDesc ? rawDesc.replace(/\ba family of\b/i, 'a group of') : rawDesc
+  // soften for friend/coworker charts, preserving sentence-initial capitals
+  const desc = isGroupOnly && rawDesc
+    ? rawDesc.replace(/\b(a|A) family of\b/, (_, a) => `${a} group of`)
+    : rawDesc
   const mascPct = total > 0 ? Math.round(masculine / total * 100) : 50
   const femPct  = total > 0 ? Math.round(feminine  / total * 100) : 50
   return (
@@ -934,7 +936,6 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
     : null
 
   // ── Group chart calculations (all planets, degree-based) ──────────────────────
-  const PERSONAL_PLANETS = ['sun', 'moon', 'mercury', 'venus', 'mars']
   const groupElementMap = useMemo(() => collectiveElementMap(nodes, PERSONAL_PLANETS), [nodes])
   const groupHotspots = useMemo(() => findHotspots(nodes), [nodes])
   const groupGaps = useMemo(() => nodes.length >= 4 ? findGaps(nodes) : null, [nodes])
@@ -2107,7 +2108,10 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
                 setDigExporting(true)
                 try {
                   const { buildSlides, buildDigSummaryHtml } = await import('../utils/digSlides.js')
-                  const slides = buildSlides(digData)
+                  // Free tier sees 3 slides in the viewer (TheDig.jsx FREE_SLIDE_LIMIT);
+                  // the summary must not reveal more than that
+                  const allSlides = buildSlides(digData)
+                  const slides = hasFullDig ? allSlides : allSlides.slice(0, 3)
                   const { getToPng } = await import('../hooks/useExport.js')
                   const toPng = await getToPng()
 
@@ -2177,7 +2181,9 @@ export default function InsightsPanel({ nodes, edges, onExport, exporting, onAdd
               setDigExporting(true)
               try {
                 const { buildSlides, buildDigSummaryHtml } = await import('../utils/digSlides.js')
-                const slides = buildSlides(digData)
+                // Same free-tier limit as the other summary button above
+                const allSlides = buildSlides(digData)
+                const slides = hasFullDig ? allSlides : allSlides.slice(0, 3)
                 const { getToPng } = await import('../hooks/useExport.js')
                 const toPng = await getToPng()
                 const wrap = document.createElement('div')

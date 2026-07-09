@@ -36,10 +36,13 @@ describe('isFeatureGated', () => {
   it('fails closed: uses default gated list when config is missing', () => {
     expect(isFeatureGated('zodiac_view', undefined)).toBe(true)
     expect(isFeatureGated('tables_view', undefined)).toBe(true)
-    expect(isFeatureGated('constellation_view', undefined)).toBe(true)
     expect(isFeatureGated('advanced_insights', undefined)).toBe(true)
     expect(isFeatureGated('full_dig', undefined)).toBe(true)
     expect(isFeatureGated('unlimited_charts', undefined)).toBe(true)
+  })
+
+  it('constellation view is free by default (groups need it as their main view)', () => {
+    expect(isFeatureGated('constellation_view', undefined)).toBe(false)
   })
 
   it('never gates features outside the list (tree view, share links)', () => {
@@ -95,8 +98,9 @@ describe('getChartLimit', () => {
 })
 
 describe('canAccessFeature (cached entitlements)', () => {
-  it('does not block before entitlements load', () => {
-    expect(canAccessFeature('zodiac_view')).toBe(true)
+  it('fails closed for gated features before entitlements load', () => {
+    expect(canAccessFeature('zodiac_view')).toBe(false)
+    expect(canAccessFeature('tree_view')).toBe(true)
   })
 
   it('gates by cached tier once loaded', () => {
