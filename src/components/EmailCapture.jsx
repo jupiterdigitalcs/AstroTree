@@ -125,7 +125,7 @@ export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, ini
     setErrorMsg('')
     const result = await signInWithGoogle()
     if (!result.ok) {
-      setErrorMsg(result.error || 'Could not connect to Google — try again')
+      setErrorMsg(result.error || 'Could not connect to Google, try again')
       setStatus('idle')
     }
     // If ok, the page redirects to Google → callback → onAuthStateChange handles the rest
@@ -148,7 +148,7 @@ export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, ini
       try { kv.set(EMAIL_KEY, email.trim()) } catch {}
       setStatus('sent')
     } else {
-      setErrorMsg(result.error || 'Something went wrong — try again')
+      setErrorMsg(result.error || 'Something went wrong, try again')
       setStatus('idle')
     }
   }
@@ -181,8 +181,8 @@ export function EmailCapture({ onDismiss, signInWithGoogle, signInWithEmail, ini
         </p>
         <p className="email-capture-sub">
           {isPostPurchase
-            ? 'Sign in so you can access Celestial from any device — or get it back if you switch browsers.'
-            : 'Sign in so your charts follow you everywhere — new phone, new browser, always yours.'}
+            ? 'Sign in so you can access Celestial from any device, or get it back if you switch browsers.'
+            : 'Sign in so your charts follow you everywhere: new phone, new browser, always yours.'}
         </p>
 
         {native ? (

@@ -626,7 +626,7 @@ export default function EditMemberPanel({
                     )
                   }
                   const results = searchTimezones(tzSearch)
-                  if (!results.length) return <p className="tz-results-hint">No matches — try a nearby city</p>
+                  if (!results.length) return <p className="tz-results-hint">No matches, try a nearby city</p>
                   return results.map(({ tz, label, isAlias }) => (
                     <button
                       key={tz + (label ?? '')}
@@ -657,14 +657,14 @@ export default function EditMemberPanel({
                 <>
                   {hasTzWarnings && (
                     <span className="ingress-context-note">
-                      Timezone-sensitive — verify timezone is correct for birth location
+                      Timezone-sensitive, verify timezone is correct for birth location
                     </span>
                   )}
                   {ingressWarnings.length > 0 && (
                     <span className="ingress-context-note">
                       {originalWarnings.length === 1
-                        ? `${originalWarnings[0].name} changes sign on this date — birth time helps confirm`
-                        : `${originalWarnings.length} planets change sign on this date — birth time helps confirm`}
+                        ? `${originalWarnings[0].name} changes sign on this date, birth time helps confirm`
+                        : `${originalWarnings.length} planets change sign on this date, birth time helps confirm`}
                     </span>
                   )}
                   {hasTzWarnings && timezoneWarnings.map(w => (
@@ -698,7 +698,7 @@ export default function EditMemberPanel({
                   />
                   This time is exact
                   <span className="ingress-warning-note" style={{ fontStyle: 'normal' }}>
-                    (Round number near a sign change — confirm from records if unsure)
+                    (Round number near a sign change, confirm from records if unsure)
                   </span>
                 </label>
               )}
@@ -715,7 +715,7 @@ export default function EditMemberPanel({
       {hasConnections && (
         <div className={`connections-section${isFirstConnect ? ' connections-section--highlight' : ''}`} ref={connSectionRef}>
           {isFirstConnect ? (
-            <span className="conn-first-prompt">Connect {node.data.name} — tap a name below</span>
+            <span className="conn-first-prompt">Connect {node.data.name}, tap a name below</span>
           ) : (
             <span className="parent-select-label">Connections</span>
           )}
@@ -833,7 +833,7 @@ export default function EditMemberPanel({
         if (siblings.length === 0) return null
         return (
           <p className="sibling-hint">
-            Also sibling{siblings.length > 1 ? 's' : ''}: {siblings.map(s => s.data.name).join(', ')} — detected from shared parents
+            Also sibling{siblings.length > 1 ? 's' : ''}: {siblings.map(s => s.data.name).join(', ')} (detected from shared parents)
           </p>
         )
       })()}

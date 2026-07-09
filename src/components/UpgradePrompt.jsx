@@ -36,7 +36,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
         if (onRedeemed) onRedeemed()
         setCodeSuccess(true)
       } else if (!result.cancelled) {
-        setError(result.error || 'Purchase failed — please try again')
+        setError(result.error || 'Purchase failed, please try again')
       }
       setLoading(false)
       return
@@ -45,7 +45,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
     const result = await startCheckout('premium_upgrade')
     if (!result.ok) {
       setError(result.error === 'Product not configured'
-        ? 'Upgrade is not available yet — check back soon!'
+        ? 'Upgrade is not available yet, check back soon!'
         : result.error)
       setLoading(false)
     }
@@ -62,7 +62,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
     } else if (result.ok) {
       setError('No previous purchase found to restore.')
     } else {
-      setError(result.error || 'Restore failed — please try again')
+      setError(result.error || 'Restore failed, please try again')
     }
     setRestoring(false)
   }
@@ -90,7 +90,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
         setCodeError(data.error || 'Invalid code')
       }
     } catch {
-      setCodeError('Something went wrong — try again')
+      setCodeError('Something went wrong, try again')
     }
     setCodeLoading(false)
   }
@@ -137,7 +137,7 @@ export function UpgradePrompt({ onClose, feature, onRedeemed, authUser, onSignIn
 
         <div className="upgrade-price">
           <span className="upgrade-price-amount">$9.99</span>
-          <span className="upgrade-price-label">one-time — yours forever</span>
+          <span className="upgrade-price-label">one-time, yours forever</span>
         </div>
 
         {error && <p className="upgrade-error">{error}</p>}

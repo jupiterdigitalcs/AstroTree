@@ -6,7 +6,7 @@ export function SyncIndicator({ status }) {
     <div className={`sync-indicator sync-indicator--${status}`} title={
       status === 'syncing' ? 'Syncing to cloud…'
       : status === 'synced' ? 'Saved to cloud'
-      : 'Could not sync — saved locally'
+      : 'Could not sync, saved locally'
     }>
       {status === 'syncing' && (
         <svg className="sync-icon sync-icon--spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

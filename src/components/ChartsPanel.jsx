@@ -105,7 +105,7 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
       {entitlements?.tier === 'premium' ? (
         <div className="celestial-explainer celestial-explainer--active">
           <p className="celestial-explainer-title">✦ Celestial Active</p>
-          <p className="celestial-explainer-text">All views, full insights, The DIG, and expanded chart saves — unlocked.</p>
+          <p className="celestial-explainer-text">All views, full insights, The DIG, and expanded chart saves, all unlocked.</p>
         </div>
       ) : (
         <button type="button" className="charts-celestial-sell" onClick={authUser ? onUpgrade : onSignIn}>
@@ -205,14 +205,14 @@ export default function ChartsPanel({ savedChartId, onLoad, onNew, onDeleteCloud
         </div>
         )
       })() : (
-        <p className="bulk-hint">No saved charts yet — your first chart saves automatically.</p>
+        <p className="bulk-hint">No saved charts yet. Your first chart saves automatically.</p>
       )}
 
       {/* ── Chart ideas ───────────────────────────────────────────────── */}
       <div className="chart-ideas">
         {charts.length > 0 && (
           <p className="chart-ideas-hint">
-            <strong>New Chart</strong> starts fresh. <strong>Copy</strong> duplicates an existing chart — handy if you want a version with just one side of the family or a smaller group.
+            <strong>New Chart</strong> starts fresh. <strong>Copy</strong> duplicates an existing chart, handy if you want a version with just one side of the family or a smaller group.
           </p>
         )}
         {charts.length >= 1 && charts.length <= 2 && (

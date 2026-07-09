@@ -53,7 +53,7 @@ export function TreeLegend({ onGoToTables, nodes }) {
         <div className="tree-legend-panel">
           <p className="tree-legend-title">Reading the Nodes</p>
           <p className="tree-legend-desc">
-            <strong>Element badge</strong> — sun sign element. <strong>Colored dots</strong> — element breakdown across Sun, Moon, Mercury, Venus, Mars. Brighter = more placements.
+            <strong>Element badge</strong>: sun sign element. <strong>Colored dots</strong>: element breakdown across Sun, Moon, Mercury, Venus, Mars. Brighter means more placements.
           </p>
           <div className="tree-legend-elements">
             {Object.entries(EL_COLORS).map(([el, color]) => (

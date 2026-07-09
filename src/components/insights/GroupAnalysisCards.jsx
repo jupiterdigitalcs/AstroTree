@@ -62,7 +62,7 @@ export function GroupAnalysisCards({ topSigns, groupHotspots, groupGaps, groupSa
         return (
         <div className="insight-card" data-count={hotspotCount} data-label={hotspotCount === 1 ? 'hotspot' : 'hotspots'}>
           <h3 className="insight-heading">Group Hotspots<span className="insight-pro-tag">✦</span></h3>
-          <p className="insight-whisper">Where multiple planets cluster tightly by degree — not which sign has the most members.</p>
+          <p className="insight-whisper">Where multiple planets cluster tightly by degree, not which sign has the most members.</p>
           {groupHotspots.slice(0, 3).map((spot, i) => {
             const planetCounts = ['sun','moon','mercury','venus','mars'].reduce((acc, p) => {
               const matches = spot.planets.filter(pl => pl.planet === p)
@@ -123,7 +123,7 @@ export function GroupAnalysisCards({ topSigns, groupHotspots, groupGaps, groupSa
             </p>
           )}
           <p className="insight-whisper" style={{ marginTop: '0.3rem' }}>
-            Gaps aren't weaknesses — they're areas where the group may seek those qualities in others or develop them over time.
+            Gaps aren't weaknesses. They're areas where the group may seek those qualities in others or develop them over time.
           </p>
         </div>
       )}
