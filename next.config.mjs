@@ -8,6 +8,17 @@ const nextConfig = {
     // actually used, rather than the whole package. Reduces JS parse time on mobile.
     optimizePackageImports: ['@xyflow/react'],
   },
+  // Campaign redirects — short paths for print/QR, tagged for analytics
+  async redirects() {
+    return [
+      {
+        // UAC conference program ad (quarter page, 2026)
+        source: '/uac',
+        destination: '/?utm_source=uac&utm_medium=qr&utm_campaign=uac2026',
+        permanent: false,
+      },
+    ]
+  },
   // Headers (migrated from vercel.json)
   async headers() {
     return [
