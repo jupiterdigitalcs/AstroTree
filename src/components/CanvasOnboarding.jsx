@@ -7,6 +7,7 @@ import { getSunSign, getElement } from '../utils/astrology.js'
 import { getMoonTonight } from '../utils/moonTonight.js'
 import { loadCharts } from '../utils/storage.js'
 import { formatRelativeTime } from '../utils/format.js'
+import { kv } from '../utils/kvStore.js'
 
 // Rotating preview lines shown before the visitor starts typing — phrased
 // about other people (never "you"/"your") so they can't read as claims
@@ -52,6 +53,7 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
   const [birthdate, setBirthdate] = useState('')
   const [showWhatIs, setShowWhatIs] = useState(false)
   const [previewIdx, setPreviewIdx] = useState(0)
+  const [campaign, setCampaign] = useState(null)
   const hasLogged = useRef(false)
   const tookAction = useRef(false)
   const revealLogged = useRef(false)
@@ -61,6 +63,19 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
     if (hasLogged.current) return
     hasLogged.current = true
     logEvent(hasUsedApp ? 'onboarding_seen_returning' : 'onboarding_seen')
+
+    // Campaign arrivals (e.g. astrodig.com/uac → ?utm_campaign=uac2026).
+    // The param disappears on navigation, so persist it; log only fresh
+    // arrivals so the event counts scans, not revisits.
+    try {
+      const param = new URLSearchParams(window.location.search).get('utm_campaign')
+      if (param) {
+        kv.set('astrotree_campaign', param)
+        if (param === 'uac2026') logEvent('uac_landing')
+      }
+      const c = param || kv.get('astrotree_campaign')
+      if (c) setCampaign(c)
+    } catch {}
 
     // Fire beacon on page unload if user never took action
     function handleUnload() {
@@ -161,6 +176,13 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
         <span className="cosmic-onboarding-brand-name">AstroDig</span>
         <span className="cosmic-onboarding-brand-by">by Jupiter Digital</span>
       </div>
+
+      {/* ── Campaign greeting (UAC program ad arrivals) ── */}
+      {campaign === 'uac2026' && (
+        <p className="onboarding-campaign-ribbon">
+          ✦ Welcome, UAC attendees. Tap a finished chart below to see a whole family mapped at once.
+        </p>
+      )}
 
       {/* ── Headline ── */}
       <h2>Your group's cosmic story starts&nbsp;here</h2>

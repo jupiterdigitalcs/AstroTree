@@ -2120,6 +2120,18 @@
   vertical-align: middle;
 }
 
+/* Campaign greeting ribbon (e.g. UAC program ad arrivals via /uac) */
+.onboarding-campaign-ribbon {
+  font-size: 0.78rem;
+  color: var(--a-gold-soft, #d4b87a);
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  margin: 0.2rem 0 0.5rem;
+  line-height: 1.4;
+}
+
 /* One-line philosophy under the welcome tagline */
 .cosmic-onboarding-credo {
   font-family: 'Instrument Serif', serif;
