@@ -180,7 +180,7 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
       {/* ── Campaign greeting (UAC program ad arrivals) ── */}
       {campaign === 'uac2026' && (
         <p className="onboarding-campaign-ribbon">
-          ✦ Welcome, UAC attendees. Tap a finished chart below to see a whole family mapped at once.
+          ✦ Welcome, UAC Attendees ✦
         </p>
       )}
 
