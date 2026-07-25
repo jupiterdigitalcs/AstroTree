@@ -44,6 +44,7 @@ Live at astrodig.com:
 - Email capture for cloud backup restore
 - Onboarding progress stepper + canvas onboarding
 - Browser history integration (back button works with tabs/views)
+- The Hour: birth time finder at `/hour` (Beta, free, unlinked like `/journey`) — narrows a birth time window via rising-sign fit questions, moon-boundary question, and life-event transit scoring. Core math in `src/lib/astrology-core/rectify.js` (own transit-to-angle orbs, NOT the aspects.js spec); questions/copy in `src/utils/hourQuestions.js`; city lookup from bundled GeoNames data `src/data/cities.json` (CC BY, keep the "Place data from GeoNames.org" credit; regenerate via `scripts/build-cities.mjs`). Refuses |lat| > 66°. Logs `hour_start`/`hour_result`/`hour_revise`. Quiz copy never references astrology mechanics (lay audience); questions are blind (no sign names/glyphs until the result).
 
 ---
 
@@ -120,6 +121,7 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
     useHistoryNav.js    # Browser back button integration
     useSwipe.js         # Touch swipe detection (for DIG)
     useCountUp.js       # Animated number counter
+    useWidgetSync.js    # iOS home screen widget forecast sync (no-op on web)
   /styles               # 19 CSS files (base, layout, sidebar, forms, canvas, tabs, etc.)
   /lib
     /astrology-core     # aspects.js — synastry/hereditary aspects, Christina's orbs
@@ -140,6 +142,7 @@ Celestial unlock: $9.99 one-time via Stripe Checkout. User-facing name is "Celes
     dateInput.js        # Date parsing/validation helpers
     moonTonight.js      # Tonight's moon phase (local math) + sign (via API), cached per day
     groupChartCalc.js   # Group/transit math for The Current + DIG (tested)
+    widgetSync.js       # Feeds "The Group Sky" iOS widget via WidgetBridge plugin (see WIDGET_SETUP.md)
   App.jsx               # Root component (~1600 lines) — layout, routing, orchestration
 ```
 

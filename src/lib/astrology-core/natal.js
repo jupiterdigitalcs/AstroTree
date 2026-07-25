@@ -80,6 +80,20 @@ export function chartAt(birthdate, hour, minute = 0, tz = DEFAULT_TIMEZONE) {
   })
 }
 
+/**
+ * Run a Celestine chart calculation with real coordinates.
+ * Unlike chartAt (which uses the NYC fallback), this exists for features
+ * that need location-dependent results: chart.angles (ascendant, midheaven)
+ * and chart.houses are only meaningful with the true birthplace.
+ */
+export function chartAtLocation(birthdate, hour, minute, tz, lat, lon) {
+  const [year, month, day] = birthdate.split('-').map(Number)
+  return calculateChart({
+    year, month, day, hour, minute, second: 0,
+    timezone: tz, latitude: lat, longitude: lon,
+  })
+}
+
 function fmtHour(h, tzLabel = 'EST') {
   const period = h < 12 ? 'AM' : 'PM'
   return `~${h % 12 || 12}:00 ${period} ${tzLabel}`

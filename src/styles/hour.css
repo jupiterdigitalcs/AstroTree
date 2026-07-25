@@ -1,0 +1,809 @@
+/* ───────────────────────── The Hour (birth time finder) ─────────────────── */
+
+/* Own scroll context since body has overflow:hidden */
+.hour-page {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg);
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* ── Entry form ──────────────────────────────────────────────────────────── */
+
+.hour-entry-wrap,
+.hour-questions-wrap,
+.hour-result-wrap {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.hour-entry,
+.hour-questions,
+.hour-result {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hour-beta-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.hour-beta-badge {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(130, 100, 200, 0.85);
+  border: 1px solid rgba(130, 100, 200, 0.35);
+  background: rgba(130, 100, 200, 0.08);
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hour-beta-notice {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  color: rgba(130, 100, 200, 0.6);
+  text-align: center;
+  margin: 0 0 1.75rem;
+  line-height: 1.4;
+}
+
+.hour-entry-star {
+  font-size: 2rem;
+  color: var(--gold);
+  margin-bottom: 1rem;
+  opacity: 0.8;
+  text-shadow: 0 0 20px rgba(201, 168, 76, 0.4);
+}
+
+.hour-entry-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.08em;
+  margin: 0;
+  text-align: center;
+}
+
+.hour-entry-sub {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+  max-width: 320px;
+}
+
+.hour-error {
+  font-family: 'Raleway', sans-serif;
+  color: var(--red);
+  font-size: 0.8rem;
+  margin: 0 0 1rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.hour-form-fields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.hour-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.hour-field-row {
+  flex-direction: row;
+  gap: 0.75rem;
+}
+
+.hour-field-row > div {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.hour-label {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.hour-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.95rem;
+  padding: 0.75rem 1rem;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.hour-input:focus {
+  border-color: rgba(201, 168, 76, 0.5);
+}
+
+.hour-input[type="date"],
+.hour-input[type="time"],
+.hour-input[type="month"] {
+  color-scheme: dark;
+}
+
+.hour-field-hint {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Birth window picker */
+
+.hour-part-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.hour-part-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.hour-part-btn:hover {
+  border-color: rgba(201, 168, 76, 0.35);
+}
+
+.hour-part-btn.is-active {
+  border-color: rgba(201, 168, 76, 0.6);
+  background: rgba(201, 168, 76, 0.08);
+}
+
+.hour-part-btn.is-active .hour-part-label {
+  color: var(--gold);
+}
+
+/* "Not sure" spans the full row as the fifth option */
+.hour-part-grid .hour-part-btn:last-child {
+  grid-column: 1 / -1;
+}
+
+.hour-part-label {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.hour-part-range {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+.hour-time-toggle {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  opacity: 0.8;
+  padding: 0;
+  transition: opacity 0.2s;
+}
+
+.hour-time-toggle:hover { opacity: 1; }
+
+/* City search */
+
+.hour-city-search {
+  position: relative;
+}
+
+.hour-city-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.hour-city-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.hour-city-option:hover {
+  background: rgba(201, 168, 76, 0.08);
+}
+
+.hour-city-name {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.hour-city-detail {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.hour-city-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: var(--surface);
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.hour-city-clear {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0.8;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.hour-city-clear:hover { opacity: 1; }
+
+/* Submit + skip */
+
+.hour-submit {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.18) 0%, rgba(160, 80, 160, 0.1) 100%);
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  border-radius: 12px;
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.hour-submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.26) 0%, rgba(160, 80, 160, 0.14) 100%);
+  border-color: rgba(201, 168, 76, 0.65);
+  transform: translateY(-1px);
+}
+
+.hour-submit:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.hour-skip {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  opacity: 0.8;
+}
+
+.hour-skip:hover { opacity: 1; color: var(--text-soft); }
+
+.hour-attribution {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  opacity: 0.5;
+  margin: 1.5rem 0 0;
+  text-align: center;
+}
+
+/* ── Loading state ───────────────────────────────────────────────────────── */
+
+.hour-loading {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 3rem 2rem;
+}
+
+.hour-loading-ring {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 2px solid rgba(201, 168, 76, 0.15);
+  border-top-color: var(--gold);
+  animation: hour-spin 1.2s linear infinite;
+}
+
+@keyframes hour-spin {
+  to { transform: rotate(360deg); }
+}
+
+.hour-loading-text {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Questions ───────────────────────────────────────────────────────────── */
+
+.hour-progress {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.hour-progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.3s;
+}
+
+.hour-progress-dot.is-done {
+  background: var(--gold);
+}
+
+.hour-single-sign-note {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  background: rgba(201, 168, 76, 0.07);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  line-height: 1.5;
+  margin: 0 0 1.5rem;
+}
+
+.hour-question-prompt {
+  font-family: 'Cinzel', serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--text);
+  text-align: center;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  margin: 0 0 1.25rem;
+}
+
+.hour-question-copy {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.92rem;
+  color: var(--text-soft);
+  line-height: 1.6;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid rgba(201, 168, 76, 0.5);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 0 0 1.5rem;
+}
+
+.hour-question-options {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.hour-option-btn {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-soft);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.88rem;
+  text-align: left;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  line-height: 1.5;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.hour-option-btn:hover {
+  border-color: rgba(201, 168, 76, 0.5);
+  background: rgba(201, 168, 76, 0.06);
+}
+
+.hour-option-btn--skip {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.hour-questions-reset {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0.7;
+  padding: 0.5rem;
+}
+
+.hour-questions-reset:hover { opacity: 1; }
+
+/* Life events step */
+
+.hour-events {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.hour-events-hint {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+  text-align: center;
+}
+
+.hour-event-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.hour-event-row > * {
+  min-width: 0;
+}
+
+.hour-event-row select.hour-input {
+  flex: 1.4;
+}
+
+.hour-event-row input.hour-input {
+  flex: 1;
+}
+
+.hour-events-add {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-align: left;
+  opacity: 0.8;
+  padding: 0;
+}
+
+.hour-events-add:hover { opacity: 1; }
+
+.hour-question-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* ── Result ──────────────────────────────────────────────────────────────── */
+
+.hour-result-kicker {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.85;
+  margin: 0 0 0.75rem;
+}
+
+.hour-result-window {
+  font-family: 'Cinzel', serif;
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.5rem;
+}
+
+.hour-result-to {
+  font-size: 1rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.hour-result-sub {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0 0 1.75rem;
+  line-height: 1.5;
+}
+
+.hour-result-rising {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+.hour-result-symbol {
+  display: block;
+  font-size: 1.6rem;
+  color: var(--gold);
+  margin-bottom: 0.35rem;
+}
+
+.hour-result-rising-main {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.hour-result-odds {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.hour-result-rising-note {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0.5rem 0 0;
+  line-height: 1.5;
+}
+
+.hour-result-tier,
+.hour-result-narrowed {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  text-align: center;
+  line-height: 1.6;
+  margin: 0 0 1rem;
+}
+
+.hour-result-nudge {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.08) 0%, rgba(160, 80, 160, 0.06) 100%);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  margin: 0.5rem 0 1.25rem;
+  text-align: center;
+}
+
+.hour-result-nudge p {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  line-height: 1.55;
+  margin: 0 0 0.85rem;
+}
+
+.hour-result-cta {
+  display: inline-block;
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  color: var(--gold);
+  border: 1px solid rgba(201, 168, 76, 0.45);
+  border-radius: 10px;
+  padding: 0.6rem 1.4rem;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.hour-result-cta:hover {
+  background: rgba(201, 168, 76, 0.1);
+  border-color: rgba(201, 168, 76, 0.65);
+}
+
+/* Answer review ("doesn't feel right") */
+
+.hour-review-toggle {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  opacity: 0.85;
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.hour-review-toggle:hover { opacity: 1; }
+
+.hour-review {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.hour-review-intro,
+.hour-review-events-note {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+  text-align: center;
+}
+
+.hour-review-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.hour-review-copy {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  line-height: 1.55;
+  margin: 0;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.hour-review-effect {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.hour-review-effect strong,
+.hour-review-effect b { color: var(--text-soft); }
+
+.hour-review-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.hour-review-choice {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  text-align: left;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  line-height: 1.4;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.hour-review-choice:hover {
+  border-color: rgba(201, 168, 76, 0.4);
+}
+
+.hour-review-choice.is-active {
+  border-color: rgba(201, 168, 76, 0.6);
+  color: var(--gold);
+  background: rgba(201, 168, 76, 0.07);
+}
+
+.hour-result-caveat {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  opacity: 0.8;
+  text-align: center;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+  max-width: 360px;
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .hour-entry-wrap,
+  .hour-questions-wrap,
+  .hour-result-wrap {
+    padding: 2rem 1.25rem;
+    align-items: flex-start;
+  }
+
+  .hour-result-window {
+    font-size: 1.5rem;
+  }
+
+  .hour-field-row {
+    flex-direction: column;
+  }
+}

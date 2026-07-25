@@ -18,6 +18,7 @@ export {
   ianaToOffset,
   parseTime,
   chartAt,
+  chartAtLocation,
   // Natal calculations
   calcMoon,
   calcInnerPlanets,
