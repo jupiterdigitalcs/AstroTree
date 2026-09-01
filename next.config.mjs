@@ -17,6 +17,13 @@ const nextConfig = {
         destination: '/?utm_source=uac&utm_medium=qr&utm_campaign=uac2026',
         permanent: false,
       },
+      {
+        // ChatGPT ad (September 2026) — set this as the ad's destination URL
+        // so paid clicks are separable from organic ChatGPT mentions
+        source: '/chatgpt',
+        destination: '/?utm_source=chatgpt&utm_medium=paid&utm_campaign=chatgpt2026',
+        permanent: false,
+      },
     ]
   },
   // Headers (migrated from vercel.json)

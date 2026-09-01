@@ -72,6 +72,7 @@ export function CanvasOnboarding({ onAdd, onDemo, onDemoCrew, onLoadCharts, onLo
       if (param) {
         kv.set('astrotree_campaign', param)
         if (param === 'uac2026') logEvent('uac_landing')
+        if (param === 'chatgpt2026') logEvent('chatgpt_landing')
       }
       const c = param || kv.get('astrotree_campaign')
       if (c) setCampaign(c)
