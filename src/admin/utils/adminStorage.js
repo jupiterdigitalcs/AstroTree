@@ -205,3 +205,16 @@ export async function fetchEngagementStats() {
     return null
   }
 }
+
+export async function fetchCampaignReport({ campaign, dateFrom = '', dateTo = '', excludeDevices = '' } = {}) {
+  try {
+    const params = new URLSearchParams({ campaign, dateFrom, dateTo, excludeDevices })
+    const res = await fetch(apiUrl(`/api/admin?action=campaign&${params}`), { headers: adminHeaders() })
+    if (res.status === 401) return { error: 'auth' }
+    if (!res.ok) return null
+    return await res.json()
+  } catch (e) {
+    console.error('fetchCampaignReport exception:', e)
+    return null
+  }
+}

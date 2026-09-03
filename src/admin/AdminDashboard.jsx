@@ -5,6 +5,7 @@ import AdminUserList from './AdminUserList.jsx'
 import AdminTreePreview from './AdminTreePreview.jsx'
 import AdminPaywallPanel from './AdminPaywallPanel.jsx'
 import AdminResearchPanel from './AdminResearchPanel.jsx'
+import AdminCampaignPanel from './AdminCampaignPanel.jsx'
 import { fetchAllCharts } from './utils/adminStorage.js'
 
 const OWNER_EMAIL = 'chrissysoll@gmail.com'
@@ -28,6 +29,7 @@ export default function AdminDashboard() {
           <button type="button" className={`admin-toggle-btn${view === 'trees' ? ' admin-toggle-btn--active' : ''}`} onClick={() => setView('trees')}>All Trees</button>
           <button type="button" className={`admin-toggle-btn${view === 'users' ? ' admin-toggle-btn--active' : ''}`} onClick={() => setView('users')}>By User</button>
           <button type="button" className={`admin-toggle-btn${view === 'paywall' ? ' admin-toggle-btn--active' : ''}`} onClick={() => setView('paywall')}>Paywall</button>
+          <button type="button" className={`admin-toggle-btn${view === 'campaigns' ? ' admin-toggle-btn--active' : ''}`} onClick={() => setView('campaigns')}>Campaigns</button>
           <button type="button" className={`admin-toggle-btn${view === 'research' ? ' admin-toggle-btn--active' : ''}`} onClick={() => setView('research')}>Research</button>
         </div>
         <div className="admin-top-controls">
@@ -46,6 +48,7 @@ export default function AdminDashboard() {
       {view === 'trees' && <AdminTreeList onSelectTree={setSelectedTree} excludeEmail={excludeOwner ? OWNER_EMAIL : null} />}
       {view === 'users' && <AdminUserList onSelectDevice={handleSelectDevice} excludeEmail={excludeOwner ? OWNER_EMAIL : null} />}
       {view === 'paywall' && <AdminPaywallPanel />}
+      {view === 'campaigns' && <AdminCampaignPanel />}
       {view === 'research' && <AdminResearchPanel />}
 
       {selectedTree && (

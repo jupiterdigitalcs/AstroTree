@@ -219,6 +219,114 @@ async function handlePaywallConfigSet(request) {
     : NextResponse.json({ ok: true })
 }
 
+// ── Campaign report ─────────────────────────────────────────────────────────
+
+const CAMPAIGNS = {
+  uac2026:     { event: 'uac_landing',     referrer: 'uac',     defaultFrom: '2026-09-01' },
+  chatgpt2026: { event: 'chatgpt_landing', referrer: 'chatgpt', defaultFrom: '2026-09-01' },
+}
+
+async function handleCampaign(request) {
+  if (!requireAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { searchParams } = new URL(request.url)
+  const cfg = CAMPAIGNS[searchParams.get('campaign')]
+  if (!cfg) return NextResponse.json({ error: 'Unknown campaign' }, { status: 400 })
+  const dateFrom = searchParams.get('dateFrom') || cfg.defaultFrom
+  const dateTo   = searchParams.get('dateTo')
+  const since    = new Date(dateFrom).toISOString()
+  const until    = dateTo ? new Date(dateTo + 'T23:59:59').toISOString() : null
+  const sb = getSupabase()
+
+  // Same exclusions as the funnel: marked test devices + ids passed by the client.
+  // Christina's known test devices are excluded here directly because one of them
+  // carries a real email for iOS premium testing and can't be marked test@internal.
+  const { data: testDevices } = await sb.from('devices').select('id').eq('email', 'test@internal')
+  const testIds = new Set((testDevices ?? []).map(d => d.id))
+  testIds.add('8e0a0b9d-f056-4f3e-a429-22f0b28df8a0')
+  testIds.add('47f02b2b-8585-4e47-8b8c-fba1c5007955')
+  for (const id of (searchParams.get('excludeDevices') ?? '').split(',')) {
+    if (id.trim()) testIds.add(id.trim())
+  }
+
+  // Landings: every scan/click that hit the campaign URL
+  let evQuery = sb.from('device_events')
+    .select('device_id, created_at')
+    .eq('event_name', cfg.event)
+    .gte('created_at', since)
+  if (until) evQuery = evQuery.lte('created_at', until)
+  const { data: evRows } = await evQuery
+  const landings = (evRows ?? []).filter(r => !testIds.has(r.device_id))
+
+  const perDay = {}
+  const landedIds = new Set()
+  for (const r of landings) {
+    const day = r.created_at.slice(0, 10)
+    if (!perDay[day]) perDay[day] = { scans: 0, devices: new Set() }
+    perDay[day].scans++
+    perDay[day].devices.add(r.device_id)
+    landedIds.add(r.device_id)
+  }
+
+  // Cohort: devices that landed, plus devices that registered with the campaign referrer
+  let refQuery = sb.from('devices').select('id').eq('referrer', cfg.referrer).gte('first_seen', since)
+  if (until) refQuery = refQuery.lte('first_seen', until)
+  const { data: refRows } = await refQuery
+  const cohortIds = new Set(landedIds)
+  for (const d of refRows ?? []) if (!testIds.has(d.id)) cohortIds.add(d.id)
+  const ids = [...cohortIds]
+
+  let devices = [], events = [], chartRows = [], purchaseRows = []
+  if (ids.length) {
+    const [devRes, cohortEvRes, chartRes, purchRes] = await Promise.all([
+      sb.from('devices').select('id, country, city, email, auth_user_id, tier').in('id', ids),
+      sb.from('device_events').select('event_name, device_id').in('device_id', ids),
+      sb.from('charts').select('device_id').in('device_id', ids).eq('is_test', false),
+      sb.from('purchases').select('device_id, amount_cents, status').in('device_id', ids),
+    ])
+    devices = devRes.data ?? []
+    events = cohortEvRes.data ?? []
+    chartRows = chartRes.data ?? []
+    purchaseRows = purchRes.data ?? []
+  }
+
+  const byEvent = {}
+  for (const row of events) {
+    if (!byEvent[row.event_name]) byEvent[row.event_name] = new Set()
+    byEvent[row.event_name].add(row.device_id)
+  }
+
+  const completed = purchaseRows.filter(p => p.status === 'completed')
+  const places = {}
+  for (const d of devices) {
+    const key = [d.city, d.country].filter(Boolean).join(', ') || 'Unknown'
+    places[key] = (places[key] ?? 0) + 1
+  }
+
+  return NextResponse.json({
+    scans: {
+      total: landings.length,
+      uniqueDevices: landedIds.size,
+      perDay: Object.entries(perDay)
+        .map(([day, v]) => ({ day, scans: v.scans, devices: v.devices.size }))
+        .sort((a, b) => a.day.localeCompare(b.day)),
+    },
+    cohortSize: ids.length,
+    funnel: Object.entries(byEvent)
+      .map(([event, devs]) => ({ event, uniqueDevices: devs.size }))
+      .sort((a, b) => b.uniqueDevices - a.uniqueDevices),
+    outcomes: {
+      savedChart: new Set(chartRows.map(c => c.device_id)).size,
+      signedInOrEmail: devices.filter(d => d.auth_user_id || d.email).length,
+      purchases: completed.length,
+      revenueCents: completed.reduce((sum, p) => sum + (p.amount_cents ?? 0), 0),
+    },
+    places: Object.entries(places)
+      .map(([place, n]) => ({ place, n }))
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 8),
+  })
+}
+
 async function handlePurchases(request) {
   if (!requireAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { data, error } = await getSupabase().rpc('admin_get_purchases')
@@ -781,6 +889,7 @@ const ROUTES = {
   'paywall-config-set': handlePaywallConfigSet, purchases: handlePurchases,
   'mark-test': handleMarkTest, 'mark-chart-test': handleMarkChartTest,
   'celestial-users': handleCelestialUsers,
+  campaign: handleCampaign,
   'downgrade-user': handleDowngradeUser,
   research: handleResearch,
 }
