@@ -2,14 +2,14 @@
 
 > Map the astrology of your people — family, friends, or anyone you know.
 
-AstroDig is a free web app by Jupiter Digital that builds interactive astrology charts for groups of people. Enter birthdates and the app calculates sun signs, moon signs, and planetary placements (Mercury, Venus, Mars), then visualizes cosmic connections across relationships.
+AstroDig is a free family astrology chart builder by Jupiter Digital. It puts a whole family or group on one interactive chart: enter birthdays and the app calculates sun signs, moon signs, and planetary placements (Mercury, Venus, Mars), then shows the connections and patterns across everyone's charts.
 
 ## What It Does
 
-- **Family Tree View**: Hierarchical chart showing parent-child-spouse relationships with each person's zodiac sign and element
-- **Constellation View**: Force-directed star map for friends, coworkers, or any non-hierarchical group
-- **Zodiac Wheel**: Circular 12-house chart with concentric rings for sun, moon, and inner planets
-- **Tables View**: Sortable data grid of everyone's planetary placements
+- **Family Tree View**: A family tree with each person's zodiac sign and element, connecting parents, children, spouses, siblings, and friends
+- **Constellation View**: A star map of your group, made for friends, coworkers, or any circle that isn't a family tree
+- **Zodiac Wheel**: A circular 12-sign chart with rings for everyone's sun, moon, and inner planets
+- **Tables View**: Everyone's placements side by side in a sortable table
 - **Insights Panel**: Automated analysis including element distribution, shared signs, partner compatibility, notable bonds (sun-moon connections, Venus alignments), zodiac threads across generations, family roles, and Pluto generational themes
 - **The DIG**: A Spotify Wrapped-style slide experience telling your group's cosmic story
 
@@ -30,11 +30,11 @@ Anyone curious about astrology who wants to see how their chart connects to the 
 - Shareable chart links so others can view your tree
 - PNG export of any view (tree, wheel, constellation, tables, insights)
 - Birth time input for accurate moon and planetary signs (optional)
-- Ingress warnings when a planet changes sign on a birthday
+- A heads-up when a planet changed signs on someone's birthday, with the exact changeover time
 
 ## Premium ($9.99 one-time)
 
-Unlocks Zodiac Wheel, Tables View, full Insights (Notable Bonds, Partner Compatibility, Zodiac Threads, Family Roles, Pluto Generations, Full Compatibility Report), the complete DIG experience, and unlimited saved charts.
+Unlocks Zodiac Wheel, Tables View, full Insights (Notable Bonds, Partner Compatibility, Zodiac Threads, Family Roles, Pluto Generations, Full Compatibility Report), the complete DIG experience, and up to 50 saved charts. The family tree and constellation views are free.
 
 ## Built By
 

@@ -24,11 +24,15 @@ const faqs = [
   },
   {
     q: 'Is AstroDig free to use?',
-    a: 'Yes. The core experience is free with no account required. You can add unlimited people, explore the family tree view, see sun signs and elemental patterns, save and share charts, and export as PNG. A one-time $9.99 Celestial unlock adds advanced views (Zodiac Wheel, Tables, Constellation), the full Insights analysis, The Current (live group transit analysis), the complete DIG experience, and up to 50 saved charts.',
+    a: 'Yes. The core experience is free with no account required. You can add unlimited people, explore the family tree and constellation views, see sun signs and elemental patterns, save and share charts, and export as PNG. A one-time $9.99 Celestial unlock adds the Zodiac Wheel and Tables views, the full Insights analysis, The Current (live group transit analysis), the complete DIG experience, and up to 50 saved charts.',
   },
   {
     q: 'Do I need to create an account?',
     a: 'No account required. AstroDig works instantly in the browser. You can optionally add an email address after saving your first chart. This lets you restore your chart from any device if you clear your browser or switch devices.',
+  },
+  {
+    q: 'How do I make a birth chart for my whole family?',
+    a: 'Add each person with a name and birthday (birth time helps, but it\'s optional). AstroDig places everyone on one shared chart: a family tree with each person\'s signs, a zodiac wheel showing where everyone lands, and an insights panel that looks for patterns across the group. Most families take just a few minutes to map.',
   },
   {
     q: 'What information do I need to add someone?',
@@ -60,15 +64,19 @@ const faqs = [
   },
   {
     q: 'Can I use AstroDig for friend groups or coworkers, not just families?',
-    a: 'Absolutely. AstroDig works for any group of people. The Constellation View is especially suited to non-hierarchical groups like friend circles or teams. It shows everyone as connected nodes in a star map rather than a structured family tree. You can mix relationship types freely within a single chart.',
+    a: 'Absolutely. AstroDig works for any group of people. The Constellation View is made for groups that aren\'t a family tree, like friend circles or teams. It shows everyone as stars in a shared map, connected by their relationships. You can mix relationship types freely within a single chart.',
   },
   {
     q: 'What does the Celestial unlock include?',
-    a: 'The $9.99 one-time Celestial unlock adds: Zodiac Wheel view, Tables view, Constellation view, the full Insights panel (Notable Bonds, Partner Compatibility, Zodiac Threads, Family Roles, Pluto Generations, Full Compatibility Report), The Current (live group transit analysis with shared storms, rare moments, and per-person breakdowns), the complete DIG experience, zodiac and PDF exports, and up to 50 saved charts.',
+    a: 'The $9.99 one-time Celestial unlock adds: Zodiac Wheel view, Tables view, the full Insights panel (Notable Bonds, Partner Compatibility, Zodiac Threads, Family Roles, Pluto Generations, Full Compatibility Report), The Current (live group transit analysis with shared storms, rare moments, and per-person breakdowns), the complete DIG experience, zodiac and PDF exports, and up to 50 saved charts. The Constellation view is part of the free tier.',
   },
   {
     q: 'Can I share my chart with others?',
     a: 'Yes. Every chart has a shareable link. Anyone with the link can view your chart without needing an account or paying anything. Shared links are view-only, so your data stays yours.',
+  },
+  {
+    q: 'Is my family\'s information private?',
+    a: 'Charts are private by default. Nothing is visible to anyone else unless you create a share link, and shared links are view-only. AstroDig doesn\'t sell data, and search engines and AI crawlers are blocked from reading shared charts.',
   },
   {
     q: 'Can I export my chart as an image?',
@@ -79,8 +87,16 @@ const faqs = [
     a: 'Planetary positions are calculated using Celestine, a precise astronomy library. Sun sign results are exact for nearly all birthdates. Moon and inner planet signs are accurate when birth time is provided, and for most birthdates even without it. If a planet changes sign on or near someone\'s birthday, AstroDig flags the changeover with the exact time so you can double-check against a recorded birth time.',
   },
   {
+    q: 'Does AstroDig work on iPhone and Android?',
+    a: 'Yes. AstroDig runs in any browser, phone or computer, with nothing to install. On a phone you can add it to your home screen and it behaves like an app.',
+  },
+  {
+    q: 'Is AstroDig a good gift for someone who loves astrology?',
+    a: 'It tends to land well with the family astrology lover, the one who already knows everyone\'s signs. You can build the family chart yourself and share the link, or send them in to dig on their own. The one-time Celestial unlock ($9.99, no subscription) makes a small gift, and the Jupiter Digital Etsy shop has birthday calendars if you want something to wrap.',
+  },
+  {
     q: 'What\'s the difference between the tree view and constellation view?',
-    a: 'The tree view shows hierarchical family relationships (parents, children, spouses) in a structured layout. The constellation view is a force-directed star map that works for any group, hierarchical or not. It\'s well suited for friend groups, teams, or any mix of people where a family tree structure doesn\'t apply.',
+    a: 'The tree view lays out family relationships (parents, children, spouses) the way a family tree does. The constellation view is a star map that works for any group at all. It\'s well suited for friend groups, teams, or any mix of people where a family tree shape doesn\'t apply.',
   },
 ]
 

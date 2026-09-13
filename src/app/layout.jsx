@@ -8,9 +8,9 @@ export const viewport = {
 }
 
 export const metadata = {
-  title: 'AstroDig — Map Your Cosmic Connections | Jupiter Digital',
+  title: 'AstroDig | Family Astrology Chart Builder',
   description:
-    "Map cosmic connections between family, friends, and coworkers. AstroDig builds your astrology chart with sun signs, moon signs, planetary placements, compatibility insights, and The DIG — your Wrapped-style cosmic story.",
+    "Build one astrology chart for your whole family. Enter birthdays and see everyone's sun, moon, and inner planet signs together, with patterns across generations and The DIG, a story of your group written in the stars.",
   keywords:
     'family astrology, astrology chart builder, sun sign chart, moon sign compatibility, zodiac wheel, family birth chart, cosmic connections, astrology insights, The DIG, AstroDig, Jupiter Digital',
   metadataBase: new URL('https://astrodig.com'),
@@ -20,9 +20,9 @@ export const metadata = {
     type: 'website',
     url: 'https://astrodig.com',
     siteName: 'AstroDig by Jupiter Digital',
-    title: 'AstroDig — Map Your Cosmic Connections',
+    title: 'AstroDig | Family Astrology Chart Builder',
     description:
-      "Build your astrology chart — sun signs, moon signs, compatibility, zodiac wheel, and The DIG. Free tool by Jupiter Digital.",
+      "Build one astrology chart for your whole family: sun signs, moon signs, patterns across generations, and The DIG. Free tool by Jupiter Digital.",
     images: [
       {
         url: '/og-image.png',
@@ -37,9 +37,9 @@ export const metadata = {
     card: 'summary_large_image',
     site: '@jupiter_dig',
     creator: '@jupiter_dig',
-    title: 'AstroDig — Map Your Cosmic Connections',
+    title: 'AstroDig | Family Astrology Chart Builder',
     description:
-      "Build your astrology chart — sun signs, moon signs, compatibility, zodiac wheel, and The DIG. Free tool by Jupiter Digital.",
+      "Build one astrology chart for your whole family: sun signs, moon signs, patterns across generations, and The DIG. Free tool by Jupiter Digital.",
     images: ['/og-image.png'],
   },
   icons: {
@@ -59,10 +59,10 @@ const jsonLd = {
       '@type': 'WebApplication',
       '@id': 'https://astrodig.com/#webapp',
       name: 'AstroDig',
-      alternateName: 'AstroDig — Cosmic Connections',
+      alternateName: 'AstroDig Family Astrology Chart Builder',
       url: 'https://astrodig.com',
       description:
-        'A free web application to map cosmic connections — build astrology charts with sun signs, moon signs, planetary placements, compatibility insights, zodiac wheel, and The DIG.',
+        'A free web application that builds one astrology chart for a whole family or group: sun signs, moon signs, inner planet placements, compatibility insights, a zodiac wheel, and The DIG.',
       applicationCategory: 'UtilitiesApplication',
       applicationSubCategory: 'Astrology',
       operatingSystem: 'Any',
@@ -85,11 +85,11 @@ const jsonLd = {
       '@type': 'WebPage',
       '@id': 'https://astrodig.com/#webpage',
       url: 'https://astrodig.com',
-      name: 'AstroDig — Map Your Cosmic Connections',
+      name: 'AstroDig | Family Astrology Chart Builder',
       isPartOf: { '@id': 'https://astrodig.com/#webapp' },
       about: { '@id': 'https://astrodig.com/#webapp' },
       description:
-        'A free web app to map cosmic connections — build astrology charts with sun signs, moon signs, planetary placements, compatibility insights, and The DIG.',
+        'A free web app that builds one astrology chart for your whole family: sun signs, moon signs, inner planet placements, compatibility insights, and The DIG.',
       inLanguage: 'en-US',
       potentialAction: {
         '@type': 'UseAction',

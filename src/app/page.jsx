@@ -21,21 +21,22 @@ export default function HomePage() {
           border: 0,
         }}
       >
-        <h1>AstroDig — Map Your Cosmic Connections</h1>
+        <h1>One Astrology Chart for Your Whole Family</h1>
         <p>
-          AstroDig is a free astrology web app by Jupiter Digital. Enter birthdates for your family,
-          friends, or coworkers and see sun signs, moon signs, and planetary placements (Mercury, Venus, Mars)
-          calculated instantly. Discover how your charts connect.
+          Map your cosmic connections. AstroDig is a free family astrology chart builder by Jupiter Digital.
+          Enter birthdays for your family, friends, or coworkers and see everyone&apos;s sun signs, moon signs,
+          and inner planet placements (Mercury, Venus, Mars) together on one chart, along with the patterns
+          that tend to run through a group.
         </p>
 
         <h2>Features</h2>
         <ul>
-          <li><strong>Family Tree View</strong> — Hierarchical chart showing parent, child, spouse, sibling, and friend relationships with zodiac signs and elements</li>
-          <li><strong>Zodiac Wheel</strong> — Circular 12-sign chart with concentric rings for sun, moon, and inner planets</li>
-          <li><strong>Constellation View</strong> — Force-directed star map for friend groups, coworkers, or any non-hierarchical group</li>
-          <li><strong>Tables View</strong> — Sortable data grid of everyone&apos;s planetary placements side by side</li>
-          <li><strong>Insights Panel</strong> — Automated analysis: element distribution, shared signs, partner compatibility, notable bonds, zodiac threads, family roles, Pluto generations</li>
-          <li><strong>The DIG</strong> — A Spotify Wrapped-style slide experience telling your group&apos;s unique cosmic story</li>
+          <li><strong>Family Tree View</strong>: A family tree with each person&apos;s sign and element, connecting parents, children, spouses, siblings, and friends</li>
+          <li><strong>Zodiac Wheel</strong>: A circular 12-sign chart with rings for everyone&apos;s sun, moon, and inner planets</li>
+          <li><strong>Constellation View</strong>: A star map of your group, made for friends, coworkers, or any circle that isn&apos;t a family tree</li>
+          <li><strong>Tables View</strong>: Everyone&apos;s placements side by side in a sortable table</li>
+          <li><strong>Insights Panel</strong>: Automatic reads on your group: element balance, shared signs, partner compatibility, notable bonds, zodiac threads, family roles, Pluto generations</li>
+          <li><strong>The DIG</strong>: A Wrapped-style slide story about your group&apos;s cosmic makeup</li>
         </ul>
 
         <h2>How It Works</h2>
