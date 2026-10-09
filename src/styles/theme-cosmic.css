@@ -2147,3 +2147,30 @@
   margin-top: -0.3rem;
   opacity: 0.85;
 }
+
+/* Quiet hold while a shared (?view=) chart downloads — replaces welcome-card flash */
+.shared-view-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  color: var(--a-text-soft, rgba(232, 220, 200, 0.6));
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+.shared-view-loading-star {
+  color: var(--a-gold, #c9a84c);
+  font-size: 1.4rem;
+  animation: shared-view-pulse 1.6s ease-in-out infinite;
+}
+@keyframes shared-view-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.15); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shared-view-loading-star { animation: none; }
+}

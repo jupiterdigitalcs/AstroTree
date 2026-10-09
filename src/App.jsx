@@ -47,6 +47,7 @@ import { formatRelativeTime } from './utils/format.js'
 import { useExport } from './hooks/useExport.js'
 import { useChartManager } from './hooks/useChartManager.js'
 import { useTreeState } from './hooks/useTreeState.js'
+import { useWidgetSync } from './hooks/useWidgetSync.js'
 import { useOnboardingState } from './hooks/useOnboardingState.js'
 import { useHistoryNav } from './hooks/useHistoryNav.js'
 import { canAccess } from './utils/entitlements.js'
@@ -131,6 +132,11 @@ export default function App() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   // Set when viewing a shared chart via ?view=token — prevents autosave under viewer's device
   const [viewOnly,          setViewOnly]          = useState(false)
+  // True while a ?view= shared chart is still downloading — suppresses the
+  // welcome card so visitors don't see it flash before the chart appears
+  const [sharedViewLoading, setSharedViewLoading] = useState(() => {
+    try { return !!new URLSearchParams(window.location.search).get('view') } catch { return false }
+  })
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
   const [insightsTab,       setInsightsTabRaw]    = useState('insights') // 'insights' | 'dig' | 'current'
   const setInsightsTab = (tab) => {
@@ -288,6 +294,9 @@ export default function App() {
   const familyLabel = isGroupOnly ? 'Group' : 'Family'
   const familyLabelLower = isGroupOnly ? 'group' : 'family'
 
+  // iOS home screen widget forecast (no-op on the website)
+  useWidgetSync({ nodes, chartName: saveTitle || `Your ${familyLabelLower}` })
+
   // ── Generational cascade: stagger tree entrance by layout row ────────────
   // Each node/edge gets a --gen CSS var (row index); canvas.css uses it for
   // animation-delay so generations fade in top-down (or left-right in LR).
@@ -355,7 +364,7 @@ export default function App() {
     const token = new URLSearchParams(window.location.search).get('view')
     if (!token || !isCloudEnabled()) return
     fetchChartByToken(token).then(async chart => {
-      if (!chart) return
+      if (!chart) { setSharedViewLoading(false); return }
       setNodes(await hydrateNodes(chart.nodes))
       setEdges(chart.edges)
       setCounter(chart.counter)
@@ -363,6 +372,7 @@ export default function App() {
       setViewOnly(true)
       setActiveTab('tree')
       setFitTick(t => t + 1)
+      setSharedViewLoading(false)
       logEvent('share_viewed')
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -620,6 +630,30 @@ export default function App() {
       }, 100)
     }
   }
+
+  // ── Widget deep link (astrodig://current) ─────────────────────────────────
+  // The native shell (mobile/entry.jsx) turns appUrlOpen into this window
+  // event; a cold launch stashes the target in window.__astrodigDeeplink
+  // before React mounts.
+  useEffect(() => {
+    function openFromDeeplink(target) {
+      if (target !== 'current') return
+      setInsightsTab('current')
+      goTab('insights')
+    }
+    const onDeeplink = e => {
+      window.__astrodigDeeplink = null
+      openFromDeeplink(e.detail?.target)
+    }
+    window.addEventListener('astrodig:deeplink', onDeeplink)
+    if (window.__astrodigDeeplink) {
+      const target = window.__astrodigDeeplink
+      window.__astrodigDeeplink = null
+      openFromDeeplink(target)
+    }
+    return () => window.removeEventListener('astrodig:deeplink', onDeeplink)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ── Load demo tree ────────────────────────────────────────────────────────
   async function handleLoadDemo() {
@@ -1553,8 +1587,16 @@ export default function App() {
             )
           )}
 
+          {/* Shared chart still downloading — quiet hold instead of the welcome card */}
+          {sharedViewLoading && nodes.length === 0 && (
+            <div className="shared-view-loading">
+              <span className="shared-view-loading-star">✦</span>
+              <span>Opening shared chart...</span>
+            </div>
+          )}
+
           {/* Canvas onboarding — replaces welcome screen */}
-          {nodes.length === 0 && (
+          {nodes.length === 0 && !sharedViewLoading && (
             <CanvasOnboarding
               onAdd={handleAdd}
               onDemo={handleLoadDemo}
