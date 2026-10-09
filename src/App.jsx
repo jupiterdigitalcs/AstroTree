@@ -50,7 +50,7 @@ import { useTreeState } from './hooks/useTreeState.js'
 import { useWidgetSync } from './hooks/useWidgetSync.js'
 import { useOnboardingState } from './hooks/useOnboardingState.js'
 import { useHistoryNav } from './hooks/useHistoryNav.js'
-import { canAccess } from './utils/entitlements.js'
+import { canAccess, setSharedChartUnlock } from './utils/entitlements.js'
 import { LockedOverlay } from './components/LockedOverlay.jsx'
 import { BottomSheet } from './components/BottomSheet.jsx'
 import { FloatingPills } from './components/FloatingPills.jsx'
@@ -137,6 +137,12 @@ export default function App() {
   const [sharedViewLoading, setSharedViewLoading] = useState(() => {
     try { return !!new URLSearchParams(window.location.search).get('view') } catch { return false }
   })
+
+  // The owner-tier unlock only applies while actually viewing the shared
+  // chart — the moment view-only ends (own chart, demo, saved copy) it drops
+  useEffect(() => {
+    if (!viewOnly) setSharedChartUnlock(false)
+  }, [viewOnly])
   const [treeView,          setTreeView]          = useState('tree') // 'tree' | 'zodiac' | 'constellation' | 'tables'
   const [insightsTab,       setInsightsTabRaw]    = useState('insights') // 'insights' | 'dig' | 'current'
   const setInsightsTab = (tab) => {
@@ -369,8 +375,20 @@ export default function App() {
       setEdges(chart.edges)
       setCounter(chart.counter)
       // Do NOT set savedChartId — viewer doesn't own this chart
+      // Owner's Celestial unlock extends to viewers while in view-only mode
+      setSharedChartUnlock(!!chart.ownerCelestial)
       setViewOnly(true)
-      setActiveTab('tree')
+      // ?open= deep links from the shared title screen (insights, dig)
+      const open = new URLSearchParams(window.location.search).get('open')
+      if (open === 'insights') {
+        setActiveTab('insights')
+      } else if (open === 'dig') {
+        setActiveTab('insights')
+        setInsightsTab('dig')
+        setShowDig(true)
+      } else {
+        setActiveTab('tree')
+      }
       setFitTick(t => t + 1)
       setSharedViewLoading(false)
       logEvent('share_viewed')

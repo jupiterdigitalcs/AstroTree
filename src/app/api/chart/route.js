@@ -107,12 +107,26 @@ async function handleSave(request) {
 async function handleLoad(searchParams) {
   const token = searchParams.get('token')
   if (!token) return NextResponse.json(null, { status: 400 })
-  const { data, error } = await getSupabase()
+  const sb = getSupabase()
+  const { data, error } = await sb
     .from('charts')
-    .select('id,title,nodes,edges,counter,saved_at,share_token,is_public,is_sample')
+    .select('id,title,nodes,edges,counter,saved_at,share_token,is_public,is_sample,device_id,auth_user_id')
     .eq('share_token', token).single()
   if (error || !data) return NextResponse.json(null, { status: 404 })
-  return NextResponse.json(toRow(data))
+
+  // If the chart's owner is Celestial, their unlock extends to viewers
+  // (view-only). Checked on the owner so sharing never unlocks your own tier.
+  let ownerCelestial = false
+  const { data: ownerDevice } = await sb.from('devices').select('tier').eq('id', data.device_id).single()
+  if (ownerDevice?.tier === 'premium') {
+    ownerCelestial = true
+  } else if (data.auth_user_id) {
+    const { data: premiumDevices } = await sb.from('devices')
+      .select('id').eq('auth_user_id', data.auth_user_id).eq('tier', 'premium').limit(1)
+    ownerCelestial = (premiumDevices?.length ?? 0) > 0
+  }
+
+  return NextResponse.json({ ...toRow(data), ownerCelestial })
 }
 
 async function handleList(request) {

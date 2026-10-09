@@ -29,6 +29,16 @@ const DEFAULT_GATED_FEATURES = [
   'unlimited_charts',
 ]
 
+// Shared-chart unlock: while viewing a chart shared by a Celestial owner,
+// the owner's unlock extends to the viewer (view-only). Keyed to the OWNER's
+// tier server-side, so a free user sharing their own chart gains nothing.
+// Cleared by App.jsx the moment view-only mode ends.
+let _sharedChartUnlock = false
+
+export function setSharedChartUnlock(on) {
+  _sharedChartUnlock = !!on
+}
+
 // Is the paywall in effect? True unless an admin explicitly disabled it.
 // (Old behavior was the inverse — required explicit paywall_enabled: true,
 // which silently broke gating any time the config row wasn't loaded.)
@@ -45,8 +55,10 @@ export function isFeatureGated(featureKey, config) {
   return gated.includes(featureKey)
 }
 
-// Can this device access a feature? (not gated, or gated + premium tier)
+// Can this device access a feature? (not gated, or gated + premium tier,
+// or viewing a chart shared by a Celestial owner)
 export function canAccess(featureKey, tier, config) {
+  if (_sharedChartUnlock) return true
   if (!isFeatureGated(featureKey, config)) return true
   return tier === 'premium'
 }
