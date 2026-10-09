@@ -125,6 +125,17 @@ export function getMoodLabel(mood) {
   return 'A demanding stretch. Your group is carrying a lot of intense energy right now.'
 }
 
+// Short mood words for the iOS home screen widget. Thresholds mirror
+// getMoodLabel above so the widget and the in-app gauge always agree.
+export function getMoodWord(mood) {
+  if (!mood || mood.total === 0) return 'All quiet'
+  const ratio = mood.expansion / mood.total
+  if (ratio >= 0.6) return 'Flowing'
+  if (ratio >= 0.4) return 'Mixed skies'
+  if (ratio >= 0.2) return 'Charged'
+  return 'Demanding'
+}
+
 export function getPhaseLabel(mood) {
   if (mood.total === 0) return null
   const applyingRatio = mood.applying / mood.total
